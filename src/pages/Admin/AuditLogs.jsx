@@ -37,7 +37,7 @@ export default function AuditLogs() {
         subtitle="System-wide action and security logs"
         breadcrumbs={[{ label: 'Settings' }, { label: 'Audit Logs' }]}
       />
-      <div className="bg-white rounded border overflow-hidden d-flex flex-column" style={{ minHeight: '300px' }}>
+      <div className="premium-card d-flex flex-column" style={{ minHeight: '300px' }}>
         <div className="table-responsive flex-grow-1">
           {MOCK_LOGS.length === 0 ? (
             <div className="p-5 text-center text-muted">No audit logs found</div>

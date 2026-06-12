@@ -116,7 +116,7 @@ export default function ApprovalQueue() {
         })}
       </div>
 
-      <div className="bg-white rounded border overflow-hidden d-flex flex-column" style={{ minHeight: '300px' }}>
+      <div className="premium-card d-flex flex-column" style={{ minHeight: '300px' }}>
         <div className="table-responsive flex-grow-1">
           {isLoading ? (
             <div className="p-5 text-center text-muted">Loading data...</div>

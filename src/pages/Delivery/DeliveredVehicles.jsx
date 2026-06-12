@@ -39,7 +39,7 @@ export default function DeliveredVehicles() {
         breadcrumbs={[{ label: 'Delivery' }, { label: 'Delivered' }]}
       />
 
-      <div className="bg-white rounded border overflow-hidden d-flex flex-column" style={{ minHeight: '300px' }}>
+      <div className="premium-card d-flex flex-column" style={{ minHeight: '300px' }}>
         <div className="table-responsive flex-grow-1">
           {MOCK_DELIVERED.length === 0 ? (
             <div className="p-5 text-center text-muted">No delivered vehicles</div>

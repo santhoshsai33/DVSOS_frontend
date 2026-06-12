@@ -10,7 +10,7 @@ export default function ReportsPage() {
         subtitle="Generate and download operational reports"
         breadcrumbs={[{ label: 'Reports' }]}
       />
-      <div className="bg-white rounded border p-5 text-center mt-4">
+      <div className="premium-card p-5 text-center mt-4">
         <BarChart2 size={48} className="text-muted mb-3 opacity-50" />
         <h4 className="text-muted">Reports Module Configuration</h4>
         <p className="text-muted mb-4">Select a date range and report type to generate CSV exports.</p>

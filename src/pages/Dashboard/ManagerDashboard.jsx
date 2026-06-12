@@ -232,7 +232,7 @@ export default function ManagerDashboard() {
       </Row>
 
       {/* Recent Jobs Table */}
-      <div className="bg-white rounded border overflow-hidden d-flex flex-column" style={{ minHeight: '300px' }}>
+      <div className="premium-card d-flex flex-column" style={{ minHeight: '300px' }}>
         <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
           <h5 className="mb-0 fs-6 fw-bold">Active Jobs</h5>
           <Button variant="ghost" size="sm" onClick={() => navigate('/job-cards')}>View All →</Button>
