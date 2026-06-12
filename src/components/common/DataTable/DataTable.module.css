@@ -1,0 +1,77 @@
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table thead th {
+  background: var(--color-bg-base);
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.85rem 1rem;
+  border-bottom: 1.5px solid var(--color-border);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.table tbody td {
+  padding: 0.85rem 1rem;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-divider);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.striped tbody tr:nth-child(even) {
+  background: var(--color-bg-base);
+}
+
+.compact thead th,
+.compact tbody td {
+  padding: 0.55rem 0.75rem;
+}
+
+.sortable {
+  cursor: pointer;
+}
+
+.sortable:hover {
+  background: var(--color-divider) !important;
+  color: var(--color-accent) !important;
+}
+
+.thContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sortIcon {
+  color: var(--color-text-muted);
+  opacity: 0.5;
+}
+
+.sortIconActive {
+  color: var(--color-accent);
+}
+
+.clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.clickable:hover td {
+  background: rgba(59, 130, 246, 0.04) !important;
+}
