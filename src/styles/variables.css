@@ -1,4 +1,21 @@
 :root {
+  /* Bootstrap Overrides (CSS Variables) */
+  --bs-primary: #0F172A;
+  --bs-secondary: #475569;
+  --bs-success: #10B981;
+  --bs-info: #0EA5E9;
+  --bs-warning: #F59E0B;
+  --bs-danger: #EF4444;
+  --bs-light: #F8FAFC;
+  --bs-dark: #0F172A;
+  --bs-body-bg: #F8FAFC;
+  --bs-body-color: #0F172A;
+  --bs-font-sans-serif: 'Poppins', system-ui, -apple-system, sans-serif;
+  --bs-body-font-family: var(--bs-font-sans-serif);
+  --bs-border-radius: 0.5rem; /* 8px sm */
+  --bs-border-radius-sm: 0.375rem;
+  --bs-border-radius-lg: 1.25rem; /* 20px lg */
+
   /* Premium Colors */
   --color-primary: #0F172A; /* Deep slate */
   --color-primary-hover: #1E293B;

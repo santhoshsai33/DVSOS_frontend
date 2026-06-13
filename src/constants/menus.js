@@ -93,13 +93,8 @@ export const SIDEBAR_MENUS = {
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     {
       label: 'Mechanical Queue',
+      path: '/work-queue/mechanical',
       icon: Wrench,
-      children: [
-        { label: 'Pending', path: '/work-queue/mechanical?tab=PENDING', icon: AlertCircle },
-        { label: 'Assigned', path: '/work-queue/mechanical?tab=ASSIGNED', icon: ClipboardList },
-        { label: 'In Progress', path: '/work-queue/mechanical?tab=IN_PROGRESS', icon: Clock },
-        { label: 'Completed', path: '/work-queue/mechanical?tab=COMPLETED', icon: CheckCircle2 },
-      ],
     },
     {
       label: 'Additional Work',
@@ -117,12 +112,8 @@ export const SIDEBAR_MENUS = {
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     {
       label: 'Body Shop Queue',
+      path: '/work-queue/body-shop',
       icon: Paintbrush,
-      children: [
-        { label: 'Pending', path: '/work-queue/body-shop?tab=PENDING', icon: AlertCircle },
-        { label: 'In Progress', path: '/work-queue/body-shop?tab=IN_PROGRESS', icon: Clock },
-        { label: 'Completed', path: '/work-queue/body-shop?tab=COMPLETED', icon: CheckCircle2 },
-      ],
     },
     { label: 'Vehicles', path: '/vehicles', icon: Car },
     { label: 'Job Cards', path: '/job-cards', icon: FileText },
@@ -132,12 +123,8 @@ export const SIDEBAR_MENUS = {
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     {
       label: 'Water Wash Queue',
+      path: '/work-queue/water-wash',
       icon: Droplets,
-      children: [
-        { label: 'Pending', path: '/work-queue/water-wash?tab=PENDING', icon: AlertCircle },
-        { label: 'In Progress', path: '/work-queue/water-wash?tab=IN_PROGRESS', icon: Clock },
-        { label: 'Completed', path: '/work-queue/water-wash?tab=COMPLETED', icon: CheckCircle2 },
-      ],
     },
     { label: 'Ready For Delivery', path: '/delivery/ready', icon: Truck },
   ],
