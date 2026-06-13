@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowDownUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import Loader from '../Loader';
 import EmptyState from '../EmptyState';
 import styles from './DataTable.module.css';
@@ -14,11 +14,19 @@ export default function DataTable({
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  const sortedData = [...data].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    const aValue = a[sortConfig.key] ?? '';
+    const bValue = b[sortConfig.key] ?? '';
+    return String(aValue).localeCompare(String(bValue), undefined, { numeric: true }) * (sortConfig.direction === 'asc' ? 1 : -1);
+  });
 
   // Pagination Logic
-  const totalPages = Math.ceil(data.length / itemsPerPage) || 1;
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = data.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage);
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -28,6 +36,15 @@ export default function DataTable({
 
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const handleSort = (col) => {
+    if (!col.accessor || col.sortable === false) return;
+    setSortConfig((prev) => ({
+      key: col.accessor,
+      direction: prev.key === col.accessor && prev.direction === 'asc' ? 'desc' : 'asc',
+    }));
     setCurrentPage(1);
   };
 
@@ -57,7 +74,15 @@ export default function DataTable({
             <tr>
               {columns.map((col, i) => (
                 <th key={i} style={{ width: col.width }}>
-                  {col.header}
+                  <button
+                    type="button"
+                    className={styles.sortBtn}
+                    onClick={() => handleSort(col)}
+                    disabled={!col.accessor || col.sortable === false}
+                  >
+                    {col.header}
+                    {col.accessor && col.sortable !== false && <ArrowDownUp size={13} />}
+                  </button>
                 </th>
               ))}
             </tr>
@@ -88,7 +113,7 @@ export default function DataTable({
         <div className={styles.paginationRow}>
           <div className={styles.paginationInfo}>
             <span>
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, data.length)} of {data.length} entries
+              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedData.length)} of {sortedData.length} entries
             </span>
             <span>
               Show

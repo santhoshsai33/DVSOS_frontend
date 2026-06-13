@@ -1,63 +1,81 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import AuthLayout from '../layouts/AuthLayout/AuthLayout';
-import DashboardLayout from '../layouts/DashboardLayout/DashboardLayout';
+import AuthLayout from '../components/layout/AuthLayout';
+import DashboardLayout from '../components/layout/AppLayout';
 import KioskLayout from '../layouts/KioskLayout/KioskLayout';
-import ProtectedRoute from '../components/shared/ProtectedRoute';
+import ProtectedRoute from '../components/guards/ProtectedRoute';
+import { ROUTES } from '../config/routes';
+import { PERMISSIONS } from '../config/permissions';
 import { ROLES } from '../constants/roles';
-
-// Pages
-import Login from '../pages/Auth/Login';
-import ForgotPassword from '../pages/Auth/ForgotPassword';
-import ManagerDashboard from '../pages/Dashboard/ManagerDashboard';
-import MDDashboard from '../pages/Dashboard/MDDashboard';
-import VehicleList from '../pages/Vehicles/VehicleList';
-import GateEntryList from '../pages/GateEntry/GateEntryList';
-import GateEntryForm from '../pages/GateEntry/GateEntryForm';
-import JobCardList from '../pages/JobCards/JobCardList';
-import JobCardCreate from '../pages/JobCards/JobCardCreate';
-import ApprovalQueue from '../pages/Approvals/ApprovalQueue';
-import MechanicalQueue from '../pages/WorkQueue/MechanicalQueue';
-import BodyShopQueue from '../pages/WorkQueue/BodyShopQueue';
-import WaterWashQueue from '../pages/WorkQueue/WaterWashQueue';
-import UserList from '../pages/Users/UserList';
-import MasterSettings from '../pages/Masters/MasterSettings';
-import KioskDisplay from '../pages/Kiosk/KioskDisplay';
-
-// New Imports
-import VehicleHistory from '../pages/Vehicles/VehicleHistory';
-import CreateRequest from '../pages/AdditionalWork/CreateRequest';
-import ApprovalStatus from '../pages/AdditionalWork/ApprovalStatus';
-import ReadyForDelivery from '../pages/Delivery/ReadyForDelivery';
-import DeliveredVehicles from '../pages/Delivery/DeliveredVehicles';
-import OperationsDashboard from '../pages/Dashboard/OperationsDashboard';
-import ReportsPage from '../pages/Reports/ReportsPage';
-import KPIDashboard from '../pages/Dashboard/KPIDashboard';
-import AuditLogs from '../pages/Admin/AuditLogs';
-
 import useAuthStore from '../store/useAuthStore';
 
-// Role Groups
-const ADMIN_ROLES = [ROLES.SUPER_ADMIN, ROLES.MD, ROLES.MANAGER];
-const SHOP_ROLES = [ROLES.FLOOR_SUPERVISOR, ROLES.BODY_SHOP_SUPERVISOR, ROLES.WATER_WASH_TEAM];
-const CRM_ROLES = [ROLES.CRM_TEAM, ROLES.MANAGER, ROLES.SUPER_ADMIN];
+import Login from '../features/auth/pages/LoginPage';
+import ForgotPassword from '../pages/Auth/ForgotPassword';
+import AdminDashboardPage from '../features/roles/admin/pages/AdminDashboardPage';
+import UserManagementPage from '../features/roles/admin/pages/UserManagementPage';
+import RoleManagementPage from '../features/roles/admin/pages/RoleManagementPage';
+import ServiceItemMasterPage from '../features/roles/admin/pages/ServiceItemMasterPage';
+import SystemSettingsPage from '../features/roles/admin/pages/SystemSettingsPage';
+import AuditLogsPage from '../features/roles/admin/pages/AuditLogsPage';
+import GateDashboardPage from '../features/roles/gate-security/pages/GateDashboardPage';
+import GateEntryPage from '../features/roles/gate-security/pages/GateEntryPage';
+import VehicleExitPage from '../features/roles/gate-security/pages/VehicleExitPage';
+import PendingSyncPage from '../features/roles/gate-security/pages/PendingSyncPage';
+import CrmDashboardPage from '../features/roles/crm/pages/CrmDashboardPage';
+import CreateJobCardPage from '../features/roles/crm/pages/CreateJobCardPage';
+import PendingJobCardsPage from '../features/roles/crm/pages/PendingJobCardsPage';
+import ApprovalFollowupPage from '../features/roles/crm/pages/ApprovalFollowupPage';
+import DeliveryReadyPage from '../features/roles/crm/pages/DeliveryReadyPage';
+import FloorDashboardPage from '../features/roles/floor-supervisor/pages/FloorDashboardPage';
+import MechanicalQueuePage from '../features/roles/floor-supervisor/pages/MechanicalQueuePage';
+import AssignMechanicPage from '../features/roles/floor-supervisor/pages/AssignMechanicPage';
+import AdditionalWorkRequestPage from '../features/roles/floor-supervisor/pages/AdditionalWorkRequestPage';
+import MechanicWorkStatusPage from '../features/roles/floor-supervisor/pages/MechanicWorkStatusPage';
+import BodyShopDashboardPage from '../features/roles/body-shop-supervisor/pages/BodyShopDashboardPage';
+import BodyShopQueuePage from '../features/roles/body-shop-supervisor/pages/BodyShopQueuePage';
+import BodyShopJobDetailPage from '../features/roles/body-shop-supervisor/pages/BodyShopJobDetailPage';
+import WaterWashDashboardPage from '../features/roles/water-wash/pages/WaterWashDashboardPage';
+import WaterWashQueuePage from '../features/roles/water-wash/pages/WaterWashQueuePage';
+import WashJobDetailPage from '../features/roles/water-wash/pages/WashJobDetailPage';
+import ManagerDashboardPage from '../features/roles/manager/pages/ManagerDashboardPage';
+import OperationsOverviewPage from '../features/roles/manager/pages/OperationsOverviewPage';
+import DelayedJobsPage from '../features/roles/manager/pages/DelayedJobsPage';
+import PendingApprovalsPage from '../features/roles/manager/pages/PendingApprovalsPage';
+import ManagerReportsPage from '../features/roles/manager/pages/ReportsPage';
+import MdDashboardPage from '../features/roles/managing-director/pages/MdDashboardPage';
+import ExecutiveOverviewPage from '../features/roles/managing-director/pages/ExecutiveOverviewPage';
+import PerformanceReportPage from '../features/roles/managing-director/pages/PerformanceReportPage';
+import ServiceKpiPage from '../features/roles/managing-director/pages/ServiceKpiPage';
+import TvKioskPage from '../features/roles/kiosk/pages/TvKioskPage';
+import CustomerListPage from '../features/common/customers/pages/CustomerListPage';
+import CustomerDetailPage from '../features/common/customers/pages/CustomerDetailPage';
+import VehicleListPage from '../features/common/vehicles/pages/VehicleListPage';
+import VehicleDetailPage from '../features/common/vehicles/pages/VehicleDetailPage';
+import JobCardListPage from '../features/common/job-cards/pages/JobCardListPage';
+import JobCardDetailPage from '../features/common/job-cards/pages/JobCardDetailPage';
+import ServiceHistoryPage from '../features/common/service-history/pages/ServiceHistoryPage';
+import NotificationsPage from '../features/common/notifications/pages/NotificationsPage';
+import ProfilePage from '../features/common/profile/pages/ProfilePage';
+import SettingsPage from '../features/common/settings/pages/SettingsPage';
+import DeliveredVehicles from '../pages/Delivery/DeliveredVehicles';
 
-// Smart redirect based on role
+const roleHome = {
+  [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
+  [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
+  [ROLES.FLOOR_SUPERVISOR]: ROUTES.FLOOR_DASHBOARD,
+  [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_DASHBOARD,
+  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_DASHBOARD,
+  [ROLES.MANAGER]: ROUTES.MANAGER_DASHBOARD,
+  [ROLES.MD]: ROUTES.MD_DASHBOARD,
+  [ROLES.SUPER_ADMIN]: ROUTES.ADMIN_DASHBOARD,
+};
+
 function RootRedirect() {
   const { isAuthenticated, role } = useAuthStore();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-
-  if (ADMIN_ROLES.includes(role)) return <Navigate to="/dashboard" replace />;
-  if (role === ROLES.GATE_SECURITY) return <Navigate to="/gate-entry" replace />;
-  if (role === ROLES.CRM_TEAM) return <Navigate to="/job-cards" replace />;
-  if (role === ROLES.FLOOR_SUPERVISOR) return <Navigate to="/work-queue/mechanical" replace />;
-  if (role === ROLES.BODY_SHOP_SUPERVISOR) return <Navigate to="/work-queue/body-shop" replace />;
-  if (role === ROLES.WATER_WASH_TEAM) return <Navigate to="/work-queue/water-wash" replace />;
-
-  return <Navigate to="/dashboard" replace />;
+  if (!isAuthenticated) return <Navigate to={ROUTES.LOGIN} replace />;
+  return <Navigate to={roleHome[role] || ROUTES.MANAGER_DASHBOARD} replace />;
 }
 
 export const router = createBrowserRouter([
-  // Public / Auth Routes
   {
     element: <AuthLayout />,
     children: [
@@ -65,150 +83,132 @@ export const router = createBrowserRouter([
       { path: 'forgot-password', element: <ForgotPassword /> },
     ],
   },
-
-  // Kiosk / Display Route (No Auth Required for Kiosk to easily cast to TVs)
   {
     element: <KioskLayout />,
     children: [
-      { path: 'display', element: <KioskDisplay /> },
+      { path: 'kiosk/tv', element: <TvKioskPage /> },
+      { path: 'display', element: <Navigate to={ROUTES.KIOSK_TV} replace /> },
+      { path: 'kiosk', element: <Navigate to={ROUTES.KIOSK_TV} replace /> },
     ],
   },
-
-  // Protected App Routes
   {
     path: '/',
-    element: <ProtectedRoute />, // Base protection
+    element: <ProtectedRoute />,
     children: [
       { index: true, element: <RootRedirect /> },
       {
         element: <DashboardLayout />,
         children: [
-          // Dashboards
           {
-            element: <ProtectedRoute allowedRoles={[...ADMIN_ROLES, ROLES.FLOOR_SUPERVISOR]} />,
-            children: [
-              { path: 'dashboard', element: <ManagerDashboard /> },
-              { path: 'operations', element: <OperationsDashboard /> },
-            ]
-          },
-          {
-            element: <ProtectedRoute allowedRoles={[ROLES.MD, ROLES.SUPER_ADMIN]} />,
-            children: [
-              { path: 'executive-dashboard', element: <MDDashboard /> },
-              { path: 'kpi-dashboard', element: <KPIDashboard /> },
-            ]
-          },
-
-          // Vehicles
-          {
-            path: 'vehicles',
-            element: <ProtectedRoute allowedRoles={[...CRM_ROLES, ROLES.GATE_SECURITY, ...SHOP_ROLES]} />,
-            children: [
-              { index: true, element: <VehicleList /> },
-              { path: 'history', element: <VehicleHistory /> },
-              { path: ':id/history', element: <VehicleHistory /> },
-            ]
-          },
-
-          // Gate Entry
-          {
-            path: 'gate-entry',
-            element: <ProtectedRoute allowedRoles={[ROLES.GATE_SECURITY, ...ADMIN_ROLES]} />,
-            children: [
-              { index: true, element: <GateEntryList /> },
-              { path: 'new', element: <GateEntryForm /> },
-            ]
-          },
-
-          // Job Cards
-          {
-            path: 'job-cards',
-            element: <ProtectedRoute allowedRoles={[...CRM_ROLES, ...SHOP_ROLES]} />,
-            children: [
-              { index: true, element: <JobCardList /> },
-              { path: 'create', element: <JobCardCreate /> },
-            ]
-          },
-
-          // Approvals
-          {
-            path: 'approvals',
-            element: <ProtectedRoute allowedRoles={[...CRM_ROLES, ...SHOP_ROLES]} />,
-            children: [
-              { index: true, element: <ApprovalQueue /> },
-            ]
-          },
-
-          // Work Queues
-          {
-            path: 'work-queue',
-            children: [
-              {
-                path: 'mechanical',
-                element: <ProtectedRoute allowedRoles={[ROLES.FLOOR_SUPERVISOR, ...ADMIN_ROLES]} />,
-                children: [{ index: true, element: <MechanicalQueue /> }]
-              },
-              {
-                path: 'body-shop',
-                element: <ProtectedRoute allowedRoles={[ROLES.BODY_SHOP_SUPERVISOR, ...ADMIN_ROLES]} />,
-                children: [{ index: true, element: <BodyShopQueue /> }]
-              },
-              {
-                path: 'water-wash',
-                element: <ProtectedRoute allowedRoles={[ROLES.WATER_WASH_TEAM, ...ADMIN_ROLES]} />,
-                children: [{ index: true, element: <WaterWashQueue /> }]
-              },
-            ]
-          },
-
-          // Additional Work
-          {
-            path: 'additional-work',
-            element: <ProtectedRoute allowedRoles={[...SHOP_ROLES, ...CRM_ROLES, ...ADMIN_ROLES]} />,
-            children: [
-              { path: 'create', element: <CreateRequest /> },
-              { path: 'status', element: <ApprovalStatus /> },
-            ]
-          },
-
-          // Delivery
-          {
-            path: 'delivery',
-            element: <ProtectedRoute allowedRoles={[...CRM_ROLES, ...ADMIN_ROLES, ROLES.WATER_WASH_TEAM]} />,
-            children: [
-              { path: 'ready', element: <ReadyForDelivery /> },
-              { path: 'delivered', element: <DeliveredVehicles /> },
-            ]
-          },
-
-          // Settings & Admin
-          {
-            path: 'settings',
-            element: <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN, ROLES.MANAGER, ROLES.MD]} />,
-            children: [
-              { path: 'users', element: <UserList /> },
-              { path: 'masters', element: <MasterSettings /> },
-            ]
-          },
-
-          // Reports
-          {
-            path: 'reports',
-            element: <ProtectedRoute allowedRoles={ADMIN_ROLES} />,
-            children: [{ index: true, element: <ReportsPage /> }]
-          },
-
-          // Audit Logs
-          {
-            path: 'audit-logs',
             element: <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]} />,
-            children: [{ index: true, element: <AuditLogs /> }]
+            children: [
+              { path: 'admin/dashboard', element: <AdminDashboardPage /> },
+              { path: 'admin/users', element: <UserManagementPage /> },
+              { path: 'admin/roles', element: <RoleManagementPage /> },
+              { path: 'admin/service-items', element: <ServiceItemMasterPage /> },
+              { path: 'admin/settings', element: <SystemSettingsPage /> },
+              { path: 'admin/audit-logs', element: <AuditLogsPage /> },
+            ],
           },
+          {
+            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_GATE} />,
+            children: [
+              { path: 'gate/dashboard', element: <GateDashboardPage /> },
+              { path: 'gate/entry', element: <GateEntryPage /> },
+              { path: 'gate/exit', element: <VehicleExitPage /> },
+              { path: 'gate/pending-sync', element: <PendingSyncPage /> },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_CRM} />,
+            children: [
+              { path: 'crm/dashboard', element: <CrmDashboardPage /> },
+              { path: 'crm/job-cards/create', element: <CreateJobCardPage /> },
+              { path: 'crm/job-cards/pending', element: <PendingJobCardsPage /> },
+              { path: 'crm/approvals/followup', element: <ApprovalFollowupPage /> },
+              { path: 'crm/delivery-ready', element: <DeliveryReadyPage /> },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_FLOOR} />,
+            children: [
+              { path: 'floor/dashboard', element: <FloorDashboardPage /> },
+              { path: 'floor/mechanical-queue', element: <MechanicalQueuePage /> },
+              { path: 'floor/assign-mechanic', element: <AssignMechanicPage /> },
+              { path: 'floor/additional-work', element: <AdditionalWorkRequestPage /> },
+              { path: 'floor/work-status', element: <MechanicWorkStatusPage /> },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_BODY_SHOP} />,
+            children: [
+              { path: 'body-shop/dashboard', element: <BodyShopDashboardPage /> },
+              { path: 'body-shop/queue', element: <BodyShopQueuePage /> },
+              { path: 'body-shop/jobs/:id', element: <BodyShopJobDetailPage /> },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_WATER_WASH} />,
+            children: [
+              { path: 'water-wash/dashboard', element: <WaterWashDashboardPage /> },
+              { path: 'water-wash/queue', element: <WaterWashQueuePage /> },
+              { path: 'water-wash/jobs/:id', element: <WashJobDetailPage /> },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_MANAGEMENT} />,
+            children: [
+              { path: 'manager/dashboard', element: <ManagerDashboardPage /> },
+              { path: 'manager/operations', element: <OperationsOverviewPage /> },
+              { path: 'manager/delayed-jobs', element: <DelayedJobsPage /> },
+              { path: 'manager/pending-approvals', element: <PendingApprovalsPage /> },
+              { path: 'manager/reports', element: <ManagerReportsPage /> },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_EXECUTIVE} />,
+            children: [
+              { path: 'md/dashboard', element: <MdDashboardPage /> },
+              { path: 'md/executive-overview', element: <ExecutiveOverviewPage /> },
+              { path: 'md/performance-report', element: <PerformanceReportPage /> },
+              { path: 'md/service-kpi', element: <ServiceKpiPage /> },
+            ],
+          },
+          {
+            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_COMMON} />,
+            children: [
+              { path: 'customers', element: <CustomerListPage title="Customers" /> },
+              { path: 'customers/:id', element: <CustomerDetailPage title="Customer Detail" /> },
+              { path: 'vehicles', element: <VehicleListPage /> },
+              { path: 'vehicles/:id', element: <VehicleDetailPage /> },
+              { path: 'job-cards', element: <JobCardListPage /> },
+              { path: 'job-cards/create', element: <CreateJobCardPage /> },
+              { path: 'job-cards/:id', element: <JobCardDetailPage title="Job Card Detail" /> },
+              { path: 'service-history', element: <ServiceHistoryPage /> },
+              { path: 'notifications', element: <NotificationsPage title="Notifications" /> },
+              { path: 'profile', element: <ProfilePage title="Profile" /> },
+              { path: 'settings', element: <SettingsPage /> },
+            ],
+          },
+
+          { path: 'dashboard', element: <Navigate to={ROUTES.MANAGER_DASHBOARD} replace /> },
+          { path: 'operations', element: <Navigate to={ROUTES.MANAGER_OPERATIONS} replace /> },
+          { path: 'gate-entry', element: <Navigate to={ROUTES.GATE_DASHBOARD} replace /> },
+          { path: 'gate-entry/new', element: <Navigate to={ROUTES.GATE_ENTRY} replace /> },
+          { path: 'work-queue/mechanical', element: <Navigate to={ROUTES.FLOOR_MECHANICAL_QUEUE} replace /> },
+          { path: 'work-queue/body-shop', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
+          { path: 'work-queue/water-wash', element: <Navigate to={ROUTES.WATER_WASH_QUEUE} replace /> },
+          { path: 'approvals', element: <Navigate to={ROUTES.MANAGER_PENDING_APPROVALS} replace /> },
+          { path: 'reports', element: <Navigate to={ROUTES.MANAGER_REPORTS} replace /> },
+          { path: 'users', element: <Navigate to={ROUTES.ADMIN_USERS} replace /> },
+          { path: 'audit-logs', element: <Navigate to={ROUTES.ADMIN_AUDIT_LOGS} replace /> },
+          { path: 'kpi-dashboard', element: <Navigate to={ROUTES.MD_SERVICE_KPI} replace /> },
+          { path: 'executive-dashboard', element: <Navigate to={ROUTES.MD_EXECUTIVE_OVERVIEW} replace /> },
+          { path: 'delivery/ready', element: <Navigate to={ROUTES.CRM_DELIVERY_READY} replace /> },
+          { path: 'delivery/delivered', element: <DeliveredVehicles /> },
         ],
       },
     ],
   },
-
-  // Fallback
   { path: '*', element: <Navigate to="/" replace /> },
 ]);

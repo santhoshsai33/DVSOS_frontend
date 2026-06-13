@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFTextarea from '../../components/form/RHFTextarea';
 import { toastSuccess } from '../../notifications/toast';
+import { ROUTES } from '../../config/routes';
 
 export default function CreateRequest() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function CreateRequest() {
     // Simulate sending WhatsApp request
     await new Promise(r => setTimeout(r, 800));
     toastSuccess('Approval request sent to customer via WhatsApp');
-    navigate('/additional-work/status');
+    navigate(ROUTES.FLOOR_WORK_STATUS);
   };
 
   return (
@@ -44,7 +45,7 @@ export default function CreateRequest() {
             </div>
 
             <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
-              <Button variant="secondary" type="button" onClick={() => navigate('/work-queue/mechanical')}>Cancel</Button>
+              <Button variant="secondary" type="button" onClick={() => navigate(ROUTES.FLOOR_MECHANICAL_QUEUE)}>Cancel</Button>
               <Button variant="primary" type="submit" leftIcon={Send} isLoading={methods.formState.isSubmitting}>
                 Send WhatsApp Approval
               </Button>

@@ -147,7 +147,7 @@ export default function Sidebar() {
       {/* Footer */}
       <div className={styles.sidebarFooter}>
         {!sidebarCollapsed && (
-          <p className={styles.footerText}>© 2024 DVSOS</p>
+          <p className={styles.footerText}>2026 DVSOS</p>
         )}
       </div>
     </aside>

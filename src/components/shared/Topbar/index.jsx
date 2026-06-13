@@ -4,6 +4,7 @@ import { Bell, ChevronDown, LogOut, User, Settings, Menu, PanelLeftClose, PanelL
 import useAuthStore from '../../../store/useAuthStore';
 import useUIStore from '../../../store/useUIStore';
 import { ROLE_LABELS } from '../../../constants/roles';
+import { ROUTES } from '../../../config/routes';
 import { getInitials, avatarColor } from '../../../utils/helpers';
 import styles from './Topbar.module.css';
 
@@ -26,7 +27,7 @@ export default function Topbar() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate(ROUTES.LOGIN);
   };
 
   const markAllRead = () => {
@@ -37,12 +38,12 @@ export default function Topbar() {
     .split('/')
     .filter(Boolean)
     .map((s) => s.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()))
-    .join(' › ') || 'Dashboard';
+    .join(' / ') || 'Dashboard';
 
   return (
     <header className={styles.topbar}>
       <div className={styles.left}>
-        {/* Sidebar toggle — desktop */}
+        {/* Sidebar toggle */}
         <button
           className={[styles.iconBtn, styles.toggleBtn].join(' ')}
           onClick={toggleSidebar}
@@ -120,10 +121,10 @@ export default function Topbar() {
             <>
               <div className={styles.backdrop} onClick={() => setShowUser(false)} />
               <div className={styles.userDropdown}>
-                <button className={styles.userDropItem} onClick={() => { navigate('/settings'); setShowUser(false); }}>
+                <button className={styles.userDropItem} onClick={() => { navigate(ROUTES.PROFILE); setShowUser(false); }}>
                   <User size={15} /> Profile & Settings
                 </button>
-                <button className={styles.userDropItem} onClick={() => { navigate('/settings/password'); setShowUser(false); }}>
+                <button className={styles.userDropItem} onClick={() => { navigate(ROUTES.SETTINGS); setShowUser(false); }}>
                   <Settings size={15} /> Change Password
                 </button>
                 <div className={styles.userDivider} />

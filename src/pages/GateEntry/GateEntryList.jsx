@@ -9,6 +9,7 @@ import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
 import { formatDateTime } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
+import { ROUTES } from '../../config/routes';
 import styles from './GateEntry.module.css';
 
 // Mock data
@@ -56,7 +57,7 @@ export default function GateEntryList() {
         subtitle={`${filtered.length} entries today`}
         breadcrumbs={[{ label: 'Gate Entry' }]}
         actions={
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate('/gate-entry/new')}>
+          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.GATE_ENTRY)}>
             New Entry
           </Button>
         }

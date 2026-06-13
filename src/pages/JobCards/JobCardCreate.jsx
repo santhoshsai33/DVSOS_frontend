@@ -11,6 +11,7 @@ import RHFTextarea from '../../components/form/RHFTextarea';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { toastSuccess, toastError } from '../../notifications/toast';
+import { ROUTES } from '../../config/routes';
 import styles from './JobCards.module.css';
 import { useState } from 'react';
 
@@ -61,7 +62,7 @@ export default function JobCardCreate() {
       await new Promise((r) => setTimeout(r, 800));
       console.log('Job Card:', { ...data, services: selectedServices });
       toastSuccess('Job Card created successfully!');
-      navigate('/job-cards');
+      navigate(ROUTES.JOB_CARDS);
     } catch {
       toastError('Failed to create Job Card.');
     }
@@ -153,7 +154,7 @@ export default function JobCardCreate() {
               <Button variant="secondary" leftIcon={RotateCcw} onClick={() => { methods.reset(); setSelectedServices([]); }} type="button">
                 Reset
               </Button>
-              <Button variant="secondary" onClick={() => navigate('/job-cards')} type="button">
+              <Button variant="secondary" onClick={() => navigate(ROUTES.JOB_CARDS)} type="button">
                 Cancel
               </Button>
               <Button variant="primary" leftIcon={Save} type="submit" isLoading={methods.formState.isSubmitting}>
