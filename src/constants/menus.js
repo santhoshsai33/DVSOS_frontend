@@ -43,7 +43,6 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.CRM_TEAM]: [
     { label: 'CRM Dashboard', path: ROUTES.CRM_DASHBOARD, icon: LayoutDashboard },
-    { label: 'Create Job Card', path: ROUTES.CRM_CREATE_JOB_CARD, icon: Plus },
     { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
     { label: 'Pending Approvals', path: ROUTES.CRM_APPROVAL_FOLLOWUP, icon: Clock },
     { label: 'Delivery Ready', path: ROUTES.CRM_DELIVERY_READY, icon: Package },
