@@ -9,6 +9,7 @@ import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
 import { formatDateTime } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
+import { ROUTES } from '../../config/routes';
 import styles from './Vehicles.module.css';
 
 export default function VehicleList() {
@@ -45,10 +46,10 @@ export default function VehicleList() {
       header: 'Actions',
       render: (row) => (
         <div className="d-flex gap-2">
-          <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`/vehicles/${row.id}`); }}>
+          <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.VEHICLES}/${row.id}`); }}>
             View
           </Button>
-          <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`/vehicles/${row.id}/history`); }}>
+          <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.VEHICLES}/${row.id}`); }}>
             History
           </Button>
         </div>
@@ -86,7 +87,7 @@ export default function VehicleList() {
         subtitle={`${data?.total ?? 0} vehicles on record`}
         breadcrumbs={[{ label: 'Vehicles' }]}
         actions={
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate('/gate-entry/new')}>
+          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.GATE_ENTRY)}>
             New Entry
           </Button>
         }
@@ -137,7 +138,7 @@ export default function VehicleList() {
               </thead>
               <tbody>
                 {paginatedData.map((row) => (
-                  <tr key={row.id} onClick={() => navigate(`/vehicles/${row.id}`)}>
+                  <tr key={row.id} onClick={() => navigate(`${ROUTES.VEHICLES}/${row.id}`)}>
                     <td className="align-middle">
                       <code className={styles.vehicleNum}>{row.vehicleNumber}</code>
                     </td>
@@ -150,10 +151,10 @@ export default function VehicleList() {
                     <td className="align-middle">{formatDateTime(row.entryTime)}</td>
                     <td className="align-middle">
                       <div className="d-flex gap-2">
-                        <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`/vehicles/${row.id}`); }}>
+                        <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.VEHICLES}/${row.id}`); }}>
                           View
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`/vehicles/${row.id}/history`); }}>
+                        <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.VEHICLES}/${row.id}`); }}>
                           History
                         </Button>
                       </div>

@@ -12,13 +12,30 @@
 }
 
 .table thead th {
-  background: #EAECEF; /* Matches the light gray from the image */
-  color: #111827; /* Dark bold text */
+  background: #EEF0EA;
+  color: var(--color-text-primary);
   font-weight: 700;
   padding: 1rem 1.25rem;
-  border-bottom: none; /* No border under header in image */
+  border-bottom: none;
   white-space: nowrap;
   user-select: none;
+}
+
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: 0;
+}
+
+.sortBtn:disabled {
+  cursor: default;
 }
 
 .table tbody td {
@@ -97,14 +114,14 @@
 }
 
 .pageBtnActive {
-  background: #F97316; /* Orange color from image */
-  border-color: #F97316;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
   color: white;
 }
 
 .pageBtnActive:hover:not(:disabled) {
-  background: #EA580C;
-  border-color: #EA580C;
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }
 
 .pageBtnIcon {

@@ -5,7 +5,7 @@ import styles from './AuthLayout.module.css';
 export default function AuthLayout() {
   return (
     <div className={styles.container}>
-      {/* Left Panel — Branding */}
+      {/* Left Panel */}
       <div className={styles.brandPanel}>
         <div className={styles.brandContent}>
           <div className={styles.logoMark}>
@@ -34,12 +34,12 @@ export default function AuthLayout() {
         </div>
       </div>
 
-      {/* Right Panel — Auth Form */}
+      {/* Right Panel */}
       <div className={styles.formPanel}>
         <div className={styles.formCard}>
           <Outlet />
         </div>
-        <p className={styles.copyright}>© 2024 DVSOS. All rights reserved.</p>
+        <p className={styles.copyright}>2026 DVSOS. All rights reserved.</p>
       </div>
     </div>
   );

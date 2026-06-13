@@ -9,7 +9,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// eslint-disable-next-line react/prop-types
 export default function Providers({ children }) {
   return (
     <QueryClientProvider client={queryClient}>

@@ -10,6 +10,7 @@ import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
+import { ROUTES } from '../../config/routes';
 import styles from './JobCards.module.css';
 
 const PRIORITY_COLORS = {
@@ -59,10 +60,10 @@ export default function JobCardList() {
       header: 'Actions',
       render: (row) => (
         <div className="d-flex gap-1">
-          <Button size="sm" variant="ghost" leftIcon={Eye} onClick={(e) => { e.stopPropagation(); navigate(`/job-cards/${row.id}`); }}>
+          <Button size="sm" variant="ghost" leftIcon={Eye} onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.JOB_CARDS}/${row.id}`); }}>
             View
           </Button>
-          <Button size="sm" variant="ghost" leftIcon={Edit} onClick={(e) => { e.stopPropagation(); navigate(`/job-cards/${row.id}/edit`); }}>
+          <Button size="sm" variant="ghost" leftIcon={Edit} onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.JOB_CARDS}/${row.id}`); }}>
             Edit
           </Button>
         </div>
@@ -79,7 +80,7 @@ export default function JobCardList() {
         subtitle={`${data?.total ?? 0} total job cards`}
         breadcrumbs={[{ label: 'Job Cards' }]}
         actions={
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate('/job-cards/create')}>
+          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
             Create Job Card
           </Button>
         }
@@ -108,7 +109,7 @@ export default function JobCardList() {
           columns={columns}
           data={tableData}
           isLoading={isLoading}
-          onRowClick={(row) => navigate(`/job-cards/${row.id}`)}
+          onRowClick={(row) => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
           emptyMessage="No job cards found"
         />
       </div>

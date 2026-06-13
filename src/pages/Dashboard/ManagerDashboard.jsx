@@ -17,9 +17,10 @@ import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { formatCurrency, formatDateTime } from '../../utils/formatters';
 import useAuthStore from '../../store/useAuthStore';
+import { ROUTES } from '../../config/routes';
 import styles from './Dashboard.module.css';
 
-const PIE_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+const PIE_COLORS = ['#0F766E', '#B7791F', '#2563EB', '#B42318', '#6B7280'];
 
 export default function ManagerDashboard() {
   const { data, isLoading, refetch, isFetching } = useManagerDashboard();
@@ -65,9 +66,9 @@ export default function ManagerDashboard() {
   ];
 
   const queueCards = [
-    { label: 'Mechanical', icon: Wrench, data: data?.queueSummary?.mechanical, path: '/work-queue/mechanical', color: '#3B82F6' },
-    { label: 'Body Shop', icon: Paintbrush, data: data?.queueSummary?.bodyShop, path: '/work-queue/body-shop', color: '#F59E0B' },
-    { label: 'Water Wash', icon: Droplets, data: data?.queueSummary?.waterWash, path: '/work-queue/water-wash', color: '#10B981' },
+    { label: 'Mechanical', icon: Wrench, data: data?.queueSummary?.mechanical, path: ROUTES.FLOOR_MECHANICAL_QUEUE, color: '#0F766E' },
+    { label: 'Body Shop', icon: Paintbrush, data: data?.queueSummary?.bodyShop, path: ROUTES.BODY_SHOP_QUEUE, color: '#B7791F' },
+    { label: 'Water Wash', icon: Droplets, data: data?.queueSummary?.waterWash, path: ROUTES.WATER_WASH_QUEUE, color: '#2563EB' },
   ];
 
   const jobColumns = [
@@ -90,7 +91,7 @@ export default function ManagerDashboard() {
             <Button variant="secondary" size="sm" leftIcon={RefreshCw} isLoading={isFetching} onClick={() => refetch()}>
               Refresh
             </Button>
-            <Button variant="primary" size="sm" leftIcon={Plus} onClick={() => navigate('/gate-entry/new')}>
+            <Button variant="primary" size="sm" leftIcon={Plus} onClick={() => navigate(ROUTES.GATE_ENTRY)}>
               New Entry
             </Button>
           </div>
@@ -137,16 +138,16 @@ export default function ManagerDashboard() {
               <AreaChart data={data?.weeklyRevenue || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#0F766E" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#0F766E" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
                 <Tooltip formatter={(v, name) => [name === 'revenue' ? formatCurrency(v) : v, name === 'revenue' ? 'Revenue' : 'Jobs']} contentStyle={{ borderRadius: '10px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
-                <Area type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2.5} fill="url(#revenueGrad)" dot={false} />
-                <Area type="monotone" dataKey="jobs" stroke="#10B981" strokeWidth={2} fill="none" dot={false} strokeDasharray="4 2" />
+                <Area type="monotone" dataKey="revenue" stroke="#0F766E" strokeWidth={2.5} fill="url(#revenueGrad)" dot={false} />
+                <Area type="monotone" dataKey="jobs" stroke="#B7791F" strokeWidth={2} fill="none" dot={false} strokeDasharray="4 2" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -196,7 +197,7 @@ export default function ManagerDashboard() {
                 </div>
                 <div className={styles.queueStats}>
                   <div className={styles.queueStat}>
-                    <span className={styles.queueStatNum} style={{ color: '#F59E0B' }}>{q.data?.pending ?? 0}</span>
+                    <span className={styles.queueStatNum} style={{ color: '#B7791F' }}>{q.data?.pending ?? 0}</span>
                     <span className={styles.queueStatLabel}>Pending</span>
                   </div>
                   <div className={styles.queueStat}>
@@ -204,7 +205,7 @@ export default function ManagerDashboard() {
                     <span className={styles.queueStatLabel}>In Progress</span>
                   </div>
                   <div className={styles.queueStat}>
-                    <span className={styles.queueStatNum} style={{ color: '#10B981' }}>{q.data?.completed ?? 0}</span>
+                    <span className={styles.queueStatNum} style={{ color: '#0F766E' }}>{q.data?.completed ?? 0}</span>
                     <span className={styles.queueStatLabel}>Done</span>
                   </div>
                 </div>
@@ -218,12 +219,12 @@ export default function ManagerDashboard() {
       <div className="premium-card d-flex flex-column">
         <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
           <h5 className="mb-0 fs-6 fw-bold">Active Jobs</h5>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/job-cards')}>View All →</Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate(ROUTES.JOB_CARDS)}>View All</Button>
         </div>
         <DataTable
           columns={jobColumns}
           data={recentJobs}
-          onRowClick={(row) => navigate(`/job-cards/${row.id}`)}
+          onRowClick={(row) => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
           emptyMessage="No active jobs found"
         />
       </div>

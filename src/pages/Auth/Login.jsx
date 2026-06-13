@@ -7,6 +7,7 @@ import { authSchema } from '../../validations/authSchema';
 import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
 import { ROLES } from '../../constants/roles';
+import { ROUTES } from '../../config/routes';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import styles from './Auth.module.css';
 
@@ -33,14 +34,14 @@ const ROLE_EMAIL_MAP = {
 };
 
 const ROLE_REDIRECTS = {
-  [ROLES.GATE_SECURITY]: '/gate-entry',
-  [ROLES.CRM_TEAM]: '/job-cards',
-  [ROLES.FLOOR_SUPERVISOR]: '/work-queue/mechanical',
-  [ROLES.BODY_SHOP_SUPERVISOR]: '/work-queue/body-shop',
-  [ROLES.WATER_WASH_TEAM]: '/work-queue/water-wash',
-  [ROLES.MANAGER]: '/dashboard',
-  [ROLES.MD]: '/dashboard',
-  [ROLES.SUPER_ADMIN]: '/dashboard',
+  [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
+  [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
+  [ROLES.FLOOR_SUPERVISOR]: ROUTES.FLOOR_DASHBOARD,
+  [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_DASHBOARD,
+  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_DASHBOARD,
+  [ROLES.MANAGER]: ROUTES.MANAGER_DASHBOARD,
+  [ROLES.MD]: ROUTES.MD_DASHBOARD,
+  [ROLES.SUPER_ADMIN]: ROUTES.ADMIN_DASHBOARD,
 };
 
 export default function Login() {
@@ -65,7 +66,7 @@ export default function Login() {
       };
       login(mockUser, role, mockToken);
       toastSuccess(`Welcome back, ${mockUser.name}!`);
-      navigate(ROLE_REDIRECTS[role] || '/dashboard');
+      navigate(ROLE_REDIRECTS[role] || ROUTES.MANAGER_DASHBOARD);
     } catch {
       toastError('Login failed. Please check your credentials.');
     }

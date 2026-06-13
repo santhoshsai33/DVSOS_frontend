@@ -11,6 +11,7 @@ import RHFTextarea from '../../components/form/RHFTextarea';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { toastSuccess, toastError } from '../../notifications/toast';
+import { ROUTES } from '../../config/routes';
 import styles from './GateEntry.module.css';
 
 export default function GateEntryForm() {
@@ -37,7 +38,7 @@ export default function GateEntryForm() {
       await new Promise((r) => setTimeout(r, 800));
       console.log('Gate Entry:', data);
       toastSuccess(`Vehicle ${data.vehicleNumber} registered successfully!`);
-      navigate('/gate-entry');
+      navigate(ROUTES.GATE_DASHBOARD);
     } catch {
       toastError('Failed to register vehicle. Please try again.');
     }
@@ -49,7 +50,7 @@ export default function GateEntryForm() {
         title="New Vehicle Entry"
         subtitle="Register a new vehicle at the gate"
         breadcrumbs={[
-          { label: 'Gate Entry', path: '/gate-entry' },
+          { label: 'Gate Entry', path: ROUTES.GATE_DASHBOARD },
           { label: 'New Entry' },
         ]}
       />
@@ -130,7 +131,7 @@ export default function GateEntryForm() {
               <Button variant="secondary" leftIcon={RotateCcw} onClick={() => methods.reset()} type="button">
                 Reset
               </Button>
-              <Button variant="secondary" onClick={() => navigate('/gate-entry')} type="button">
+              <Button variant="secondary" onClick={() => navigate(ROUTES.GATE_DASHBOARD)} type="button">
                 Cancel
               </Button>
               <Button
