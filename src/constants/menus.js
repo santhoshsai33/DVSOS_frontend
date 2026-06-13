@@ -52,15 +52,17 @@ export const SIDEBAR_MENUS = {
   ],
 
   [ROLES.BODY_SHOP_SUPERVISOR]: [
-    { label: 'Body Shop Dashboard', path: ROUTES.BODY_SHOP_DASHBOARD, icon: LayoutDashboard },
     { label: 'Body Shop Queue', path: ROUTES.BODY_SHOP_QUEUE, icon: Paintbrush },
-    ...commonLinks,
+    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
+    { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
+    { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
   ],
 
   [ROLES.WATER_WASH_TEAM]: [
-    { label: 'Water Wash Dashboard', path: ROUTES.WATER_WASH_DASHBOARD, icon: LayoutDashboard },
     { label: 'Water Wash Queue', path: ROUTES.WATER_WASH_QUEUE, icon: Droplets },
-    { label: 'Delivery Ready', path: ROUTES.CRM_DELIVERY_READY, icon: Truck },
+    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
+    { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
+    { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
   ],
 
   [ROLES.MANAGER]: [

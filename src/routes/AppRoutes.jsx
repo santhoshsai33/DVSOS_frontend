@@ -58,8 +58,14 @@ export default function AppRoutes() {
         <Route path="/job-cards" element={<JobCardList />} />
         <Route path="/job-cards/create" element={<JobCardCreate />} />
         <Route path="/work-queue/mechanical" element={<MechanicalQueue />} />
+        
+        {/* Body Shop & Water Wash Routes */}
+        <Route path="/body-shop/dashboard" element={<Navigate to="/work-queue/body-shop" replace />} />
         <Route path="/work-queue/body-shop" element={<BodyShopQueue />} />
+        
+        <Route path="/water-wash/dashboard" element={<Navigate to="/work-queue/water-wash" replace />} />
         <Route path="/work-queue/water-wash" element={<WaterWashQueue />} />
+        
         <Route path="/approvals" element={<ApprovalQueue />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/users" element={<UserList />} />

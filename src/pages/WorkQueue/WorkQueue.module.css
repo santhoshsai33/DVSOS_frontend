@@ -111,6 +111,11 @@
   box-shadow: var(--shadow-md);
 }
 
+.cardOverdue {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: linear-gradient(to bottom, var(--color-bg-surface), rgba(239, 68, 68, 0.02));
+}
+
 .cardHeader {
   display: flex;
   align-items: center;
