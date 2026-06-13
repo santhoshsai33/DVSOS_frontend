@@ -12,7 +12,7 @@ const MOCK_LOGS = [
 export default function AuditLogs() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
+
   const totalPages = Math.ceil(MOCK_LOGS.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = MOCK_LOGS.slice(startIndex, startIndex + itemsPerPage);
@@ -37,7 +37,7 @@ export default function AuditLogs() {
         subtitle="System-wide action and security logs"
         breadcrumbs={[{ label: 'Settings' }, { label: 'Audit Logs' }]}
       />
-      <div className="premium-card d-flex flex-column" style={{ minHeight: '300px' }}>
+      <div className="premium-card d-flex flex-column">
         <div className="table-responsive flex-grow-1">
           {MOCK_LOGS.length === 0 ? (
             <div className="p-5 text-center text-muted">No audit logs found</div>
@@ -66,7 +66,7 @@ export default function AuditLogs() {
             </Table>
           )}
         </div>
-        
+
         {totalPages > 1 && (
           <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
             <small className="text-muted">

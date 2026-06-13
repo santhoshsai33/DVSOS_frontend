@@ -63,7 +63,7 @@ export default function UserList() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
+
   const tableData = data?.data || [];
   const totalPages = Math.ceil(tableData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -114,7 +114,7 @@ export default function UserList() {
         </select>
       </div>
 
-      <div className="premium-card d-flex flex-column" style={{ minHeight: '300px' }}>
+      <div className="premium-card d-flex flex-column" >
         <div className="table-responsive flex-grow-1">
           {isLoading ? (
             <div className="p-5 text-center text-muted">Loading data...</div>
@@ -167,7 +167,7 @@ export default function UserList() {
             </Table>
           )}
         </div>
-        
+
         {!isLoading && totalPages > 1 && (
           <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
             <small className="text-muted">

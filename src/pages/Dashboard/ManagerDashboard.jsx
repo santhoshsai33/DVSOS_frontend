@@ -78,7 +78,7 @@ export default function ManagerDashboard() {
   ];
 
   const itemsPerPage = 10;
-  
+
   const recentJobs = data?.recentJobs || [];
   const totalPages = Math.ceil(recentJobs.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -232,7 +232,7 @@ export default function ManagerDashboard() {
       </Row>
 
       {/* Recent Jobs Table */}
-      <div className="premium-card d-flex flex-column" style={{ minHeight: '300px' }}>
+      <div className="premium-card d-flex flex-column">
         <div className="p-3 border-bottom d-flex justify-content-between align-items-center">
           <h5 className="mb-0 fs-6 fw-bold">Active Jobs</h5>
           <Button variant="ghost" size="sm" onClick={() => navigate('/job-cards')}>View All →</Button>
@@ -265,7 +265,7 @@ export default function ManagerDashboard() {
             </Table>
           )}
         </div>
-        
+
         {totalPages > 1 && (
           <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
             <small className="text-muted">

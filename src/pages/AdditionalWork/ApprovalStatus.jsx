@@ -15,7 +15,7 @@ const MOCK_APPROVALS = [
 export default function ApprovalStatus() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
+
   const totalPages = Math.ceil(MOCK_APPROVALS.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = MOCK_APPROVALS.slice(startIndex, startIndex + itemsPerPage);
@@ -46,29 +46,29 @@ export default function ApprovalStatus() {
 
       <div className="d-flex gap-3 mb-4">
         <div className="flex-fill premium-card p-3 d-flex align-items-center gap-3">
-           <Clock size={24} className="text-warning" />
-           <div>
-             <div className="text-muted small fw-bold text-uppercase">Pending Reply</div>
-             <div className="fs-4 fw-bolder text-warning">1</div>
-           </div>
+          <Clock size={24} className="text-warning" />
+          <div>
+            <div className="text-muted small fw-bold text-uppercase">Pending Reply</div>
+            <div className="fs-4 fw-bolder text-warning">1</div>
+          </div>
         </div>
         <div className="flex-fill premium-card p-3 d-flex align-items-center gap-3">
-           <CheckCircle2 size={24} className="text-success" />
-           <div>
-             <div className="text-muted small fw-bold text-uppercase">Approved</div>
-             <div className="fs-4 fw-bolder text-success">1</div>
-           </div>
+          <CheckCircle2 size={24} className="text-success" />
+          <div>
+            <div className="text-muted small fw-bold text-uppercase">Approved</div>
+            <div className="fs-4 fw-bolder text-success">1</div>
+          </div>
         </div>
         <div className="flex-fill premium-card p-3 d-flex align-items-center gap-3">
-           <XCircle size={24} className="text-danger" />
-           <div>
-             <div className="text-muted small fw-bold text-uppercase">Rejected</div>
-             <div className="fs-4 fw-bolder text-danger">1</div>
-           </div>
+          <XCircle size={24} className="text-danger" />
+          <div>
+            <div className="text-muted small fw-bold text-uppercase">Rejected</div>
+            <div className="fs-4 fw-bolder text-danger">1</div>
+          </div>
         </div>
       </div>
 
-      <div className="premium-card d-flex flex-column" style={{ minHeight: '300px' }}>
+      <div className="premium-card d-flex flex-column">
         <div className="table-responsive flex-grow-1">
           {MOCK_APPROVALS.length === 0 ? (
             <div className="p-5 text-center text-muted">No approvals found</div>
@@ -99,7 +99,7 @@ export default function ApprovalStatus() {
             </Table>
           )}
         </div>
-        
+
         {totalPages > 1 && (
           <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
             <small className="text-muted">

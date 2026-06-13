@@ -73,7 +73,7 @@ export default function DataTable({
   }
 
   return (
-    <div className="bg-white rounded border overflow-hidden d-flex flex-column" style={{ minHeight: '300px' }}>
+    <div className="bg-white rounded border overflow-hidden d-flex flex-column" >
       <div className="table-responsive flex-grow-1">
         <Table striped={striped} hover size={compact ? 'sm' : undefined} className="mb-0" style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
           <thead className="table-light">
@@ -104,8 +104,8 @@ export default function DataTable({
                     {col.render
                       ? col.render(row, ri)
                       : col.accessor
-                      ? (row[col.accessor] ?? '—')
-                      : '—'}
+                        ? (row[col.accessor] ?? '—')
+                        : '—'}
                   </td>
                 ))}
               </tr>
@@ -113,7 +113,7 @@ export default function DataTable({
           </tbody>
         </Table>
       </div>
-      
+
       {totalPages > 1 && (
         <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
           <small className="text-muted">
