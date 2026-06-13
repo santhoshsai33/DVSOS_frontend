@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Table, Pagination } from 'react-bootstrap';
+import DataTable from '../../components/common/DataTable';
 import { CheckCircle2, Clock, XCircle, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -13,25 +13,22 @@ const MOCK_APPROVALS = [
 ];
 
 export default function ApprovalStatus() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const totalPages = Math.ceil(MOCK_APPROVALS.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = MOCK_APPROVALS.slice(startIndex, startIndex + itemsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
-
-  let paginationItems = [];
-  for (let number = 1; number <= totalPages; number++) {
-    paginationItems.push(
-      <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
-        {number}
-      </Pagination.Item>
-    );
-  }
+  const columns = [
+    {
+      header: 'ID',
+      accessor: 'id',
+      render: (row) => <strong style={{ color: 'var(--color-accent)' }}>{row.id}</strong>,
+    },
+    {
+      header: 'Vehicle',
+      accessor: 'vehicle',
+      render: (row) => <code style={{ background: 'var(--color-bg-base)', padding: '2px 6px', border: '1px solid var(--color-border)', borderRadius: '4px' }}>{row.vehicle}</code>,
+    },
+    { header: 'Description', accessor: 'desc' },
+    { header: 'Est. Cost', render: (row) => `₹${row.cost}` },
+    { header: 'Requested At', render: (row) => formatDateTime(row.requestedAt) },
+    { header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+  ];
 
   return (
     <div>
@@ -69,49 +66,11 @@ export default function ApprovalStatus() {
       </div>
 
       <div className="premium-card d-flex flex-column">
-        <div className="table-responsive flex-grow-1">
-          {MOCK_APPROVALS.length === 0 ? (
-            <div className="p-5 text-center text-muted">No approvals found</div>
-          ) : (
-            <Table striped hover className="mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Vehicle</th>
-                  <th>Description</th>
-                  <th>Est. Cost</th>
-                  <th>Requested At</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row) => (
-                  <tr key={row.id}>
-                    <td className="align-middle"><strong style={{ color: 'var(--color-accent)' }}>{row.id}</strong></td>
-                    <td className="align-middle"><code style={{ background: 'var(--color-bg-base)', padding: '2px 6px', border: '1px solid var(--color-border)', borderRadius: '4px' }}>{row.vehicle}</code></td>
-                    <td className="align-middle">{row.desc}</td>
-                    <td className="align-middle">₹{row.cost}</td>
-                    <td className="align-middle">{formatDateTime(row.requestedAt)}</td>
-                    <td className="align-middle"><StatusBadge status={row.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </div>
-
-        {totalPages > 1 && (
-          <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
-            <small className="text-muted">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, MOCK_APPROVALS.length)} of {MOCK_APPROVALS.length} entries
-            </small>
-            <Pagination className="mb-0" size="sm">
-              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-              {paginationItems}
-              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-            </Pagination>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={MOCK_APPROVALS}
+          emptyMessage="No approvals found"
+        />
       </div>
     </div>
   );

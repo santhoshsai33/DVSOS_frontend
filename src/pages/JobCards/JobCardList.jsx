@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Pagination } from 'react-bootstrap';
+import DataTable from '../../components/common/DataTable';
 import { Plus, Eye, Edit } from 'lucide-react';
 import { useJobCards } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -69,26 +70,7 @@ export default function JobCardList() {
     },
   ];
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
   const tableData = data?.data || [];
-  const totalPages = Math.ceil(tableData.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = tableData.slice(startIndex, startIndex + itemsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
-
-  let paginationItems = [];
-  for (let number = 1; number <= totalPages; number++) {
-    paginationItems.push(
-      <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
-        {number}
-      </Pagination.Item>
-    );
-  }
 
   return (
     <div>
@@ -122,72 +104,13 @@ export default function JobCardList() {
       </div>
 
       <div className="premium-card d-flex flex-column">
-        <div className="table-responsive flex-grow-1">
-          {isLoading ? (
-            <div className="p-5 text-center text-muted">Loading data...</div>
-          ) : tableData.length === 0 ? (
-            <div className="p-5 text-center text-muted">No job cards found</div>
-          ) : (
-            <Table striped hover className="mb-0" style={{ cursor: 'pointer' }}>
-              <thead className="table-light">
-                <tr>
-                  <th>Job Card #</th>
-                  <th>Vehicle</th>
-                  <th>Owner</th>
-                  <th>Service Type</th>
-                  <th>Priority</th>
-                  <th>Status</th>
-                  <th>Technician</th>
-                  <th>Est. Cost</th>
-                  <th>Created</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row) => (
-                  <tr key={row.id} onClick={() => navigate(`/job-cards/${row.id}`)}>
-                    <td className="align-middle"><span className={styles.jobId}>#{row.id}</span></td>
-                    <td className="align-middle"><code className={styles.vehicleNum}>{row.vehicleNumber}</code></td>
-                    <td className="align-middle">{row.ownerName}</td>
-                    <td className="align-middle">{row.serviceType}</td>
-                    <td className="align-middle">
-                      <span style={{ color: PRIORITY_COLORS[row.priority || 'NORMAL'], fontWeight: 600, fontSize: '0.8rem' }}>
-                        ● {row.priority || 'NORMAL'}
-                      </span>
-                    </td>
-                    <td className="align-middle"><StatusBadge status={row.status} /></td>
-                    <td className="align-middle">{row.technician || <span className="text-muted">Unassigned</span>}</td>
-                    <td className="align-middle">{formatCurrency(row.estimatedCost)}</td>
-                    <td className="align-middle">{formatDateTime(row.createdAt)}</td>
-                    <td className="align-middle">
-                      <div className="d-flex gap-1">
-                        <Button size="sm" variant="ghost" leftIcon={Eye} onClick={(e) => { e.stopPropagation(); navigate(`/job-cards/${row.id}`); }}>
-                          View
-                        </Button>
-                        <Button size="sm" variant="ghost" leftIcon={Edit} onClick={(e) => { e.stopPropagation(); navigate(`/job-cards/${row.id}/edit`); }}>
-                          Edit
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </div>
-
-        {!isLoading && totalPages > 1 && (
-          <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
-            <small className="text-muted">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, tableData.length)} of {tableData.length} entries
-            </small>
-            <Pagination className="mb-0" size="sm">
-              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-              {paginationItems}
-              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-            </Pagination>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={tableData}
+          isLoading={isLoading}
+          onRowClick={(row) => navigate(`/job-cards/${row.id}`)}
+          emptyMessage="No job cards found"
+        />
       </div>
     </div>
   );

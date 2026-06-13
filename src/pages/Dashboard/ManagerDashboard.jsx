@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Row, Col, Table, Pagination } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
+import DataTable from '../../components/common/DataTable';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
@@ -77,25 +78,7 @@ export default function ManagerDashboard() {
     { header: 'Time in Stage', accessor: 'timeInStage' },
   ];
 
-  const itemsPerPage = 10;
-
   const recentJobs = data?.recentJobs || [];
-  const totalPages = Math.ceil(recentJobs.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = recentJobs.slice(startIndex, startIndex + itemsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
-
-  let paginationItems = [];
-  for (let number = 1; number <= totalPages; number++) {
-    paginationItems.push(
-      <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
-        {number}
-      </Pagination.Item>
-    );
-  }
 
   return (
     <div className={styles.page}>
@@ -237,47 +220,12 @@ export default function ManagerDashboard() {
           <h5 className="mb-0 fs-6 fw-bold">Active Jobs</h5>
           <Button variant="ghost" size="sm" onClick={() => navigate('/job-cards')}>View All →</Button>
         </div>
-        <div className="table-responsive flex-grow-1">
-          {recentJobs.length === 0 ? (
-            <div className="p-5 text-center text-muted">No active jobs found</div>
-          ) : (
-            <Table striped hover className="mb-0" style={{ cursor: 'pointer' }}>
-              <thead className="table-light">
-                <tr>
-                  <th>Vehicle No</th>
-                  <th>Customer</th>
-                  <th>Stage</th>
-                  <th>Status</th>
-                  <th>Time in Stage</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row) => (
-                  <tr key={row.id} onClick={() => navigate(`/job-cards/${row.id}`)}>
-                    <td className="align-middle"><strong style={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>{row.vehicleNo}</strong></td>
-                    <td className="align-middle">{row.customer}</td>
-                    <td className="align-middle">{row.stage}</td>
-                    <td className="align-middle"><StatusBadge status={row.status} /></td>
-                    <td className="align-middle">{row.timeInStage}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </div>
-
-        {totalPages > 1 && (
-          <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
-            <small className="text-muted">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, recentJobs.length)} of {recentJobs.length} entries
-            </small>
-            <Pagination className="mb-0" size="sm">
-              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-              {paginationItems}
-              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-            </Pagination>
-          </div>
-        )}
+        <DataTable
+          columns={jobColumns}
+          data={recentJobs}
+          onRowClick={(row) => navigate(`/job-cards/${row.id}`)}
+          emptyMessage="No active jobs found"
+        />
       </div>
     </div>
   );

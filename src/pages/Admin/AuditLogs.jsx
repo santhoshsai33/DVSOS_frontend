@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Table, Pagination } from 'react-bootstrap';
+import DataTable from '../../components/common/DataTable';
 import { ShieldCheck } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import { formatDateTime } from '../../utils/formatters';
@@ -10,25 +10,13 @@ const MOCK_LOGS = [
 ];
 
 export default function AuditLogs() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const totalPages = Math.ceil(MOCK_LOGS.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = MOCK_LOGS.slice(startIndex, startIndex + itemsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
-
-  let paginationItems = [];
-  for (let number = 1; number <= totalPages; number++) {
-    paginationItems.push(
-      <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
-        {number}
-      </Pagination.Item>
-    );
-  }
+  const columns = [
+    { header: 'Timestamp', render: (row) => formatDateTime(row.timestamp) },
+    { header: 'User', render: (row) => <strong>{row.user}</strong> },
+    { header: 'Action', accessor: 'action' },
+    { header: 'Entity', accessor: 'entity' },
+    { header: 'Details', accessor: 'details' },
+  ];
 
   return (
     <div>
@@ -38,47 +26,11 @@ export default function AuditLogs() {
         breadcrumbs={[{ label: 'Settings' }, { label: 'Audit Logs' }]}
       />
       <div className="premium-card d-flex flex-column">
-        <div className="table-responsive flex-grow-1">
-          {MOCK_LOGS.length === 0 ? (
-            <div className="p-5 text-center text-muted">No audit logs found</div>
-          ) : (
-            <Table striped hover className="mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>Timestamp</th>
-                  <th>User</th>
-                  <th>Action</th>
-                  <th>Entity</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row) => (
-                  <tr key={row.id}>
-                    <td className="align-middle">{formatDateTime(row.timestamp)}</td>
-                    <td className="align-middle"><strong>{row.user}</strong></td>
-                    <td className="align-middle">{row.action}</td>
-                    <td className="align-middle">{row.entity}</td>
-                    <td className="align-middle">{row.details}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </div>
-
-        {totalPages > 1 && (
-          <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
-            <small className="text-muted">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, MOCK_LOGS.length)} of {MOCK_LOGS.length} entries
-            </small>
-            <Pagination className="mb-0" size="sm">
-              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-              {paginationItems}
-              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-            </Pagination>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={MOCK_LOGS}
+          emptyMessage="No audit logs found"
+        />
       </div>
     </div>
   );

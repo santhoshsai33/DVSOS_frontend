@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Pagination } from 'react-bootstrap';
+import DataTable from '../../components/common/DataTable';
 import { Plus, Calendar } from 'lucide-react';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
@@ -46,25 +47,7 @@ export default function GateEntryList() {
     { header: 'Entry By', accessor: 'entryBy' },
   ];
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filtered.slice(startIndex, startIndex + itemsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
-
-  let paginationItems = [];
-  for (let number = 1; number <= totalPages; number++) {
-    paginationItems.push(
-      <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
-        {number}
-      </Pagination.Item>
-    );
-  }
 
   return (
     <div>
@@ -92,53 +75,11 @@ export default function GateEntryList() {
       </div>
 
       <div className="premium-card d-flex flex-column">
-        <div className="table-responsive flex-grow-1">
-          {filtered.length === 0 ? (
-            <div className="p-5 text-center text-muted">No gate entries found</div>
-          ) : (
-            <Table striped hover className="mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>Vehicle Number</th>
-                  <th>Owner Name</th>
-                  <th>Mobile</th>
-                  <th>Make & Model</th>
-                  <th>Service Type</th>
-                  <th>Status</th>
-                  <th>Entry Time</th>
-                  <th>Entry By</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row) => (
-                  <tr key={row.id}>
-                    <td className="align-middle"><code className={styles.vehicleNum}>{row.vehicleNumber}</code></td>
-                    <td className="align-middle">{row.ownerName}</td>
-                    <td className="align-middle">{row.mobile}</td>
-                    <td className="align-middle">{row.makeModel}</td>
-                    <td className="align-middle">{row.serviceType}</td>
-                    <td className="align-middle"><StatusBadge status={row.status} /></td>
-                    <td className="align-middle">{formatDateTime(row.entryTime)}</td>
-                    <td className="align-middle">{row.entryBy}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </div>
-
-        {totalPages > 1 && (
-          <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
-            <small className="text-muted">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filtered.length)} of {filtered.length} entries
-            </small>
-            <Pagination className="mb-0" size="sm">
-              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-              {paginationItems}
-              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-            </Pagination>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={filtered}
+          emptyMessage="No gate entries found"
+        />
       </div>
     </div>
   );

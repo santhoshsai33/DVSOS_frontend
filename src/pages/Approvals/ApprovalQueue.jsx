@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Table, Pagination } from 'react-bootstrap';
+import DataTable from '../../components/common/DataTable';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle2, XCircle, Clock, Eye } from 'lucide-react';
@@ -61,30 +61,70 @@ export default function ApprovalQueue() {
 
   const filteredData = (data?.data || []).filter((item) => item.status === activeTab);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
+  const columns = [
+    {
+      header: 'Approval #',
+      accessor: 'id',
+      render: (row) => <span className={styles.approvalId}>#{row.id}</span>,
+    },
+    {
+      header: 'Job Card',
+      accessor: 'jobCardId',
+      render: (row) => <span style={{ fontWeight: 600 }}>{row.jobCardId}</span>,
+    },
+    {
+      header: 'Vehicle',
+      accessor: 'vehicleNumber',
+      render: (row) => <code className={styles.vehicleNum}>{row.vehicleNumber}</code>,
+    },
+    { header: 'Customer', accessor: 'customerName' },
+    {
+      header: 'Type',
+      accessor: 'type',
+      render: (row) => <span style={{ fontSize: '0.8rem' }}>{row.type?.replace(/_/g, ' ')}</span>,
+    },
+    {
+      header: 'Description',
+      accessor: 'description',
+      render: (row) => <span style={{ maxWidth: 200, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.description}</span>,
+    },
+    {
+      header: 'Est. Cost',
+      render: (row) => <strong>{formatCurrency(row.estimatedCost)}</strong>,
+    },
+    {
+      header: 'Status',
+      render: (row) => <StatusBadge status={row.status} />,
+    },
+    {
+      header: 'Requested',
+      render: (row) => formatDateTime(row.createdAt),
+    },
+    {
+      header: 'Actions',
+      render: (row) => (
+        <div className="d-flex gap-1">
+          {row.status === 'PENDING' && (
+            <>
+              <Button size="sm" variant="success" leftIcon={CheckCircle2} onClick={(e) => { e.stopPropagation(); openAction(row, 'approve'); }}>
+                Approve
+              </Button>
+              <Button size="sm" variant="danger" leftIcon={XCircle} onClick={(e) => { e.stopPropagation(); openAction(row, 'reject'); }}>
+                Reject
+              </Button>
+            </>
+          )}
+          {row.status !== 'PENDING' && (
+            <Button size="sm" variant="ghost" leftIcon={Eye}>View</Button>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   const handleTabChange = (key) => {
     setActiveTab(key);
-    setCurrentPage(1);
   };
-
-  let paginationItems = [];
-  for (let number = 1; number <= totalPages; number++) {
-    paginationItems.push(
-      <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
-        {number}
-      </Pagination.Item>
-    );
-  }
 
   const pendingCount = (data?.data || []).filter((d) => d.status === 'PENDING').length;
 
@@ -117,75 +157,12 @@ export default function ApprovalQueue() {
       </div>
 
       <div className="premium-card d-flex flex-column">
-        <div className="table-responsive flex-grow-1">
-          {isLoading ? (
-            <div className="p-5 text-center text-muted">Loading data...</div>
-          ) : filteredData.length === 0 ? (
-            <div className="p-5 text-center text-muted">No {activeTab.toLowerCase()} approvals found</div>
-          ) : (
-            <Table striped hover className="mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>Approval #</th>
-                  <th>Job Card</th>
-                  <th>Vehicle</th>
-                  <th>Customer</th>
-                  <th>Type</th>
-                  <th>Description</th>
-                  <th>Est. Cost</th>
-                  <th>Status</th>
-                  <th>Requested</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row) => (
-                  <tr key={row.id}>
-                    <td className="align-middle"><span className={styles.approvalId}>#{row.id}</span></td>
-                    <td className="align-middle"><span style={{ fontWeight: 600 }}>{row.jobCardId}</span></td>
-                    <td className="align-middle"><code className={styles.vehicleNum}>{row.vehicleNumber}</code></td>
-                    <td className="align-middle">{row.customerName}</td>
-                    <td className="align-middle"><span style={{ fontSize: '0.8rem' }}>{row.type?.replace(/_/g, ' ')}</span></td>
-                    <td className="align-middle"><span style={{ maxWidth: 200, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.description}</span></td>
-                    <td className="align-middle"><strong>{formatCurrency(row.estimatedCost)}</strong></td>
-                    <td className="align-middle"><StatusBadge status={row.status} /></td>
-                    <td className="align-middle">{formatDateTime(row.createdAt)}</td>
-                    <td className="align-middle">
-                      <div className="d-flex gap-1">
-                        {row.status === 'PENDING' && (
-                          <>
-                            <Button size="sm" variant="success" leftIcon={CheckCircle2} onClick={(e) => { e.stopPropagation(); openAction(row, 'approve'); }}>
-                              Approve
-                            </Button>
-                            <Button size="sm" variant="danger" leftIcon={XCircle} onClick={(e) => { e.stopPropagation(); openAction(row, 'reject'); }}>
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                        {row.status !== 'PENDING' && (
-                          <Button size="sm" variant="ghost" leftIcon={Eye}>View</Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </div>
-
-        {!isLoading && totalPages > 1 && (
-          <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
-            <small className="text-muted">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} entries
-            </small>
-            <Pagination className="mb-0" size="sm">
-              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-              {paginationItems}
-              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-            </Pagination>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={filteredData}
+          isLoading={isLoading}
+          emptyMessage={`No ${activeTab.toLowerCase()} approvals found`}
+        />
       </div>
 
       {/* Approve/Reject Modal */}
