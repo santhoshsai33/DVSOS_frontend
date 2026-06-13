@@ -38,21 +38,17 @@ export const SIDEBAR_MENUS = {
   ],
 
   [ROLES.CRM_TEAM]: [
-    { label: 'CRM Dashboard', path: ROUTES.CRM_DASHBOARD, icon: LayoutDashboard },
-    { label: 'Create Job Card', path: ROUTES.CRM_CREATE_JOB_CARD, icon: FileText },
-    { label: 'Pending Job Cards', path: ROUTES.CRM_PENDING_JOB_CARDS, icon: ClipboardList },
-    { label: 'Approval Follow-up', path: ROUTES.CRM_APPROVAL_FOLLOWUP, icon: CheckSquare },
-    { label: 'Delivery Ready', path: ROUTES.CRM_DELIVERY_READY, icon: Truck },
-    ...commonLinks,
+    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
+    { label: 'Customers', path: ROUTES.CUSTOMERS, icon: Users },
+    { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
+    { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
   ],
 
   [ROLES.FLOOR_SUPERVISOR]: [
-    { label: 'Floor Dashboard', path: ROUTES.FLOOR_DASHBOARD, icon: LayoutDashboard },
     { label: 'Mechanical Queue', path: ROUTES.FLOOR_MECHANICAL_QUEUE, icon: Wrench },
-    { label: 'Assign Mechanic', path: ROUTES.FLOOR_ASSIGN_MECHANIC, icon: User },
-    { label: 'Additional Work', path: ROUTES.FLOOR_ADDITIONAL_WORK, icon: FileText },
-    { label: 'Work Status', path: ROUTES.FLOOR_WORK_STATUS, icon: ClipboardList },
-    ...commonLinks,
+    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
+    { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
+    { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
   ],
 
   [ROLES.BODY_SHOP_SUPERVISOR]: [

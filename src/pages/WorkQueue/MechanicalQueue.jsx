@@ -1,28 +1,28 @@
 import { useState } from 'react';
-import { Clock, Wrench, CheckCircle2, User, ArrowRight } from 'lucide-react';
+import { Clock, Wrench, CheckCircle2, User, ArrowRight, Printer, AlertTriangle } from 'lucide-react';
 import Button from '../../components/common/Button';
-import StatusBadge from '../../components/common/StatusBadge';
+import Modal from '../../components/common/Modal';
 import PageHeader from '../../components/shared/PageHeader';
+import { toastSuccess, toastInfo } from '../../notifications/toast';
+import { formatDateTime } from '../../utils/formatters';
 import styles from './WorkQueue.module.css';
 
-// Mock queue data
-const MOCK_QUEUE = {
+// Mock queue data with deliveryDate and subsequent stages
+const INITIAL_QUEUE = {
   PENDING: [
-    { id: 'Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'General Service', priority: 'HIGH', waitTime: '1 hr 20 min' },
-    { id: 'Q2', vehicleNumber: 'KA 05 XY 9876', ownerName: 'Priya Singh', makeModel: 'Maruti Swift', serviceType: 'Oil Change', priority: 'NORMAL', waitTime: '45 min' },
-    { id: 'Q3', vehicleNumber: 'AP 16 ZZ 7700', ownerName: 'Kiran Reddy', makeModel: 'Tata Nexon', serviceType: 'Brake Service', priority: 'URGENT', waitTime: '10 min' },
+    { id: 'Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'General Service', priority: 'HIGH', waitTime: '1 hr 20 min', deliveryDate: new Date(Date.now() + 2 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
+    { id: 'Q2', vehicleNumber: 'KA 05 XY 9876', ownerName: 'Priya Singh', makeModel: 'Maruti Swift', serviceType: 'Oil Change', priority: 'NORMAL', waitTime: '45 min', deliveryDate: new Date(Date.now() + 4 * 3600000).toISOString(), requiredServices: [] },
+    { id: 'Q3', vehicleNumber: 'AP 16 ZZ 7700', ownerName: 'Kiran Reddy', makeModel: 'Tata Nexon', serviceType: 'Brake Service', priority: 'URGENT', waitTime: '10 min', deliveryDate: new Date(Date.now() + 1 * 3600000).toISOString(), requiredServices: ['Body Shop'] },
   ],
   ASSIGNED: [
-    { id: 'Q4', vehicleNumber: 'MH 12 PQ 4567', ownerName: 'Arun Patel', makeModel: 'Honda City', serviceType: 'Engine Repair', priority: 'HIGH', technician: 'Rajan M.', waitTime: '2 hrs' },
+    { id: 'Q4', vehicleNumber: 'MH 12 PQ 4567', ownerName: 'Arun Patel', makeModel: 'Honda City', serviceType: 'Engine Repair', priority: 'HIGH', technician: 'Rajan M.', waitTime: '2 hrs', deliveryDate: new Date(Date.now() + 5 * 3600000).toISOString(), requiredServices: [] },
   ],
   IN_PROGRESS: [
-    { id: 'Q5', vehicleNumber: 'DL 04 RS 3344', ownerName: 'Suresh Nair', makeModel: 'Toyota Fortuner', serviceType: 'Engine Repair', priority: 'URGENT', technician: 'Anand P.', waitTime: '4 hrs 10 min' },
-    { id: 'Q6', vehicleNumber: 'TN 09 LM 8899', ownerName: 'Deepa Menon', makeModel: 'Mahindra XUV500', serviceType: 'Full Inspection', priority: 'NORMAL', technician: 'Vikram S.', waitTime: '1 hr 5 min' },
+    { id: 'Q5', vehicleNumber: 'DL 04 RS 3344', ownerName: 'Suresh Nair', makeModel: 'Toyota Fortuner', serviceType: 'Engine Repair', priority: 'URGENT', technician: 'Anand P.', waitTime: '4 hrs 10 min', deliveryDate: new Date(Date.now() + 0.5 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
+    { id: 'Q6', vehicleNumber: 'TN 09 LM 8899', ownerName: 'Deepa Menon', makeModel: 'Mahindra XUV500', serviceType: 'Full Inspection', priority: 'NORMAL', technician: 'Vikram S.', waitTime: '1 hr 5 min', deliveryDate: new Date(Date.now() + 24 * 3600000).toISOString(), requiredServices: [] },
   ],
   COMPLETED: [
-    { id: 'Q7', vehicleNumber: 'TN 02 CD 5566', ownerName: 'Vinoth Kumar', makeModel: 'Hyundai Creta', serviceType: 'Oil Change', priority: 'NORMAL', technician: 'Rajan M.', waitTime: 'Done in 1.5 hrs' },
-    { id: 'Q8', vehicleNumber: 'KL 10 EE 4433', ownerName: 'Anitha R.', makeModel: 'Maruti Baleno', serviceType: 'AC Service', priority: 'LOW', technician: 'Vikram S.', waitTime: 'Done in 2 hrs' },
-    { id: 'Q9', vehicleNumber: 'TN 11 GG 2211', ownerName: 'Babu S.', makeModel: 'Honda Jazz', serviceType: 'Brake Service', priority: 'NORMAL', technician: 'Anand P.', waitTime: 'Done in 45 min' },
+    { id: 'Q7', vehicleNumber: 'TN 02 CD 5566', ownerName: 'Vinoth Kumar', makeModel: 'Hyundai Creta', serviceType: 'Oil Change', priority: 'NORMAL', technician: 'Rajan M.', waitTime: 'Done in 1.5 hrs', deliveryDate: new Date(Date.now() - 2 * 3600000).toISOString(), requiredServices: [] },
   ],
 };
 
@@ -34,9 +34,81 @@ const COLS = [
 ];
 
 const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', URGENT: '#EF4444' };
+const MECHANICS = ['Rajan M.', 'Vikram S.', 'Anand P.', 'Suresh K.'];
 
-function QueueCard({ item, status }) {
-  return (
+export default function MechanicalQueue() {
+  const [queue, setQueue] = useState(INITIAL_QUEUE);
+  
+  // Modal states
+  const [assignModal, setAssignModal] = useState({ isOpen: false, item: null });
+  const [selectedMechanic, setSelectedMechanic] = useState('');
+  
+  // Sort function: URGENT first, then closest delivery time
+  const sortJobs = (jobs) => {
+    const priorityWeight = { URGENT: 4, HIGH: 3, NORMAL: 2, LOW: 1 };
+    return [...jobs].sort((a, b) => {
+      if (priorityWeight[b.priority] !== priorityWeight[a.priority]) {
+        return priorityWeight[b.priority] - priorityWeight[a.priority];
+      }
+      return new Date(a.deliveryDate) - new Date(b.deliveryDate);
+    });
+  };
+
+  const moveItem = (itemId, fromCol, toCol, updates = {}) => {
+    setQueue(prev => {
+      const itemToMove = prev[fromCol].find(i => i.id === itemId);
+      if (!itemToMove) return prev;
+      
+      const updatedItem = { ...itemToMove, ...updates };
+      const newFrom = prev[fromCol].filter(i => i.id !== itemId);
+      const newTo = sortJobs([...prev[toCol], updatedItem]);
+      
+      return { ...prev, [fromCol]: newFrom, [toCol]: newTo };
+    });
+  };
+
+  const handleAssignClick = (item) => {
+    setAssignModal({ isOpen: true, item });
+    setSelectedMechanic('');
+  };
+
+  const handleConfirmAssign = async () => {
+    if (!selectedMechanic) {
+      toastInfo('Please select a mechanic');
+      return;
+    }
+    
+    // Simulate Assign
+    moveItem(assignModal.item.id, 'PENDING', 'ASSIGNED', { technician: selectedMechanic });
+    setAssignModal({ isOpen: false, item: null });
+    
+    toastSuccess(`Assigned to ${selectedMechanic}. Job Card sent to printer!`);
+    
+    // Simulate printing
+    setTimeout(() => {
+      toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
+    }, 1500);
+  };
+
+  const handleStart = (item) => {
+    moveItem(item.id, 'ASSIGNED', 'IN_PROGRESS');
+    toastSuccess(`Work started for ${item.vehicleNumber}`);
+  };
+
+  const handleComplete = (item) => {
+    moveItem(item.id, 'IN_PROGRESS', 'COMPLETED');
+    
+    // Check if handoff is needed
+    if (item.requiredServices?.includes('Water Wash')) {
+      toastSuccess(`Mechanical complete. Vehicle auto-moved to Water Wash Queue.`);
+    } else if (item.requiredServices?.includes('Body Shop')) {
+      toastSuccess(`Mechanical complete. Vehicle auto-moved to Body Shop Queue.`);
+    } else {
+      toastSuccess(`Work completed for ${item.vehicleNumber}. Ready for delivery check.`);
+    }
+  };
+
+  const QueueCard = ({ item, status }) => (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
         <code className={styles.vehicleNum}>{item.vehicleNumber}</code>
@@ -49,39 +121,44 @@ function QueueCard({ item, status }) {
       </div>
       <p className={styles.ownerName}>{item.ownerName}</p>
       <p className={styles.makeModel}>{item.makeModel}</p>
+      
+      {status === 'PENDING' && (
+        <div className={styles.deliveryAlert}>
+          <AlertTriangle size={12} /> Expected: {formatDateTime(item.deliveryDate)}
+        </div>
+      )}
+      
       <div className={styles.serviceTag}>{item.serviceType}</div>
+      
       {item.technician && (
         <div className={styles.techRow}>
           <User size={12} />
           {item.technician}
         </div>
       )}
+      
       <div className={styles.cardFooter}>
         <span className={styles.waitTime}>
           <Clock size={11} /> {item.waitTime}
         </span>
         {status === 'PENDING' && (
-          <Button size="sm" variant="outline" rightIcon={ArrowRight}>
+          <Button size="sm" variant="outline" rightIcon={ArrowRight} onClick={() => handleAssignClick(item)}>
             Assign
           </Button>
         )}
         {status === 'ASSIGNED' && (
-          <Button size="sm" variant="primary" rightIcon={ArrowRight}>
+          <Button size="sm" variant="primary" rightIcon={ArrowRight} onClick={() => handleStart(item)}>
             Start
           </Button>
         )}
         {status === 'IN_PROGRESS' && (
-          <Button size="sm" variant="success" rightIcon={CheckCircle2}>
+          <Button size="sm" variant="success" rightIcon={CheckCircle2} onClick={() => handleComplete(item)}>
             Complete
           </Button>
         )}
       </div>
     </div>
   );
-}
-
-export default function MechanicalQueue() {
-  const [queue] = useState(MOCK_QUEUE);
 
   return (
     <div>
@@ -112,7 +189,9 @@ export default function MechanicalQueue() {
       <div className={styles.board}>
         {COLS.map((col) => {
           const Icon = col.icon;
-          const items = queue[col.key] || [];
+          // Ensure sorted representation
+          const items = col.key === 'PENDING' ? sortJobs(queue[col.key]) : queue[col.key] || [];
+          
           return (
             <div key={col.key} className={styles.column}>
               <div className={styles.columnHeader} style={{ borderColor: col.color }}>
@@ -136,6 +215,48 @@ export default function MechanicalQueue() {
           );
         })}
       </div>
+
+      {/* Assign Mechanic Modal */}
+      <Modal
+        show={assignModal.isOpen}
+        onHide={() => setAssignModal({ isOpen: false, item: null })}
+        title="Assign Mechanic & Print Card"
+        confirmLabel="Assign & Print"
+        onConfirm={handleConfirmAssign}
+        confirmIcon={Printer}
+      >
+        {assignModal.item && (
+          <div className="d-flex flex-column gap-3">
+            <div className={styles.card} style={{ margin: 0, border: 'none', boxShadow: 'none', padding: '0 0 1rem 0' }}>
+              <p><strong>Job Card:</strong> #{assignModal.item.id}</p>
+              <p><strong>Vehicle:</strong> {assignModal.item.vehicleNumber} ({assignModal.item.makeModel})</p>
+              <p><strong>Service:</strong> {assignModal.item.serviceType}</p>
+              <p><strong>Expected Delivery:</strong> {formatDateTime(assignModal.item.deliveryDate)}</p>
+            </div>
+            
+            <div className="form-group">
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
+                Select Mechanic
+              </label>
+              <select
+                className="form-control"
+                value={selectedMechanic}
+                onChange={(e) => setSelectedMechanic(e.target.value)}
+                style={{ padding: '0.5rem', borderRadius: '6px', border: '1.5px solid var(--color-border)' }}
+              >
+                <option value="">-- Choose Mechanic --</option>
+                {MECHANICS.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+              <Printer size={12} /> Assigning will automatically print a hard copy of the job card.
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -47,6 +47,14 @@ export default function AppRoutes() {
         <Route path="/" element={<ManagerDashboard />} />
         <Route path="/gate-entry" element={<GateEntryList />} />
         <Route path="/gate-entry/new" element={<GateEntryForm />} />
+
+        {/* CRM Routes */}
+        <Route path="/crm/dashboard" element={<Navigate to="/job-cards" replace />} />
+        <Route path="/crm/job-cards/create" element={<JobCardCreate />} />
+
+        {/* Floor Routes */}
+        <Route path="/floor/dashboard" element={<Navigate to="/work-queue/mechanical" replace />} />
+        
         <Route path="/job-cards" element={<JobCardList />} />
         <Route path="/job-cards/create" element={<JobCardCreate />} />
         <Route path="/work-queue/mechanical" element={<MechanicalQueue />} />

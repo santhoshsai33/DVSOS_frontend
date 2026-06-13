@@ -12,6 +12,7 @@ export const jobCardSchema = z.object({
   priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']).default('NORMAL'),
   notes: z.string().optional(),
   services: z.array(z.string()).min(1, 'Select at least one service'),
+  deliveryDate: z.string().min(1, 'Expected delivery date is required'),
 });
 
 export const additionalWorkSchema = z.object({

@@ -150,6 +150,19 @@
   margin: 0 0 0.5rem;
 }
 
+.deliveryAlert {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #D97706;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
 .serviceTag {
   display: inline-block;
   font-size: 0.72rem;
