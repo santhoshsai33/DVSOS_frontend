@@ -16,17 +16,7 @@ import { formatCurrency } from '../../utils/formatters';
 import styles from './JobCards.module.css';
 import { useState, useMemo } from 'react';
 
-const MASTER_SERVICES = [
-  { id: 'S1', name: 'General Service', price: 2500 },
-  { id: 'S2', name: 'Oil Change', price: 1200 },
-  { id: 'S3', name: 'Brake Pad Replacement', price: 1800 },
-  { id: 'S4', name: 'AC Servicing', price: 1500 },
-  { id: 'S5', name: 'Tyre Rotation & Alignment', price: 800 },
-  { id: 'S6', name: 'Battery Replacement', price: 4500 },
-  { id: 'S7', name: 'Body Dent & Paint (Per Panel)', price: 3000 },
-  { id: 'S8', name: 'Premium Water Wash', price: 600 },
-  { id: 'S9', name: 'Interior Detailing', price: 1500 },
-];
+import useMasterDataStore from '../../store/useMasterDataStore';
 
 const PRIORITY_OPTIONS = [
   { value: 'LOW', label: 'Low' },
@@ -37,6 +27,7 @@ const PRIORITY_OPTIONS = [
 
 export default function JobCardCreate() {
   const navigate = useNavigate();
+  const { masterServices, companySettings } = useMasterDataStore();
   const [selectedServices, setSelectedServices] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -71,10 +62,10 @@ export default function JobCardCreate() {
     }
     setSelectedServices(updated);
     setValue('services', updated.map((s) => s.id));
-    
+
     // Auto-calculate estimated cost
     const totalCost = updated.reduce((sum, s) => sum + s.price, 0);
-    const tax = totalCost * 0.18;
+    const tax = totalCost * (companySettings.defaultTaxRate / 100);
     setValue('estimatedCost', totalCost + tax);
   };
 
@@ -88,7 +79,7 @@ export default function JobCardCreate() {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 800));
-      
+
       setValue('ownerName', 'Rajesh Kumar');
       setValue('ownerMobile', '9876543210');
       setValue('makeModel', 'Hyundai Creta');
@@ -102,7 +93,7 @@ export default function JobCardCreate() {
 
   // Bill calculations
   const subtotal = useMemo(() => selectedServices.reduce((sum, s) => sum + s.price, 0), [selectedServices]);
-  const taxAmount = subtotal * 0.18;
+  const taxAmount = subtotal * (companySettings.defaultTaxRate / 100);
   const grandTotal = subtotal + taxAmount;
 
   const handleWhatsAppApproval = async () => {
@@ -114,13 +105,13 @@ export default function JobCardCreate() {
       toastError('Please enter customer mobile number');
       return;
     }
-    
+
     try {
       toastInfo('Generating WhatsApp approval link...');
       await new Promise((r) => setTimeout(r, 1000));
-      
+
       const message = `Hello ${watch('ownerName') || 'Customer'}, your vehicle service estimate is ready. Grand Total: ${formatCurrency(grandTotal)}. Please reply YES to approve work.`;
-      
+
       // Mock opening WhatsApp
       window.open(`https://wa.me/91${watch('ownerMobile')}?text=${encodeURIComponent(message)}`, '_blank');
       toastSuccess('Bill sent via WhatsApp successfully!');
@@ -167,9 +158,9 @@ export default function JobCardCreate() {
                       <div className="flex-grow-1">
                         <RHFTextField name="vehicleNumber" label="Registration Number" placeholder="TN 01 AB 1234" required />
                       </div>
-                      <Button 
-                        type="button" 
-                        variant="secondary" 
+                      <Button
+                        type="button"
+                        variant="secondary"
                         className="mb-3"
                         style={{ height: '42px', marginTop: '28px' }}
                         leftIcon={Search}
@@ -216,7 +207,7 @@ export default function JobCardCreate() {
                   <h6 className={styles.sectionTitle}>Master Service List</h6>
                 </div>
                 <div className={styles.serviceGrid}>
-                  {MASTER_SERVICES.map((service) => {
+                  {masterServices.map((service) => {
                     const isSelected = selectedServices.some((s) => s.id === service.id);
                     return (
                       <div
@@ -229,7 +220,7 @@ export default function JobCardCreate() {
                             <input
                               type="checkbox"
                               checked={isSelected}
-                              onChange={() => {}}
+                              onChange={() => { }}
                               style={{ width: 16, height: 16, accentColor: 'var(--color-accent)' }}
                             />
                             <span className={styles.serviceName}>{service.name}</span>
@@ -256,7 +247,7 @@ export default function JobCardCreate() {
               <h5 className={styles.billTitle}>Bill Preview</h5>
               <span className={styles.billBadge}>Auto-generated</span>
             </div>
-            
+
             <div className={styles.billItems}>
               {selectedServices.length === 0 ? (
                 <div className={styles.emptyBill}>No services selected</div>
@@ -276,7 +267,7 @@ export default function JobCardCreate() {
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className={styles.summaryRow}>
-                <span>Tax (18%)</span>
+                <span>Tax ({companySettings.defaultTaxRate}%)</span>
                 <span>{formatCurrency(taxAmount)}</span>
               </div>
               <div className={styles.grandTotalRow}>
@@ -286,21 +277,21 @@ export default function JobCardCreate() {
             </div>
 
             <div className="mt-4 d-flex flex-column gap-3">
-              <Button 
-                variant="outline" 
-                fullWidth 
-                leftIcon={MessageCircle} 
+              <Button
+                variant="outline"
+                fullWidth
+                leftIcon={MessageCircle}
                 onClick={handleWhatsAppApproval}
                 style={{ borderColor: '#25D366', color: '#25D366' }}
               >
                 Send via WhatsApp
               </Button>
-              <Button 
-                variant="primary" 
-                fullWidth 
-                leftIcon={Save} 
-                form="jobCardForm" 
-                type="submit" 
+              <Button
+                variant="primary"
+                fullWidth
+                leftIcon={Save}
+                form="jobCardForm"
+                type="submit"
                 isLoading={formState.isSubmitting}
               >
                 Create Job Card

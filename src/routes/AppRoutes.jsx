@@ -21,6 +21,8 @@ import WaterWashQueue from '../pages/WorkQueue/WaterWashQueue';
 import ApprovalQueue from '../pages/Approvals/ApprovalQueue';
 import ReportsPage from '../pages/Reports/ReportsPage';
 import UserList from '../pages/Users/UserList';
+import CompanySettings from '../pages/SuperAdmin/CompanySettings';
+import MasterServiceList from '../pages/SuperAdmin/MasterServiceList';
 
 // eslint-disable-next-line react/prop-types
 const ProtectedRoute = ({ children }) => {
@@ -54,21 +56,26 @@ export default function AppRoutes() {
 
         {/* Floor Routes */}
         <Route path="/floor/dashboard" element={<Navigate to="/work-queue/mechanical" replace />} />
-        
+
         <Route path="/job-cards" element={<JobCardList />} />
         <Route path="/job-cards/create" element={<JobCardCreate />} />
         <Route path="/work-queue/mechanical" element={<MechanicalQueue />} />
-        
+
         {/* Body Shop & Water Wash Routes */}
         <Route path="/body-shop/dashboard" element={<Navigate to="/work-queue/body-shop" replace />} />
         <Route path="/work-queue/body-shop" element={<BodyShopQueue />} />
-        
+
         <Route path="/water-wash/dashboard" element={<Navigate to="/work-queue/water-wash" replace />} />
         <Route path="/work-queue/water-wash" element={<WaterWashQueue />} />
-        
+
         <Route path="/approvals" element={<ApprovalQueue />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/users" element={<UserList />} />
+
+        {/* Super Admin Routes */}
+        <Route path="/admin/dashboard" element={<Navigate to="/admin/service-items" replace />} />
+        <Route path="/admin/settings" element={<CompanySettings />} />
+        <Route path="/admin/service-items" element={<MasterServiceList />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

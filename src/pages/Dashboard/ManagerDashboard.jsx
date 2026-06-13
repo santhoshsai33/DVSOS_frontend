@@ -183,7 +183,7 @@ export default function ManagerDashboard() {
       </Row>
 
       {/* Queue Summary */}
-      <Row className="g-4 mb-4">
+      {/* <Row className="g-4 mb-4">
         {queueCards.map((q) => {
           const Icon = q.icon;
           return (
@@ -213,7 +213,7 @@ export default function ManagerDashboard() {
             </Col>
           );
         })}
-      </Row>
+      </Row> */}
 
       {/* Recent Jobs Table */}
       <div className="premium-card d-flex flex-column">
