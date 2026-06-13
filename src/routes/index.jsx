@@ -16,6 +16,7 @@ import RoleManagementPage from '../features/roles/admin/pages/RoleManagementPage
 import ServiceItemMasterPage from '../features/roles/admin/pages/ServiceItemMasterPage';
 import SystemSettingsPage from '../features/roles/admin/pages/SystemSettingsPage';
 import AuditLogsPage from '../features/roles/admin/pages/AuditLogsPage';
+import UserForm from '../pages/Users/UserForm';
 import GateDashboardPage from '../features/roles/gate-security/pages/GateDashboardPage';
 import GateEntryPage from '../features/roles/gate-security/pages/GateEntryPage';
 import VehicleExitPage from '../features/roles/gate-security/pages/VehicleExitPage';
@@ -104,6 +105,8 @@ export const router = createBrowserRouter([
             children: [
               { path: 'admin/dashboard', element: <AdminDashboardPage /> },
               { path: 'admin/users', element: <UserManagementPage /> },
+              { path: 'admin/users/new', element: <UserForm /> },
+              { path: 'admin/users/:id/edit', element: <UserForm /> },
               { path: 'admin/roles', element: <RoleManagementPage /> },
               { path: 'admin/service-items', element: <ServiceItemMasterPage /> },
               { path: 'admin/settings', element: <SystemSettingsPage /> },

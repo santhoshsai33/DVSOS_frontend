@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Clock, Wrench, CheckCircle2, User, ArrowRight, Printer, AlertTriangle } from 'lucide-react';
+import { Clock, Wrench, CheckCircle2, User, ArrowRight, Printer, AlertTriangle, Plus } from 'lucide-react';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import PageHeader from '../../components/shared/PageHeader';
 import { toastSuccess, toastInfo } from '../../notifications/toast';
 import { formatDateTime } from '../../utils/formatters';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../config/routes';
 import styles from './WorkQueue.module.css';
 
 // Mock queue data with deliveryDate and subsequent stages
@@ -37,6 +39,7 @@ const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', UR
 const MECHANICS = ['Rajan M.', 'Vikram S.', 'Anand P.', 'Suresh K.'];
 
 export default function MechanicalQueue() {
+  const navigate = useNavigate();
   const [queue, setQueue] = useState(INITIAL_QUEUE);
   
   // Modal states
@@ -152,9 +155,17 @@ export default function MechanicalQueue() {
           </Button>
         )}
         {status === 'IN_PROGRESS' && (
-          <Button size="sm" variant="success" rightIcon={CheckCircle2} onClick={() => handleComplete(item)}>
-            Complete
-          </Button>
+          <div className="d-flex gap-2">
+            <Button size="sm" variant="outline" leftIcon={Plus}
+              onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK)}
+              style={{ borderColor: '#F59E0B', color: '#F59E0B', fontSize: '0.75rem' }}
+            >
+              Add Work
+            </Button>
+            <Button size="sm" variant="success" rightIcon={CheckCircle2} onClick={() => handleComplete(item)}>
+              Complete
+            </Button>
+          </div>
         )}
       </div>
     </div>

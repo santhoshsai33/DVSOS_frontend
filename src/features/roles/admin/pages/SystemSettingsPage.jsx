@@ -1,2 +1,2 @@
-export { default } from '../../../../pages/Masters/MasterSettings';
+export { default } from '../../../../pages/SuperAdmin/CompanySettings';
 

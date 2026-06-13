@@ -10,13 +10,17 @@ import {
   FileText,
   LayoutDashboard,
   LogIn,
+  LogOut,
   Paintbrush,
+  Plus,
   Settings,
   ShieldCheck,
   Truck,
   User,
   Users,
   Wrench,
+  Clock,
+  Package,
 } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import { ROLES } from './roles';
@@ -32,22 +36,28 @@ export const SIDEBAR_MENUS = {
   [ROLES.GATE_SECURITY]: [
     { label: 'Gate Dashboard', path: ROUTES.GATE_DASHBOARD, icon: LayoutDashboard },
     { label: 'Vehicle Entry', path: ROUTES.GATE_ENTRY, icon: LogIn },
-    { label: 'Vehicle Exit', path: ROUTES.GATE_EXIT, icon: Truck },
+    { label: 'Vehicle Exit', path: ROUTES.GATE_EXIT, icon: LogOut },
     { label: 'Pending Sync', path: ROUTES.GATE_PENDING_SYNC, icon: AlertCircle },
     { label: 'Service History', path: ROUTES.SERVICE_HISTORY, icon: FileText },
   ],
 
   [ROLES.CRM_TEAM]: [
+    { label: 'CRM Dashboard', path: ROUTES.CRM_DASHBOARD, icon: LayoutDashboard },
+    { label: 'Create Job Card', path: ROUTES.CRM_CREATE_JOB_CARD, icon: Plus },
     { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
+    { label: 'Pending Approvals', path: ROUTES.CRM_APPROVAL_FOLLOWUP, icon: Clock },
+    { label: 'Delivery Ready', path: ROUTES.CRM_DELIVERY_READY, icon: Package },
     { label: 'Customers', path: ROUTES.CUSTOMERS, icon: Users },
     { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
   ],
 
   [ROLES.FLOOR_SUPERVISOR]: [
+    { label: 'Floor Dashboard', path: ROUTES.FLOOR_DASHBOARD, icon: LayoutDashboard },
     { label: 'Mechanical Queue', path: ROUTES.FLOOR_MECHANICAL_QUEUE, icon: Wrench },
+    { label: 'Assign Mechanic', path: ROUTES.FLOOR_ASSIGN_MECHANIC, icon: User },
+    { label: 'Additional Work', path: ROUTES.FLOOR_ADDITIONAL_WORK, icon: AlertCircle },
     { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
-    { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
   ],
 

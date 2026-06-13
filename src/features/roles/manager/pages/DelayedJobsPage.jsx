@@ -1,2 +1,2 @@
-export { default } from '../../../../pages/Vehicles/VehicleList';
+export { default } from '../../../../pages/Dashboard/DelayedJobs';
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Pagination } from 'react-bootstrap';
 import DataTable from '../../components/common/DataTable';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, LogIn, Clock, CheckCircle2, AlertTriangle } from 'lucide-react';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
 import SearchBar from '../../components/common/SearchBar';
@@ -53,7 +53,7 @@ export default function GateEntryList() {
   return (
     <div>
       <PageHeader
-        title="Gate Entries"
+        title="Gate Dashboard"
         subtitle={`${filtered.length} entries today`}
         breadcrumbs={[{ label: 'Gate Entry' }]}
         actions={
@@ -62,6 +62,29 @@ export default function GateEntryList() {
           </Button>
         }
       />
+
+      {/* Today's Summary Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.25rem' }}>
+        {[
+          { label: 'Vehicles In Today', value: MOCK_ENTRIES.length, icon: LogIn, color: '#3B82F6', bg: 'rgba(59,130,246,0.08)' },
+          { label: 'In Progress', value: MOCK_ENTRIES.filter(e => e.status === 'IN_PROGRESS').length, icon: Clock, color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)' },
+          { label: 'Completed', value: MOCK_ENTRIES.filter(e => e.status === 'COMPLETED').length, icon: CheckCircle2, color: '#10B981', bg: 'rgba(16,185,129,0.08)' },
+          { label: 'Delayed', value: MOCK_ENTRIES.filter(e => e.status === 'DELAYED').length, icon: AlertTriangle, color: '#EF4444', bg: 'rgba(239,68,68,0.08)' },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.label} style={{ background: stat.bg, border: `1.5px solid ${stat.color}25`, borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '10px', background: stat.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon size={20} style={{ color: stat.color }} />
+              </div>
+              <div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: stat.color, lineHeight: 1.1 }}>{stat.value}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: 500, marginTop: 2 }}>{stat.label}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       <div className={styles.filterBar}>
         <SearchBar

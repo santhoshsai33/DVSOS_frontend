@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Table, Pagination } from 'react-bootstrap';
 import { Plus, Edit, Trash2, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useUsers } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
@@ -9,57 +10,23 @@ import PageHeader from '../../components/shared/PageHeader';
 import { formatDateTime } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROLE_LABELS } from '../../constants/roles';
+import { toastSuccess } from '../../notifications/toast';
+import { ROUTES } from '../../config/routes';
 import styles from './Users.module.css';
 
 export default function UserList() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const debSearch = useDebounce(search, 300);
 
   const { data, isLoading } = useUsers({ search: debSearch, role: roleFilter });
 
-  const columns = [
-    {
-      header: 'Name',
-      accessor: 'name',
-      render: (row) => (
-        <div className="d-flex align-items-center gap-2">
-          <div className={styles.avatar}>{row.name.charAt(0)}</div>
-          <span className={styles.userName}>{row.name}</span>
-        </div>
-      ),
-    },
-    {
-      header: 'Email',
-      accessor: 'email',
-      render: (row) => (
-        <a href={`mailto:${row.email}`} className={styles.emailLink}>
-          <Mail size={12} className="me-1" /> {row.email}
-        </a>
-      ),
-    },
-    { header: 'Mobile', accessor: 'mobile' },
-    {
-      header: 'Role',
-      render: (row) => (
-        <span className={styles.roleBadge}>{ROLE_LABELS[row.role] || row.role}</span>
-      ),
-    },
-    {
-      header: 'Status',
-      render: (row) => <StatusBadge status={row.status === 'ACTIVE' ? 'COMPLETED' : 'DELAYED'} />,
-    },
-    { header: 'Last Login', render: (row) => formatDateTime(row.lastLogin) },
-    {
-      header: 'Actions',
-      render: (row) => (
-        <div className="d-flex gap-1">
-          <Button size="sm" variant="ghost" leftIcon={Edit}>Edit</Button>
-          <Button size="sm" variant="ghost" className="text-danger" leftIcon={Trash2}></Button>
-        </div>
-      ),
-    },
-  ];
+  const handleDeleteUser = (user) => {
+    if (window.confirm(`Are you sure you want to remove "${user.name}"?\nThis action cannot be undone.`)) {
+      toastSuccess(`User "${user.name}" removed successfully.`);
+    }
+  };
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -89,7 +56,11 @@ export default function UserList() {
         subtitle={`Manage access and roles for ${data?.total ?? 0} team members`}
         breadcrumbs={[{ label: 'Settings' }, { label: 'Users' }]}
         actions={
-          <Button variant="primary" leftIcon={Plus}>
+          <Button
+            variant="primary"
+            leftIcon={Plus}
+            onClick={() => navigate(ROUTES.ADMIN_USER_NEW)}
+          >
             Add User
           </Button>
         }
@@ -114,7 +85,7 @@ export default function UserList() {
         </select>
       </div>
 
-      <div className="premium-card d-flex flex-column" >
+      <div className="premium-card d-flex flex-column">
         <div className="table-responsive flex-grow-1">
           {isLoading ? (
             <div className="p-5 text-center text-muted">Loading data...</div>
@@ -157,8 +128,21 @@ export default function UserList() {
                     <td className="align-middle">{formatDateTime(row.lastLogin)}</td>
                     <td className="align-middle">
                       <div className="d-flex gap-1">
-                        <Button size="sm" variant="ghost" leftIcon={Edit}>Edit</Button>
-                        <Button size="sm" variant="ghost" className="text-danger" leftIcon={Trash2}></Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          leftIcon={Edit}
+                          onClick={() => navigate(`/admin/users/${row.id}/edit`)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-danger"
+                          leftIcon={Trash2}
+                          onClick={() => handleDeleteUser(row)}
+                        />
                       </div>
                     </td>
                   </tr>

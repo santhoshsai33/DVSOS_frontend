@@ -1,2 +1,2 @@
-export { default } from '../../../../pages/Dashboard/MDDashboard';
+export { default } from '../../../../pages/Dashboard/ExecutiveOverview';
 

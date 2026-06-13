@@ -1,2 +1,2 @@
-export { default } from '../../../../pages/Dashboard/ManagerDashboard';
+export { default } from '../../../../pages/Dashboard/AdminDashboard';
 

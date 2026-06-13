@@ -1,7 +1,7 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Send, Image as ImageIcon } from 'lucide-react';
-import PageHeader from '../../components/shared/PageHeader';
+import { Send, Image as ImageIcon, ArrowLeft } from 'lucide-react';
+import { Row, Col } from 'react-bootstrap';
 import Button from '../../components/common/Button';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFTextarea from '../../components/form/RHFTextarea';
@@ -26,33 +26,68 @@ export default function CreateRequest() {
   };
 
   return (
-    <div>
-      <PageHeader
-        title="Request Additional Work"
-        subtitle="Log repair needs beyond original scope and seek customer WhatsApp approval"
-        breadcrumbs={[{ label: 'Additional Work' }, { label: 'Create Request' }]}
-      />
-
-      <div style={{ background: 'var(--color-bg-surface)', padding: '2rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
-        <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="d-flex flex-column gap-3">
-            <RHFTextField name="vehicleNumber" label="Vehicle Number / Job Card ID" placeholder="Enter Vehicle No" required />
-            <RHFTextarea name="description" label="Additional Work Description" placeholder="Explain the extra work required..." rows={4} required />
-            <RHFTextField name="estimatedCost" label="Estimated Additional Cost (₹)" placeholder="0.00" type="number" required />
-            
-            <div className="d-flex align-items-center gap-2 mt-2 mb-3 text-muted" style={{ fontSize: '0.85rem' }}>
-               <ImageIcon size={16} /> <span>You can attach photos to this request from the mobile/tablet app.</span>
-            </div>
-
-            <div className="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
-              <Button variant="secondary" type="button" onClick={() => navigate(ROUTES.FLOOR_MECHANICAL_QUEUE)}>Cancel</Button>
-              <Button variant="primary" type="submit" leftIcon={Send} isLoading={methods.formState.isSubmitting}>
-                Send WhatsApp Approval
-              </Button>
-            </div>
-          </form>
-        </FormProvider>
+    <div style={{ background: '#fff', minHeight: '100%', padding: '2rem 2.5rem' }}>
+      
+      {/* Page Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
+        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.3rem', color: '#152326' }}>
+          Request Additional Work
+        </h4>
+        <button
+          type="button"
+          onClick={() => navigate(ROUTES.FLOOR_MECHANICAL_QUEUE)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.4rem',
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: '#6B7280', fontSize: '0.875rem', fontWeight: 500,
+            padding: 0,
+          }}
+        >
+          <ArrowLeft size={15} /> Back to Queue
+        </button>
       </div>
+
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          
+          <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
+            Work Details
+          </p>
+
+          <Row className="g-3 mb-3">
+            <Col md={6}>
+              <RHFTextField name="vehicleNumber" label="Vehicle Number / Job Card ID *" placeholder="Enter Vehicle No" required />
+            </Col>
+            <Col md={6}>
+              <RHFTextField name="estimatedCost" label="Estimated Additional Cost (₹) *" placeholder="0.00" type="number" required />
+            </Col>
+          </Row>
+          
+          <Row className="g-3 mb-3">
+            <Col md={12}>
+              <RHFTextarea name="description" label="Additional Work Description *" placeholder="Explain the extra work required..." rows={4} required />
+            </Col>
+          </Row>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6B7280', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+             <ImageIcon size={16} /> <span>You can attach photos to this request from the mobile/tablet app.</span>
+          </div>
+
+          {/* Footer Actions */}
+          <div style={{
+            borderTop: '1px solid #E2E5DC',
+            marginTop: '2rem', paddingTop: '1.5rem',
+            display: 'flex', justifyContent: 'flex-end', gap: '0.75rem',
+          }}>
+            <Button variant="secondary" type="button" onClick={() => navigate(ROUTES.FLOOR_MECHANICAL_QUEUE)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" leftIcon={Send} isLoading={methods.formState.isSubmitting}>
+              Send WhatsApp Approval
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </div>
   );
 }
