@@ -1,40 +1,15 @@
-.container {
-  display: flex;
-  min-height: 100vh;
-}
-
-/* Brand Panel */
+/* Brand Panel (Left 50%) */
 .brandPanel {
-  flex: 0 0 42%;
-  background: var(--gradient-primary);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 3rem 3.5rem;
   position: relative;
   overflow: hidden;
-}
-
-.brandPanel::before {
-  content: '';
-  position: absolute;
-  top: -100px;
-  right: -100px;
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.12);
-}
-
-.brandPanel::after {
-  content: '';
-  position: absolute;
-  bottom: -80px;
-  left: -80px;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.08);
+  background-color: #1a1a24;
+  background-image: linear-gradient(to right, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.4) 100%), url('https://images.unsplash.com/photo-1493238792000-8113da705763?q=80&w=2000&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
 }
 
 .brandContent {
@@ -45,43 +20,53 @@
 .logoMark {
   width: 72px;
   height: 72px;
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   margin-bottom: 2rem;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .brandTitle {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 900;
   color: #fff;
   margin: 0 0 0.5rem;
   letter-spacing: -0.03em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .brandSubtitle {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.85);
   margin: 0 0 3rem;
   font-weight: 400;
   line-height: 1.5;
-  max-width: 320px;
+  max-width: 400px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .features {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .featureItem {
   display: flex;
   align-items: center;
   gap: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: fit-content;
 }
 
 .featureIcon {
@@ -91,14 +76,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   flex-shrink: 0;
+  color: white;
 }
 
 .featureText {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  color: #fff;
   font-weight: 500;
 }
 
@@ -108,14 +94,13 @@
 }
 
 .brandFooter p {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
   margin: 0;
 }
 
-/* Form Panel */
+/* Form Panel (Right 50%) */
 .formPanel {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -130,7 +115,7 @@
   max-width: 440px;
   background: var(--color-bg-surface);
   border-radius: var(--radius-xl);
-  padding: 2.5rem;
+  padding: 3rem;
   box-shadow: var(--shadow-xl);
   border: 1px solid var(--color-border);
 }
@@ -144,21 +129,25 @@
 
 /* Mobile */
 @media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-  }
   .brandPanel {
-    flex: none;
-    padding: 2rem 1.5rem;
-    min-height: 240px;
+    padding: 3rem 2rem;
+    min-height: 300px;
   }
-  .brandTitle { font-size: 2rem; }
-  .features { display: none; }
+
+  .brandTitle {
+    font-size: 2.5rem;
+  }
+
+  .features {
+    display: none;
+  }
+
   .formPanel {
     justify-content: flex-start;
     padding: 2rem 1rem;
   }
+
   .formCard {
-    padding: 1.75rem 1.5rem;
+    padding: 2rem 1.5rem;
   }
 }
