@@ -144,9 +144,6 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
           onChange={setSearch}
           className={styles.searchBox}
         />
-        <Button variant="secondary" size="sm" leftIcon={Calendar}>
-          Today
-        </Button>
       </div>
 
       <div className="premium-card d-flex flex-column">

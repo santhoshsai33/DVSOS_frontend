@@ -124,7 +124,6 @@
 }
 
 .vehicleNum {
-  font-family: 'Courier New', monospace;
   font-weight: 700;
   font-size: 0.8rem;
   background: var(--color-bg-base);

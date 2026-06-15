@@ -221,7 +221,6 @@
 .vehicleNo {
   font-size: 1.5rem;
   font-weight: 900;
-  font-family: 'Courier New', monospace;
   color: var(--color-text-primary);
   background: rgba(0,0,0,0.04);
   padding: 0.25rem 0.5rem;

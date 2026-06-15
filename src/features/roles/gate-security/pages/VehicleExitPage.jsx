@@ -151,7 +151,7 @@ export default function VehicleExitPage() {
           <Row className="g-3 mb-4">
             <Col md={3}>
               <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: 4 }}>Job Card</div>
-              <div style={{ fontWeight: 700, fontFamily: 'monospace', color: '#152326' }}>{vehicle.jobCardId}</div>
+              <div style={{ fontWeight: 700, color: '#152326' }}>{vehicle.jobCardId}</div>
             </Col>
             <Col md={3}>
               <div style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: 4 }}>Vehicle</div>

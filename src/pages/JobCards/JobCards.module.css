@@ -41,7 +41,6 @@
 }
 
 .vehicleNum {
-  font-family: 'Courier New', monospace;
   font-weight: 700;
   font-size: 0.82rem;
   background: var(--color-bg-base);
@@ -235,5 +234,9 @@
   font-weight: 700;
   font-size: 0.85rem;
   color: var(--color-accent);
+}
+
+.dropdownToggleNoCaret::after {
+  display: none !important;
 }
 

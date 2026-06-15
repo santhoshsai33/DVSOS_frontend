@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Loader from '../Loader';
 import EmptyState from '../EmptyState';
 import styles from './DataTable.module.css';
@@ -76,17 +76,7 @@ export default function DataTable({
             <tr>
               {columns.map((col, i) => (
                 <th key={i} style={{ width: col.width }}>
-                  <button
-                    type="button"
-                    className={styles.sortBtn}
-                    onClick={() => handleSort(col)}
-                    disabled={!col.accessor || col.sortable === false}
-                  >
-                    {col.header}
-                    {col.accessor && col.sortable !== false && sortConfig.key === col.accessor && (
-                      sortConfig.direction === 'asc' ? <ChevronUp size={14} style={{ marginLeft: '4px' }} /> : <ChevronDown size={14} style={{ marginLeft: '4px' }} />
-                    )}
-                  </button>
+                  {col.header}
                 </th>
               ))}
             </tr>

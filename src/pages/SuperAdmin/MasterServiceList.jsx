@@ -105,7 +105,7 @@ export default function MasterServiceList() {
   };
 
   const columns = [
-    { header: 'ID', accessor: 'id', render: (row) => <strong className="text-muted" style={{ fontFamily: 'monospace' }}>{row.id}</strong> },
+    { header: 'ID', accessor: 'id', render: (row) => <strong className="text-muted">{row.id}</strong> },
     { header: 'Service Name', accessor: 'name', render: (row) => <span className="fw-semibold">{row.name}</span> },
     { 
       header: 'Category', 

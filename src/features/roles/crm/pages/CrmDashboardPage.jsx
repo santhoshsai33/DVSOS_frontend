@@ -56,11 +56,7 @@ export default function CrmDashboard() {
       <PageHeader
         title={`${greeting}, ${user?.name?.split(' ')[0] || 'Team'} 👋`}
         subtitle="Your CRM operations overview for today"
-        actions={
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
-            Create Job Card
-          </Button>
-        }
+
       />
 
       {/* KPI Stats */}

@@ -1,13 +1,8 @@
-import { useForm, FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Row, Col } from 'react-bootstrap';
-import { Save, ArrowLeft, Upload } from 'lucide-react';
-import { vehicleSchema } from '../../validations/vehicleSchema';
-import { SERVICE_TYPES, FUEL_TYPES, VEHICLE_TYPES } from '../../constants/statuses';
-import RHFTextField from '../../components/form/RHFTextField';
-import RHFSelect from '../../components/form/RHFSelect';
-import RHFTextarea from '../../components/form/RHFTextarea';
+import { Row, Col, Form } from 'react-bootstrap';
+import { ArrowLeft, Upload } from 'lucide-react';
+import { FUEL_TYPES, VEHICLE_TYPES } from '../../constants/statuses';
 import Button from '../../components/common/Button';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
@@ -16,8 +11,7 @@ import styles from './GateEntry.module.css';
 export default function GateEntryForm({ onCancel, onSuccess }) {
   const navigate = useNavigate();
 
-  const methods = useForm({
-    resolver: zodResolver(vehicleSchema),
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     defaultValues: {
       vehicleNumber: '',
       ownerName: '',
@@ -27,6 +21,7 @@ export default function GateEntryForm({ onCancel, onSuccess }) {
       fuelType: '',
       notes: '',
       kmReading: '',
+      ownerEmail: '',
     },
   });
 
@@ -47,11 +42,11 @@ export default function GateEntryForm({ onCancel, onSuccess }) {
   };
 
   return (
-    <div style={{ background: '#fff', minHeight: '100%', padding: '2rem 2.5rem' }}>
+    <div style={{ background: '#fff', minHeight: '100%', padding: '32px 40px' }}>
 
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
-        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.3rem', color: '#152326' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '21px', color: '#152326' }}>
           New Vehicle Entry
         </h4>
         <button
@@ -64,9 +59,9 @@ export default function GateEntryForm({ onCancel, onSuccess }) {
             }
           }}
           style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
+            display: 'flex', alignItems: 'center', gap: '6px',
             background: 'none', border: 'none', cursor: 'pointer',
-            color: '#6B7280', fontSize: '0.875rem', fontWeight: 500,
+            color: '#6B7280', fontSize: '14px', fontWeight: 500,
             padding: 0,
           }}
         >
@@ -74,114 +69,199 @@ export default function GateEntryForm({ onCancel, onSuccess }) {
         </button>
       </div>
 
-      <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)}>
-          
-          {/* Vehicle Information */}
-          <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
-            Vehicle Information
-          </p>
-          <Row className="g-3 mb-3">
-            <Col md={6}>
-              <RHFTextField name="vehicleNumber" label="Vehicle Number *" placeholder="TN 01 AB 1234" required />
-            </Col>
-            <Col md={6}>
-              <RHFTextField name="makeModel" label="Make & Model *" placeholder="e.g. Hyundai i20" required />
-            </Col>
-          </Row>
-          <Row className="g-3 mb-3">
-            <Col md={6}>
-              <RHFTextField name="kmReading" label="KM Reading" placeholder="Enter odometer reading" type="number" />
-            </Col>
-            <Col md={6}>
-              <RHFSelect name="vehicleType" label="Vehicle Type" options={VEHICLE_TYPES} placeholder="Select type" />
-            </Col>
-          </Row>
-          <Row className="g-3 mb-3">
-            <Col md={12}>
-              <RHFSelect name="fuelType" label="Fuel Type" options={FUEL_TYPES} placeholder="Select fuel type" />
-            </Col>
-          </Row>
+      <Form onSubmit={handleSubmit(onSubmit)}>
 
-          <div style={{ borderTop: '1px solid #E2E5DC', margin: '1.5rem 0' }} />
+        {/* Vehicle Information */}
+        <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
+          Vehicle Information
+        </p>
+        <Row className="g-3 mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Vehicle Number *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="TN 01 AB 1234"
+                isInvalid={!!errors.vehicleNumber}
+                style={{ borderRadius: '8px' }}
+                {...register("vehicleNumber", { required: "Vehicle number is required" })}
+              />
+              {errors.vehicleNumber && <Form.Control.Feedback type="invalid">{errors.vehicleNumber.message}</Form.Control.Feedback>}
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Make & Model *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="e.g. Hyundai i20"
+                isInvalid={!!errors.makeModel}
+                style={{ borderRadius: '8px' }}
+                {...register("makeModel", { required: "Make & model is required" })}
+              />
+              {errors.makeModel && <Form.Control.Feedback type="invalid">{errors.makeModel.message}</Form.Control.Feedback>}
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="g-3 mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>KM Reading</Form.Label>
+              <Form.Control
+                type="number"
+                placeholder="Enter odometer reading"
+                style={{ borderRadius: '8px' }}
+                {...register("kmReading")}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Vehicle Type</Form.Label>
+              <Form.Select
+                style={{ borderRadius: '8px' }}
+                {...register("vehicleType")}
+              >
+                <option value="">Select type</option>
+                {VEHICLE_TYPES.map(type => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="g-3 mb-3">
+          <Col md={12}>
+            <Form.Group>
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Fuel Type</Form.Label>
+              <Form.Select
+                style={{ borderRadius: '8px' }}
+                {...register("fuelType")}
+              >
+                <option value="">Select fuel type</option>
+                {FUEL_TYPES.map(type => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
 
-          {/* Owner Information */}
-          <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
-            Owner Information
-          </p>
-          <Row className="g-3 mb-3">
-            <Col md={6}>
-              <RHFTextField name="ownerName" label="Owner Name *" placeholder="Full name" required />
-            </Col>
-            <Col md={6}>
-              <RHFTextField name="ownerMobile" label="Mobile Number *" placeholder="10-digit mobile" required />
-            </Col>
-          </Row>
-          <Row className="g-3 mb-3">
-            <Col md={6}>
-              <RHFTextField name="ownerEmail" label="Email (Optional)" placeholder="owner@email.com" type="email" />
-            </Col>
-          </Row>
+        <div style={{ borderTop: '1px solid #E2E5DC', margin: '24px 0' }} />
 
-          <div style={{ borderTop: '1px solid #E2E5DC', margin: '1.5rem 0' }} />
+        {/* Owner Information */}
+        <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
+          Owner Information
+        </p>
+        <Row className="g-3 mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Owner Name *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Full name"
+                isInvalid={!!errors.ownerName}
+                style={{ borderRadius: '8px' }}
+                {...register("ownerName", { required: "Owner name is required" })}
+              />
+              {errors.ownerName && <Form.Control.Feedback type="invalid">{errors.ownerName.message}</Form.Control.Feedback>}
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Mobile Number *</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="10-digit mobile"
+                isInvalid={!!errors.ownerMobile}
+                style={{ borderRadius: '8px' }}
+                {...register("ownerMobile", { required: "Mobile number is required" })}
+              />
+              {errors.ownerMobile && <Form.Control.Feedback type="invalid">{errors.ownerMobile.message}</Form.Control.Feedback>}
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="g-3 mb-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Email (Optional)</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="owner@email.com"
+                style={{ borderRadius: '8px' }}
+                {...register("ownerEmail")}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
 
-          {/* Vehicle Images */}
-          <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
-            Vehicle Images
-          </p>
-          <div className={styles.imageUploadArea}>
-            <Upload size={32} className={styles.uploadIcon} />
-            <p className={styles.uploadText}>Drag & drop vehicle images or <span>browse</span></p>
-            <p className={styles.uploadHint}>Supports JPG, PNG up to 10MB each</p>
-            <div className={styles.uploadBtnRow}>
-              <Button variant="secondary" size="sm" leftIcon={Upload} type="button">
-                Upload Images
-              </Button>
-            </div>
-          </div>
+        <div style={{ borderTop: '1px solid #E2E5DC', margin: '24px 0' }} />
 
-          <div style={{ borderTop: '1px solid #E2E5DC', margin: '1.5rem 0' }} />
-
-          {/* Notes */}
-          <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
-            Additional Notes
-          </p>
-          <Row className="g-3 mb-3">
-            <Col md={12}>
-              <RHFTextarea name="notes" label="Notes / Observations" placeholder="Enter any special notes or customer complaints..." rows={3} />
-            </Col>
-          </Row>
-
-          {/* Footer Actions */}
-          <div style={{
-            borderTop: '1px solid #E2E5DC',
-            marginTop: '2rem', paddingTop: '1.5rem',
-            display: 'flex', justifyContent: 'flex-end', gap: '0.75rem',
-          }}>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => {
-                if (onCancel) {
-                  onCancel();
-                } else {
-                  navigate(ROUTES.GATE_DASHBOARD);
-                }
-              }}
-            >
-              Cancel
+        {/* Vehicle Images */}
+        <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
+          Vehicle Images
+        </p>
+        <div className={styles.imageUploadArea}>
+          <Upload size={32} className={styles.uploadIcon} />
+          <p className={styles.uploadText}>Drag & drop vehicle images or <span>browse</span></p>
+          <p className={styles.uploadHint}>Supports JPG, PNG up to 10MB each</p>
+          <div className={styles.uploadBtnRow}>
+            <Button variant="secondary" size="sm" leftIcon={Upload} type="button">
+              Upload Images
             </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={methods.formState.isSubmitting}
-            >
-              Submit
-            </Button>
           </div>
+        </div>
 
-        </form>
-      </FormProvider>
+        <div style={{ borderTop: '1px solid #E2E5DC', margin: '24px 0' }} />
+
+        {/* Notes */}
+        <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
+          Additional Notes
+        </p>
+        <Row className="g-3 mb-3">
+          <Col md={12}>
+            <Form.Group>
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Notes / Observations</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder="Enter any special notes or customer complaints..."
+                style={{ borderRadius: '8px' }}
+                {...register("notes")}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+
+        {/* Footer Actions */}
+        <div style={{
+          borderTop: '1px solid #E2E5DC',
+          marginTop: '32px', paddingTop: '24px',
+          display: 'flex', justifyContent: 'flex-end', gap: '12px',
+        }}>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => {
+              if (onCancel) {
+                onCancel();
+              } else {
+                navigate(ROUTES.GATE_DASHBOARD);
+              }
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            type="submit"
+            isLoading={isSubmitting}
+          >
+            Submit
+          </Button>
+        </div>
+
+      </Form>
     </div>
   );
 }

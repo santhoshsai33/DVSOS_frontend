@@ -1,13 +1,8 @@
-import { useForm, FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Row, Col } from 'react-bootstrap';
+import { Row, Col, Form } from 'react-bootstrap';
 import { Save, Search, MessageCircle, ArrowLeft } from 'lucide-react';
-import { jobCardSchema } from '../../validations/jobCardSchema';
 import { SERVICE_TYPES } from '../../constants/statuses';
-import RHFTextField from '../../components/form/RHFTextField';
-import RHFSelect from '../../components/form/RHFSelect';
-import RHFTextarea from '../../components/form/RHFTextarea';
 import Button from '../../components/common/Button';
 import { toastSuccess, toastError, toastInfo } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
@@ -29,8 +24,7 @@ export default function JobCardCreate() {
   const [selectedServices, setSelectedServices] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const methods = useForm({
-    resolver: zodResolver(jobCardSchema.partial({ services: true })),
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm({
     defaultValues: {
       vehicleId: '',
       vehicleNumber: '',
@@ -47,7 +41,6 @@ export default function JobCardCreate() {
     },
   });
 
-  const { watch, setValue, handleSubmit, formState } = methods;
   const vehicleNumber = watch('vehicleNumber');
 
   const toggleService = (service) => {
@@ -120,20 +113,20 @@ export default function JobCardCreate() {
   };
 
   return (
-    <div style={{ background: '#fff', minHeight: '100%', padding: '2rem 2.5rem' }}>
+    <div style={{ background: '#fff', minHeight: '100%', padding: '32px 40px' }}>
       
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
-        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.3rem', color: '#152326' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '21px', color: '#152326' }}>
           Create Job Card
         </h4>
         <button
           type="button"
           onClick={() => navigate(ROUTES.JOB_CARDS)}
           style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
+            display: 'flex', alignItems: 'center', gap: '6px',
             background: 'none', border: 'none', cursor: 'pointer',
-            color: '#6B7280', fontSize: '0.875rem', fontWeight: 500,
+            color: '#6B7280', fontSize: '14px', fontWeight: 500,
             padding: 0,
           }}
         >
@@ -144,163 +137,242 @@ export default function JobCardCreate() {
       <Row className="g-4">
         {/* LEFT COLUMN: FORM */}
         <Col lg={8}>
-          <FormProvider {...methods}>
-            <form id="jobCardForm" onSubmit={handleSubmit(onSubmit)}>
-              
-              <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
-                Vehicle & Customer Information
-              </p>
-              
-              <Row className="g-3 mb-3 align-items-end">
-                <Col md={6}>
-                  <div className="d-flex gap-2">
-                    <div className="flex-grow-1">
-                      <RHFTextField name="vehicleNumber" label="Registration Number *" placeholder="TN 01 AB 1234" required />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      className="mb-3"
-                      style={{ height: '42px', marginTop: '28px' }}
-                      leftIcon={Search}
-                      isLoading={isSearching}
-                      onClick={handleSearchVehicle}
-                    >
-                      Search
-                    </Button>
+          <Form id="jobCardForm" onSubmit={handleSubmit(onSubmit)}>
+            
+            <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
+              Vehicle & Customer Information
+            </p>
+            
+            <Row className="g-3 mb-3 align-items-end">
+              <Col md={6}>
+                <div className="d-flex gap-2">
+                  <div className="flex-grow-1">
+                    <Form.Group>
+                      <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Registration Number *</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="TN 01 AB 1234"
+                        isInvalid={!!errors.vehicleNumber}
+                        style={{ borderRadius: '8px' }}
+                        {...register("vehicleNumber", { required: "Registration number is required" })}
+                      />
+                      {errors.vehicleNumber && <Form.Control.Feedback type="invalid">{errors.vehicleNumber.message}</Form.Control.Feedback>}
+                    </Form.Group>
                   </div>
-                </Col>
-                <Col md={6}>
-                  <RHFTextField name="makeModel" label="Make & Model *" placeholder="e.g. Hyundai Creta" required />
-                </Col>
-              </Row>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="mb-3"
+                    style={{ height: '42px', marginTop: '28px' }}
+                    leftIcon={Search}
+                    isLoading={isSearching}
+                    onClick={handleSearchVehicle}
+                  >
+                    Search
+                  </Button>
+                </div>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Make & Model *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="e.g. Hyundai Creta"
+                    isInvalid={!!errors.makeModel}
+                    style={{ borderRadius: '8px' }}
+                    {...register("makeModel", { required: "Make & model is required" })}
+                  />
+                  {errors.makeModel && <Form.Control.Feedback type="invalid">{errors.makeModel.message}</Form.Control.Feedback>}
+                </Form.Group>
+              </Col>
+            </Row>
 
-              <Row className="g-3 mb-3">
-                <Col md={6}>
-                  <RHFTextField name="ownerName" label="Owner Name *" placeholder="Full name" required />
-                </Col>
-                <Col md={6}>
-                  <RHFTextField name="ownerMobile" label="Mobile Number *" placeholder="10-digit mobile" required />
-                </Col>
-              </Row>
+            <Row className="g-3 mb-3">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Owner Name *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Full name"
+                    isInvalid={!!errors.ownerName}
+                    style={{ borderRadius: '8px' }}
+                    {...register("ownerName", { required: "Owner name is required" })}
+                  />
+                  {errors.ownerName && <Form.Control.Feedback type="invalid">{errors.ownerName.message}</Form.Control.Feedback>}
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Mobile Number *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="10-digit mobile"
+                    isInvalid={!!errors.ownerMobile}
+                    style={{ borderRadius: '8px' }}
+                    {...register("ownerMobile", { required: "Mobile number is required" })}
+                  />
+                  {errors.ownerMobile && <Form.Control.Feedback type="invalid">{errors.ownerMobile.message}</Form.Control.Feedback>}
+                </Form.Group>
+              </Col>
+            </Row>
 
-              <div style={{ borderTop: '1px solid #E2E5DC', margin: '1.5rem 0' }} />
+            <div style={{ borderTop: '1px solid #E2E5DC', margin: '24px 0' }} />
 
-              <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
-                Service Configuration
-              </p>
-              
-              <Row className="g-3 mb-3">
-                <Col md={4}>
-                  <RHFSelect name="serviceType" label="Primary Category *" options={SERVICE_TYPES} placeholder="Select category" required />
-                </Col>
-                <Col md={4}>
-                  <RHFSelect name="priority" label="Priority" options={PRIORITY_OPTIONS} />
-                </Col>
-                <Col md={4}>
-                  <RHFTextField name="deliveryDate" label="Expected Delivery *" type="datetime-local" required />
-                </Col>
-              </Row>
+            <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
+              Service Configuration
+            </p>
+            
+            <Row className="g-3 mb-3">
+              <Col md={4}>
+                <Form.Group>
+                  <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Primary Category *</Form.Label>
+                  <Form.Select
+                    isInvalid={!!errors.serviceType}
+                    style={{ borderRadius: '8px' }}
+                    {...register("serviceType", { required: "Service category is required" })}
+                  >
+                    <option value="">Select category</option>
+                    {SERVICE_TYPES.map(type => (
+                      <option key={type.value} value={type.value}>{type.label}</option>
+                    ))}
+                  </Form.Select>
+                  {errors.serviceType && <Form.Control.Feedback type="invalid">{errors.serviceType.message}</Form.Control.Feedback>}
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group>
+                  <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Priority</Form.Label>
+                  <Form.Select
+                    style={{ borderRadius: '8px' }}
+                    {...register("priority")}
+                  >
+                    {PRIORITY_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group>
+                  <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Expected Delivery *</Form.Label>
+                  <Form.Control
+                    type="datetime-local"
+                    isInvalid={!!errors.deliveryDate}
+                    style={{ borderRadius: '8px' }}
+                    {...register("deliveryDate", { required: "Delivery date is required" })}
+                  />
+                  {errors.deliveryDate && <Form.Control.Feedback type="invalid">{errors.deliveryDate.message}</Form.Control.Feedback>}
+                </Form.Group>
+              </Col>
+            </Row>
 
-              <div style={{ borderTop: '1px solid #E2E5DC', margin: '1.5rem 0' }} />
+            <div style={{ borderTop: '1px solid #E2E5DC', margin: '24px 0' }} />
 
-              <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
-                Master Service List
-              </p>
-              
-              <div className={styles.serviceGrid}>
-                {masterServices.map((service) => {
-                  const isSelected = selectedServices.some((s) => s.id === service.id);
-                  return (
-                    <div
-                      key={service.id}
-                      className={[styles.serviceItem, isSelected ? styles.selected : ''].join(' ')}
-                      onClick={() => toggleService(service)}
-                    >
-                      <div className="d-flex justify-content-between align-items-center w-100">
-                        <div className="d-flex align-items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => { }}
-                            style={{ width: 16, height: 16, accentColor: 'var(--color-accent)' }}
-                          />
-                          <span className={styles.serviceName}>{service.name}</span>
-                        </div>
-                        <span className={styles.servicePrice}>{formatCurrency(service.price)}</span>
+            <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
+              Master Service List
+            </p>
+            
+            <div className={styles.serviceGrid}>
+              {masterServices.map((service) => {
+                const isSelected = selectedServices.some((s) => s.id === service.id);
+                return (
+                  <div
+                    key={service.id}
+                    className={[styles.serviceItem, isSelected ? styles.selected : ''].join(' ')}
+                    onClick={() => toggleService(service)}
+                  >
+                    <div className="d-flex justify-content-between align-items-center w-100">
+                      <div className="d-flex align-items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => { }}
+                          style={{ width: 16, height: 16, accentColor: 'var(--color-accent)' }}
+                        />
+                        <span className={styles.serviceName}>{service.name}</span>
                       </div>
+                      <span className={styles.servicePrice}>{formatCurrency(service.price)}</span>
                     </div>
-                  );
-                })}
-              </div>
-
-              <div style={{ borderTop: '1px solid #E2E5DC', margin: '1.5rem 0' }} />
-
-              <RHFTextarea name="notes" label="Customer Complaints / Notes" placeholder="Enter any specific issues reported by customer..." rows={3} />
-            </form>
-          </FormProvider>
-        </Col>
-
-        {/* RIGHT COLUMN: BILL PREVIEW */}
-        <Col lg={4}>
-          <div style={{ background: '#F9FAFB', padding: '1.5rem', borderRadius: '12px', border: '1px solid #E2E5DC', position: 'sticky', top: '80px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed #E2E5DC' }}>
-              <h5 style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: '#152326' }}>Bill Preview</h5>
-              <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', borderRadius: '12px', fontWeight: 600 }}>Auto-generated</span>
-            </div>
-
-            <div style={{ minHeight: '150px', maxHeight: '300px', overflowY: 'auto', marginBottom: '1rem' }}>
-              {selectedServices.length === 0 ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px', color: '#6B7280', fontSize: '0.85rem', fontStyle: 'italic' }}>No services selected</div>
-              ) : (
-                selectedServices.map((item) => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #F3F4F6' }}>
-                    <span style={{ fontSize: '0.85rem', color: '#152326', fontWeight: 500 }}>{item.name} <small style={{ color: '#6B7280' }}>x1</small></span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#152326' }}>{formatCurrency(item.price)}</span>
                   </div>
-                ))
-              )}
+                );
+              })}
             </div>
 
-            <div style={{ background: '#fff', borderRadius: '8px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', border: '1px solid #E2E5DC' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#4B5563' }}>
-                <span>Subtotal</span>
-                <span>{formatCurrency(subtotal)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#4B5563' }}>
-                <span>Tax ({companySettings.defaultTaxRate}%)</span>
-                <span>{formatCurrency(taxAmount)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.05rem', fontWeight: 700, color: '#0F766E', paddingTop: '0.5rem', marginTop: '0.25rem', borderTop: '1px dashed #E2E5DC' }}>
-                <span>Grand Total</span>
-                <span>{formatCurrency(grandTotal)}</span>
-              </div>
-            </div>
+            <div style={{ borderTop: '1px solid #E2E5DC', margin: '24px 0' }} />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
-              <Button
-                variant="outline"
-                fullWidth
-                leftIcon={MessageCircle}
-                onClick={handleWhatsAppApproval}
-                style={{ borderColor: '#25D366', color: '#25D366' }}
-              >
-                Send via WhatsApp
-              </Button>
-              <Button
-                variant="primary"
-                fullWidth
-                leftIcon={Save}
-                form="jobCardForm"
-                type="submit"
-                isLoading={formState.isSubmitting}
-              >
-                Create Job Card
-              </Button>
-            </div>
-          </div>
+            <Form.Group className="mb-3">
+              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Customer Complaints / Notes</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder="Enter any specific issues reported by customer..."
+                style={{ borderRadius: '8px' }}
+                {...register("notes")}
+              />
+            </Form.Group>
+          </Form>
         </Col>
-      </Row>
-    </div>
-  );
+
+          {/* RIGHT COLUMN: BILL PREVIEW */}
+          <Col lg={4}>
+            <div style={{ background: '#F9FAFB', padding: '24px', borderRadius: '12px', border: '1px solid #E2E5DC', position: 'sticky', top: '80px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed #E2E5DC' }}>
+                <h5 style={{ margin: 0, fontWeight: 700, fontSize: '18px', color: '#152326' }}>Bill Preview</h5>
+                <span style={{ fontSize: '11px', padding: '3px 8px', background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', borderRadius: '12px', fontWeight: 600 }}>Auto-generated</span>
+              </div>
+
+              <div style={{ minHeight: '150px', maxHeight: '300px', overflowY: 'auto', marginBottom: '16px' }}>
+                {selectedServices.length === 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100px', color: '#6B7280', fontSize: '14px', fontStyle: 'italic' }}>No services selected</div>
+                ) : (
+                  selectedServices.map((item) => (
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
+                      <span style={{ fontSize: '14px', color: '#152326', fontWeight: 500 }}>{item.name} <small style={{ color: '#6B7280' }}>x1</small></span>
+                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#152326' }}>{formatCurrency(item.price)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div style={{ background: '#fff', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid #E2E5DC' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#4B5563' }}>
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(subtotal)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#4B5563' }}>
+                  <span>Tax ({companySettings.defaultTaxRate}%)</span>
+                  <span>{formatCurrency(taxAmount)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '17px', fontWeight: 700, color: '#0F766E', paddingTop: '8px', marginTop: '4px', borderTop: '1px dashed #E2E5DC' }}>
+                  <span>Grand Total</span>
+                  <span>{formatCurrency(grandTotal)}</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
+                <Button
+                  variant="outline"
+                  fullWidth
+                  leftIcon={MessageCircle}
+                  onClick={handleWhatsAppApproval}
+                  style={{ borderColor: '#25D366', color: '#25D366' }}
+                >
+                  Send via WhatsApp
+                </Button>
+                <Button
+                  variant="primary"
+                  fullWidth
+                  leftIcon={Save}
+                  form="jobCardForm"
+                  type="submit"
+                  isLoading={isSubmitting}
+                >
+                  Create Job Card
+                </Button>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </div>
+    );
 }

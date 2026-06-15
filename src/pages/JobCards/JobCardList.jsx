@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Pagination } from 'react-bootstrap';
+import { Table, Pagination, Dropdown } from 'react-bootstrap';
 import DataTable from '../../components/common/DataTable';
-import { Plus, Eye, Edit } from 'lucide-react';
+import { Plus, Eye, Edit, MoreVertical, PlusCircle, MessageCircle } from 'lucide-react';
 import { useJobCards } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
@@ -19,6 +19,35 @@ const PRIORITY_COLORS = {
   HIGH: '#F59E0B',
   URGENT: '#EF4444',
 };
+
+const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => (
+  <button
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}
+    {...props}
+    style={{
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '4px',
+      color: 'var(--color-text-secondary)',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '50%',
+      width: '32px',
+      height: '32px',
+      transition: 'background 0.2s',
+    }}
+    onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
+    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+  >
+    <MoreVertical size={18} />
+  </button>
+));
 
 export default function JobCardList() {
   const navigate = useNavigate();
@@ -59,14 +88,44 @@ export default function JobCardList() {
     {
       header: 'Actions',
       render: (row) => (
-        <div className="d-flex gap-1">
-          <Button size="sm" variant="ghost" leftIcon={Eye} onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.JOB_CARDS}/${row.id}`); }}>
-            View
-          </Button>
-          <Button size="sm" variant="ghost" leftIcon={Edit} onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.JOB_CARDS}/${row.id}`); }}>
-            Edit
-          </Button>
-        </div>
+        <Dropdown align="end" onClick={(e) => e.stopPropagation()}>
+          <Dropdown.Toggle as={CustomToggle} id={`dropdown-action-${row.id}`} className={styles.dropdownToggleNoCaret} />
+          <Dropdown.Menu
+            style={{ padding: '6px', borderRadius: '10px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}
+          >
+            <Dropdown.Item
+              onClick={() => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
+            >
+              <Eye size={15} style={{ color: 'var(--color-primary)' }} />
+              <span>View</span>
+            </Dropdown.Item>
+            <Dropdown.Item
+              onClick={() => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
+            >
+              <Edit size={15} style={{ color: 'var(--color-accent)' }} />
+              <span>Edit</span>
+            </Dropdown.Item>
+            <Dropdown.Item
+              onClick={() => navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK}?jobCardId=${row.id}`)}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
+            >
+              <PlusCircle size={15} style={{ color: 'var(--color-accent-2)' }} />
+              <span>Add Additional Work</span>
+            </Dropdown.Item>
+            <Dropdown.Item
+              onClick={() => {
+                const message = `Hello ${row.ownerName || 'Customer'}, your vehicle service card #${row.id} estimate is ready. Please reply YES to approve work.`;
+                window.open(`https://wa.me/91${row.ownerMobile || row.mobile || ''}?text=${encodeURIComponent(message)}`, '_blank');
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, color: '#25D366' }}
+            >
+              <MessageCircle size={15} style={{ color: '#25D366' }} />
+              <span>WhatsApp Resend</span>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       ),
     },
   ];
@@ -77,7 +136,6 @@ export default function JobCardList() {
     <div>
       <PageHeader
         title="Job Cards"
-        subtitle={`${data?.total ?? 0} total job cards`}
         breadcrumbs={[{ label: 'Job Cards' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>

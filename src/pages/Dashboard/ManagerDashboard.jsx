@@ -72,7 +72,7 @@ export default function ManagerDashboard() {
   ];
 
   const jobColumns = [
-    { header: 'Vehicle No', accessor: 'vehicleNo', render: (row) => <strong style={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>{row.vehicleNo}</strong> },
+    { header: 'Vehicle No', accessor: 'vehicleNo', render: (row) => <strong style={{ fontSize: '14px' }}>{row.vehicleNo}</strong> },
     { header: 'Customer', accessor: 'customer' },
     { header: 'Stage', accessor: 'stage' },
     { header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
