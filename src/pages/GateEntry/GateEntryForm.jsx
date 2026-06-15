@@ -25,7 +25,6 @@ export default function GateEntryForm({ onCancel, onSuccess }) {
       makeModel: '',
       vehicleType: '',
       fuelType: '',
-      serviceType: '',
       notes: '',
       kmReading: '',
     },
@@ -99,11 +98,8 @@ export default function GateEntryForm({ onCancel, onSuccess }) {
             </Col>
           </Row>
           <Row className="g-3 mb-3">
-            <Col md={6}>
+            <Col md={12}>
               <RHFSelect name="fuelType" label="Fuel Type" options={FUEL_TYPES} placeholder="Select fuel type" />
-            </Col>
-            <Col md={6}>
-              <RHFSelect name="serviceType" label="Service Type *" options={SERVICE_TYPES} placeholder="Select service" required />
             </Col>
           </Row>
 

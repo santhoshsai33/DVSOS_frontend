@@ -25,7 +25,8 @@ ul {
 }
 
 /* Button & Card smooth transitions globally */
-.btn, .card {
+.btn,
+.card {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -36,7 +37,8 @@ ul {
 }
 
 /* Form Controls Premium Styling */
-.form-control, .form-select {
+.form-control,
+.form-select {
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background-color: var(--color-bg-surface);
@@ -46,7 +48,8 @@ ul {
   box-shadow: none;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   background-color: var(--color-bg-surface);
@@ -69,9 +72,6 @@ ul {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.premium-card:hover {
-  box-shadow: var(--shadow-md);
-}
 
 .table-header-premium {
   display: flex;
@@ -89,7 +89,8 @@ table {
   width: 100%;
 }
 
-table thead.table-light th, table thead th {
+table thead.table-light th,
+table thead th {
   background-color: var(--color-bg-surface-hover) !important;
   color: var(--color-text-secondary) !important;
   font-weight: 600;
@@ -142,6 +143,13 @@ table tbody td {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

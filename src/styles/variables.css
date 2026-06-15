@@ -1,6 +1,6 @@
 :root {
   /* Premium Fonts */
-  --font-family-base: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-family-base: 'Poppins', system-ui, -apple-system, sans-serif;
   --bs-font-sans-serif: var(--font-family-base);
   --bs-body-font-family: var(--bs-font-sans-serif);
 

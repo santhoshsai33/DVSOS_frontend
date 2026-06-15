@@ -27,10 +27,7 @@ export default function GateDashboardPage() {
     { header: 'Owner Name', accessor: 'ownerName', sortable: false },
     { header: 'Mobile', accessor: 'mobile', sortable: false },
     { header: 'Make & Model', accessor: 'makeModel', sortable: false },
-    { header: 'Service Type', accessor: 'serviceType', sortable: false },
     { header: 'Status', sortable: false, render: (row) => <StatusBadge status={row.status} /> },
-    { header: 'Entry Time', sortable: false, render: (row) => formatDateTime(row.entryTime) },
-    { header: 'Entry By', accessor: 'entryBy', sortable: false },
   ];
 
   return (

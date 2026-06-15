@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowDownUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import Loader from '../Loader';
 import EmptyState from '../EmptyState';
 import styles from './DataTable.module.css';
@@ -70,7 +70,7 @@ export default function DataTable({
 
   return (
     <div className={styles.tableWrapper}>
-      <div style={{ overflowX: 'auto' }}>
+      <div className={styles.scrollContainer}>
         <table className={styles.table} style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
           <thead>
             <tr>
@@ -83,7 +83,9 @@ export default function DataTable({
                     disabled={!col.accessor || col.sortable === false}
                   >
                     {col.header}
-                    {col.accessor && col.sortable !== false && <ArrowDownUp size={13} />}
+                    {col.accessor && col.sortable !== false && sortConfig.key === col.accessor && (
+                      sortConfig.direction === 'asc' ? <ChevronUp size={14} style={{ marginLeft: '4px' }} /> : <ChevronDown size={14} style={{ marginLeft: '4px' }} />
+                    )}
                   </button>
                 </th>
               ))}
@@ -128,22 +130,22 @@ export default function DataTable({
               entries
             </span>
           </div>
-          
+
           {totalPages > 1 && (
             <div className={styles.paginationControls}>
-              <button 
-                className={[styles.pageBtn, styles.pageBtnIcon].join(' ')} 
-                onClick={() => handlePageChange(currentPage - 1)} 
+              <button
+                className={[styles.pageBtn, styles.pageBtnIcon].join(' ')}
+                onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
               >
                 <ChevronLeft size={14} /> Previous
               </button>
-              
+
               {paginationItems}
-              
-              <button 
-                className={[styles.pageBtn, styles.pageBtnIcon].join(' ')} 
-                onClick={() => handlePageChange(currentPage + 1)} 
+
+              <button
+                className={[styles.pageBtn, styles.pageBtnIcon].join(' ')}
+                onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
               >
                 Next <ChevronRight size={14} />

@@ -124,3 +124,49 @@
   border-radius: 4px;
   border: 1px solid var(--color-border);
 }
+
+.exitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1.5px solid var(--bs-danger);
+  background: transparent;
+  color: var(--bs-danger);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+}
+
+.exitBtn:hover {
+  background: var(--bs-danger);
+  color: #fff;
+}
+
+.viewBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1.5px solid var(--bs-primary);
+  background: transparent;
+  color: var(--bs-primary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  margin-right: 8px;
+}
+
+.viewBtn:hover {
+  background: var(--bs-primary);
+  color: #fff;
+}
+
+.dropdownToggleNoCaret::after {
+  display: none !important;
+}
+
