@@ -38,7 +38,7 @@
   --gradient-warning: linear-gradient(135deg, #D69E2E 0%, #B7791F 100%);
   --gradient-danger: linear-gradient(135deg, #D92D20 0%, #B42318 100%);
   --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-  --gradient-sidebar: linear-gradient(180deg, #102629 0%, #173B3F 58%, #21351F 100%);
+  --gradient-sidebar: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
 
   --color-text-primary: #152326;
   --color-text-secondary: #4B5563;

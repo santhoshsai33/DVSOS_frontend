@@ -11,9 +11,11 @@ export default function DataTable({
   isLoading = false,
   emptyMessage = 'No records found',
   onRowClick,
+  showPagination = true,
+  defaultItemsPerPage = 10,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(defaultItemsPerPage);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   const sortedData = [...data].sort((a, b) => {
@@ -24,9 +26,9 @@ export default function DataTable({
   });
 
   // Pagination Logic
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = showPagination ? (Math.ceil(sortedData.length / itemsPerPage) || 1) : 1;
+  const startIndex = showPagination ? ((currentPage - 1) * itemsPerPage) : 0;
+  const paginatedData = showPagination ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData;
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -109,7 +111,7 @@ export default function DataTable({
         </table>
       </div>
 
-      {data.length > 0 && (
+      {showPagination && data.length > 0 && (
         <div className={styles.paginationRow}>
           <div className={styles.paginationInfo}>
             <span>

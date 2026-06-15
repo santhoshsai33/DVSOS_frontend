@@ -19,7 +19,6 @@ import AuditLogsPage from '../features/roles/admin/pages/AuditLogsPage';
 import UserForm from '../pages/Users/UserForm';
 import GateDashboardPage from '../features/roles/gate-security/pages/GateDashboardPage';
 import GateEntryPage from '../features/roles/gate-security/pages/GateEntryPage';
-import VehicleExitPage from '../features/roles/gate-security/pages/VehicleExitPage';
 import PendingSyncPage from '../features/roles/gate-security/pages/PendingSyncPage';
 import CrmDashboardPage from '../features/roles/crm/pages/CrmDashboardPage';
 import CreateJobCardPage from '../features/roles/crm/pages/CreateJobCardPage';
@@ -118,7 +117,6 @@ export const router = createBrowserRouter([
             children: [
               { path: 'gate/dashboard', element: <GateDashboardPage /> },
               { path: 'gate/entry', element: <GateEntryPage /> },
-              { path: 'gate/exit', element: <VehicleExitPage /> },
               { path: 'gate/pending-sync', element: <PendingSyncPage /> },
             ],
           },

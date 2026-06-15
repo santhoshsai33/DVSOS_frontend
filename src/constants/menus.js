@@ -36,7 +36,6 @@ export const SIDEBAR_MENUS = {
   [ROLES.GATE_SECURITY]: [
     { label: 'Gate Dashboard', path: ROUTES.GATE_DASHBOARD, icon: LayoutDashboard },
     { label: 'Vehicle Entry', path: ROUTES.GATE_ENTRY, icon: LogIn },
-    { label: 'Vehicle Exit', path: ROUTES.GATE_EXIT, icon: LogOut },
     { label: 'Pending Sync', path: ROUTES.GATE_PENDING_SYNC, icon: AlertCircle },
     { label: 'Service History', path: ROUTES.SERVICE_HISTORY, icon: FileText },
   ],

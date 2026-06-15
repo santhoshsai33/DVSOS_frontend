@@ -13,7 +13,7 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import styles from './GateEntry.module.css';
 
-export default function GateEntryForm() {
+export default function GateEntryForm({ onCancel, onSuccess }) {
   const navigate = useNavigate();
 
   const methods = useForm({
@@ -37,7 +37,11 @@ export default function GateEntryForm() {
       await new Promise((r) => setTimeout(r, 800));
       console.log('Gate Entry:', data);
       toastSuccess(`Vehicle ${data.vehicleNumber} registered successfully!`);
-      navigate(ROUTES.GATE_DASHBOARD);
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate(ROUTES.GATE_DASHBOARD);
+      }
     } catch {
       toastError('Failed to register vehicle. Please try again.');
     }
@@ -53,7 +57,13 @@ export default function GateEntryForm() {
         </h4>
         <button
           type="button"
-          onClick={() => navigate(ROUTES.GATE_DASHBOARD)}
+          onClick={() => {
+            if (onCancel) {
+              onCancel();
+            } else {
+              navigate(ROUTES.GATE_DASHBOARD);
+            }
+          }}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.4rem',
             background: 'none', border: 'none', cursor: 'pointer',
@@ -155,7 +165,13 @@ export default function GateEntryForm() {
             <Button
               variant="secondary"
               type="button"
-              onClick={() => navigate(ROUTES.GATE_DASHBOARD)}
+              onClick={() => {
+                if (onCancel) {
+                  onCancel();
+                } else {
+                  navigate(ROUTES.GATE_DASHBOARD);
+                }
+              }}
             >
               Cancel
             </Button>
