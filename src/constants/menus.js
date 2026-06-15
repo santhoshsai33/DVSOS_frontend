@@ -91,7 +91,15 @@ export const SIDEBAR_MENUS = {
     { label: 'Admin Dashboard', path: ROUTES.ADMIN_DASHBOARD, icon: LayoutDashboard },
     { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
     { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },
-    { label: 'Service Items', path: ROUTES.ADMIN_SERVICE_ITEMS, icon: Database },
+    {
+      label: 'Master Menu',
+      icon: Database,
+      children: [
+        { label: 'Service Categories', path: ROUTES.ADMIN_MASTER_CATEGORIES, icon: ClipboardList },
+        { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench },
+        { label: 'Service Pricing', path: ROUTES.ADMIN_MASTER_PRICING, icon: Package }
+      ]
+    },
     { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },
     { label: 'Audit Logs', path: ROUTES.ADMIN_AUDIT_LOGS, icon: FileText },
     ...commonLinks,

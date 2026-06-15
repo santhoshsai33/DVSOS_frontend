@@ -159,3 +159,14 @@ table tbody td {
     transform: translateY(0);
   }
 }
+
+/* Dropdown Item Premium Hover Effects */
+.dropdown-item {
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: #E5E7EB !important; /* Slightly darker grey for clear visual feedback */
+  color: var(--color-text-primary) !important;
+}

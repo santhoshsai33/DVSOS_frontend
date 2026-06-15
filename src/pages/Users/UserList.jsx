@@ -1,18 +1,48 @@
-import { useState } from 'react';
-import { Table, Pagination } from 'react-bootstrap';
-import { Plus, Edit, Trash2, Mail } from 'lucide-react';
+import React, { useState } from 'react';
+import { Dropdown } from 'react-bootstrap';
+import { Plus, Edit, Trash2, Mail, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUsers } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
 import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
+import DataTable from '../../components/common/DataTable';
 import { formatDateTime } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROLE_LABELS } from '../../constants/roles';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import styles from './Users.module.css';
+
+const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => (
+  <button
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}
+    {...props}
+    style={{
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '4px',
+      color: 'var(--color-text-secondary)',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '50%',
+      width: '32px',
+      height: '32px',
+      transition: 'background 0.2s',
+    }}
+    onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
+    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+  >
+    <MoreVertical size={18} />
+  </button>
+));
 
 export default function UserList() {
   const navigate = useNavigate();
@@ -28,26 +58,75 @@ export default function UserList() {
     }
   };
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
   const tableData = data?.data || [];
-  const totalPages = Math.ceil(tableData.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = tableData.slice(startIndex, startIndex + itemsPerPage);
 
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
-
-  let paginationItems = [];
-  for (let number = 1; number <= totalPages; number++) {
-    paginationItems.push(
-      <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
-        {number}
-      </Pagination.Item>
-    );
-  }
+  const columns = [
+    {
+      header: 'Name',
+      accessor: 'name',
+      render: (row) => (
+        <div className="d-flex align-items-center gap-2">
+          <div className={styles.avatar}>{row.name.charAt(0)}</div>
+          <span className={styles.userName}>{row.name}</span>
+        </div>
+      ),
+    },
+    {
+      header: 'Email',
+      accessor: 'email',
+      render: (row) => (
+        <a href={`mailto:${row.email}`} className={styles.emailLink}>
+          <Mail size={12} className="me-1" /> {row.email}
+        </a>
+      ),
+    },
+    { header: 'Mobile', accessor: 'mobile' },
+    {
+      header: 'Role',
+      accessor: 'role',
+      render: (row) => (
+        <span className={styles.roleBadge}>{ROLE_LABELS[row.role] || row.role}</span>
+      ),
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (row) => (
+        <StatusBadge status={row.status === 'ACTIVE' ? 'COMPLETED' : 'DELAYED'} />
+      ),
+    },
+    {
+      header: 'Last Login',
+      accessor: 'lastLogin',
+      render: (row) => formatDateTime(row.lastLogin),
+    },
+    {
+      header: 'Actions',
+      render: (row) => (
+        <Dropdown align="end" onClick={(e) => e.stopPropagation()}>
+          <Dropdown.Toggle as={CustomToggle} id={`dropdown-action-${row.id}`} />
+          <Dropdown.Menu
+            style={{ padding: '6px', borderRadius: '10px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}
+          >
+            <Dropdown.Item
+              onClick={() => navigate(`/admin/users/${row.id}/edit`)}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
+            >
+              <Edit size={15} style={{ color: 'var(--color-accent)' }} />
+              <span>Edit User</span>
+            </Dropdown.Item>
+            <Dropdown.Item
+              onClick={() => handleDeleteUser(row)}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, color: 'var(--color-danger)' }}
+            >
+              <Trash2 size={15} style={{ color: 'red' }} />
+              <span>Delete User</span>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -86,84 +165,12 @@ export default function UserList() {
       </div>
 
       <div className="premium-card d-flex flex-column">
-        <div className="table-responsive flex-grow-1">
-          {isLoading ? (
-            <div className="p-5 text-center text-muted">Loading data...</div>
-          ) : tableData.length === 0 ? (
-            <div className="p-5 text-center text-muted">No users found</div>
-          ) : (
-            <Table striped hover className="mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Mobile</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Last Login</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row) => (
-                  <tr key={row.id}>
-                    <td className="align-middle">
-                      <div className="d-flex align-items-center gap-2">
-                        <div className={styles.avatar}>{row.name.charAt(0)}</div>
-                        <span className={styles.userName}>{row.name}</span>
-                      </div>
-                    </td>
-                    <td className="align-middle">
-                      <a href={`mailto:${row.email}`} className={styles.emailLink}>
-                        <Mail size={12} className="me-1" /> {row.email}
-                      </a>
-                    </td>
-                    <td className="align-middle">{row.mobile}</td>
-                    <td className="align-middle">
-                      <span className={styles.roleBadge}>{ROLE_LABELS[row.role] || row.role}</span>
-                    </td>
-                    <td className="align-middle">
-                      <StatusBadge status={row.status === 'ACTIVE' ? 'COMPLETED' : 'DELAYED'} />
-                    </td>
-                    <td className="align-middle">{formatDateTime(row.lastLogin)}</td>
-                    <td className="align-middle">
-                      <div className="d-flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          leftIcon={Edit}
-                          onClick={() => navigate(`/admin/users/${row.id}/edit`)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-danger"
-                          leftIcon={Trash2}
-                          onClick={() => handleDeleteUser(row)}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </div>
-
-        {!isLoading && totalPages > 1 && (
-          <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
-            <small className="text-muted">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, tableData.length)} of {tableData.length} entries
-            </small>
-            <Pagination className="mb-0" size="sm">
-              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-              {paginationItems}
-              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-            </Pagination>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={tableData}
+          isLoading={isLoading}
+          emptyMessage="No users found"
+        />
       </div>
     </div>
   );

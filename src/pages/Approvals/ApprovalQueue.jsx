@@ -132,7 +132,6 @@ export default function ApprovalQueue() {
     <div>
       <PageHeader
         title="Customer Approvals"
-        subtitle="Review and action approval requests from the workshop"
         breadcrumbs={[{ label: 'Approvals' }]}
       />
 

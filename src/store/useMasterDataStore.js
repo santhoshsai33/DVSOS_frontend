@@ -13,6 +13,12 @@ const INITIAL_SERVICES = [
   { id: 'S9', name: 'Interior Detailing', price: 1500, category: 'Water Wash' },
 ];
 
+const INITIAL_CATEGORIES = [
+  { id: 'C1', name: 'Mechanical', description: 'Mechanical maintenance and repairs' },
+  { id: 'C2', name: 'Body Shop', description: 'Denting, painting and panel work' },
+  { id: 'C3', name: 'Water Wash', description: 'Washing and interior detailing' }
+];
+
 const INITIAL_COMPANY = {
   companyName: 'DVSOS Premium Auto Services',
   address: '123 Automotive Ave, Metro City',
@@ -27,6 +33,7 @@ const useMasterDataStore = create(
     (set) => ({
       companySettings: INITIAL_COMPANY,
       masterServices: INITIAL_SERVICES,
+      serviceCategories: INITIAL_CATEGORIES,
 
       updateCompanySettings: (newSettings) =>
         set((state) => ({
@@ -52,9 +59,29 @@ const useMasterDataStore = create(
         set((state) => ({
           masterServices: state.masterServices.filter((s) => s.id !== id),
         })),
+
+      addCategory: (category) =>
+        set((state) => ({
+          serviceCategories: [
+            ...state.serviceCategories,
+            { ...category, id: `C${Date.now()}` },
+          ],
+        })),
+
+      updateCategory: (id, updatedCategory) =>
+        set((state) => ({
+          serviceCategories: state.serviceCategories.map((c) =>
+            c.id === id ? { ...c, ...updatedCategory } : c
+          ),
+        })),
+
+      deleteCategory: (id) =>
+        set((state) => ({
+          serviceCategories: state.serviceCategories.filter((c) => c.id !== id),
+        })),
     }),
     {
-      name: 'dvsos-master-data',
+      name: 'dvsos-master-data-v2',
     }
   )
 );

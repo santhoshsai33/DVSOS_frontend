@@ -13,7 +13,13 @@ import ForgotPassword from '../pages/Auth/ForgotPassword';
 import AdminDashboardPage from '../features/roles/admin/pages/AdminDashboardPage';
 import UserManagementPage from '../features/roles/admin/pages/UserManagementPage';
 import RoleManagementPage from '../features/roles/admin/pages/RoleManagementPage';
-import ServiceItemMasterPage from '../features/roles/admin/pages/ServiceItemMasterPage';
+import RolePrivilegesForm from '../features/roles/admin/pages/RolePrivilegesForm';
+import ServiceCategories from '../pages/Masters/ServiceCategories';
+import ServiceCategoryForm from '../pages/Masters/ServiceCategoryForm';
+import ServiceItems from '../pages/Masters/ServiceItems';
+import ServiceItemForm from '../pages/Masters/ServiceItemForm';
+import ServicePricing from '../pages/Masters/ServicePricing';
+import ServicePricingForm from '../pages/Masters/ServicePricingForm';
 import SystemSettingsPage from '../features/roles/admin/pages/SystemSettingsPage';
 import AuditLogsPage from '../features/roles/admin/pages/AuditLogsPage';
 import UserForm from '../pages/Users/UserForm';
@@ -108,7 +114,17 @@ export const router = createBrowserRouter([
               { path: 'admin/users/new', element: <UserForm /> },
               { path: 'admin/users/:id/edit', element: <UserForm /> },
               { path: 'admin/roles', element: <RoleManagementPage /> },
-              { path: 'admin/service-items', element: <ServiceItemMasterPage /> },
+              { path: 'admin/roles/privileges', element: <RolePrivilegesForm /> },
+              { path: 'admin/roles/privileges/:id/edit', element: <RolePrivilegesForm /> },
+              { path: 'admin/master/categories', element: <ServiceCategories /> },
+              { path: 'admin/master/categories/new', element: <ServiceCategoryForm /> },
+              { path: 'admin/master/categories/:id/edit', element: <ServiceCategoryForm /> },
+              { path: 'admin/master/items', element: <ServiceItems /> },
+              { path: 'admin/master/items/new', element: <ServiceItemForm /> },
+              { path: 'admin/master/items/:id/edit', element: <ServiceItemForm /> },
+              { path: 'admin/master/pricing', element: <ServicePricing /> },
+              { path: 'admin/master/pricing/new', element: <ServicePricingForm /> },
+              { path: 'admin/master/pricing/:id/edit', element: <ServicePricingForm /> },
               { path: 'admin/settings', element: <SystemSettingsPage /> },
               { path: 'admin/audit-logs', element: <AuditLogsPage /> },
             ],

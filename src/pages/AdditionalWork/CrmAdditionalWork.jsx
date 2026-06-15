@@ -25,7 +25,7 @@ export default function CrmAdditionalWork() {
   const [searchParams] = useSearchParams();
   const jobCardId = searchParams.get('jobCardId');
   const { data: jobCard, isLoading: isJobCardLoading } = useJobCard(jobCardId);
-  const { masterServices, companySettings } = useMasterDataStore();
+  const { masterServices, serviceCategories, companySettings } = useMasterDataStore();
   const [selectedServices, setSelectedServices] = useState([]);
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm({
@@ -42,6 +42,13 @@ export default function CrmAdditionalWork() {
       services: [],
     },
   });
+
+  const selectedCategory = watch('serviceType');
+
+  const filteredServices = useMemo(() => {
+    if (!selectedCategory) return masterServices;
+    return masterServices.filter(s => s.category?.toLowerCase() === selectedCategory.toLowerCase());
+  }, [masterServices, selectedCategory]);
 
   useEffect(() => {
     if (jobCard) {
@@ -212,8 +219,8 @@ export default function CrmAdditionalWork() {
                     {...register("serviceType", { required: "Service category is required" })}
                   >
                     <option value="">Select category</option>
-                    {SERVICE_TYPES.map(type => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
+                    {serviceCategories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
                     ))}
                   </Form.Select>
                   {errors.serviceType && <Form.Control.Feedback type="invalid">{errors.serviceType.message}</Form.Control.Feedback>}
@@ -253,7 +260,7 @@ export default function CrmAdditionalWork() {
             </p>
             
             <div className={styles.serviceGrid}>
-              {masterServices.map((service) => {
+              {filteredServices.map((service) => {
                 const isSelected = selectedServices.some((s) => s.id === service.id);
                 return (
                   <div

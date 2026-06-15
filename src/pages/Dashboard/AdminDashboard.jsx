@@ -6,7 +6,8 @@ import {
 } from 'recharts';
 import {
   Users, Database, Settings, ShieldCheck, Activity,
-  Plus, RefreshCw, TrendingUp, AlertTriangle, Edit, Trash2
+  Plus, RefreshCw, TrendingUp, AlertTriangle, Edit, Trash2,
+  Car, Wrench, Hammer, Droplets, Briefcase, Crown, ArrowRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
@@ -41,6 +42,16 @@ const RECENT_ACTIVITY = [
 ];
 
 const ACTION_COLORS = { create: '#10B981', update: '#3B82F6', delete: '#EF4444' };
+
+const DEPARTMENT_PORTALS = [
+  { label: 'Gate Security', icon: Car, path: ROUTES.GATE_DASHBOARD, color: '#10B981', desc: 'Vehicles Entry, Exit & Sync passes' },
+  { label: 'CRM Operations', icon: Users, path: ROUTES.CRM_DASHBOARD, color: '#3B82F6', desc: 'Job cards, Estimates & WhatsApp approval' },
+  { label: 'Floor Workshop', icon: Wrench, path: ROUTES.FLOOR_DASHBOARD, color: '#6366F1', desc: 'Mechanic allocations & floor work status' },
+  { label: 'Body Shop', icon: Hammer, path: ROUTES.BODY_SHOP_DASHBOARD, color: '#EC4899', desc: 'Denting, painting & repair queues' },
+  { label: 'Water Wash', icon: Droplets, path: ROUTES.WATER_WASH_DASHBOARD, color: '#06B6D4', desc: 'Wash queues & completion flows' },
+  { label: 'Management', icon: Briefcase, path: ROUTES.MANAGER_DASHBOARD, color: '#F59E0B', desc: 'Approvals & general operational reports' },
+  { label: 'MD Analytics', icon: Crown, path: ROUTES.MD_DASHBOARD, color: '#8B5CF6', desc: 'Revenue, performance & KPI metrics' },
+];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -191,6 +202,61 @@ export default function AdminDashboard() {
           </div>
         </Col>
       </Row>
+
+      {/* Departmental Portals / Cross-Role Operations Cockpit */}
+      <div className="premium-card mb-4">
+        <div className="p-3 border-bottom">
+          <h5 className="mb-0 fs-6 fw-bold">Cross-Role Operations Cockpit</h5>
+          <p className="mb-0 text-muted" style={{ fontSize: '0.78rem', marginTop: '2px' }}>
+            As a Super Admin, you have full access to view and manage operational queues for all active roles.
+          </p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', padding: '1.25rem' }}>
+          {DEPARTMENT_PORTALS.map((portal) => {
+            const Icon = portal.icon;
+            return (
+              <div
+                key={portal.label}
+                onClick={() => navigate(portal.path)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  border: '1.5px solid var(--color-border)',
+                  cursor: 'pointer',
+                  background: '#FFFFFF',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = portal.color;
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = `0 8px 20px -12px ${portal.color}`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div style={{ width: 44, height: 44, borderRadius: '10px', background: portal.color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={22} style={{ color: portal.color }} />
+                </div>
+                <div className="flex-grow-1" style={{ overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }}>{portal.label}</span>
+                    <ArrowRight size={14} style={{ color: 'var(--color-text-muted)', transition: 'transform 0.15s' }} />
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--color-text-muted)', marginTop: '3px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    {portal.desc}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Recent Activity */}
       <div className="premium-card">
