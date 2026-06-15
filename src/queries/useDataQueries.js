@@ -22,11 +22,11 @@ const MOCK_VEHICLES = {
 
 const MOCK_JOB_CARDS = {
   data: [
-    { id: 'JC001', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', serviceType: 'GENERAL_SERVICE', status: 'IN_PROGRESS', estimatedCost: 3500, technician: 'Rajan M.', createdAt: '2024-06-12T08:00:00Z', services: ['Oil Change', 'Brake Check', 'AC Service'] },
-    { id: 'JC002', vehicleNumber: 'KA 05 XY 9876', ownerName: 'Priya Singh', serviceType: 'OIL_CHANGE', status: 'PENDING', estimatedCost: 1200, technician: '', createdAt: '2024-06-12T09:15:00Z', services: ['Oil Change'] },
-    { id: 'JC003', vehicleNumber: 'MH 12 PQ 4567', ownerName: 'Arun Patel', serviceType: 'BODY_REPAIR', status: 'COMPLETED', estimatedCost: 18500, technician: 'Vikram S.', createdAt: '2024-06-12T07:30:00Z', services: ['Body Repair', 'Paint Job'] },
-    { id: 'JC004', vehicleNumber: 'DL 04 RS 3344', ownerName: 'Suresh Nair', serviceType: 'ENGINE_REPAIR', status: 'DELAYED', estimatedCost: 25000, technician: 'Anand P.', createdAt: '2024-06-11T10:00:00Z', services: ['Engine Repair', 'Brake Service'] },
-    { id: 'JC005', vehicleNumber: 'TN 09 LM 8899', ownerName: 'Deepa Menon', serviceType: 'GENERAL_SERVICE', status: 'BODY_SHOP', estimatedCost: 8000, technician: 'Rajan M.', createdAt: '2024-06-12T08:45:00Z', services: ['General Service', 'Tyre Rotation'] },
+    { id: 'JC001', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', ownerMobile: '9876543210', serviceType: 'GENERAL_SERVICE', status: 'IN_PROGRESS', estimatedCost: 3500, technician: 'Rajan M.', createdAt: '2024-06-12T08:00:00Z', services: ['Oil Change', 'Brake Check', 'AC Service'] },
+    { id: 'JC002', vehicleNumber: 'KA 05 XY 9876', ownerName: 'Priya Singh', ownerMobile: '9876543211', serviceType: 'OIL_CHANGE', status: 'PENDING', estimatedCost: 1200, technician: '', createdAt: '2024-06-12T09:15:00Z', services: ['Oil Change'] },
+    { id: 'JC003', vehicleNumber: 'MH 12 PQ 4567', ownerName: 'Arun Patel', ownerMobile: '9876543212', serviceType: 'BODY_REPAIR', status: 'COMPLETED', estimatedCost: 18500, technician: 'Vikram S.', createdAt: '2024-06-12T07:30:00Z', services: ['Body Repair', 'Paint Job'] },
+    { id: 'JC004', vehicleNumber: 'DL 04 RS 3344', ownerName: 'Suresh Nair', ownerMobile: '9876543213', serviceType: 'ENGINE_REPAIR', status: 'DELAYED', estimatedCost: 25000, technician: 'Anand P.', createdAt: '2024-06-11T10:00:00Z', services: ['Engine Repair', 'Brake Service'] },
+    { id: 'JC005', vehicleNumber: 'TN 09 LM 8899', ownerName: 'Deepa Menon', ownerMobile: '9876543214', serviceType: 'GENERAL_SERVICE', status: 'BODY_SHOP', estimatedCost: 8000, technician: 'Rajan M.', createdAt: '2024-06-12T08:45:00Z', services: ['General Service', 'Tyre Rotation'] },
   ],
   total: 5,
   page: 1,

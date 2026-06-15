@@ -25,6 +25,7 @@ import CreateJobCardPage from '../features/roles/crm/pages/CreateJobCardPage';
 import PendingJobCardsPage from '../features/roles/crm/pages/PendingJobCardsPage';
 import ApprovalFollowupPage from '../features/roles/crm/pages/ApprovalFollowupPage';
 import DeliveryReadyPage from '../features/roles/crm/pages/DeliveryReadyPage';
+import CrmAdditionalWorkPage from '../features/roles/crm/pages/CrmAdditionalWorkPage';
 import FloorDashboardPage from '../features/roles/floor-supervisor/pages/FloorDashboardPage';
 import MechanicalQueuePage from '../features/roles/floor-supervisor/pages/MechanicalQueuePage';
 import AssignMechanicPage from '../features/roles/floor-supervisor/pages/AssignMechanicPage';
@@ -128,6 +129,7 @@ export const router = createBrowserRouter([
               { path: 'crm/job-cards/pending', element: <PendingJobCardsPage /> },
               { path: 'crm/approvals/followup', element: <ApprovalFollowupPage /> },
               { path: 'crm/delivery-ready', element: <DeliveryReadyPage /> },
+              { path: 'crm/additional-work', element: <CrmAdditionalWorkPage /> },
             ],
           },
           {
@@ -185,6 +187,7 @@ export const router = createBrowserRouter([
               { path: 'job-cards', element: <JobCardListPage /> },
               { path: 'job-cards/create', element: <CreateJobCardPage /> },
               { path: 'job-cards/:id', element: <JobCardDetailPage title="Job Card Detail" /> },
+              { path: 'job-cards/:id/edit', element: <CreateJobCardPage /> },
               { path: 'service-history', element: <ServiceHistoryPage /> },
               { path: 'notifications', element: <NotificationsPage title="Notifications" /> },
               { path: 'profile', element: <ProfilePage title="Profile" /> },

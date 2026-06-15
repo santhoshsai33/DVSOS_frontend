@@ -21,6 +21,7 @@ export const ROUTES = {
   CRM_PENDING_JOB_CARDS: '/crm/job-cards/pending',
   CRM_APPROVAL_FOLLOWUP: '/crm/approvals/followup',
   CRM_DELIVERY_READY: '/crm/delivery-ready',
+  CRM_ADDITIONAL_WORK: '/crm/additional-work',
 
   FLOOR_DASHBOARD: '/floor/dashboard',
   FLOOR_MECHANICAL_QUEUE: '/floor/mechanical-queue',
@@ -52,6 +53,7 @@ export const ROUTES = {
   CUSTOMERS: '/customers',
   VEHICLES: '/vehicles',
   JOB_CARDS: '/job-cards',
+  JOB_CARD_EDIT: '/job-cards/:id/edit',
   SERVICE_HISTORY: '/service-history',
   NOTIFICATIONS: '/notifications',
   PROFILE: '/profile',

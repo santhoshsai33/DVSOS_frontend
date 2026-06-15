@@ -13,7 +13,7 @@
   --bs-danger: #B42318;
   --bs-light: #F7F8F5;
   --bs-dark: #152326;
-  --bs-body-bg: #F5F6F2;
+  --bs-body-bg: #F4F6F9;
   --bs-body-color: #152326;
   --bs-border-radius: 0.625rem;
   --bs-border-radius-sm: 0.5rem;
@@ -44,12 +44,12 @@
   --color-text-secondary: #4B5563;
   --color-text-muted: #8A948A;
   
-  --color-bg-base: #F5F6F2; 
+  --color-bg-base: #F4F6F9; 
   --color-bg-surface: #FFFFFF;
-  --color-bg-surface-hover: #FAFAF7;
+  --color-bg-surface-hover: #F8FAFC;
   
-  --color-border: #E2E5DC;
-  --color-divider: #EEF0EA;
+  --color-border: #E5E7EB;
+  --color-divider: #F3F4F6;
 
   /* Spacing */
   --space-1: 0.25rem;

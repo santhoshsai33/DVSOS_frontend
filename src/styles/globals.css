@@ -24,6 +24,12 @@ ul {
   margin: 0;
 }
 
+code {
+  font-family: var(--font-family-base), inherit !important;
+  white-space: nowrap;
+  color: #000 !important;
+}
+
 /* Button & Card smooth transitions globally */
 .btn,
 .card {
@@ -91,8 +97,8 @@ table {
 
 table thead.table-light th,
 table thead th {
-  background-color: var(--color-bg-surface-hover) !important;
-  color: var(--color-text-secondary) !important;
+  background-color: #e5e7eb88 !important;
+  color: #1F2937 !important;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;

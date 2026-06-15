@@ -11,6 +11,8 @@ import PageHeader from '../../components/shared/PageHeader';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROUTES } from '../../config/routes';
+import useAuthStore from '../../store/useAuthStore';
+import { ROLES } from '../../constants/roles';
 import styles from './JobCards.module.css';
 
 const PRIORITY_COLORS = {
@@ -51,6 +53,7 @@ const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => 
 
 export default function JobCardList() {
   const navigate = useNavigate();
+  const { role } = useAuthStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const debouncedSearch = useDebounce(search, 300);
@@ -72,12 +75,22 @@ export default function JobCardList() {
       ),
     },
     { header: 'Owner', accessor: 'ownerName' },
-    { header: 'Service Type', accessor: 'serviceType' },
+    { header: 'Mobile Number', render: (row) => row.ownerMobile || row.mobile || <span className="text-muted">-</span> },
     {
       header: 'Priority',
       render: (row) => (
-        <span style={{ color: PRIORITY_COLORS[row.priority || 'NORMAL'], fontWeight: 600, fontSize: '0.8rem' }}>
-          ● {row.priority || 'NORMAL'}
+        <span style={{
+          background: `${PRIORITY_COLORS[row.priority || 'NORMAL']}12`,
+          color: PRIORITY_COLORS[row.priority || 'NORMAL'],
+          padding: '4px 10px',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          border: `1px solid ${PRIORITY_COLORS[row.priority || 'NORMAL']}25`,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
+          {row.priority || 'NORMAL'}
         </span>
       ),
     },
@@ -101,14 +114,17 @@ export default function JobCardList() {
               <span>View</span>
             </Dropdown.Item>
             <Dropdown.Item
-              onClick={() => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
+              onClick={() => navigate(`${ROUTES.JOB_CARDS}/${row.id}/edit`)}
               style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
             >
               <Edit size={15} style={{ color: 'var(--color-accent)' }} />
               <span>Edit</span>
             </Dropdown.Item>
             <Dropdown.Item
-              onClick={() => navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK}?jobCardId=${row.id}`)}
+              onClick={() => {
+                const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK;
+                navigate(`${targetRoute}?jobCardId=${row.id}`);
+              }}
               style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
             >
               <PlusCircle size={15} style={{ color: 'var(--color-accent-2)' }} />

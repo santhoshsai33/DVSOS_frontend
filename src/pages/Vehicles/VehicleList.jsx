@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Pagination } from 'react-bootstrap';
 import { Plus, Search, Filter } from 'lucide-react';
 import { useVehicles } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
 import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
+import DataTable from '../../components/common/DataTable';
 import { formatDateTime } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROUTES } from '../../config/routes';
@@ -57,34 +57,13 @@ export default function VehicleList() {
     },
   ];
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
   const tableData = data?.data || [];
-  const totalPages = Math.ceil(tableData.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = tableData.slice(startIndex, startIndex + itemsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
-  };
-
   const STATUSES = ['', 'PENDING', 'IN_PROGRESS', 'BODY_SHOP', 'WATER_WASH', 'COMPLETED', 'DELAYED', 'DELIVERED'];
-
-  let paginationItems = [];
-  for (let number = 1; number <= totalPages; number++) {
-    paginationItems.push(
-      <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
-        {number}
-      </Pagination.Item>
-    );
-  }
 
   return (
     <div>
       <PageHeader
         title="Vehicle Management"
-        subtitle={`${data?.total ?? 0} vehicles on record`}
         breadcrumbs={[{ label: 'Vehicles' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.GATE_ENTRY)}>
@@ -116,68 +95,13 @@ export default function VehicleList() {
       </div>
 
       <div className="premium-card d-flex flex-column">
-        <div className="table-responsive flex-grow-1">
-          {isLoading ? (
-            <div className="p-5 text-center text-muted">Loading data...</div>
-          ) : tableData.length === 0 ? (
-            <div className="p-5 text-center text-muted">No vehicles found</div>
-          ) : (
-            <Table striped hover className="mb-0" style={{ cursor: 'pointer' }}>
-              <thead className="table-light">
-                <tr>
-                  <th>Vehicle Number</th>
-                  <th>Owner Name</th>
-                  <th>Mobile</th>
-                  <th>Make & Model</th>
-                  <th>Type</th>
-                  <th>Fuel</th>
-                  <th>Status</th>
-                  <th>Entry Time</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row) => (
-                  <tr key={row.id} onClick={() => navigate(`${ROUTES.VEHICLES}/${row.id}`)}>
-                    <td className="align-middle">
-                      <code className={styles.vehicleNum}>{row.vehicleNumber}</code>
-                    </td>
-                    <td className="align-middle">{row.ownerName || '—'}</td>
-                    <td className="align-middle">{row.mobile || '—'}</td>
-                    <td className="align-middle">{row.makeModel || '—'}</td>
-                    <td className="align-middle">{row.type || '—'}</td>
-                    <td className="align-middle">{row.fuelType || '—'}</td>
-                    <td className="align-middle"><StatusBadge status={row.status} /></td>
-                    <td className="align-middle">{formatDateTime(row.entryTime)}</td>
-                    <td className="align-middle">
-                      <div className="d-flex gap-2">
-                        <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.VEHICLES}/${row.id}`); }}>
-                          View
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); navigate(`${ROUTES.VEHICLES}/${row.id}`); }}>
-                          History
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </div>
-
-        {!isLoading && totalPages > 1 && (
-          <div className="p-3 border-top d-flex justify-content-between align-items-center bg-light">
-            <small className="text-muted">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, tableData.length)} of {tableData.length} entries
-            </small>
-            <Pagination className="mb-0" size="sm">
-              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-              {paginationItems}
-              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-            </Pagination>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={tableData}
+          isLoading={isLoading}
+          onRowClick={(row) => navigate(`${ROUTES.VEHICLES}/${row.id}`)}
+          emptyMessage="No vehicles found"
+        />
       </div>
     </div>
   );

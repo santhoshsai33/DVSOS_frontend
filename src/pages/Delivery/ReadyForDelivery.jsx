@@ -4,6 +4,7 @@ import { Truck, PhoneCall, CheckCircle2 } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import Button from '../../components/common/Button';
 import { toastSuccess } from '../../notifications/toast';
+import styles from '../JobCards/JobCards.module.css';
 
 const MOCK_READY = [
   { id: 'JC-1033', vehicle: 'TN 02 CD 5566', owner: 'Vinoth Kumar', mobile: '9876543210', completedAt: '2 hrs ago', billAmount: 4500 },
@@ -23,7 +24,7 @@ export default function ReadyForDelivery() {
     {
       header: 'Vehicle',
       accessor: 'vehicle',
-      render: (row) => <code style={{ background: 'var(--color-bg-base)', padding: '2px 6px', border: '1px solid var(--color-border)', borderRadius: '4px' }}>{row.vehicle}</code>,
+      render: (row) => <code className={styles.vehicleNum}>{row.vehicle}</code>,
     },
     { header: 'Owner', accessor: 'owner' },
     { header: 'Mobile', accessor: 'mobile' },
@@ -44,7 +45,6 @@ export default function ReadyForDelivery() {
     <div>
       <PageHeader
         title="Ready For Delivery"
-        subtitle="Manage vehicles that have completed all service stages and are awaiting customer pickup"
         breadcrumbs={[{ label: 'Delivery' }, { label: 'Ready for Pickup' }]}
         actions={<Button variant="primary" leftIcon={Truck}>View Delivery Queue</Button>}
       />
