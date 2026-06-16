@@ -7,7 +7,8 @@ import {
 import {
   Users, Database, Settings, ShieldCheck, Activity,
   Plus, RefreshCw, TrendingUp, AlertTriangle, Edit, Trash2,
-  Car, Wrench, Hammer, Droplets, Briefcase, Crown, ArrowRight
+  Car, Wrench, Hammer, Droplets, Briefcase, Crown, ArrowRight,
+  Package, Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
@@ -18,9 +19,9 @@ import styles from './Dashboard.module.css';
 
 const MOCK_STATS = {
   totalUsers: 24,
-  totalServices: 38,
-  activeRoles: 7,
-  auditLogsToday: 142,
+  todayTotalVehicle: 15,
+  readyToDelivery: 3,
+  pendingApproval: 4,
 };
 
 const MOCK_ROLE_DIST = [
@@ -88,40 +89,40 @@ export default function AdminDashboard() {
 
   const kpis = [
     {
+      label: 'Today Total Vehicle',
+      value: MOCK_STATS.todayTotalVehicle,
+      icon: Car,
+      gradient: 'var(--gradient-primary)',
+      change: '+5 compared to yesterday',
+      positive: true,
+      action: () => navigate(ROUTES.GATE_DASHBOARD),
+    },
+    {
+      label: 'Ready to Delivery',
+      value: MOCK_STATS.readyToDelivery,
+      icon: Package,
+      gradient: 'var(--gradient-success)',
+      change: '2 delivered today',
+      positive: true,
+      action: () => navigate(ROUTES.CRM_DELIVERY_READY),
+    },
+    {
       label: 'Total Users',
       value: MOCK_STATS.totalUsers,
       icon: Users,
-      gradient: 'var(--gradient-primary)',
+      gradient: 'var(--gradient-accent)',
       change: '+2 added this week',
       positive: true,
       action: () => navigate(ROUTES.ADMIN_USERS),
     },
     {
-      label: 'Master Services',
-      value: MOCK_STATS.totalServices,
-      icon: Database,
-      gradient: 'var(--gradient-success)',
-      change: '+3 added this month',
-      positive: true,
-      action: () => navigate(ROUTES.ADMIN_SERVICE_ITEMS),
-    },
-    {
-      label: 'Active Roles',
-      value: MOCK_STATS.activeRoles,
-      icon: ShieldCheck,
-      gradient: 'var(--gradient-accent)',
-      change: 'All roles configured',
-      positive: true,
-      action: () => navigate(ROUTES.ADMIN_ROLES),
-    },
-    {
-      label: "Today's Audit Logs",
-      value: MOCK_STATS.auditLogsToday,
-      icon: Activity,
+      label: 'Pending Approval',
+      value: MOCK_STATS.pendingApproval,
+      icon: Clock,
       gradient: 'var(--gradient-warning)',
-      change: 'Last action 10 min ago',
-      positive: true,
-      action: () => navigate(ROUTES.ADMIN_AUDIT_LOGS),
+      change: 'Requires immediate action',
+      positive: false,
+      action: () => navigate(ROUTES.MANAGER_PENDING_APPROVALS),
     },
   ];
 

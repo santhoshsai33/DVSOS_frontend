@@ -3,24 +3,64 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { TrendingUp, Users, DollarSign, Star, RefreshCw } from 'lucide-react';
+import { TrendingUp, DollarSign, Star, RefreshCw, Car, Package, Users, Clock } from 'lucide-react';
 import { useMDDashboard } from '../../queries/useDashboardQueries';
 import Loader from '../../components/common/Loader';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { formatCurrency } from '../../utils/formatters';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../../config/routes';
 import styles from './Dashboard.module.css';
 
 export default function MDDashboard() {
   const { data, isLoading, refetch, isFetching } = useMDDashboard();
+  const navigate = useNavigate();
 
-  if (isLoading) return <Loader fullPage text="Loading executive dashboard..." />;
+  const MOCK_STATS = {
+    totalUsers: 24,
+    todayTotalVehicle: 15,
+    readyToDelivery: 3,
+    pendingApproval: 4,
+  };
 
   const kpis = [
-    { label: 'Monthly Revenue', value: formatCurrency(data?.monthlyRevenue ?? 0), icon: DollarSign, gradient: 'var(--gradient-primary)', change: '+18% vs last month', positive: true },
-    { label: 'Total Jobs Today', value: data?.totalVehiclesToday ?? 0, icon: TrendingUp, gradient: 'var(--gradient-success)', change: '+12% vs yesterday', positive: true },
-    { label: 'Customer Satisfaction', value: `${data?.csat ?? 0}/5.0`, icon: Star, gradient: 'var(--gradient-warning)', change: 'Excellent rating', positive: true },
-    { label: 'Avg Turnaround', value: data?.avgTurnaroundTime ?? '—', icon: Users, gradient: 'var(--gradient-accent)', change: '-0.3 hrs vs target', positive: true },
+    {
+      label: 'Today Total Vehicle',
+      value: MOCK_STATS.todayTotalVehicle,
+      icon: Car,
+      gradient: 'var(--gradient-primary)',
+      change: '+5 compared to yesterday',
+      positive: true,
+      action: () => navigate(ROUTES.GATE_DASHBOARD),
+    },
+    {
+      label: 'Ready to Delivery',
+      value: MOCK_STATS.readyToDelivery,
+      icon: Package,
+      gradient: 'var(--gradient-success)',
+      change: '2 delivered today',
+      positive: true,
+      action: () => navigate(ROUTES.CRM_DELIVERY_READY),
+    },
+    {
+      label: 'Total Users',
+      value: MOCK_STATS.totalUsers,
+      icon: Users,
+      gradient: 'var(--gradient-accent)',
+      change: '+2 added this week',
+      positive: true,
+      action: () => navigate(ROUTES.ADMIN_USERS),
+    },
+    {
+      label: 'Pending Approval',
+      value: MOCK_STATS.pendingApproval,
+      icon: Clock,
+      gradient: 'var(--gradient-warning)',
+      change: 'Requires immediate action',
+      positive: false,
+      action: () => navigate(ROUTES.MANAGER_PENDING_APPROVALS),
+    },
   ];
 
   return (
@@ -40,7 +80,7 @@ export default function MDDashboard() {
           const Icon = kpi.icon;
           return (
             <Col xl={3} md={6} key={i}>
-              <div className={styles.kpiCard}>
+              <div className={styles.kpiCard} onClick={kpi.action} style={{ cursor: 'pointer' }}>
                 <div className={styles.kpiContent}>
                   <div className={styles.kpiIconWrapper} style={{ background: kpi.gradient }}>
                     <Icon size={24} />
@@ -70,7 +110,7 @@ export default function MDDashboard() {
               <LineChart data={data?.weeklyRevenue || []}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
+                <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
                 <Tooltip formatter={(v) => [formatCurrency(v), 'Revenue']} contentStyle={{ borderRadius: '10px', border: '1px solid #E2E8F0' }} />
                 <Legend />
                 <Line type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={3} dot={{ fill: '#3B82F6', r: 4 }} name="Revenue" />

@@ -139,7 +139,7 @@ export default function CustomerListPage() {
             padding: '0.35rem 0.5rem',
             borderRadius: '6px',
             borderColor: 'var(--color-border)',
-            background: 'var(--color-bg-card)',
+            backgroundColor: 'var(--color-bg-card)',
             color: 'var(--color-text-primary)',
             fontWeight: 500,
             cursor: 'pointer'

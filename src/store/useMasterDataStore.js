@@ -2,15 +2,15 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 const INITIAL_SERVICES = [
-  { id: 'S1', name: 'General Service', price: 2500, category: 'Mechanical' },
-  { id: 'S2', name: 'Oil Change', price: 1200, category: 'Mechanical' },
-  { id: 'S3', name: 'Brake Pad Replacement', price: 1800, category: 'Mechanical' },
-  { id: 'S4', name: 'AC Servicing', price: 1500, category: 'Mechanical' },
-  { id: 'S5', name: 'Tyre Rotation & Alignment', price: 800, category: 'Mechanical' },
-  { id: 'S6', name: 'Battery Replacement', price: 4500, category: 'Mechanical' },
-  { id: 'S7', name: 'Body Dent & Paint (Per Panel)', price: 3000, category: 'Body Shop' },
-  { id: 'S8', name: 'Premium Water Wash', price: 600, category: 'Water Wash' },
-  { id: 'S9', name: 'Interior Detailing', price: 1500, category: 'Water Wash' },
+  { id: 'S1', name: 'General Service', price: 2500, category: 'Mechanical', estimatedMinutes: 120 },
+  { id: 'S2', name: 'Oil Change', price: 1200, category: 'Mechanical', estimatedMinutes: 30 },
+  { id: 'S3', name: 'Brake Pad Replacement', price: 1800, category: 'Mechanical', estimatedMinutes: 60 },
+  { id: 'S4', name: 'AC Servicing', price: 1500, category: 'Mechanical', estimatedMinutes: 90 },
+  { id: 'S5', name: 'Tyre Rotation & Alignment', price: 800, category: 'Mechanical', estimatedMinutes: 45 },
+  { id: 'S6', name: 'Battery Replacement', price: 4500, category: 'Mechanical', estimatedMinutes: 15 },
+  { id: 'S7', name: 'Body Dent & Paint (Per Panel)', price: 3000, category: 'Body Shop', estimatedMinutes: 240 },
+  { id: 'S8', name: 'Premium Water Wash', price: 600, category: 'Water Wash', estimatedMinutes: 45 },
+  { id: 'S9', name: 'Interior Detailing', price: 1500, category: 'Water Wash', estimatedMinutes: 90 },
 ];
 
 const INITIAL_CATEGORIES = [
@@ -81,7 +81,7 @@ const useMasterDataStore = create(
         })),
     }),
     {
-      name: 'dvsos-master-data-v2',
+      name: 'dvsos-master-data-v3',
     }
   )
 );

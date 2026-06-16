@@ -1,6 +1,6 @@
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, useFieldArray } from 'react-hook-form';
 import { Row, Col } from 'react-bootstrap';
-import { Save, ArrowLeft } from 'lucide-react';
+import { Save, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
@@ -20,10 +20,16 @@ export default function CompanySettings() {
       email: companySettings.email || '',
       gstNumber: companySettings.gstNumber || '',
       defaultTaxRate: companySettings.defaultTaxRate || 18,
+      intervals: companySettings.intervals || [{ type: '', time: '' }],
     },
   });
 
-  const { handleSubmit, formState } = methods;
+  const { handleSubmit, formState, control } = methods;
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'intervals',
+  });
 
   const onSubmit = async (data) => {
     try {
@@ -87,6 +93,79 @@ export default function CompanySettings() {
               <RHFTextField name="defaultTaxRate" label="Default Tax Rate (%)" type="number" required />
             </Col>
           </Row>
+
+          <hr style={{ margin: '2rem 0', borderColor: '#E2E5DC' }} />
+
+          <div style={{ marginBottom: '1rem' }}>
+            <h5 style={{ margin: 0, fontWeight: 600, fontSize: '1rem', color: '#152326' }}>
+              Set Interval
+            </h5>
+          </div>
+
+          {fields.map((field, index) => {
+            const isLast = index === fields.length - 1;
+            return (
+              <Row key={field.id} className="g-3 mb-3 align-items-start">
+                <Col md={5}>
+                  <RHFTextField
+                    name={`intervals.${index}.type`}
+                    placeholder="Interval Type (e.g. Break, Service)"
+                    required
+                  />
+                </Col>
+                <Col md={5}>
+                  <RHFTextField
+                    name={`intervals.${index}.time`}
+                    type="number"
+                    placeholder="Time in Mins (e.g. 15)"
+                    required
+                  />
+                </Col>
+                <Col md={2} style={{ display: 'flex', gap: '0.5rem', paddingTop: '2px' }}>
+                  {isLast && (
+                    <button
+                      type="button"
+                      onClick={() => append({ type: '', time: '' })}
+                      style={{
+                        backgroundColor: 'var(--color-primary)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        width: '38px',
+                        height: '38px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Plus size={18} strokeWidth={3} />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    disabled={fields.length === 1}
+                    style={{
+                      backgroundColor: 'transparent',
+                      color: 'var(--color-danger)',
+                      border: '1px solid rgba(180, 35, 24, 0.3)',
+                      borderRadius: '6px',
+                      width: '38px',
+                      height: '38px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: fields.length === 1 ? 'not-allowed' : 'pointer',
+                      opacity: fields.length === 1 ? 0.5 : 1
+                    }}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </Col>
+              </Row>
+            );
+          })}
 
           {/* Footer Actions */}
           <div style={{
