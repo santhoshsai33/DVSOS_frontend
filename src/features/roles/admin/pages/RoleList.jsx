@@ -20,40 +20,68 @@ const MOCK_ROLES_LIST = [
   { id: 8, designation: 'Managing Director', roleCode: 'MD', accessLevel: 'Custom Access', active: true }
 ];
 
-const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => (
-  <button
-    ref={ref}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}
-    {...props}
-    style={{
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '4px',
-      color: 'var(--color-text-secondary)',
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: '50%',
-      width: '32px',
-      height: '32px',
-      transition: 'background 0.2s',
-    }}
-    onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
-    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-  >
-    <MoreVertical size={18} />
-  </button>
-));
+const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => {
+  const cleanedClassName = (props.className || '').replace('dropdown-toggle', '');
+  return (
+    <button
+      ref={ref}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(e);
+      }}
+      {...props}
+      className={cleanedClassName}
+      style={{
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '4px',
+        color: 'var(--color-text-secondary)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        width: '32px',
+        height: '32px',
+        transition: 'background 0.2s',
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
+      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+    >
+      <MoreVertical size={18} />
+    </button>
+  );
+});
 
 export default function RoleList() {
   const navigate = useNavigate();
+  const [roles, setRoles] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem('dvsos_roles_list');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return MOCK_ROLES_LIST;
+  });
+
+  const handleStatusChange = (id, newActive) => {
+    const updated = roles.map(roleItem => {
+      if (roleItem.id === id) {
+        return { ...roleItem, active: newActive };
+      }
+      return roleItem;
+    });
+    setRoles(updated);
+    localStorage.setItem('dvsos_roles_list', JSON.stringify(updated));
+    toastSuccess('Role status updated successfully!');
+  };
 
   const handleDelete = (item) => {
     if (window.confirm(`Are you sure you want to delete the privileges policy for role "${item.designation}"?`)) {
+      const updated = roles.filter(roleItem => roleItem.id !== item.id);
+      setRoles(updated);
+      localStorage.setItem('dvsos_roles_list', JSON.stringify(updated));
       toastSuccess(`Role policy for "${item.designation}" removed successfully.`);
     }
   };
@@ -63,22 +91,37 @@ export default function RoleList() {
       header: 'Designation Name',
       accessor: 'designation',
       render: (row) => (
-        <div className="d-flex align-items-center gap-2">
-          <div style={{ width: 32, height: 32, borderRadius: '8px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ShieldCheck size={16} className="text-primary" />
-          </div>
-          <strong style={{ color: 'var(--color-text-primary)' }}>{row.designation}</strong>
-        </div>
+        <strong style={{ color: 'var(--color-text-primary)' }}>{row.designation}</strong>
       )
     },
     {
       header: 'Role Code',
       accessor: 'roleCode',
-      render: (row) => <code style={{ fontSize: '0.85rem' }}>{row.roleCode}</code>
+      render: (row) => <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-text-primary)' }}>{row.roleCode.replace(/_/g, ' ')}</span>
     },
     {
       header: 'Status',
-      render: (row) => <StatusBadge status={row.active ? 'COMPLETED' : 'DELAYED'} />
+      render: (row) => (
+        <select
+          className="form-select form-select-sm"
+          style={{
+            width: '120px',
+            fontSize: '0.85rem',
+            padding: '0.35rem 0.5rem',
+            borderRadius: '6px',
+            borderColor: 'var(--color-border)',
+            background: 'var(--color-bg-card)',
+            color: 'var(--color-text-primary)',
+            fontWeight: 500,
+            cursor: 'pointer'
+          }}
+          value={row.active ? 'Active' : 'Inactive'}
+          onChange={(e) => handleStatusChange(row.id, e.target.value === 'Active')}
+        >
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      )
     },
     {
       header: 'Actions',
@@ -123,7 +166,7 @@ export default function RoleList() {
       <div className="premium-card d-flex flex-column">
         <DataTable
           columns={columns}
-          data={MOCK_ROLES_LIST}
+          data={roles}
           emptyMessage="No role policies found"
         />
       </div>

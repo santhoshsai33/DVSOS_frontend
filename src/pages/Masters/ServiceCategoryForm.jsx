@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Row, Col, Form } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useForm, FormProvider } from 'react-hook-form';
+import RHFTextField from '../../components/form/RHFTextField';
+import RHFTextarea from '../../components/form/RHFTextarea';
 import Button from '../../components/common/Button';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
@@ -12,34 +15,39 @@ export default function ServiceCategoryForm() {
   const { id } = useParams();
   const isEdit = !!id;
   const { serviceCategories, addCategory, updateCategory } = useMasterDataStore();
-
-  const [form, setForm] = useState({ name: '', description: '' });
   const [saving, setSaving] = useState(false);
+
+  const methods = useForm({
+    defaultValues: {
+      name: '',
+      description: ''
+    }
+  });
+
+  const { handleSubmit, reset } = methods;
 
   useEffect(() => {
     if (isEdit && serviceCategories.length > 0) {
       const category = serviceCategories.find(c => c.id === id);
       if (category) {
-        setForm({ name: category.name, description: category.description || '' });
+        reset({
+          name: category.name,
+          description: category.description || ''
+        });
       }
     }
-  }, [isEdit, id, serviceCategories]);
+  }, [isEdit, id, serviceCategories, reset]);
 
-  const handleSave = (e) => {
-    if (e) e.preventDefault();
-    if (!form.name) {
-      alert('Please enter a category name.');
-      return;
-    }
+  const onSubmit = (data) => {
     setSaving(true);
     setTimeout(() => {
       setSaving(false);
       if (isEdit) {
-        updateCategory(id, form);
-        toastSuccess(`Category "${form.name}" updated successfully.`);
+        updateCategory(id, data);
+        toastSuccess(`Category "${data.name}" updated successfully.`);
       } else {
-        addCategory(form);
-        toastSuccess(`Category "${form.name}" added successfully.`);
+        addCategory(data);
+        toastSuccess(`Category "${data.name}" added successfully.`);
       }
       navigate(ROUTES.ADMIN_MASTER_CATEGORIES);
     }, 800);
@@ -66,71 +74,54 @@ export default function ServiceCategoryForm() {
         </button>
       </div>
 
-      <Form onSubmit={handleSave}>
-        {/* Category Information */}
-        <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
-          Category Information
-        </p>
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)}>
 
-        <Row className="g-3 mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>
-                Category Name *
-              </Form.Label>
-              <Form.Control
-                type="text"
+          <Row className="g-3 mb-3">
+            <Col md={6}>
+              <RHFTextField
+                name="name"
+                label="Category Name"
                 placeholder="e.g. Mechanical, Body Shop"
-                style={{ borderRadius: '8px' }}
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
               />
-            </Form.Group>
-          </Col>
-        </Row>
+            </Col>
+          </Row>
 
-        <Row className="g-3 mb-3">
-          <Col md={12}>
-            <Form.Group>
-              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>
-                Description
-              </Form.Label>
-              <Form.Control
-                as="textarea"
+          <Row className="g-3 mb-3">
+            <Col md={12}>
+              <RHFTextarea
+                name="description"
+                label="Description"
                 rows={4}
                 placeholder="Enter category details..."
-                style={{ borderRadius: '8px' }}
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
-            </Form.Group>
-          </Col>
-        </Row>
+            </Col>
+          </Row>
 
-        {/* Footer Actions */}
-        <div style={{
-          borderTop: '1px solid #E2E5DC',
-          marginTop: '32px', paddingTop: '24px',
-          display: 'flex', justifyContent: 'flex-end', gap: '12px',
-        }}>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => navigate(ROUTES.ADMIN_MASTER_CATEGORIES)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            type="submit"
-            isLoading={saving}
-          >
-            {isEdit ? 'Save Changes' : 'Create Category'}
-          </Button>
-        </div>
-      </Form>
+          {/* Footer Actions */}
+          <div style={{
+            borderTop: '1px solid #E2E5DC',
+            marginTop: '32px', paddingTop: '24px',
+            display: 'flex', justifyContent: 'flex-end', gap: '12px',
+          }}>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => navigate(ROUTES.ADMIN_MASTER_CATEGORIES)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              isLoading={saving}
+            >
+              {isEdit ? 'Save Changes' : 'Create Category'}
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </div>
   );
 }
-

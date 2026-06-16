@@ -81,19 +81,19 @@ export default function UserForm() {
 
           <Row className="g-3 mb-3">
             <Col md={6}>
-              <RHFTextField name="name" label="Full Name *" placeholder="Enter full name" required />
+              <RHFTextField name="name" label="Full Name" placeholder="Enter full name" required />
             </Col>
             <Col md={6}>
-              <RHFTextField name="email" label="Email Address *" type="email" placeholder="Enter email address" required />
+              <RHFTextField name="email" label="Email Address" type="email" placeholder="Enter email address" required />
             </Col>
           </Row>
 
           <Row className="g-3 mb-3">
             <Col md={6}>
-              <RHFTextField name="mobile" label="Mobile Number *" placeholder="Enter mobile number" required />
+              <RHFTextField name="mobile" label="Mobile Number" placeholder="Enter mobile number" required />
             </Col>
             <Col md={6}>
-              <RHFSelect name="role" label="Role *" options={ROLE_OPTIONS} placeholder="Select role" required />
+              <RHFSelect name="role" label="Role" options={ROLE_OPTIONS} placeholder="Select role" required />
             </Col>
           </Row>
 
@@ -112,10 +112,10 @@ export default function UserForm() {
               </p>
               <Row className="g-3 mb-3">
                 <Col md={6}>
-                  <RHFTextField name="password" label="Temporary Password *" type="password" placeholder="Enter temporary password" required />
+                  <RHFTextField name="password" label="Temporary Password" type="password" placeholder="Enter temporary password" required />
                 </Col>
                 <Col md={6}>
-                  <RHFTextField name="confirmPassword" label="Confirm Password *" type="password" placeholder="Re-enter password" required />
+                  <RHFTextField name="confirmPassword" label="Confirm Password" type="password" placeholder="Re-enter password" required />
                 </Col>
               </Row>
             </>

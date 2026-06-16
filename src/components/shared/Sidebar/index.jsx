@@ -8,13 +8,82 @@ import { ROLE_LABELS } from '../../../constants/roles';
 import { getInitials, avatarColor } from '../../../utils/helpers';
 import styles from './Sidebar.module.css';
 
+const PERMISSION_ROWS = [
+  { module: 'Administration', subModule: 'Admin Dashboard' },
+  { module: 'Administration', subModule: 'User Management' },
+  { module: 'Administration', subModule: 'Role Management' },
+  { module: 'Administration', subModule: 'Service Items' },
+  { module: 'Administration', subModule: 'System Settings' },
+  { module: 'Administration', subModule: 'Audit Logs' },
+  { module: 'Gate Operations', subModule: 'Gate Dashboard' },
+  { module: 'Gate Operations', subModule: 'Vehicle Entry' },
+  { module: 'CRM Operations', subModule: 'CRM Dashboard' },
+  { module: 'CRM Operations', subModule: 'Pending Approvals' },
+  { module: 'CRM Operations', subModule: 'Delivery Ready' },
+  { module: 'Floor Workshop', subModule: 'Floor Dashboard' },
+  { module: 'Floor Workshop', subModule: 'Mechanical Queue' },
+  { module: 'Floor Workshop', subModule: 'Assign Mechanic' },
+  { module: 'Floor Workshop', subModule: 'Additional Work' },
+  { module: 'Body Shop', subModule: 'Body Shop Queue' },
+  { module: 'Water Wash', subModule: 'Water Wash Queue' },
+  { module: 'Manager Operations', subModule: 'Manager Dashboard' },
+  { module: 'Manager Operations', subModule: 'Operations Overview' },
+  { module: 'Manager Operations', subModule: 'Delayed Jobs' },
+  { module: 'Manager Operations', subModule: 'Reports' },
+  { module: 'MD Analytics', subModule: 'MD Dashboard' },
+  { module: 'MD Analytics', subModule: 'Executive Overview' },
+  { module: 'MD Analytics', subModule: 'Performance Report' },
+  { module: 'MD Analytics', subModule: 'Service KPI' },
+  { module: 'Common Pages', subModule: 'Customers' },
+  { module: 'Common Pages', subModule: 'Vehicles' },
+  { module: 'Common Pages', subModule: 'Job Cards' },
+  { module: 'Common Pages', subModule: 'Notifications' }
+];
+
+const roleToDesignationMap = {
+  SUPER_ADMIN: 'Super Admin',
+  MANAGER: 'General Manager',
+  FLOOR_SUPERVISOR: 'Floor Supervisor',
+  GATE_SECURITY: 'Gate Security Executive',
+  CRM_TEAM: 'CRM Officer',
+  BODY_SHOP_SUPERVISOR: 'Body Shop Lead',
+  WATER_WASH_TEAM: 'Water Wash Lead',
+  MD: 'Managing Director'
+};
+
 export default function Sidebar() {
   const { pathname } = useLocation();
   const { role, user } = useAuthStore();
   const { sidebarCollapsed, sidebarMobileOpen, setSidebarMobileOpen } = useUIStore();
   const [expandedGroups, setExpandedGroups] = useState({});
 
-  const menus = SIDEBAR_MENUS[role] || SIDEBAR_MENUS['MANAGER'] || [];
+  const designationName = roleToDesignationMap[role];
+  const savedPrivileges = JSON.parse(localStorage.getItem('dvsos_role_privileges') || '{}');
+  const rolePrivs = savedPrivileges[designationName];
+
+  // Helper to check if a submodule has read permission
+  const hasReadPermission = (label) => {
+    if (role === 'SUPER_ADMIN') return true; // Always show all menus for Admin
+    if (!rolePrivs) return true; // If no privileges configured yet, default to showing
+    const idx = PERMISSION_ROWS.findIndex(row => row.subModule === label);
+    if (idx === -1) return true; // Default show if not in list
+    return !!rolePrivs[idx]?.read;
+  };
+
+  const filterMenu = (items) => {
+    return items
+      .map(item => {
+        if (item.children && item.children.length > 0) {
+          const filteredChildren = filterMenu(item.children);
+          if (filteredChildren.length === 0) return null;
+          return { ...item, children: filteredChildren };
+        }
+        return hasReadPermission(item.label) ? item : null;
+      })
+      .filter(Boolean);
+  };
+
+  const menus = filterMenu(SIDEBAR_MENUS[role] || SIDEBAR_MENUS['MANAGER'] || []);
 
   const isActive = (path) => {
     if (!path) return false;

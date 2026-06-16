@@ -61,6 +61,8 @@ export const ROUTES = {
   KIOSK_TV: '/kiosk/tv',
 
   CUSTOMERS: '/customers',
+  CUSTOMERS_NEW: '/customers/new',
+  CUSTOMERS_EDIT: '/customers/:id/edit',
   VEHICLES: '/vehicles',
   JOB_CARDS: '/job-cards',
   JOB_CARD_EDIT: '/job-cards/:id/edit',

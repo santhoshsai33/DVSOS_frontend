@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { Plus, Edit, Trash2, Mail, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -15,34 +15,38 @@ import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import styles from './Users.module.css';
 
-const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => (
-  <button
-    ref={ref}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}
-    {...props}
-    style={{
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '4px',
-      color: 'var(--color-text-secondary)',
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: '50%',
-      width: '32px',
-      height: '32px',
-      transition: 'background 0.2s',
-    }}
-    onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
-    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-  >
-    <MoreVertical size={18} />
-  </button>
-));
+const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => {
+  const cleanedClassName = (props.className || '').replace('dropdown-toggle', '');
+  return (
+    <button
+      ref={ref}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(e);
+      }}
+      {...props}
+      className={cleanedClassName}
+      style={{
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '4px',
+        color: 'var(--color-text-secondary)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        width: '32px',
+        height: '32px',
+        transition: 'background 0.2s',
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
+      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+    >
+      <MoreVertical size={18} />
+    </button>
+  );
+});
 
 export default function UserList() {
   const navigate = useNavigate();
@@ -51,14 +55,47 @@ export default function UserList() {
   const debSearch = useDebounce(search, 300);
 
   const { data, isLoading } = useUsers({ search: debSearch, role: roleFilter });
+  const [usersList, setUsersList] = useState([]);
+
+  useEffect(() => {
+    if (data?.data) {
+      const saved = localStorage.getItem('dvsos_users_list');
+      if (saved) {
+        setUsersList(JSON.parse(saved));
+      } else {
+        setUsersList(data.data);
+      }
+    }
+  }, [data]);
+
+  const handleStatusChange = (id, newStatus) => {
+    const updated = usersList.map(u => {
+      if (u.id === id) {
+        return { ...u, status: newStatus };
+      }
+      return u;
+    });
+    setUsersList(updated);
+    localStorage.setItem('dvsos_users_list', JSON.stringify(updated));
+    toastSuccess('User status updated successfully!');
+  };
 
   const handleDeleteUser = (user) => {
     if (window.confirm(`Are you sure you want to remove "${user.name}"?\nThis action cannot be undone.`)) {
+      const updated = usersList.filter(u => u.id !== user.id);
+      setUsersList(updated);
+      localStorage.setItem('dvsos_users_list', JSON.stringify(updated));
       toastSuccess(`User "${user.name}" removed successfully.`);
     }
   };
 
-  const tableData = data?.data || [];
+  const filteredUsers = usersList.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase()) ||
+                          user.email.toLowerCase().includes(search.toLowerCase()) ||
+                          user.mobile.includes(search);
+    const matchesRole = !roleFilter || user.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   const columns = [
     {
@@ -92,7 +129,25 @@ export default function UserList() {
       header: 'Status',
       accessor: 'status',
       render: (row) => (
-        <StatusBadge status={row.status === 'ACTIVE' ? 'COMPLETED' : 'DELAYED'} />
+        <select
+          className="form-select form-select-sm"
+          style={{
+            width: '120px',
+            fontSize: '0.85rem',
+            padding: '0.35rem 0.5rem',
+            borderRadius: '6px',
+            borderColor: 'var(--color-border)',
+            background: 'var(--color-bg-card)',
+            color: 'var(--color-text-primary)',
+            fontWeight: 500,
+            cursor: 'pointer'
+          }}
+          value={row.status || 'ACTIVE'}
+          onChange={(e) => handleStatusChange(row.id, e.target.value)}
+        >
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
       ),
     },
     {
@@ -166,8 +221,8 @@ export default function UserList() {
       <div className="premium-card d-flex flex-column">
         <DataTable
           columns={columns}
-          data={tableData}
-          isLoading={isLoading}
+          data={filteredUsers}
+          isLoading={isLoading && usersList.length === 0}
           emptyMessage="No users found"
         />
       </div>

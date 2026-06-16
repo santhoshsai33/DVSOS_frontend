@@ -55,6 +55,7 @@ import ServiceKpiPage from '../features/roles/managing-director/pages/ServiceKpi
 import TvKioskPage from '../features/roles/kiosk/pages/TvKioskPage';
 import CustomerListPage from '../features/common/customers/pages/CustomerListPage';
 import CustomerDetailPage from '../features/common/customers/pages/CustomerDetailPage';
+import CustomerForm from '../features/common/customers/pages/CustomerForm';
 import VehicleListPage from '../features/common/vehicles/pages/VehicleListPage';
 import VehicleDetailPage from '../features/common/vehicles/pages/VehicleDetailPage';
 import JobCardListPage from '../features/common/job-cards/pages/JobCardListPage';
@@ -198,6 +199,7 @@ export const router = createBrowserRouter([
             children: [
               { path: 'customers', element: <CustomerListPage title="Customers" /> },
               { path: 'customers/:id', element: <CustomerDetailPage title="Customer Detail" /> },
+              { path: 'customers/:id/edit', element: <CustomerForm /> },
               { path: 'vehicles', element: <VehicleListPage /> },
               { path: 'vehicles/:id', element: <VehicleDetailPage /> },
               { path: 'job-cards', element: <JobCardListPage /> },

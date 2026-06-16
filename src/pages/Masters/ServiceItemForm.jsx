@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Row, Col, Form } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useForm, FormProvider } from 'react-hook-form';
+import RHFTextField from '../../components/form/RHFTextField';
+import RHFSelect from '../../components/form/RHFSelect';
 import Button from '../../components/common/Button';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
@@ -12,44 +15,56 @@ export default function ServiceItemForm() {
   const { id } = useParams();
   const isEdit = !!id;
   const { masterServices, serviceCategories, addService, updateService } = useMasterDataStore();
-
-  const [form, setForm] = useState({ name: '', category: '', price: 0 });
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (serviceCategories.length > 0 && !form.category) {
-      setForm(prev => ({ ...prev, category: serviceCategories[0].name }));
+  const methods = useForm({
+    defaultValues: {
+      name: '',
+      category: '',
+      price: 0
     }
-  }, [serviceCategories, form.category]);
+  });
+
+  const { handleSubmit, reset, setValue } = methods;
+
+  useEffect(() => {
+    if (serviceCategories.length > 0) {
+      setValue('category', serviceCategories[0].name);
+    }
+  }, [serviceCategories, setValue]);
 
   useEffect(() => {
     if (isEdit && masterServices.length > 0) {
       const item = masterServices.find(s => s.id === id);
       if (item) {
-        setForm({ name: item.name, category: item.category || '', price: item.price || 0 });
+        reset({
+          name: item.name,
+          category: item.category || '',
+          price: item.price || 0
+        });
       }
     }
-  }, [isEdit, id, masterServices]);
+  }, [isEdit, id, masterServices, reset]);
 
-  const handleSave = (e) => {
-    if (e) e.preventDefault();
-    if (!form.name || !form.category) {
-      alert('Please fill out all required fields.');
-      return;
-    }
+  const onSubmit = (data) => {
     setSaving(true);
     setTimeout(() => {
       setSaving(false);
       if (isEdit) {
-        updateService(id, form);
-        toastSuccess(`Service Item "${form.name}" updated successfully.`);
+        updateService(id, data);
+        toastSuccess(`Service Item "${data.name}" updated successfully.`);
       } else {
-        addService(form);
-        toastSuccess(`Service Item "${form.name}" created successfully.`);
+        addService(data);
+        toastSuccess(`Service Item "${data.name}" created successfully.`);
       }
       navigate(ROUTES.ADMIN_MASTER_ITEMS);
     }, 800);
   };
+
+  const categoryOptions = serviceCategories.map(cat => ({
+    value: cat.name,
+    label: cat.name
+  }));
 
   return (
     <div style={{ background: '#fff', padding: '32px 40px' }}>
@@ -72,69 +87,52 @@ export default function ServiceItemForm() {
         </button>
       </div>
 
-      <Form onSubmit={handleSave}>
-        {/* Service Item Information */}
-        <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
-          Service Item Information
-        </p>
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)}>
 
-        <Row className="g-3 mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>
-                Service Item Name *
-              </Form.Label>
-              <Form.Control
-                type="text"
+          <Row className="g-3 mb-3">
+            <Col md={6}>
+              <RHFTextField
+                name="name"
+                label="Service Item Name"
                 placeholder="e.g. Wheel Alignment"
-                style={{ borderRadius: '8px' }}
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
               />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>
-                Category Group *
-              </Form.Label>
-              <Form.Select
-                style={{ borderRadius: '8px' }}
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
+            </Col>
+            <Col md={6}>
+              <RHFSelect
+                name="category"
+                label="Category Group"
+                placeholder="Select Category Group"
+                options={categoryOptions}
                 required
-              >
-                {serviceCategories.map(cat => (
-                  <option key={cat.id} value={cat.name}>{cat.name}</option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-        </Row>
+              />
+            </Col>
+          </Row>
 
-        {/* Footer Actions */}
-        <div style={{
-          borderTop: '1px solid #E2E5DC',
-          marginTop: '32px', paddingTop: '24px',
-          display: 'flex', justifyContent: 'flex-end', gap: '12px',
-        }}>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => navigate(ROUTES.ADMIN_MASTER_ITEMS)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            type="submit"
-            isLoading={saving}
-          >
-            {isEdit ? 'Save Changes' : 'Create Service Item'}
-          </Button>
-        </div>
-      </Form>
+          {/* Footer Actions */}
+          <div style={{
+            borderTop: '1px solid #E2E5DC',
+            marginTop: '32px', paddingTop: '24px',
+            display: 'flex', justifyContent: 'flex-end', gap: '12px',
+          }}>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => navigate(ROUTES.ADMIN_MASTER_ITEMS)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              isLoading={saving}
+            >
+              {isEdit ? 'Save Changes' : 'Create Service Item'}
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </div>
   );
 }

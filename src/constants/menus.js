@@ -89,8 +89,6 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.SUPER_ADMIN]: [
     { label: 'Admin Dashboard', path: ROUTES.ADMIN_DASHBOARD, icon: LayoutDashboard },
-    { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
-    { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },
     {
       label: 'Master Menu',
       icon: Database,
@@ -100,9 +98,14 @@ export const SIDEBAR_MENUS = {
         { label: 'Service Pricing', path: ROUTES.ADMIN_MASTER_PRICING, icon: Package }
       ]
     },
-    { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },
+    { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },
+    { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
+    { label: 'Customers', path: ROUTES.CUSTOMERS, icon: Users },
+    { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
+    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
     { label: 'Audit Logs', path: ROUTES.ADMIN_AUDIT_LOGS, icon: FileText },
-    ...commonLinks,
+    { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
+    { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },
   ],
 };
 

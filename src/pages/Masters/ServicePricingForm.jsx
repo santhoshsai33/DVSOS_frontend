@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Row, Col, Form } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useForm, FormProvider } from 'react-hook-form';
+import RHFTextField from '../../components/form/RHFTextField';
+import RHFSelect from '../../components/form/RHFSelect';
 import Button from '../../components/common/Button';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
@@ -13,52 +16,68 @@ export default function ServicePricingForm() {
   const { id } = useParams();
   const isEdit = !!id;
   const { masterServices, updateService } = useMasterDataStore();
-
-  const [serviceId, setServiceId] = useState('');
-  const [price, setPrice] = useState(0);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (masterServices.length > 0 && !serviceId) {
-      setServiceId(masterServices[0].id);
-      setPrice(masterServices[0].price || 0);
+  const methods = useForm({
+    defaultValues: {
+      serviceId: '',
+      price: 0
     }
-  }, [masterServices, serviceId]);
+  });
+
+  const { handleSubmit, reset, setValue, watch } = methods;
+  const watchedServiceId = watch('serviceId');
+
+  useEffect(() => {
+    if (masterServices.length > 0 && !watchedServiceId) {
+      setValue('serviceId', masterServices[0].id);
+      setValue('price', masterServices[0].price || 0);
+    }
+  }, [masterServices, watchedServiceId, setValue]);
+
+  // Update price when selected service changes
+  useEffect(() => {
+    if (watchedServiceId) {
+      const item = masterServices.find(s => s.id === watchedServiceId);
+      if (item) {
+        setValue('price', item.price || 0);
+      }
+    }
+  }, [watchedServiceId, masterServices, setValue]);
 
   useEffect(() => {
     if (isEdit && masterServices.length > 0) {
       const item = masterServices.find(s => s.id === id);
       if (item) {
-        setServiceId(item.id);
-        setPrice(item.price || 0);
+        reset({
+          serviceId: item.id,
+          price: item.price || 0
+        });
       }
     }
-  }, [isEdit, id, masterServices]);
+  }, [isEdit, id, masterServices, reset]);
 
-  const handleServiceChange = (e) => {
-    const sId = e.target.value;
-    setServiceId(sId);
-    const item = masterServices.find(s => s.id === sId);
-    if (item) {
-      setPrice(item.price || 0);
-    }
-  };
-
-  const handleSave = (e) => {
-    if (e) e.preventDefault();
-    if (!serviceId || price < 0) {
+  const onSubmit = (data) => {
+    const sId = data.serviceId;
+    const priceVal = data.price;
+    if (!sId || priceVal < 0) {
       alert('Please fill out all required fields with valid pricing.');
       return;
     }
     setSaving(true);
     setTimeout(() => {
       setSaving(false);
-      const selectedItem = masterServices.find(s => s.id === serviceId);
-      updateService(serviceId, { price: Number(price) });
-      toastSuccess(`Pricing for "${selectedItem.name}" set to ${formatCurrency(price)} successfully.`);
+      const selectedItem = masterServices.find(s => s.id === sId);
+      updateService(sId, { price: Number(priceVal) });
+      toastSuccess(`Pricing for "${selectedItem.name}" set to ${formatCurrency(priceVal)} successfully.`);
       navigate(ROUTES.ADMIN_MASTER_PRICING);
     }, 800);
   };
+
+  const serviceOptions = masterServices.map(s => ({
+    value: s.id,
+    label: `${s.name} (${s.category})`
+  }));
 
   return (
     <div style={{ background: '#fff', padding: '32px 40px' }}>
@@ -81,71 +100,54 @@ export default function ServicePricingForm() {
         </button>
       </div>
 
-      <Form onSubmit={handleSave}>
-        {/* Pricing Details */}
-        <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '20px' }}>
-          Pricing Details
-        </p>
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)}>
 
-        <Row className="g-3 mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>
-                Select Service Item *
-              </Form.Label>
-              <Form.Select
-                style={{ borderRadius: '8px' }}
-                value={serviceId}
-                onChange={handleServiceChange}
+          <Row className="g-3 mb-3">
+            <Col md={6}>
+              <RHFSelect
+                name="serviceId"
+                label="Select Service Item"
+                placeholder="Select Service Item"
+                options={serviceOptions}
                 disabled={isEdit}
                 required
-              >
-                {masterServices.map(s => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.category})</option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label style={{ fontWeight: 500, fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>
-                Base Price (₹) *
-              </Form.Label>
-              <Form.Control
+              />
+            </Col>
+            <Col md={6}>
+              <RHFTextField
+                name="price"
+                label="Base Price (₹)"
                 type="number"
                 placeholder="e.g. 2500"
-                style={{ borderRadius: '8px' }}
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                min="0"
                 required
               />
-            </Form.Group>
-          </Col>
-        </Row>
+            </Col>
+          </Row>
 
-        {/* Footer Actions */}
-        <div style={{
-          borderTop: '1px solid #E2E5DC',
-          marginTop: '32px', paddingTop: '24px',
-          display: 'flex', justifyContent: 'flex-end', gap: '12px',
-        }}>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => navigate(ROUTES.ADMIN_MASTER_PRICING)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            type="submit"
-            isLoading={saving}
-          >
-            Set Price
-          </Button>
-        </div>
-      </Form>
+          {/* Footer Actions */}
+          <div style={{
+            borderTop: '1px solid #E2E5DC',
+            marginTop: '32px', paddingTop: '24px',
+            display: 'flex', justifyContent: 'flex-end', gap: '12px',
+          }}>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => navigate(ROUTES.ADMIN_MASTER_PRICING)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              isLoading={saving}
+            >
+              Set Price
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
     </div>
   );
 }

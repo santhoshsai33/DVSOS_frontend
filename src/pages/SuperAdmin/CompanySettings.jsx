@@ -37,11 +37,11 @@ export default function CompanySettings() {
   };
 
   return (
-    <div style={{ background: '#fff', minHeight: '100%', padding: '2rem 2.5rem' }}>
+    <div style={{ background: '#fff', padding: '2rem 2.5rem' }}>
 
       {/* Page Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
-        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.3rem', color: '#152326' }}>
+        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '20px', color: '#152326' }}>
           Company Settings
         </h4>
         <button
@@ -50,7 +50,7 @@ export default function CompanySettings() {
           style={{
             display: 'flex', alignItems: 'center', gap: '0.4rem',
             background: 'none', border: 'none', cursor: 'pointer',
-            color: '#6B7280', fontSize: '0.875rem', fontWeight: 500,
+            color: '#6B7280', fontSize: '14px', fontWeight: 500,
             padding: 0,
           }}
         >
@@ -60,35 +60,31 @@ export default function CompanySettings() {
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          
-          <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
-            Company Profile
-          </p>
 
           <Row className="g-3 mb-3">
             <Col md={6}>
-              <RHFTextField name="companyName" label="Company Name *" placeholder="e.g. DVSOS Auto Services" required />
+              <RHFTextField name="companyName" label="Company Name" placeholder="e.g. DVSOS Auto Services" required />
             </Col>
             <Col md={6}>
-              <RHFTextField name="address" label="Registered Address *" placeholder="Full address" required />
+              <RHFTextField name="address" label="Registered Address" placeholder="Full address" required />
             </Col>
           </Row>
 
           <Row className="g-3 mb-3">
             <Col md={6}>
-              <RHFTextField name="phone" label="Contact Phone *" placeholder="e.g. +91 98765 43210" required />
+              <RHFTextField name="phone" label="Contact Phone" placeholder="e.g. +91 98765 43210" required />
             </Col>
             <Col md={6}>
-              <RHFTextField name="email" label="Contact Email *" type="email" placeholder="e.g. info@company.com" required />
+              <RHFTextField name="email" label="Contact Email" type="email" placeholder="e.g. info@company.com" required />
             </Col>
           </Row>
 
           <Row className="g-3 mb-3">
             <Col md={6}>
-              <RHFTextField name="gstNumber" label="GST Number *" placeholder="Enter GSTIN" required />
+              <RHFTextField name="gstNumber" label="GST Number" placeholder="Enter GSTIN" required />
             </Col>
             <Col md={6}>
-              <RHFTextField name="defaultTaxRate" label="Default Tax Rate (%) *" type="number" required />
+              <RHFTextField name="defaultTaxRate" label="Default Tax Rate (%)" type="number" required />
             </Col>
           </Row>
 
@@ -98,16 +94,16 @@ export default function CompanySettings() {
             marginTop: '2rem', paddingTop: '1.5rem',
             display: 'flex', justifyContent: 'flex-end', gap: '0.75rem',
           }}>
-            <Button 
-              variant="secondary" 
-              type="button" 
+            <Button
+              variant="secondary"
+              type="button"
               onClick={() => navigate(ROUTES.ADMIN_DASHBOARD)}
             >
               Cancel
             </Button>
-            <Button 
-              variant="primary" 
-              type="submit" 
+            <Button
+              variant="primary"
+              type="submit"
               isLoading={formState.isSubmitting}
             >
               Submit

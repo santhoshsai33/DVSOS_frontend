@@ -196,10 +196,24 @@
   overflow: hidden;
 }
 
-.groupToggle:hover,
-.groupToggle.groupActive {
+.groupToggle:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
+}
+
+.groupToggle.groupActive {
+  background: linear-gradient(135deg, #0F766E 0%, #14B8A6 100%);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 14px 0 rgba(20, 184, 166, 0.35);
+}
+
+.groupToggle.groupActive .chevron {
+  color: #ffffff;
+}
+
+.groupToggle.groupActive .menuIcon {
+  opacity: 1;
 }
 
 .groupToggle.collapsed {

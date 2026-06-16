@@ -40,13 +40,15 @@ const PERMISSION_ROWS = [
 const DESIGNATIONS = ['Super Admin', 'General Manager', 'Floor Supervisor', 'Gate Security Executive', 'CRM Officer', 'Body Shop Lead', 'Water Wash Lead', 'Managing Director'];
 const ROLES = ['SUPER_ADMIN', 'MANAGER', 'FLOOR_SUPERVISOR', 'GATE_SECURITY', 'CRM_TEAM', 'BODY_SHOP_SUPERVISOR', 'WATER_WASH_TEAM', 'MD'];
 
+const MODULES = ['Administration', 'Gate Operations', 'CRM Operations', 'Floor Workshop', 'Body Shop', 'Water Wash', 'Manager Operations', 'MD Analytics', 'Common Pages'];
+
 export default function RolePrivilegesForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
 
   const [designation, setDesignation] = useState('');
-  const [role, setRole] = useState('');
+  const [selectedModule, setSelectedModule] = useState('Administration');
   const [saving, setSaving] = useState(false);
 
   // Grid permissions state
@@ -58,18 +60,35 @@ export default function RolePrivilegesForm() {
   );
 
   useEffect(() => {
+    const savedPrivileges = JSON.parse(localStorage.getItem('dvsos_role_privileges') || '{}');
     if (isEdit) {
-      // Mock pre-populating details
-      setDesignation('General Manager');
-      setRole('MANAGER');
-      setPrivileges(
-        PERMISSION_ROWS.reduce((acc, _, index) => {
-          acc[index] = { read: true, create: index % 2 === 0, update: index % 3 === 0, delete: false };
-          return acc;
-        }, {})
-      );
+      const MOCK_ROLES_LIST = [
+        { id: 1, designation: 'Super Admin' },
+        { id: 2, designation: 'General Manager' },
+        { id: 3, designation: 'Floor Supervisor' },
+        { id: 4, designation: 'Gate Security Executive' },
+        { id: 5, designation: 'CRM Officer' },
+        { id: 6, designation: 'Body Shop Lead' },
+        { id: 7, designation: 'Water Wash Lead' },
+        { id: 8, designation: 'Managing Director' }
+      ];
+      const roleItem = MOCK_ROLES_LIST.find(r => String(r.id) === String(id));
+      const name = roleItem ? roleItem.designation : 'General Manager';
+      setDesignation(name);
+
+      if (savedPrivileges[name]) {
+        setPrivileges(savedPrivileges[name]);
+      } else {
+        // Fallback mock pre-population
+        setPrivileges(
+          PERMISSION_ROWS.reduce((acc, _, index) => {
+            acc[index] = { read: true, create: index % 2 === 0, update: index % 3 === 0, delete: false };
+            return acc;
+          }, {})
+        );
+      }
     }
-  }, [isEdit]);
+  }, [isEdit, id]);
 
   const handleCheckboxChange = (index, type) => {
     setPrivileges(prev => {
@@ -96,17 +115,61 @@ export default function RolePrivilegesForm() {
   };
 
   const handleSave = () => {
-    if (!designation || !role) {
-      alert('Please select Designation and Role.');
+    if (!designation.trim()) {
+      alert('Please enter a Role Name.');
       return;
     }
     setSaving(true);
     setTimeout(() => {
       setSaving(false);
+      // Save to localStorage
+      const savedPrivileges = JSON.parse(localStorage.getItem('dvsos_role_privileges') || '{}');
+      savedPrivileges[designation.trim()] = privileges;
+      localStorage.setItem('dvsos_role_privileges', JSON.stringify(savedPrivileges));
+
+      // Append new role to dvsos_roles_list
+      let savedRoles = [];
+      try {
+        savedRoles = JSON.parse(localStorage.getItem('dvsos_roles_list') || '[]');
+      } catch (e) {
+        savedRoles = [];
+      }
+      // If savedRoles is empty, populate it with defaults first
+      if (savedRoles.length === 0) {
+        savedRoles = [
+          { id: 1, designation: 'Super Admin', roleCode: 'SUPER_ADMIN', accessLevel: 'Full Access', active: true },
+          { id: 2, designation: 'General Manager', roleCode: 'MANAGER', accessLevel: 'Custom Access', active: true },
+          { id: 3, designation: 'Floor Supervisor', roleCode: 'FLOOR_SUPERVISOR', accessLevel: 'Custom Access', active: true },
+          { id: 4, designation: 'Gate Security Executive', roleCode: 'GATE_SECURITY', accessLevel: 'Custom Access', active: true },
+          { id: 5, designation: 'CRM Officer', roleCode: 'CRM_TEAM', accessLevel: 'Custom Access', active: true },
+          { id: 6, designation: 'Body Shop Lead', roleCode: 'BODY_SHOP_SUPERVISOR', accessLevel: 'Custom Access', active: true },
+          { id: 7, designation: 'Water Wash Lead', roleCode: 'WATER_WASH_TEAM', accessLevel: 'Custom Access', active: true },
+          { id: 8, designation: 'Managing Director', roleCode: 'MD', accessLevel: 'Custom Access', active: true }
+        ];
+      }
+
+      const exists = savedRoles.some(r => r.designation.toLowerCase() === designation.trim().toLowerCase());
+      if (!exists) {
+        const nextId = savedRoles.length > 0 ? Math.max(...savedRoles.map(r => r.id)) + 1 : 1;
+        savedRoles.push({
+          id: nextId,
+          designation: designation.trim(),
+          roleCode: designation.trim().toUpperCase().replace(/\s+/g, '_'),
+          accessLevel: 'Custom Access',
+          active: true
+        });
+      }
+      localStorage.setItem('dvsos_roles_list', JSON.stringify(savedRoles));
+
       toastSuccess(`Role privileges for "${designation}" saved successfully!`);
       navigate(ROUTES.ADMIN_ROLES);
     }, 800);
   };
+
+  // Filter permission rows by selected module
+  const filteredRows = PERMISSION_ROWS
+    .map((row, originalIdx) => ({ ...row, originalIdx }))
+    .filter(row => !selectedModule || row.module === selectedModule);
 
   return (
     <div style={{ background: '#F8F9FA', minHeight: '100vh', padding: '1.5rem 0' }}>
@@ -139,35 +202,31 @@ export default function RolePrivilegesForm() {
           <div className="row g-3">
             <div className="col-md-6">
               <label className="form-label fw-semibold small text-muted">
-                Designation <span className="text-danger">*</span>
+                Role Name <span className="text-danger">*</span>
               </label>
-              <select
-                className="form-select"
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Enter Role Name"
                 style={{ fontSize: '0.9rem', padding: '0.6rem' }}
                 value={designation}
                 onChange={(e) => setDesignation(e.target.value)}
                 disabled={isEdit}
-              >
-                <option value="">Select Designation</option>
-                {DESIGNATIONS.map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+              />
             </div>
             <div className="col-md-6">
               <label className="form-label fw-semibold small text-muted">
-                Role <span className="text-danger">*</span>
+                Module <span className="text-danger">*</span>
               </label>
               <select
                 className="form-select"
                 style={{ fontSize: '0.9rem', padding: '0.6rem' }}
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                disabled={isEdit}
+                value={selectedModule}
+                onChange={(e) => setSelectedModule(e.target.value)}
               >
-                <option value="">Select Role</option>
-                {ROLES.map(r => (
-                  <option key={r} value={r}>{r}</option>
+                <option value="">All Modules</option>
+                {MODULES.map(m => (
+                  <option key={m} value={m}>{m === 'Administration' ? 'Admin' : m}</option>
                 ))}
               </select>
             </div>
@@ -189,7 +248,8 @@ export default function RolePrivilegesForm() {
                 </tr>
               </thead>
               <tbody>
-                {PERMISSION_ROWS.map((row, idx) => {
+                {filteredRows.map((row) => {
+                  const idx = row.originalIdx;
                   const state = privileges[idx] || { read: false, create: false, update: false, delete: false };
                   const allChecked = state.read && state.create && state.update && state.delete;
                   return (
