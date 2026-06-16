@@ -21,7 +21,8 @@ export default function ServiceItemForm() {
     defaultValues: {
       name: '',
       category: '',
-      price: 0
+      price: 0,
+      estimatedMinutes: 0
     }
   });
 
@@ -40,7 +41,8 @@ export default function ServiceItemForm() {
         reset({
           name: item.name,
           category: item.category || '',
-          price: item.price || 0
+          price: item.price || 0,
+          estimatedMinutes: item.estimatedMinutes || 0
         });
       }
     }
@@ -50,11 +52,16 @@ export default function ServiceItemForm() {
     setSaving(true);
     setTimeout(() => {
       setSaving(false);
+      const formattedData = {
+        ...data,
+        price: parseFloat(data.price) || 0,
+        estimatedMinutes: parseInt(data.estimatedMinutes, 10) || 0
+      };
       if (isEdit) {
-        updateService(id, data);
+        updateService(id, formattedData);
         toastSuccess(`Service Item "${data.name}" updated successfully.`);
       } else {
-        addService(data);
+        addService(formattedData);
         toastSuccess(`Service Item "${data.name}" created successfully.`);
       }
       navigate(ROUTES.ADMIN_MASTER_ITEMS);
@@ -91,6 +98,16 @@ export default function ServiceItemForm() {
         <form onSubmit={handleSubmit(onSubmit)}>
 
           <Row className="g-3 mb-3">
+
+            <Col md={6}>
+              <RHFSelect
+                name="category"
+                label="Category Group"
+                placeholder="Select Category Group"
+                options={categoryOptions}
+                required
+              />
+            </Col>
             <Col md={6}>
               <RHFTextField
                 name="name"
@@ -99,12 +116,24 @@ export default function ServiceItemForm() {
                 required
               />
             </Col>
+          </Row>
+
+          <Row className="g-3 mb-3">
             <Col md={6}>
-              <RHFSelect
-                name="category"
-                label="Category Group"
-                placeholder="Select Category Group"
-                options={categoryOptions}
+              <RHFTextField
+                name="price"
+                type="number"
+                label="Base Price (₹)"
+                placeholder="e.g. 1500"
+                required
+              />
+            </Col>
+            <Col md={6}>
+              <RHFTextField
+                name="estimatedMinutes"
+                type="number"
+                label="Estimated Duration (Mins)"
+                placeholder="e.g. 45"
                 required
               />
             </Col>

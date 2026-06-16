@@ -15,9 +15,6 @@ export const ROUTES = {
   ADMIN_MASTER_ITEMS: '/admin/master/items',
   ADMIN_MASTER_ITEMS_NEW: '/admin/master/items/new',
   ADMIN_MASTER_ITEMS_EDIT: '/admin/master/items/:id/edit',
-  ADMIN_MASTER_PRICING: '/admin/master/pricing',
-  ADMIN_MASTER_PRICING_NEW: '/admin/master/pricing/new',
-  ADMIN_MASTER_PRICING_EDIT: '/admin/master/pricing/:id/edit',
   ADMIN_SETTINGS: '/admin/settings',
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
 

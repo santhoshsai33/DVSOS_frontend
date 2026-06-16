@@ -8,6 +8,7 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { toastSuccess } from '../../notifications/toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
+import { formatCurrency } from '../../utils/formatters';
 
 const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => {
   const cleanedProps = { ...props };
@@ -67,6 +68,16 @@ export default function ServiceItems() {
       render: (row) => <strong style={{ color: 'var(--color-text-primary)' }}>{row.name}</strong>
     },
     { header: 'Category Group', accessor: 'category' },
+    {
+      header: 'Base Price (₹)',
+      accessor: 'price',
+      render: (row) => <span className="fw-semibold text-success">{formatCurrency(row.price || 0)}</span>
+    },
+    {
+      header: 'Est. Duration',
+      accessor: 'estimatedMinutes',
+      render: (row) => <span>{row.estimatedMinutes ? `${row.estimatedMinutes} mins` : '-'}</span>
+    },
     {
       header: 'Status',
       accessor: 'status',

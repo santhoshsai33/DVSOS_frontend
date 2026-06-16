@@ -18,8 +18,6 @@ import ServiceCategories from '../pages/Masters/ServiceCategories';
 import ServiceCategoryForm from '../pages/Masters/ServiceCategoryForm';
 import ServiceItems from '../pages/Masters/ServiceItems';
 import ServiceItemForm from '../pages/Masters/ServiceItemForm';
-import ServicePricing from '../pages/Masters/ServicePricing';
-import ServicePricingForm from '../pages/Masters/ServicePricingForm';
 import SystemSettingsPage from '../features/roles/admin/pages/SystemSettingsPage';
 import AuditLogsPage from '../features/roles/admin/pages/AuditLogsPage';
 import UserForm from '../pages/Users/UserForm';
@@ -123,9 +121,6 @@ export const router = createBrowserRouter([
               { path: 'admin/master/items', element: <ServiceItems /> },
               { path: 'admin/master/items/new', element: <ServiceItemForm /> },
               { path: 'admin/master/items/:id/edit', element: <ServiceItemForm /> },
-              { path: 'admin/master/pricing', element: <ServicePricing /> },
-              { path: 'admin/master/pricing/new', element: <ServicePricingForm /> },
-              { path: 'admin/master/pricing/:id/edit', element: <ServicePricingForm /> },
               { path: 'admin/settings', element: <SystemSettingsPage /> },
               { path: 'admin/audit-logs', element: <AuditLogsPage /> },
             ],

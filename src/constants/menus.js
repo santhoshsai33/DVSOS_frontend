@@ -94,8 +94,7 @@ export const SIDEBAR_MENUS = {
       icon: Database,
       children: [
         { label: 'Service Categories', path: ROUTES.ADMIN_MASTER_CATEGORIES, icon: ClipboardList },
-        { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench },
-        { label: 'Service Pricing', path: ROUTES.ADMIN_MASTER_PRICING, icon: Package }
+        { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench }
       ]
     },
     { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },

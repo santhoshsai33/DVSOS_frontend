@@ -82,6 +82,8 @@ export default function JobCardCreate() {
     }
   }, [jobCard, isEditMode, setValue, masterServices]);
 
+  const subtotal = useMemo(() => selectedServices.reduce((sum, s) => sum + s.price, 0), [selectedServices]);
+
   if (isEditMode && isJobCardLoading) {
     return <Loader fullPage text="Loading job card details..." />;
   }
@@ -121,8 +123,6 @@ export default function JobCardCreate() {
       setIsSearching(false);
     }
   };
-
-  const subtotal = useMemo(() => selectedServices.reduce((sum, s) => sum + s.price, 0), [selectedServices]);
   const taxAmount = subtotal * (companySettings.defaultTaxRate / 100);
   const grandTotal = subtotal + taxAmount;
 
