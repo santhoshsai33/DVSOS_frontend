@@ -58,14 +58,12 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.BODY_SHOP_SUPERVISOR]: [
     { label: 'Body Shop Queue', path: ROUTES.BODY_SHOP_QUEUE, icon: Paintbrush },
-    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
     { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
   ],
 
   [ROLES.WATER_WASH_TEAM]: [
     { label: 'Water Wash Queue', path: ROUTES.WATER_WASH_QUEUE, icon: Droplets },
-    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
     { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
   ],

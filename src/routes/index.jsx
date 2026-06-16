@@ -69,8 +69,8 @@ const roleHome = {
   [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
   [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
   [ROLES.FLOOR_SUPERVISOR]: ROUTES.FLOOR_DASHBOARD,
-  [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_DASHBOARD,
-  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_DASHBOARD,
+  [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_QUEUE,
+  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_QUEUE,
   [ROLES.MANAGER]: ROUTES.MANAGER_DASHBOARD,
   [ROLES.MD]: ROUTES.MD_DASHBOARD,
   [ROLES.SUPER_ADMIN]: ROUTES.ADMIN_DASHBOARD,
@@ -159,7 +159,7 @@ export const router = createBrowserRouter([
           {
             element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_BODY_SHOP} />,
             children: [
-              { path: 'body-shop/dashboard', element: <BodyShopDashboardPage /> },
+              { path: 'body-shop/dashboard', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
               { path: 'body-shop/queue', element: <BodyShopQueuePage /> },
               { path: 'body-shop/jobs/:id', element: <BodyShopJobDetailPage /> },
             ],
@@ -167,7 +167,7 @@ export const router = createBrowserRouter([
           {
             element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_WATER_WASH} />,
             children: [
-              { path: 'water-wash/dashboard', element: <WaterWashDashboardPage /> },
+              { path: 'water-wash/dashboard', element: <Navigate to={ROUTES.WATER_WASH_QUEUE} replace /> },
               { path: 'water-wash/queue', element: <WaterWashQueuePage /> },
               { path: 'water-wash/jobs/:id', element: <WashJobDetailPage /> },
             ],
@@ -216,7 +216,9 @@ export const router = createBrowserRouter([
           { path: 'gate-entry/new', element: <Navigate to={ROUTES.GATE_ENTRY} replace /> },
           { path: 'work-queue/mechanical', element: <Navigate to={ROUTES.FLOOR_MECHANICAL_QUEUE} replace /> },
           { path: 'work-queue/body-shop', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
+          { path: 'body-shop/dashboard', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
           { path: 'work-queue/water-wash', element: <Navigate to={ROUTES.WATER_WASH_QUEUE} replace /> },
+          { path: 'water-wash/dashboard', element: <Navigate to={ROUTES.WATER_WASH_QUEUE} replace /> },
           { path: 'approvals', element: <Navigate to={ROUTES.MANAGER_PENDING_APPROVALS} replace /> },
           { path: 'reports', element: <Navigate to={ROUTES.MANAGER_REPORTS} replace /> },
           { path: 'users', element: <Navigate to={ROUTES.ADMIN_USERS} replace /> },

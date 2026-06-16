@@ -12,7 +12,7 @@ const INITIAL_BODY_SHOP = {
     { id: 'B2', vehicleNumber: 'TN 05 CD 3322', ownerName: 'Murugan A.', makeModel: 'Maruti Ertiga', serviceType: 'Dent Removal', priority: 'NORMAL', waitTime: '1 hr', stageEnteredAt: new Date(Date.now() - 0.5 * 3600000).toISOString() },
   ],
   IN_PROGRESS: [
-    { id: 'B3', vehicleNumber: 'KA 11 PQ 6677', ownerName: 'Ravi S.', makeModel: 'Toyota Innova', serviceType: 'Full Body Repaint', priority: 'URGENT', technician: 'Body Team A', waitTime: '2 days in progress', stageEnteredAt: new Date(Date.now() - 48 * 3600000).toISOString() }, // Overdue
+    { id: 'B3', vehicleNumber: 'KA 11 PQ 6677', ownerName: 'Ravi S.', makeModel: 'Toyota Innova', serviceType: 'Full Body Repaint', priority: 'URGENT', technician: 'Body Team A', subStage: 'Painting', waitTime: '2 days in progress', stageEnteredAt: new Date(Date.now() - 48 * 3600000).toISOString() }, // Overdue
   ],
   COMPLETED: [
     { id: 'B4', vehicleNumber: 'MH 08 XX 9900', ownerName: 'Srinivas R.', makeModel: 'Hyundai Venue', serviceType: 'Panel Beating', priority: 'NORMAL', technician: 'Body Team B', waitTime: 'Done in 4 hrs', stageEnteredAt: new Date(Date.now() - 1 * 3600000).toISOString() },
@@ -46,6 +46,15 @@ export default function BodyShopQueue() {
       const newTo = [...prev[toCol], updatedItem];
       
       return { ...prev, [fromCol]: newFrom, [toCol]: newTo };
+    });
+  };
+
+  const updateSubStage = (itemId, newStage) => {
+    setQueue(prev => {
+      const newInProgress = prev.IN_PROGRESS.map(item => 
+        item.id === itemId ? { ...item, subStage: newStage } : item
+      );
+      return { ...prev, IN_PROGRESS: newInProgress };
     });
   };
 
@@ -87,7 +96,21 @@ export default function BodyShopQueue() {
             <Clock size={11} /> {overdue ? 'Overdue' : item.waitTime}
           </span>
           {status === 'PENDING' && <Button size="sm" variant="primary" rightIcon={ArrowRight} onClick={() => handleStart(item)}>Start</Button>}
-          {status === 'IN_PROGRESS' && <Button size="sm" variant="success" rightIcon={CheckCircle2} onClick={() => handleComplete(item)}>Complete</Button>}
+          {status === 'IN_PROGRESS' && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <select 
+                value={item.subStage || 'Tinkering'} 
+                onChange={(e) => updateSubStage(item.id, e.target.value)}
+                style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ddd', outline: 'none' }}
+              >
+                <option value="Tinkering">Tinkering</option>
+                <option value="Painting">Painting</option>
+                <option value="Polishing">Polishing</option>
+                <option value="Final Check">Final Check</option>
+              </select>
+              <Button size="sm" variant="success" rightIcon={CheckCircle2} onClick={() => handleComplete(item)}>Complete</Button>
+            </div>
+          )}
         </div>
       </div>
     );
