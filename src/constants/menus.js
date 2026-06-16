@@ -50,7 +50,6 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.FLOOR_SUPERVISOR]: [
     { label: 'Floor Dashboard', path: ROUTES.FLOOR_DASHBOARD, icon: LayoutDashboard },
-    { label: 'Mechanical Queue', path: ROUTES.FLOOR_MECHANICAL_QUEUE, icon: Wrench },
     { label: 'Assign Mechanic', path: ROUTES.FLOOR_ASSIGN_MECHANIC, icon: User },
     { label: 'Additional Work', path: ROUTES.FLOOR_ADDITIONAL_WORK, icon: AlertCircle },
     { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },

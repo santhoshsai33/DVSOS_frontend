@@ -22,7 +22,7 @@ export default function CreateRequest() {
     // Simulate sending WhatsApp request
     await new Promise(r => setTimeout(r, 800));
     toastSuccess('Approval request sent to customer via WhatsApp');
-    navigate(ROUTES.FLOOR_WORK_STATUS);
+    navigate(ROUTES.FLOOR_ADDITIONAL_WORK);
   };
 
   return (
@@ -35,7 +35,7 @@ export default function CreateRequest() {
         </h4>
         <button
           type="button"
-          onClick={() => navigate(ROUTES.FLOOR_MECHANICAL_QUEUE)}
+          onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK)}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.4rem',
             background: 'none', border: 'none', cursor: 'pointer',
@@ -43,7 +43,7 @@ export default function CreateRequest() {
             padding: 0,
           }}
         >
-          <ArrowLeft size={15} /> Back to Queue
+          <ArrowLeft size={15} /> Back to Requests
         </button>
       </div>
 
@@ -79,7 +79,7 @@ export default function CreateRequest() {
             marginTop: '2rem', paddingTop: '1.5rem',
             display: 'flex', justifyContent: 'flex-end', gap: '0.75rem',
           }}>
-            <Button variant="secondary" type="button" onClick={() => navigate(ROUTES.FLOOR_MECHANICAL_QUEUE)}>
+            <Button variant="secondary" type="button" onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK)}>
               Cancel
             </Button>
             <Button variant="primary" type="submit" leftIcon={Send} isLoading={methods.formState.isSubmitting}>

@@ -35,6 +35,7 @@ import MechanicalQueuePage from '../features/roles/floor-supervisor/pages/Mechan
 import AssignMechanicPage from '../features/roles/floor-supervisor/pages/AssignMechanicPage';
 import AdditionalWorkRequestPage from '../features/roles/floor-supervisor/pages/AdditionalWorkRequestPage';
 import MechanicWorkStatusPage from '../features/roles/floor-supervisor/pages/MechanicWorkStatusPage';
+import CreateRequest from '../pages/AdditionalWork/CreateRequest';
 import BodyShopDashboardPage from '../features/roles/body-shop-supervisor/pages/BodyShopDashboardPage';
 import BodyShopQueuePage from '../features/roles/body-shop-supervisor/pages/BodyShopQueuePage';
 import BodyShopJobDetailPage from '../features/roles/body-shop-supervisor/pages/BodyShopJobDetailPage';
@@ -151,6 +152,7 @@ export const router = createBrowserRouter([
               { path: 'floor/mechanical-queue', element: <MechanicalQueuePage /> },
               { path: 'floor/assign-mechanic', element: <AssignMechanicPage /> },
               { path: 'floor/additional-work', element: <AdditionalWorkRequestPage /> },
+              { path: 'floor/additional-work/new', element: <CreateRequest /> },
               { path: 'floor/work-status', element: <MechanicWorkStatusPage /> },
             ],
           },

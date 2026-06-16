@@ -21,7 +21,6 @@ const PERMISSION_ROWS = [
   { module: 'CRM Operations', subModule: 'Pending Approvals' },
   { module: 'CRM Operations', subModule: 'Delivery Ready' },
   { module: 'Floor Workshop', subModule: 'Floor Dashboard' },
-  { module: 'Floor Workshop', subModule: 'Mechanical Queue' },
   { module: 'Floor Workshop', subModule: 'Assign Mechanic' },
   { module: 'Floor Workshop', subModule: 'Additional Work' },
   { module: 'Body Shop', subModule: 'Body Shop Queue' },

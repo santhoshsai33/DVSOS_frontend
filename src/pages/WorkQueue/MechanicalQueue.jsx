@@ -36,15 +36,10 @@ const COLS = [
 ];
 
 const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', URGENT: '#EF4444' };
-const MECHANICS = ['Rajan M.', 'Vikram S.', 'Anand P.', 'Suresh K.'];
 
 export default function MechanicalQueue() {
   const navigate = useNavigate();
   const [queue, setQueue] = useState(INITIAL_QUEUE);
-  
-  // Modal states
-  const [assignModal, setAssignModal] = useState({ isOpen: false, item: null });
-  const [selectedMechanic, setSelectedMechanic] = useState('');
   
   // Sort function: URGENT first, then closest delivery time
   const sortJobs = (jobs) => {
@@ -68,29 +63,6 @@ export default function MechanicalQueue() {
       
       return { ...prev, [fromCol]: newFrom, [toCol]: newTo };
     });
-  };
-
-  const handleAssignClick = (item) => {
-    setAssignModal({ isOpen: true, item });
-    setSelectedMechanic('');
-  };
-
-  const handleConfirmAssign = async () => {
-    if (!selectedMechanic) {
-      toastInfo('Please select a mechanic');
-      return;
-    }
-    
-    // Simulate Assign
-    moveItem(assignModal.item.id, 'PENDING', 'ASSIGNED', { technician: selectedMechanic });
-    setAssignModal({ isOpen: false, item: null });
-    
-    toastSuccess(`Assigned to ${selectedMechanic}. Job Card sent to printer!`);
-    
-    // Simulate printing
-    setTimeout(() => {
-      toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
-    }, 1500);
   };
 
   const handleStart = (item) => {
@@ -145,9 +117,7 @@ export default function MechanicalQueue() {
           <Clock size={11} /> {item.waitTime}
         </span>
         {status === 'PENDING' && (
-          <Button size="sm" variant="outline" rightIcon={ArrowRight} onClick={() => handleAssignClick(item)}>
-            Assign
-          </Button>
+          <div style={{ fontSize: '0.8rem', color: '#6B7280' }}>Awaiting Assignment</div>
         )}
         {status === 'ASSIGNED' && (
           <Button size="sm" variant="primary" rightIcon={ArrowRight} onClick={() => handleStart(item)}>
@@ -226,48 +196,6 @@ export default function MechanicalQueue() {
           );
         })}
       </div>
-
-      {/* Assign Mechanic Modal */}
-      <Modal
-        show={assignModal.isOpen}
-        onHide={() => setAssignModal({ isOpen: false, item: null })}
-        title="Assign Mechanic & Print Card"
-        confirmLabel="Assign & Print"
-        onConfirm={handleConfirmAssign}
-        confirmIcon={Printer}
-      >
-        {assignModal.item && (
-          <div className="d-flex flex-column gap-3">
-            <div className={styles.card} style={{ margin: 0, border: 'none', boxShadow: 'none', padding: '0 0 1rem 0' }}>
-              <p><strong>Job Card:</strong> #{assignModal.item.id}</p>
-              <p><strong>Vehicle:</strong> {assignModal.item.vehicleNumber} ({assignModal.item.makeModel})</p>
-              <p><strong>Service:</strong> {assignModal.item.serviceType}</p>
-              <p><strong>Expected Delivery:</strong> {formatDateTime(assignModal.item.deliveryDate)}</p>
-            </div>
-            
-            <div className="form-group">
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
-                Select Mechanic
-              </label>
-              <select
-                className="form-control"
-                value={selectedMechanic}
-                onChange={(e) => setSelectedMechanic(e.target.value)}
-                style={{ padding: '0.5rem', borderRadius: '6px', border: '1.5px solid var(--color-border)' }}
-              >
-                <option value="">-- Choose Mechanic --</option>
-                {MECHANICS.map(m => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-              <Printer size={12} /> Assigning will automatically print a hard copy of the job card.
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

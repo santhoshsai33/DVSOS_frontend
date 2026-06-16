@@ -34,6 +34,7 @@ export const ROUTES = {
   FLOOR_MECHANICAL_QUEUE: '/floor/mechanical-queue',
   FLOOR_ASSIGN_MECHANIC: '/floor/assign-mechanic',
   FLOOR_ADDITIONAL_WORK: '/floor/additional-work',
+  FLOOR_ADDITIONAL_WORK_NEW: '/floor/additional-work/new',
   FLOOR_WORK_STATUS: '/floor/work-status',
 
   BODY_SHOP_DASHBOARD: '/body-shop/dashboard',
