@@ -22,7 +22,6 @@ export default function AuditLogs() {
     <div>
       <PageHeader
         title="Audit Logs"
-        subtitle="System-wide action and security logs"
         breadcrumbs={[{ label: 'Settings' }, { label: 'Audit Logs' }]}
       />
       <div className="premium-card d-flex flex-column">

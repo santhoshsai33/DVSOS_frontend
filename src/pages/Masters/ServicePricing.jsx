@@ -9,34 +9,40 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import { formatCurrency } from '../../utils/formatters';
 
-const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => (
-  <button
-    ref={ref}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}
-    {...props}
-    style={{
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '4px',
-      color: 'var(--color-text-secondary)',
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: '50%',
-      width: '32px',
-      height: '32px',
-      transition: 'background 0.2s',
-    }}
-    onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
-    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-  >
-    <MoreVertical size={18} />
-  </button>
-));
+const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => {
+  const cleanedProps = { ...props };
+  if (cleanedProps.className) {
+    cleanedProps.className = cleanedProps.className.replace('dropdown-toggle', '');
+  }
+  return (
+    <button
+      ref={ref}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick(e);
+      }}
+      {...cleanedProps}
+      style={{
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: '4px',
+        color: 'var(--color-text-secondary)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        width: '32px',
+        height: '32px',
+        transition: 'background 0.2s',
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
+      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+    >
+      <MoreVertical size={18} />
+    </button>
+  );
+});
 
 export default function ServicePricing() {
   const navigate = useNavigate();

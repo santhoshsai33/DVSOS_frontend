@@ -180,8 +180,7 @@ export default function RolePrivilegesForm() {
             <table className="table table-hover align-middle mb-0" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: '#E2E8F0', borderBottom: '2px solid #CBD5E0' }}>
-                  <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem' }}>Module</th>
-                  <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem' }}>Sub Module</th>
+                  <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem' }}>Module Name</th>
                   <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}>Read</th>
                   <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}>Create</th>
                   <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}>Update</th>
@@ -196,9 +195,6 @@ export default function RolePrivilegesForm() {
                   return (
                     <tr key={idx} style={{ borderBottom: '1px solid #EDF2F7' }}>
                       <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem', fontWeight: 600, color: '#2D3748' }}>
-                        {row.module}
-                      </td>
-                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem', color: '#4A5568' }}>
                         {row.subModule}
                       </td>
                       <td style={{ textAlign: 'center' }}>

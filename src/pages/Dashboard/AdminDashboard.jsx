@@ -203,61 +203,6 @@ export default function AdminDashboard() {
         </Col>
       </Row>
 
-      {/* Departmental Portals / Cross-Role Operations Cockpit */}
-      <div className="premium-card mb-4">
-        <div className="p-3 border-bottom">
-          <h5 className="mb-0 fs-6 fw-bold">Cross-Role Operations Cockpit</h5>
-          <p className="mb-0 text-muted" style={{ fontSize: '0.78rem', marginTop: '2px' }}>
-            As a Super Admin, you have full access to view and manage operational queues for all active roles.
-          </p>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem', padding: '1.25rem' }}>
-          {DEPARTMENT_PORTALS.map((portal) => {
-            const Icon = portal.icon;
-            return (
-              <div
-                key={portal.label}
-                onClick={() => navigate(portal.path)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  padding: '1rem',
-                  borderRadius: '12px',
-                  border: '1.5px solid var(--color-border)',
-                  cursor: 'pointer',
-                  background: '#FFFFFF',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = portal.color;
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = `0 8px 20px -12px ${portal.color}`;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--color-border)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={{ width: 44, height: 44, borderRadius: '10px', background: portal.color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon size={22} style={{ color: portal.color }} />
-                </div>
-                <div className="flex-grow-1" style={{ overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }}>{portal.label}</span>
-                    <ArrowRight size={14} style={{ color: 'var(--color-text-muted)', transition: 'transform 0.15s' }} />
-                  </div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--color-text-muted)', marginTop: '3px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                    {portal.desc}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Recent Activity */}
       <div className="premium-card">
         <div className="p-3 border-bottom d-flex justify-content-between align-items-center">

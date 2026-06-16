@@ -76,7 +76,6 @@ export default function RoleList() {
       accessor: 'roleCode',
       render: (row) => <code style={{ fontSize: '0.85rem' }}>{row.roleCode}</code>
     },
-    { header: 'Access Level', accessor: 'accessLevel' },
     {
       header: 'Status',
       render: (row) => <StatusBadge status={row.active ? 'COMPLETED' : 'DELAYED'} />
@@ -113,7 +112,6 @@ export default function RoleList() {
     <div>
       <PageHeader
         title="Role Management"
-        subtitle="Configure Designation & Role Level Access Privileges"
         breadcrumbs={[{ label: 'Admin', path: ROUTES.ADMIN_DASHBOARD }, { label: 'Roles' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_ROLE_PRIVILEGES)}>

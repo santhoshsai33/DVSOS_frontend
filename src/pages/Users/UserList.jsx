@@ -132,7 +132,6 @@ export default function UserList() {
     <div>
       <PageHeader
         title="User Management"
-        subtitle={`Manage access and roles for ${data?.total ?? 0} team members`}
         breadcrumbs={[{ label: 'Settings' }, { label: 'Users' }]}
         actions={
           <Button
