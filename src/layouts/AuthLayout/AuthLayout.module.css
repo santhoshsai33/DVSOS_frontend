@@ -1,153 +1,131 @@
-/* Brand Panel (Left 50%) */
+/* Clean Enterprise Split Screen Layout */
+.layoutWrapper {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+}
+
+/* Left Brand Panel */
 .brandPanel {
+  flex: 1;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 3rem 3.5rem;
+  justify-content: center;
+  padding: 4rem;
+  color: #ffffff;
   position: relative;
   overflow: hidden;
-  background-color: #1a1a24;
-  background-image: linear-gradient(to right, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.4) 100%), url('https://images.unsplash.com/photo-1493238792000-8113da705763?q=80&w=2000&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
+}
+
+/* Subtle background pattern for enterprise feel */
+.brandPanel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.15) 0%, transparent 50%);
+  z-index: 0;
 }
 
 .brandContent {
   position: relative;
   z-index: 1;
+  max-width: 500px;
 }
 
-.logoMark {
-  width: 72px;
-  height: 72px;
+.logoIconWrapper {
+  width: 56px;
+  height: 56px;
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #60a5fa;
   margin-bottom: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .brandTitle {
-  font-size: 3.5rem;
-  font-weight: 900;
-  color: #fff;
-  margin: 0 0 0.5rem;
-  letter-spacing: -0.03em;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: 3rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
 }
 
 .brandSubtitle {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: #94a3b8;
+  line-height: 1.6;
   margin: 0 0 3rem;
-  font-weight: 400;
-  line-height: 1.5;
-  max-width: 400px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.features {
+.featureList {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .featureItem {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  width: fit-content;
 }
 
 .featureIcon {
-  font-size: 1.25rem;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
   flex-shrink: 0;
-  color: white;
 }
 
 .featureText {
   font-size: 0.95rem;
-  color: #fff;
+  color: #e2e8f0;
   font-weight: 500;
 }
 
-.brandFooter {
-  position: relative;
-  z-index: 1;
-}
-
-.brandFooter p {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-}
-
-/* Form Panel (Right 50%) */
+/* Right Form Panel */
 .formPanel {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-base);
+  background-color: #f1f5f9; /* Gray background for the panel */
   padding: 2rem;
-  gap: 1.5rem;
 }
 
 .formCard {
   width: 100%;
   max-width: 440px;
-  background: var(--color-bg-surface);
-  border-radius: var(--radius-xl);
+  background: #ffffff; /* Pure white form card */
+  border-radius: 16px;
   padding: 3rem;
-  box-shadow: var(--shadow-xl);
-  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e2e8f0;
 }
 
 .copyright {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  margin: 0;
-  text-align: center;
+  margin-top: 2rem;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
-/* Mobile */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .brandPanel {
-    padding: 3rem 2rem;
-    min-height: 300px;
-  }
-
-  .brandTitle {
-    font-size: 2.5rem;
-  }
-
-  .features {
     display: none;
-  }
-
-  .formPanel {
-    justify-content: flex-start;
-    padding: 2rem 1rem;
-  }
-
-  .formCard {
-    padding: 2rem 1.5rem;
   }
 }

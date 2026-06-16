@@ -1,7 +1,7 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
-import { Car, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 import { authSchema } from '../../validations/authSchema';
 import RHFTextField from '../../components/form/RHFTextField';
@@ -12,14 +12,14 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import styles from './Auth.module.css';
 
 const DEMO_ACCOUNTS = [
-  { label: 'Gate Security', email: 'gate@dvsos.com', role: ROLES.GATE_SECURITY, color: '#10B981' },
-  { label: 'CRM Team', email: 'crm@dvsos.com', role: ROLES.CRM_TEAM, color: '#3B82F6' },
-  { label: 'Floor Supervisor', email: 'floor@dvsos.com', role: ROLES.FLOOR_SUPERVISOR, color: '#6366F1' },
-  { label: 'Body Shop', email: 'body@dvsos.com', role: ROLES.BODY_SHOP_SUPERVISOR, color: '#EC4899' },
-  { label: 'Water Wash', email: 'wash@dvsos.com', role: ROLES.WATER_WASH_TEAM, color: '#06B6D4' },
-  { label: 'Manager', email: 'manager@dvsos.com', role: ROLES.MANAGER, color: '#F59E0B' },
-  { label: 'MD', email: 'md@dvsos.com', role: ROLES.MD, color: '#8B5CF6' },
-  { label: 'Super Admin', email: 'admin@dvsos.com', role: ROLES.SUPER_ADMIN, color: '#EF4444' },
+  { label: 'Gate Security', email: 'gate@dvsos.com', role: ROLES.GATE_SECURITY },
+  { label: 'CRM Team', email: 'crm@dvsos.com', role: ROLES.CRM_TEAM },
+  { label: 'Floor Supervisor', email: 'floor@dvsos.com', role: ROLES.FLOOR_SUPERVISOR },
+  { label: 'Body Shop', email: 'body@dvsos.com', role: ROLES.BODY_SHOP_SUPERVISOR },
+  { label: 'Water Wash', email: 'wash@dvsos.com', role: ROLES.WATER_WASH_TEAM },
+  { label: 'Manager', email: 'manager@dvsos.com', role: ROLES.MANAGER },
+  { label: 'Managing Director', email: 'md@dvsos.com', role: ROLES.MD },
+  { label: 'Super Admin', email: 'admin@dvsos.com', role: ROLES.SUPER_ADMIN },
 ];
 
 const ROLE_EMAIL_MAP = {
@@ -72,47 +72,42 @@ export default function Login() {
     }
   };
 
-  const fillDemo = (account) => {
-    setValue('email', account.email);
-    setValue('password', 'password123');
+  const handleDemoSelect = (e) => {
+    const selectedEmail = e.target.value;
+    if (selectedEmail) {
+      setValue('email', selectedEmail);
+      setValue('password', 'password123');
+    } else {
+      setValue('email', '');
+      setValue('password', '');
+    }
   };
 
   return (
     <div>
       {/* Header */}
       <div className={styles.loginHeader}>
-        <div className={styles.loginIcon}>
-          <Car size={24} />
-        </div>
-        <div>
-          <h2 className={styles.loginTitle}>Sign in to DVSOS</h2>
-          <p className={styles.loginSubtitle}>Enter your credentials to access the platform</p>
-        </div>
+        <h2 className={styles.loginTitle}>Welcome Back</h2>
+        <p className={styles.loginSubtitle}>Sign in to your account to continue</p>
       </div>
 
-      {/* Demo Accounts */}
+      {/* Demo Accounts Dropdown */}
       <div className={styles.demoSection}>
-        <p className={styles.demoLabel}>Quick Demo Access</p>
-        <div className={styles.demoGrid}>
+        <select className={styles.demoSelect} onChange={handleDemoSelect} defaultValue="">
+          <option value="" disabled>Quick Demo Sign In...</option>
           {DEMO_ACCOUNTS.map((acc) => (
-            <button
-              key={acc.role}
-              className={styles.demoBtn}
-              onClick={() => fillDemo(acc)}
-              type="button"
-              style={{ '--demo-color': acc.color }}
-            >
-              {acc.label}
-            </button>
+            <option key={acc.role} value={acc.email}>
+              Log in as {acc.label}
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
-      <div className={styles.divider}><span>or sign in with credentials</span></div>
+      <div className={styles.divider}>Or sign in with email</div>
 
       {/* Form */}
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.formWrapper}>
           <RHFTextField
             name="email"
             label="Email Address"
@@ -138,6 +133,7 @@ export default function Login() {
             fullWidth
             isLoading={methods.formState.isSubmitting}
             rightIcon={ArrowRight}
+            style={{ padding: '0.8rem', fontSize: '1rem', borderRadius: '8px' }}
           >
             Sign In
           </Button>
