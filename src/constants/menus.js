@@ -103,6 +103,7 @@ export const SIDEBAR_MENUS = {
     { label: 'Customers', path: ROUTES.CUSTOMERS, icon: Users },
     { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
     { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
+    { label: 'Gate Security Form', path: ROUTES.GATE_ENTRY, icon: LogIn },
     { label: 'Audit Logs', path: ROUTES.ADMIN_AUDIT_LOGS, icon: FileText },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
     { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },

@@ -137,7 +137,7 @@ export default function UserList() {
             padding: '0.35rem 0.5rem',
             borderRadius: '6px',
             borderColor: 'var(--color-border)',
-            background: 'var(--color-bg-card)',
+            backgroundColor: '#FFFFFF',
             color: 'var(--color-text-primary)',
             fontWeight: 500,
             cursor: 'pointer'
@@ -207,7 +207,8 @@ export default function UserList() {
           className={styles.searchBox}
         />
         <select
-          className={styles.filterSelect}
+          className={`${styles.filterSelect} form-select`}
+          style={{ width: 'auto', minWidth: '150px' }}
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
         >

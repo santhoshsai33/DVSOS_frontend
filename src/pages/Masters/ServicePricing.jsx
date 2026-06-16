@@ -8,6 +8,7 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import { formatCurrency } from '../../utils/formatters';
+import { toastSuccess } from '../../notifications/toast';
 
 const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => {
   const cleanedProps = { ...props };
@@ -46,7 +47,12 @@ const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => 
 
 export default function ServicePricing() {
   const navigate = useNavigate();
-  const { masterServices } = useMasterDataStore();
+  const { masterServices, updateService } = useMasterDataStore();
+
+  const handleStatusChange = (id, newStatus) => {
+    updateService(id, { status: newStatus });
+    toastSuccess('Service status updated successfully!');
+  };
 
   const columns = [
     {
@@ -59,6 +65,31 @@ export default function ServicePricing() {
       header: 'Base Price (₹)',
       accessor: 'price',
       render: (row) => <span className="fw-semibold text-success">{formatCurrency(row.price)}</span>
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (row) => (
+        <select
+          className="form-select form-select-sm"
+          style={{
+            width: '120px',
+            fontSize: '0.85rem',
+            padding: '0.35rem 0.5rem',
+            borderRadius: '6px',
+            borderColor: 'var(--color-border)',
+            backgroundColor: '#FFFFFF',
+            color: 'var(--color-text-primary)',
+            fontWeight: 500,
+            cursor: 'pointer'
+          }}
+          value={row.status || 'ACTIVE'}
+          onChange={(e) => handleStatusChange(row.id, e.target.value)}
+        >
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+      )
     },
     {
       header: 'Actions',

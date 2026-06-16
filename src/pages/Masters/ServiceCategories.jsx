@@ -46,13 +46,18 @@ const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => 
 
 export default function ServiceCategories() {
   const navigate = useNavigate();
-  const { serviceCategories, deleteCategory } = useMasterDataStore();
+  const { serviceCategories, deleteCategory, updateCategory } = useMasterDataStore();
 
   const handleDelete = (item) => {
     if (window.confirm(`Are you sure you want to delete category "${item.name}"?`)) {
       deleteCategory(item.id);
       toastSuccess(`Category "${item.name}" deleted successfully.`);
     }
+  };
+
+  const handleStatusChange = (id, newStatus) => {
+    updateCategory(id, { status: newStatus });
+    toastSuccess('Category status updated successfully!');
   };
 
   const columns = [
@@ -62,6 +67,31 @@ export default function ServiceCategories() {
       render: (row) => <strong style={{ color: 'var(--color-text-primary)' }}>{row.name}</strong>
     },
     { header: 'Description', accessor: 'description' },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (row) => (
+        <select
+          className="form-select form-select-sm"
+          style={{
+            width: '120px',
+            fontSize: '0.85rem',
+            padding: '0.35rem 0.5rem',
+            borderRadius: '6px',
+            borderColor: 'var(--color-border)',
+            backgroundColor: '#FFFFFF',
+            color: 'var(--color-text-primary)',
+            fontWeight: 500,
+            cursor: 'pointer'
+          }}
+          value={row.status || 'ACTIVE'}
+          onChange={(e) => handleStatusChange(row.id, e.target.value)}
+        >
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </select>
+      )
+    },
     {
       header: 'Actions',
       render: (row) => (

@@ -126,7 +126,8 @@ export default function VehicleList() {
         <div className="d-flex align-items-center gap-2">
           <Filter size={16} style={{ color: 'var(--color-text-muted)' }} />
           <select
-            className={styles.filterSelect}
+            className={`${styles.filterSelect} form-select`}
+            style={{ width: 'auto', minWidth: '150px' }}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
