@@ -94,6 +94,8 @@ export const SIDEBAR_MENUS = {
         { label: 'Districts', path: ROUTES.ADMIN_MASTER_DISTRICTS, icon: Building }
       ]
     },
+    { label: 'Service Centers', path: ROUTES.ADMIN_SERVICE_CENTERS, icon: Building },
+    { label: 'Locations', path: ROUTES.ADMIN_LOCATIONS, icon: MapPin },
     { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },
     { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
     { label: 'Customers', path: ROUTES.CUSTOMERS, icon: Users },
@@ -117,15 +119,10 @@ export const SIDEBAR_MENUS = {
         { label: 'Districts', path: ROUTES.ADMIN_MASTER_DISTRICTS, icon: Building }
       ]
     },
+    { label: 'Service Centers', path: ROUTES.ADMIN_SERVICE_CENTERS, icon: Building },
+    { label: 'Locations', path: ROUTES.ADMIN_LOCATIONS, icon: MapPin },
     { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },
     { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
-    { label: 'Customers', path: ROUTES.CUSTOMERS, icon: Users },
-    { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
-    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
-    { label: 'Vehicle Entry', path: ROUTES.GATE_ENTRY, icon: LogIn },
-    { label: 'Audit Logs', path: ROUTES.ADMIN_AUDIT_LOGS, icon: FileText },
-    { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
-    { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },
   ],
 };
 

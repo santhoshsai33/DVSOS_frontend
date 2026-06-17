@@ -33,6 +33,35 @@ const INITIAL_DISTRICTS = [
   { id: 'D3', name: 'Kochi', stateId: 'ST2', status: 'ACTIVE' },
 ];
 
+const INITIAL_SERVICE_CENTERS = [
+  {
+    id: 'SC1',
+    name: 'DVSOS Main Center',
+    gstNumber: '29ABCDE1234F1Z5',
+    contactNumber: '+91 9876543210',
+    email: 'contact@dvsosmain.com',
+    logoUrl: 'https://via.placeholder.com/150',
+    websiteUrl: 'https://www.dvsosmain.com',
+    status: 'ACTIVE'
+  }
+];
+
+const INITIAL_LOCATIONS = [
+  {
+    id: 'L1',
+    name: 'Chennai Main Branch',
+    serviceCenterId: 'SC1',
+    stateId: 'ST1',
+    district: 'Chennai',
+    mdId: 'U005',
+    address: '123 Anna Salai',
+    pincode: '600002',
+    phoneNo: '+91 9876543210',
+    email: 'chennai@dvsos.com',
+    status: 'ACTIVE'
+  }
+];
+
 const INITIAL_COMPANY = {
   companyName: 'DVSOS Premium Auto Services',
   address: '123 Automotive Ave, Metro City',
@@ -50,6 +79,8 @@ const useMasterDataStore = create(
       serviceCategories: INITIAL_CATEGORIES,
       masterStates: INITIAL_STATES,
       masterDistricts: INITIAL_DISTRICTS,
+      masterServiceCenters: INITIAL_SERVICE_CENTERS,
+      locations: INITIAL_LOCATIONS,
 
       updateCompanySettings: (newSettings) =>
         set((state) => ({
@@ -134,6 +165,46 @@ const useMasterDataStore = create(
       deleteDistrict: (id) =>
         set((state) => ({
           masterDistricts: state.masterDistricts.filter((d) => d.id !== id),
+        })),
+
+      addServiceCenter: (newCenter) =>
+        set((state) => ({
+          masterServiceCenters: [
+            ...state.masterServiceCenters,
+            { ...newCenter, id: `SC${Date.now()}`, status: 'ACTIVE' },
+          ],
+        })),
+
+      updateServiceCenter: (id, updatedCenter) =>
+        set((state) => ({
+          masterServiceCenters: state.masterServiceCenters.map((sc) =>
+            sc.id === id ? { ...sc, ...updatedCenter } : sc
+          ),
+        })),
+
+      deleteServiceCenter: (id) =>
+        set((state) => ({
+          masterServiceCenters: state.masterServiceCenters.filter((sc) => sc.id !== id),
+        })),
+
+      addLocation: (newLocation) =>
+        set((state) => ({
+          locations: [
+            ...state.locations,
+            { ...newLocation, id: `L${Date.now()}`, status: 'ACTIVE' },
+          ],
+        })),
+
+      updateLocation: (id, updatedLocation) =>
+        set((state) => ({
+          locations: state.locations.map((loc) =>
+            loc.id === id ? { ...loc, ...updatedLocation } : loc
+          ),
+        })),
+
+      deleteLocation: (id) =>
+        set((state) => ({
+          locations: state.locations.filter((loc) => loc.id !== id),
         })),
     }),
     {
