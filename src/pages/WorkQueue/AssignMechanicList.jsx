@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Printer, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Box } from '@mui/material';
 import Button from '../../components/common/Button';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import Modal from '../../components/common/Modal';
@@ -47,7 +48,7 @@ export default function AssignMechanicList() {
   };
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Assign Mechanic"
         subtitle="Allocate mechanics to pending job cards"
@@ -136,6 +137,6 @@ export default function AssignMechanicList() {
           </div>
         )}
       </Modal>
-    </div>
+    </Box>
   );
 }

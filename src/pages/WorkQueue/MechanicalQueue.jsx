@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Clock, Wrench, CheckCircle2, User, ArrowRight, Printer, AlertTriangle, Plus } from 'lucide-react';
 import Button from '../../components/common/Button';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
+import { Box } from '@mui/material';
 import Modal from '../../components/common/Modal';
 import PageHeader from '../../components/shared/PageHeader';
 import { toastSuccess, toastInfo } from '../../notifications/toast';
@@ -142,7 +143,7 @@ export default function MechanicalQueue() {
   );
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Mechanical Queue"
         subtitle="Manage mechanical work assignments and track progress"
@@ -196,6 +197,6 @@ export default function MechanicalQueue() {
           );
         })}
       </div>
-    </div>
+    </Box>
   );
 }

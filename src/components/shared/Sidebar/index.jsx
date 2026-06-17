@@ -119,12 +119,16 @@ export default function Sidebar() {
               borderRadius: 2,
               mb: 0.5,
               mx: 1,
-              bgcolor: groupActive ? 'action.hover' : 'transparent',
+              bgcolor: groupActive ? 'primary.main' : 'transparent',
+              color: groupActive ? 'primary.contrastText' : 'inherit',
+              '&:hover': {
+                bgcolor: groupActive ? 'primary.main' : 'action.hover',
+              },
               justifyContent: isCollapsedState ? 'center' : 'flex-start',
             }}
           >
             {Icon && (
-              <ListItemIcon sx={{ minWidth: isCollapsedState ? 0 : 40, color: groupActive ? 'primary.main' : 'inherit' }}>
+              <ListItemIcon sx={{ minWidth: isCollapsedState ? 0 : 40, color: 'inherit' }}>
                 <Icon size={20} />
               </ListItemIcon>
             )}
@@ -150,10 +154,16 @@ export default function Sidebar() {
             borderRadius: 2,
             pl: isCollapsedState ? 'auto' : (depth > 0 ? 4 : 2),
             justifyContent: isCollapsedState ? 'center' : 'flex-start',
-            bgcolor: active ? 'primary.main' : 'transparent',
-            color: active ? 'primary.contrastText' : 'inherit',
+            bgcolor: active 
+              ? (depth > 0 ? 'rgba(26, 67, 77, 0.08)' : 'primary.main') 
+              : 'transparent',
+            color: active 
+              ? (depth > 0 ? 'primary.main' : 'primary.contrastText') 
+              : 'inherit',
             '&:hover': {
-              bgcolor: active ? 'primary.dark' : 'action.hover',
+              bgcolor: active 
+                ? (depth > 0 ? 'rgba(26, 67, 77, 0.12)' : 'primary.dark') 
+                : 'action.hover',
             },
           }}
         >

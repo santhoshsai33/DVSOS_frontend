@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Clock, Droplets, CheckCircle2, Truck, ArrowRight, AlertTriangle } from 'lucide-react';
 import Button from '../../components/common/Button';
+import { Box } from '@mui/material';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import PageHeader from '../../components/shared/PageHeader';
 import { toastSuccess } from '../../notifications/toast';
@@ -97,7 +98,7 @@ export default function WaterWashQueue() {
   };
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Water Wash Queue"
         subtitle="Manage vehicle washing and detailing queue"
@@ -145,6 +146,6 @@ export default function WaterWashQueue() {
           );
         })}
       </div>
-    </div>
+    </Box>
   );
 }

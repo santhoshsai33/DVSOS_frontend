@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Clock, Paintbrush, CheckCircle2, ArrowRight, AlertTriangle } from 'lucide-react';
 import Button from '../../components/common/Button';
+import { Box } from '@mui/material';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import PageHeader from '../../components/shared/PageHeader';
 import { toastSuccess } from '../../notifications/toast';
@@ -118,7 +119,7 @@ export default function BodyShopQueue() {
   };
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Body Shop Queue"
         subtitle="Manage body shop work and paint jobs"
@@ -158,6 +159,6 @@ export default function BodyShopQueue() {
           );
         })}
       </div>
-    </div>
+    </Box>
   );
 }
