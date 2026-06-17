@@ -149,10 +149,7 @@ export default function Topbar() {
               <ListItemIcon><User size={18} /></ListItemIcon>
               <ListItemText primary="Profile" />
             </MenuItem>
-            <MenuItem onClick={() => { navigate(ROUTES.SETTINGS); setUserAnchorEl(null); }}>
-              <ListItemIcon><SettingsIcon size={18} /></ListItemIcon>
-              <ListItemText primary="Settings" />
-            </MenuItem>
+
             <Divider />
             <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
               <ListItemIcon sx={{ color: 'inherit' }}><LogOut size={18} /></ListItemIcon>

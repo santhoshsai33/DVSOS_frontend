@@ -18,6 +18,10 @@ import ServiceCategories from '../pages/Masters/ServiceCategories';
 import ServiceCategoryForm from '../pages/Masters/ServiceCategoryForm';
 import ServiceItems from '../pages/Masters/ServiceItems';
 import ServiceItemForm from '../pages/Masters/ServiceItemForm';
+import StateList from '../pages/Masters/StateList';
+import StateForm from '../pages/Masters/StateForm';
+import DistrictList from '../pages/Masters/DistrictList';
+import DistrictForm from '../pages/Masters/DistrictForm';
 import SystemSettingsPage from '../features/roles/admin/pages/SystemSettingsPage';
 import AuditLogsPage from '../features/roles/admin/pages/AuditLogsPage';
 import AuditLogDetailsPage from '../features/roles/admin/pages/AuditLogDetailsPage';
@@ -123,6 +127,12 @@ export const router = createBrowserRouter([
               { path: 'master-items', element: <ServiceItems /> },
               { path: 'master-items/new', element: <ServiceItemForm /> },
               { path: 'master-items/:id/edit', element: <ServiceItemForm /> },
+              { path: 'master-states', element: <StateList /> },
+              { path: 'master-states/new', element: <StateForm /> },
+              { path: 'master-states/:id/edit', element: <StateForm /> },
+              { path: 'master-districts', element: <DistrictList /> },
+              { path: 'master-districts/new', element: <DistrictForm /> },
+              { path: 'master-districts/:id/edit', element: <DistrictForm /> },
               { path: 'system-settings', element: <SystemSettingsPage /> },
               { path: 'audit-logs', element: <AuditLogsPage /> },
               { path: 'audit-logs/:id', element: <AuditLogDetailsPage /> },

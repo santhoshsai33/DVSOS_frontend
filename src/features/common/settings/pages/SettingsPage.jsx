@@ -34,7 +34,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, minHeight: '100%', borderRadius: 3, m: { xs: 2, md: 4 } }}>
+    <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
           Change Password

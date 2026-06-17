@@ -52,7 +52,7 @@ export default function MDDashboard() {
             <Briefcase size={22} />
           </Box>
           <Box>
-            <Typography variant="h6" fontWeight={800} color="#E11D48" sx={{ lineHeight: 1.2 }}>
+            <Typography variant="h6" fontWeight={800} color="#000" sx={{ lineHeight: 1.2 }}>
               Managing Director (MD)
             </Typography>
           </Box>

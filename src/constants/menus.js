@@ -21,6 +21,8 @@ import {
   Wrench,
   Clock,
   Package,
+  MapPin,
+  Building,
 } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import { ROLES } from './roles';
@@ -87,7 +89,9 @@ export const SIDEBAR_MENUS = {
       icon: Database,
       children: [
         { label: 'Service Categories', path: ROUTES.ADMIN_MASTER_CATEGORIES, icon: ClipboardList },
-        { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench }
+        { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench },
+        { label: 'States', path: ROUTES.ADMIN_MASTER_STATES, icon: MapPin },
+        { label: 'Districts', path: ROUTES.ADMIN_MASTER_DISTRICTS, icon: Building }
       ]
     },
     { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },
@@ -108,7 +112,9 @@ export const SIDEBAR_MENUS = {
       icon: Database,
       children: [
         { label: 'Service Categories', path: ROUTES.ADMIN_MASTER_CATEGORIES, icon: ClipboardList },
-        { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench }
+        { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench },
+        { label: 'States', path: ROUTES.ADMIN_MASTER_STATES, icon: MapPin },
+        { label: 'Districts', path: ROUTES.ADMIN_MASTER_DISTRICTS, icon: Building }
       ]
     },
     { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },

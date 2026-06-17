@@ -19,6 +19,20 @@ const INITIAL_CATEGORIES = [
   { id: 'C3', name: 'Water Wash', description: 'Washing and interior detailing' }
 ];
 
+const INITIAL_STATES = [
+  { id: 'ST1', name: 'Tamil Nadu', status: 'ACTIVE' },
+  { id: 'ST2', name: 'Kerala', status: 'ACTIVE' },
+  { id: 'ST3', name: 'Karnataka', status: 'ACTIVE' },
+  { id: 'ST4', name: 'Maharashtra', status: 'ACTIVE' },
+  { id: 'ST5', name: 'Andhra Pradesh', status: 'ACTIVE' },
+];
+
+const INITIAL_DISTRICTS = [
+  { id: 'D1', name: 'Chennai', stateId: 'ST1', status: 'ACTIVE' },
+  { id: 'D2', name: 'Coimbatore', stateId: 'ST1', status: 'ACTIVE' },
+  { id: 'D3', name: 'Kochi', stateId: 'ST2', status: 'ACTIVE' },
+];
+
 const INITIAL_COMPANY = {
   companyName: 'DVSOS Premium Auto Services',
   address: '123 Automotive Ave, Metro City',
@@ -34,6 +48,8 @@ const useMasterDataStore = create(
       companySettings: INITIAL_COMPANY,
       masterServices: INITIAL_SERVICES,
       serviceCategories: INITIAL_CATEGORIES,
+      masterStates: INITIAL_STATES,
+      masterDistricts: INITIAL_DISTRICTS,
 
       updateCompanySettings: (newSettings) =>
         set((state) => ({
@@ -78,6 +94,46 @@ const useMasterDataStore = create(
       deleteCategory: (id) =>
         set((state) => ({
           serviceCategories: state.serviceCategories.filter((c) => c.id !== id),
+        })),
+
+      addState: (newState) =>
+        set((state) => ({
+          masterStates: [
+            ...state.masterStates,
+            { ...newState, id: `ST${Date.now()}`, status: 'ACTIVE' },
+          ],
+        })),
+
+      updateState: (id, updatedState) =>
+        set((state) => ({
+          masterStates: state.masterStates.map((s) =>
+            s.id === id ? { ...s, ...updatedState } : s
+          ),
+        })),
+
+      deleteState: (id) =>
+        set((state) => ({
+          masterStates: state.masterStates.filter((s) => s.id !== id),
+        })),
+
+      addDistrict: (newDistrict) =>
+        set((state) => ({
+          masterDistricts: [
+            ...state.masterDistricts,
+            { ...newDistrict, id: `D${Date.now()}`, status: 'ACTIVE' },
+          ],
+        })),
+
+      updateDistrict: (id, updatedDistrict) =>
+        set((state) => ({
+          masterDistricts: state.masterDistricts.map((d) =>
+            d.id === id ? { ...d, ...updatedDistrict } : d
+          ),
+        })),
+
+      deleteDistrict: (id) =>
+        set((state) => ({
+          masterDistricts: state.masterDistricts.filter((d) => d.id !== id),
         })),
     }),
     {

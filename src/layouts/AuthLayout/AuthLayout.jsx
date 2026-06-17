@@ -11,7 +11,7 @@ export default function AuthLayout() {
       <Box
         sx={{
           flex: 1,
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          background: 'linear-gradient(135deg, #0d2b33 0%, #1a434d 100%)',
           display: { xs: 'none', md: 'flex' },
           flexDirection: 'column',
           justifyContent: 'center',
@@ -26,8 +26,8 @@ export default function AuthLayout() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundImage: `radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                              radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.15) 0%, transparent 50%)`,
+            backgroundImage: `radial-gradient(circle at 20% 50%, rgba(45, 212, 191, 0.15) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 80%, rgba(34, 211, 238, 0.15) 0%, transparent 50%)`,
             zIndex: 0,
           },
         }}
@@ -43,16 +43,16 @@ export default function AuthLayout() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#60a5fa',
+              color: '#2dd4bf',
               mb: 4,
             }}
           >
             <Car size={28} />
           </Box>
-          <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, letterSpacing: '-0.02em' }}>
+          <Typography variant="h3" sx={{ fontWeight: 800, mb: 2, color: '#ffff', letterSpacing: '-0.02em' }}>
             DVSOS
           </Typography>
-          <Typography variant="body1" sx={{ color: '#94a3b8', lineHeight: 1.6, mb: 6, fontSize: '1.1rem' }}>
+          <Typography variant="body1" sx={{ color: '#ffff', lineHeight: 1.6, mb: 6, fontSize: '1.1rem' }}>
             Digital Vehicle Service Operations System. Engineered for high-performance service centers and workshops.
           </Typography>
 
@@ -68,8 +68,8 @@ export default function AuthLayout() {
                   sx={{
                     width: 32,
                     height: 32,
-                    bgcolor: 'rgba(99, 102, 241, 0.2)',
-                    color: '#818cf8',
+                    bgcolor: 'rgba(45, 212, 191, 0.2)',
+                    color: '#2dd4bf',
                     borderRadius: 2,
                     display: 'flex',
                     alignItems: 'center',
@@ -105,10 +105,10 @@ export default function AuthLayout() {
             width: '100%',
             maxWidth: 440,
             bgcolor: 'background.paper',
-            borderRadius: 4,
+            borderRadius: 2,
             p: { xs: 4, md: 6 },
-            boxShadow: theme.shadows[3],
-            border: '1px solid #e2e8f0',
+            boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px',
+            // boxShadow: theme.shadows[2],
           }}
         >
           <Outlet />

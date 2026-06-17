@@ -12,8 +12,8 @@ import { ROUTES } from '../../config/routes';
 import { toastSuccess, toastError } from '../../notifications/toast';
 
 const DEMO_ACCOUNTS = [
-  { label: 'Gate Security', email: 'gate@dvsos.com', role: ROLES.GATE_SECURITY },
-  { label: 'CRM Team', email: 'crm@dvsos.com', role: ROLES.CRM_TEAM },
+  // { label: 'Gate Security', email: 'gate@dvsos.com', role: ROLES.GATE_SECURITY },
+  // { label: 'CRM Team', email: 'crm@dvsos.com', role: ROLES.CRM_TEAM },
   { label: 'Floor Supervisor', email: 'floor@dvsos.com', role: ROLES.FLOOR_SUPERVISOR },
   { label: 'Body Shop', email: 'body@dvsos.com', role: ROLES.BODY_SHOP_SUPERVISOR },
   { label: 'Water Wash', email: 'wash@dvsos.com', role: ROLES.WATER_WASH_TEAM },
@@ -23,8 +23,8 @@ const DEMO_ACCOUNTS = [
 ];
 
 const ROLE_EMAIL_MAP = {
-  'gate@dvsos.com': ROLES.GATE_SECURITY,
-  'crm@dvsos.com': ROLES.CRM_TEAM,
+  // 'gate@dvsos.com': ROLES.GATE_SECURITY,
+  // 'crm@dvsos.com': ROLES.CRM_TEAM,
   'floor@dvsos.com': ROLES.FLOOR_SUPERVISOR,
   'body@dvsos.com': ROLES.BODY_SHOP_SUPERVISOR,
   'wash@dvsos.com': ROLES.WATER_WASH_TEAM,
@@ -34,8 +34,8 @@ const ROLE_EMAIL_MAP = {
 };
 
 const ROLE_REDIRECTS = {
-  [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
-  [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
+  // [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
+  // [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
   [ROLES.FLOOR_SUPERVISOR]: ROUTES.FLOOR_DASHBOARD,
   [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_QUEUE,
   [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_QUEUE,
@@ -137,7 +137,7 @@ export default function Login() {
               type="password"
               required
             />
-            
+
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: -1 }}>
               <Typography
                 component={Link}

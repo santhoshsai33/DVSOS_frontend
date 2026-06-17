@@ -151,7 +151,7 @@ export default function CustomerListPage() {
         </Box>
       </Box>
 
-      <Card sx={{ boxShadow: 1, borderRadius: 0 }}>
+      <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
           data={filteredCustomers}

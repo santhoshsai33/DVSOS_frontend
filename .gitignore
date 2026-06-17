@@ -9,6 +9,8 @@ lerna-debug.log*
 
 .env
 README.md
+FORM_UI_README.md
+UI_STANDARES_README.md
 node_modules
 dist
 dist-ssr

@@ -1,17 +1,14 @@
 import { useState } from 'react';
-import { Grid, Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from '@mui/material';
+import { Grid, Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Select, MenuItem } from '@mui/material';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer
 } from 'recharts';
 import {
-  Users, Database, Settings, ShieldCheck,
-  Plus, RefreshCw, TrendingUp, Car, Wrench, Hammer, Droplets, Briefcase, Crown,
-  Package, Clock
+  Users, Crown, RefreshCw, TrendingUp, Car, Package, Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
-import PageHeader from '../../components/shared/PageHeader';
 import { ROUTES } from '../../config/routes';
 
 const MOCK_STATS = {
@@ -58,6 +55,7 @@ const STATUS_STYLES = {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
+  const [timeRange, setTimeRange] = useState('Today');
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -69,7 +67,7 @@ export default function AdminDashboard() {
       label: 'Today Total Vehicle',
       value: MOCK_STATS.todayTotalVehicle,
       icon: Car,
-      color: '#3B82F6',
+      color: '#1a434d',
       change: '+5 compared to yesterday',
       positive: true,
       action: () => navigate(ROUTES.GATE_DASHBOARD),
@@ -78,7 +76,7 @@ export default function AdminDashboard() {
       label: 'Ready to Delivery',
       value: MOCK_STATS.readyToDelivery,
       icon: Package,
-      color: '#10B981',
+      color: '#2dd4bf',
       change: '2 delivered today',
       positive: true,
       action: () => navigate(ROUTES.CRM_DELIVERY_READY),
@@ -87,7 +85,7 @@ export default function AdminDashboard() {
       label: 'Total Users',
       value: MOCK_STATS.totalUsers,
       icon: Users,
-      color: '#8B5CF6',
+      color: '#13323a',
       change: '+2 added this week',
       positive: true,
       action: () => navigate(ROUTES.ADMIN_USERS),
@@ -104,46 +102,88 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
-      <PageHeader
-        title="System Administration"
-        subtitle="Manage users, roles, service catalog and system configuration"
-        actions={
-          <Button variant="secondary" size="sm" leftIcon={RefreshCw} isLoading={refreshing} onClick={handleRefresh}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F4F6F9', minHeight: '100%' }}>
+
+      {/* Top Banner matching MDDashboard style with Teal Theme */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: { xs: 2, sm: 0 },
+        justifyContent: 'space-between',
+        alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3,
+        bgcolor: '#FFFFFF', p: 2, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+        border: '1px solid #E5E7EB'
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: 'rgba(45, 212, 191, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1a434d' }}>
+            <Crown size={22} />
+          </Box>
+          <Box>
+            <Typography variant="h6" fontWeight={800} color="#000" sx={{ lineHeight: 1.2 }}>
+              Super Admin Dashboard
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Manage users, roles, and system configuration
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={RefreshCw}
+            isLoading={refreshing}
+            onClick={handleRefresh}
+            sx={{ bgcolor: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0', '&:hover': { bgcolor: '#e2e8f0' } }}
+          >
             Refresh
           </Button>
-        }
-      />
+          <Select
+            size="small"
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value)}
+            sx={{ minWidth: 120, borderRadius: 2, bgcolor: '#FFFFFF' }}
+          >
+            <MenuItem value="Today">Today</MenuItem>
+            <MenuItem value="This Week">This Week</MenuItem>
+            <MenuItem value="This Month">This Month</MenuItem>
+          </Select>
+        </Box>
+      </Box>
 
-      {/* KPI Cards */}
+      {/* KPI Cards Row (Styled like MDDashboard) */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {kpis.map((kpi, i) => {
           const Icon = kpi.icon;
           return (
             <Grid item xs={12} sm={6} md={3} key={i}>
-              <Card 
-                sx={{ 
-                  cursor: 'pointer', 
-                  transition: 'transform 0.2s', 
-                  '&:hover': { transform: 'translateY(-4px)' } 
-                }} 
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+                  borderTop: `4px solid ${kpi.color}`,
+                  height: '100%',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s',
+                }}
                 onClick={kpi.action}
               >
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, mr: 2 }}>
-                      <Icon size={24} />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                      {kpi.label}
-                    </Typography>
-                  </Box>
-                  <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
+                <CardContent sx={{ p: 2.5 }}>
+                  <Typography variant="h4" fontWeight={800} sx={{ color: kpi.color }}>
                     {kpi.value}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: kpi.positive ? 'success.main' : 'error.main', display: 'flex', alignItems: 'center' }}>
-                    <TrendingUp size={14} className="mr-1" /> {kpi.change}
+                  <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 1, mt: 0.5 }}>
+                    {kpi.label}
                   </Typography>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                    <Typography variant="caption" sx={{ color: kpi.positive ? '#10B981' : '#EF4444', display: 'flex', alignItems: 'center', fontWeight: 600 }}>
+                      <TrendingUp size={14} style={{ marginRight: 4 }} /> {kpi.change}
+                    </Typography>
+                    <Box sx={{ p: 1, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={18} />
+                    </Box>
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
@@ -152,11 +192,11 @@ export default function AdminDashboard() {
       </Grid>
 
       {/* Stage Distribution Chart */}
-      <Card sx={{ mb: 4, borderRadius: 3 }}>
+      <Card sx={{ mb: 4, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB' }}>
         <CardContent sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-            <Typography variant="h6" fontWeight={700}>Stage Distribution</Typography>
-            <Chip label="LIVE" size="small" sx={{ bgcolor: '#E0F2FE', color: '#0284C7', fontWeight: 700 }} />
+            <Typography variant="h6" fontWeight={800}>Stage Distribution</Typography>
+            <Chip label="LIVE" size="small" sx={{ bgcolor: 'rgba(26, 67, 77, 0.1)', color: '#1a434d', fontWeight: 700 }} />
           </Box>
           <Box sx={{ width: '100%', height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -177,19 +217,19 @@ export default function AdminDashboard() {
       </Card>
 
       {/* Vehicle Status Summary */}
-      <Card sx={{ borderRadius: 3 }}>
+      <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB' }}>
         <CardContent sx={{ p: 3, pb: '24px !important' }}>
-          <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
+          <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>
             Vehicle Status Summary
           </Typography>
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow>
-                  <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase' }}>Registration</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase' }}>Owner</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase' }}>Stage</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase' }}>Status</TableCell>
+                <TableRow sx={{ bgcolor: '#F8FAFC' }}>
+                  <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', py: 1.5, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderBottom: 'none' }}>Registration</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', py: 1.5, borderBottom: 'none' }}>Owner</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', py: 1.5, borderBottom: 'none' }}>Stage</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', py: 1.5, borderTopRightRadius: 8, borderBottomRightRadius: 8, borderBottom: 'none' }}>Status</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -197,21 +237,21 @@ export default function AdminDashboard() {
                   const stageStyle = STAGE_STYLES[item.stage] || { color: '#0f172a', bg: '#e2e8f0' };
                   const statusStyle = STATUS_STYLES[item.status] || { color: '#0f172a', bg: '#e2e8f0' };
                   return (
-                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                      <TableCell sx={{ fontWeight: 600 }}>{item.registration}</TableCell>
-                      <TableCell>{item.owner}</TableCell>
+                    <TableRow key={index} sx={{ '& td': { borderBottom: '1px solid #F1F5F9', py: 2 } }}>
+                      <TableCell sx={{ fontWeight: 600, color: '#1E293B' }}>{item.registration}</TableCell>
+                      <TableCell sx={{ fontWeight: 500, color: '#475569' }}>{item.owner}</TableCell>
                       <TableCell>
-                        <Chip 
-                          label={item.stage} 
-                          size="small" 
-                          sx={{ bgcolor: stageStyle.bg, color: stageStyle.color, fontWeight: 700, borderRadius: 1 }} 
+                        <Chip
+                          label={item.stage}
+                          size="small"
+                          sx={{ bgcolor: stageStyle.bg, color: stageStyle.color, fontWeight: 700, borderRadius: 1 }}
                         />
                       </TableCell>
                       <TableCell>
-                        <Chip 
-                          label={item.status} 
-                          size="small" 
-                          sx={{ bgcolor: statusStyle.bg, color: statusStyle.color, fontWeight: 700, borderRadius: 1 }} 
+                        <Chip
+                          label={item.status}
+                          size="small"
+                          sx={{ bgcolor: statusStyle.bg, color: statusStyle.color, fontWeight: 700, borderRadius: 1 }}
                         />
                       </TableCell>
                     </TableRow>
