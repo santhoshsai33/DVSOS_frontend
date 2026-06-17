@@ -1,16 +1,28 @@
-import { Form } from 'react-bootstrap';
+import { TextField, Box, Typography } from '@mui/material';
 
 // eslint-disable-next-line react/prop-types
-export default function Input({ label, error, helperText, ...props }) {
+export default function Input({ label, required, error, helperText, sx = {}, ...props }) {
   return (
-    <Form.Group className="mb-3">
-      {label && <Form.Label>{label}</Form.Label>}
-      <Form.Control isInvalid={!!error} {...props} />
-      {error ? (
-        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
-      ) : helperText ? (
-        <Form.Text className="text-muted">{helperText}</Form.Text>
-      ) : null}
-    </Form.Group>
+    <Box sx={{ mb: 2, width: '100%' }}>
+      {label && (
+        <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', mb: 0.75 }}>
+          {label} {required && <span style={{ color: '#E11D48' }}>*</span>}
+        </Typography>
+      )}
+      <TextField
+        error={!!error}
+        helperText={error || helperText}
+        fullWidth
+        size="small"
+        sx={{
+          ...sx,
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '8px',
+            bgcolor: '#FFFFFF'
+          }
+        }}
+        {...props}
+      />
+    </Box>
   );
 }

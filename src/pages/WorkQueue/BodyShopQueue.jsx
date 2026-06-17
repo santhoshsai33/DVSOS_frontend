@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Clock, Paintbrush, CheckCircle2, ArrowRight, AlertTriangle } from 'lucide-react';
 import Button from '../../components/common/Button';
+import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import PageHeader from '../../components/shared/PageHeader';
 import { toastSuccess } from '../../notifications/toast';
 import { formatDateTime } from '../../utils/formatters';
@@ -74,8 +75,8 @@ export default function BodyShopQueue() {
     return (
       <div className={`${styles.card} ${overdue ? styles.cardOverdue : ''}`}>
         <div className={styles.cardHeader}>
-          <code className={styles.vehicleNum}>{item.vehicleNumber}</code>
-          <span className={styles.priority} style={{ color: PRIORITY_COLORS[item.priority || 'NORMAL'], background: PRIORITY_COLORS[item.priority || 'NORMAL'] + '15' }}>
+        <VehicleNumberPlate vehicleNumber={item.vehicleNumber} size="sm" />
+          <span className={`${styles.priority} priority-${(item.priority || 'NORMAL').toLowerCase()}`}>
             {item.priority || 'NORMAL'}
           </span>
         </div>
@@ -97,11 +98,11 @@ export default function BodyShopQueue() {
           </span>
           {status === 'PENDING' && <Button size="sm" variant="primary" rightIcon={ArrowRight} onClick={() => handleStart(item)}>Start</Button>}
           {status === 'IN_PROGRESS' && (
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div className="d-flex align-center gap-2">
               <select 
                 value={item.subStage || 'Tinkering'} 
                 onChange={(e) => updateSubStage(item.id, e.target.value)}
-                style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ddd', outline: 'none' }}
+                className="form-select text-xs py-1 px-2"
               >
                 <option value="Tinkering">Tinkering</option>
                 <option value="Painting">Painting</option>
@@ -128,8 +129,8 @@ export default function BodyShopQueue() {
         {COLS.map((col) => {
           const Icon = col.icon;
           return (
-            <div key={col.key} className={styles.summaryCard} style={{ '--col-color': col.color, '--col-bg': col.bg }}>
-              <Icon size={20} style={{ color: col.color }} />
+            <div key={col.key} className={`${styles.summaryCard} status-${col.key.toLowerCase().replace('_', '-')}`}>
+              <Icon size={20} className={`text-${col.key.toLowerCase().replace('_', '-')}`} />
               <div>
                 <p className={styles.summaryLabel}>{col.label}</p>
                 <p className={styles.summaryCount}>{queue[col.key]?.length || 0}</p>
@@ -139,15 +140,15 @@ export default function BodyShopQueue() {
         })}
       </div>
 
-      <div className={styles.board} style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+      <div className={`${styles.board} grid-3-cols`}>
         {COLS.map((col) => {
           const Icon = col.icon;
           const items = queue[col.key] || [];
           return (
             <div key={col.key} className={styles.column}>
-              <div className={styles.columnHeader} style={{ borderColor: col.color }}>
-                <div className={styles.columnTitle} style={{ color: col.color }}><Icon size={16} />{col.label}</div>
-                <span className={styles.columnCount} style={{ background: col.color + '20', color: col.color }}>{items.length}</span>
+              <div className={`${styles.columnHeader} border-${col.key.toLowerCase().replace('_', '-')}`}>
+                <div className={`${styles.columnTitle} text-${col.key.toLowerCase().replace('_', '-')}`}><Icon size={16} />{col.label}</div>
+                <span className={`${styles.columnCount} bg-${col.key.toLowerCase().replace('_', '-')}-20 text-${col.key.toLowerCase().replace('_', '-')}`}>{items.length}</span>
               </div>
               <div className={styles.columnBody}>
                 {items.map((item) => <QueueCard key={item.id} item={item} status={col.key} limitHours={col.limitHours} />)}

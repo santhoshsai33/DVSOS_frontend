@@ -2,6 +2,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { Box, Typography, Divider, Select, MenuItem, Stack } from '@mui/material';
 import useAuthStore from '../../store/useAuthStore';
 import { authSchema } from '../../validations/authSchema';
 import RHFTextField from '../../components/form/RHFTextField';
@@ -9,7 +10,6 @@ import Button from '../../components/common/Button';
 import { ROLES } from '../../constants/roles';
 import { ROUTES } from '../../config/routes';
 import { toastSuccess, toastError } from '../../notifications/toast';
-import styles from './Auth.module.css';
 
 const DEMO_ACCOUNTS = [
   { label: 'Gate Security', email: 'gate@dvsos.com', role: ROLES.GATE_SECURITY },
@@ -84,61 +84,89 @@ export default function Login() {
   };
 
   return (
-    <div>
+    <Box>
       {/* Header */}
-      <div className={styles.loginHeader}>
-        <h2 className={styles.loginTitle}>Welcome Back</h2>
-        <p className={styles.loginSubtitle}>Sign in to your account to continue</p>
-      </div>
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 1 }}>
+          Welcome Back
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Sign in to your account to continue
+        </Typography>
+      </Box>
 
       {/* Demo Accounts Dropdown */}
-      <div className={styles.demoSection}>
-        <select className={styles.demoSelect} onChange={handleDemoSelect} defaultValue="">
-          <option value="" disabled>Quick Demo Sign In...</option>
+      <Box sx={{ mb: 3 }}>
+        <Select
+          fullWidth
+          displayEmpty
+          defaultValue=""
+          onChange={handleDemoSelect}
+          sx={{ bgcolor: 'background.default', borderRadius: 2 }}
+        >
+          <MenuItem value="" disabled>
+            Quick Demo Sign In...
+          </MenuItem>
           {DEMO_ACCOUNTS.map((acc) => (
-            <option key={acc.role} value={acc.email}>
+            <MenuItem key={acc.role} value={acc.email}>
               Log in as {acc.label}
-            </option>
+            </MenuItem>
           ))}
-        </select>
-      </div>
+        </Select>
+      </Box>
 
-      <div className={styles.divider}>Or sign in with email</div>
+      <Divider sx={{ my: 3, typography: 'body2', color: 'text.secondary' }}>
+        Or sign in with email
+      </Divider>
 
       {/* Form */}
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className={styles.formWrapper}>
-          <RHFTextField
-            name="email"
-            label="Email Address"
-            placeholder="Enter your email"
-            type="email"
-            required
-          />
-          <RHFTextField
-            name="password"
-            label="Password"
-            placeholder="Enter your password"
-            type="password"
-            required
-          />
-          <div className={styles.forgotRow}>
-            <Link to="/forgot-password" className={styles.forgotLink}>
-              Forgot password?
-            </Link>
-          </div>
-          <Button
-            type="submit"
-            variant="primary"
-            fullWidth
-            isLoading={methods.formState.isSubmitting}
-            rightIcon={ArrowRight}
-            style={{ padding: '0.8rem', fontSize: '1rem', borderRadius: '8px' }}
-          >
-            Sign In
-          </Button>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          <Stack spacing={2.5}>
+            <RHFTextField
+              name="email"
+              label="Email Address"
+              placeholder="Enter your email"
+              type="email"
+              required
+            />
+            <RHFTextField
+              name="password"
+              label="Password"
+              placeholder="Enter your password"
+              type="password"
+              required
+            />
+            
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: -1 }}>
+              <Typography
+                component={Link}
+                to="/forgot-password"
+                variant="body2"
+                sx={{
+                  color: 'primary.main',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
+                Forgot password?
+              </Typography>
+            </Box>
+
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              isLoading={methods.formState.isSubmitting}
+              rightIcon={ArrowRight}
+              size="lg"
+            >
+              Sign In
+            </Button>
+          </Stack>
         </form>
       </FormProvider>
-    </div>
+    </Box>
   );
 }

@@ -1,4 +1,4 @@
-import { Modal as BSModal } from 'react-bootstrap';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Box } from '@mui/material';
 import Button from '../Button';
 
 // eslint-disable-next-line react/prop-types
@@ -16,34 +16,33 @@ export default function Modal({
   onConfirm,
   confirmVariant = 'primary',
   isConfirming = false,
-  backdrop = 'static',
 }) {
   return (
-    <BSModal
-      show={show}
-      onHide={onHide}
-      size={size}
-      centered={centered}
-      backdrop={backdrop}
+    <Dialog
+      open={show}
+      onClose={onHide}
+      maxWidth={size === 'md' ? 'sm' : size === 'lg' ? 'md' : 'xs'}
+      fullWidth
+      sx={{ '& .MuiDialog-paper': { borderRadius: 3 } }}
     >
-      <BSModal.Header closeButton={closeButton} onHide={onHide} className="border-0 pb-0">
-        <BSModal.Title className="fw-bold" style={{ fontSize: '1.1rem' }}>
-          {title}
-        </BSModal.Title>
-      </BSModal.Header>
-      <BSModal.Body className="pt-3">{children}</BSModal.Body>
+      <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
+        {title}
+      </DialogTitle>
+      <DialogContent sx={{ pt: '16px !important' }}>
+        {children}
+      </DialogContent>
       {(footer || onConfirm) && (
-        <BSModal.Footer className="border-0 pt-0 gap-2">
+        <DialogActions sx={{ p: 2, pt: 0 }}>
           {footer || (
-            <>
+            <Box sx={{ display: 'flex', gap: 1 }}>
               <Button variant="secondary" onClick={onHide}>{cancelLabel}</Button>
               <Button variant={confirmVariant} onClick={onConfirm} isLoading={isConfirming}>
                 {confirmLabel}
               </Button>
-            </>
+            </Box>
           )}
-        </BSModal.Footer>
+        </DialogActions>
       )}
-    </BSModal>
+    </Dialog>
   );
 }

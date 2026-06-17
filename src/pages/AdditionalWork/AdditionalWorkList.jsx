@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Box } from '@mui/material';
 import { AlertCircle, Plus, FileText, CheckCircle2 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
@@ -15,7 +16,7 @@ export default function AdditionalWorkList() {
   const navigate = useNavigate();
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Additional Work Requests"
         subtitle="Manage and track extra work required for vehicles in service"
@@ -69,6 +70,6 @@ export default function AdditionalWorkList() {
           </div>
         )}
       </div>
-    </div>
+    </Box>
   );
 }

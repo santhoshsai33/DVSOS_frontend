@@ -1,16 +1,13 @@
-import { Row, Col } from 'react-bootstrap';
+import { Box, Grid, Card, CardContent, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadarChart, PolarGrid, PolarAngleAxis, Radar
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, RadarChart, PolarGrid, PolarAngleAxis, Radar
 } from 'recharts';
 import {
-  TrendingUp, TrendingDown, DollarSign, Star, Clock, Users,
-  Award, Target, RefreshCw
+  TrendingUp, TrendingDown, DollarSign, Star, Clock, Target, Award, RefreshCw
 } from 'lucide-react';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { formatCurrency } from '../../utils/formatters';
-import styles from './Dashboard.module.css';
 
 const BRANCH_DATA = [
   { branch: 'Chennai – Main', revenue: 328000, target: 300000, jobs: 84, csat: 4.7, avgTAT: '3.2 hrs', onTime: 92 },
@@ -39,10 +36,10 @@ function TrendIndicator({ value, target }) {
   const pct = ((value / target) * 100).toFixed(0);
   const isGood = value >= target;
   return (
-    <span style={{ color: isGood ? '#10B981' : '#EF4444', fontSize: '0.78rem', fontWeight: 700 }}>
-      {isGood ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-      {' '}{pct}% of target
-    </span>
+    <Box component="span" sx={{ color: isGood ? 'success.main' : 'error.main', fontSize: '0.78rem', fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+      {isGood ? <TrendingUp size={14} className="mr-1" /> : <TrendingDown size={14} className="mr-1" />}
+      {pct}% of target
+    </Box>
   );
 }
 
@@ -54,14 +51,14 @@ export default function ExecutiveOverview() {
   const avgOnTime = Math.round(BRANCH_DATA.reduce((s, b) => s + b.onTime, 0) / BRANCH_DATA.length);
 
   const kpis = [
-    { label: 'Total Revenue (MTD)', value: formatCurrency(totalRevenue), icon: DollarSign, gradient: 'var(--gradient-primary)', sub: <TrendIndicator value={totalRevenue} target={totalTarget} /> },
-    { label: 'Total Jobs (MTD)', value: totalJobs, icon: Target, gradient: 'var(--gradient-success)', sub: 'Across all branches' },
-    { label: 'Avg CSAT Score', value: `${avgCsat} / 5.0`, icon: Star, gradient: 'var(--gradient-warning)', sub: 'Customer satisfaction index' },
-    { label: 'On-Time Delivery', value: `${avgOnTime}%`, icon: Clock, gradient: 'var(--gradient-accent)', sub: 'Promised vs actual delivery' },
+    { label: 'Total Revenue (MTD)', value: formatCurrency(totalRevenue), icon: DollarSign, color: '#0F766E', sub: <TrendIndicator value={totalRevenue} target={totalTarget} /> },
+    { label: 'Total Jobs (MTD)', value: totalJobs, icon: Target, color: '#10B981', sub: 'Across all branches' },
+    { label: 'Avg CSAT Score', value: `${avgCsat} / 5.0`, icon: Star, color: '#F59E0B', sub: 'Customer satisfaction index' },
+    { label: 'On-Time Delivery', value: `${avgOnTime}%`, icon: Clock, color: '#8B5CF6', sub: 'Promised vs actual delivery' },
   ];
 
   return (
-    <div className={styles.page}>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Executive Overview"
         subtitle="Multi-branch performance, revenue vs target and operational KPIs"
@@ -73,125 +70,123 @@ export default function ExecutiveOverview() {
         }
       />
 
-      {/* KPI Row */}
-      <Row className="g-4 mb-4">
+      <Grid container spacing={3} sx={{ mb: 4 }}>
         {kpis.map((kpi, i) => {
           const Icon = kpi.icon;
           return (
-            <Col xl={3} md={6} key={i}>
-              <div className={styles.kpiCard}>
-                <div className={styles.kpiContent}>
-                  <div className={styles.kpiIconWrapper} style={{ background: kpi.gradient }}>
-                    <Icon size={24} />
-                  </div>
-                  <div className={styles.kpiText}>
-                    <p className={styles.kpiLabel}>{kpi.label}</p>
-                    <h2 className={styles.kpiValue}>{kpi.value}</h2>
-                    <span className={styles.kpiChange}>{kpi.sub}</span>
-                  </div>
-                </div>
-                <div className={styles.kpiBg} style={{ background: kpi.gradient }} />
-              </div>
-            </Col>
+            <Grid item xs={12} sm={6} md={3} key={i}>
+              <Card sx={{ borderRadius: 0 }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, mr: 2 }}>
+                      <Icon size={24} />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                      {kpi.label}
+                    </Typography>
+                  </Box>
+                  <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
+                    {kpi.value}
+                  </Typography>
+                  {typeof kpi.sub === 'string' ? (
+                    <Typography variant="caption" color="text.secondary">
+                      {kpi.sub}
+                    </Typography>
+                  ) : (
+                    kpi.sub
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
           );
         })}
-      </Row>
+      </Grid>
 
-      <Row className="g-4 mb-4">
-        {/* Monthly Revenue vs Target */}
-        <Col xl={8}>
-          <div className={styles.chartCard}>
-            <div className={styles.chartHeader}>
-              <h5 className={styles.chartTitle}>Monthly Revenue vs Target</h5>
-            </div>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={MONTHLY_TREND} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={v => [formatCurrency(v)]} contentStyle={{ borderRadius: '10px', border: '1px solid #E2E8F0' }} />
-                <Legend iconSize={8} wrapperStyle={{ fontSize: '11px' }} />
-                <Bar dataKey="revenue" fill="#0F766E" radius={[4, 4, 0, 0]} name="Actual Revenue" />
-                <Bar dataKey="target" fill="#CBD5E1" radius={[4, 4, 0, 0]} name="Target" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Col>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} xl={8}>
+          <Card sx={{ borderRadius: 3, boxShadow: 1, height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>Monthly Revenue vs Target</Typography>
+              <Box sx={{ height: 250, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={MONTHLY_TREND} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
+                    <Tooltip formatter={v => [formatCurrency(v)]} contentStyle={{ borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
+                    <Legend iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
+                    <Bar dataKey="revenue" fill="#0F766E" radius={[4, 4, 0, 0]} name="Actual Revenue" barSize={30} />
+                    <Bar dataKey="target" fill="#CBD5E1" radius={[4, 4, 0, 0]} name="Target" barSize={30} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} xl={4}>
+          <Card sx={{ borderRadius: 3, boxShadow: 1, height: '100%' }}>
+            <CardContent>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>Performance Scorecard</Typography>
+              <Box sx={{ height: 250, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={RADAR_DATA}>
+                    <PolarGrid stroke="#E2E8F0" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fill: '#64748B', fontWeight: 600 }} />
+                    <Radar name="Score" dataKey="A" stroke="#0F766E" fill="#0F766E" fillOpacity={0.2} />
+                    <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E2E8F0' }} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-        {/* Performance Radar */}
-        <Col xl={4}>
-          <div className={styles.chartCard}>
-            <div className={styles.chartHeader}>
-              <h5 className={styles.chartTitle}>Performance Scorecard</h5>
-            </div>
-            <ResponsiveContainer width="100%" height={250}>
-              <RadarChart data={RADAR_DATA}>
-                <PolarGrid stroke="#E2E8F0" />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: '#64748B' }} />
-                <Radar name="Score" dataKey="A" stroke="#0F766E" fill="#0F766E" fillOpacity={0.2} />
-                <Tooltip />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </Col>
-      </Row>
-
-      {/* Branch-wise Breakdown */}
-      <div className="premium-card">
-        <div className="p-3 border-bottom">
-          <h5 className="mb-0 fs-6 fw-bold d-flex align-items-center gap-2">
-            <Award size={18} style={{ color: 'var(--color-primary)' }} />
-            Branch-wise Performance
-          </h5>
-        </div>
-        <div className="table-responsive">
-          <table className="table mb-0">
-            <thead className="table-light">
-              <tr>
-                <th>Branch</th>
-                <th>Revenue (MTD)</th>
-                <th>vs Target</th>
-                <th>Total Jobs</th>
-                <th>CSAT</th>
-                <th>Avg TAT</th>
-                <th>On-Time %</th>
-              </tr>
-            </thead>
-            <tbody>
+      <Card sx={{ borderRadius: 0 }}>
+        <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Award size={20} color="#0F766E" />
+          <Typography variant="h6" fontWeight={700}>Branch-wise Performance</Typography>
+        </Box>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 700 }}>Branch</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Revenue (MTD)</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>vs Target</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Total Jobs</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>CSAT</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Avg TAT</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>On-Time %</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {BRANCH_DATA.map((b, i) => (
-                <tr key={i}>
-                  <td>
-                    <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{b.branch}</span>
-                  </td>
-                  <td>
-                    <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>{formatCurrency(b.revenue)}</span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <div style={{ height: 6, background: '#F1F5F9', borderRadius: 3, width: 80 }}>
-                        <div style={{ height: '100%', width: `${Math.min((b.revenue / b.target) * 100, 100)}%`, background: b.revenue >= b.target ? '#10B981' : '#F59E0B', borderRadius: 3 }} />
-                      </div>
+                <TableRow key={i} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableCell sx={{ fontWeight: 600 }}>{b.branch}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{formatCurrency(b.revenue)}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <Box sx={{ height: 6, bgcolor: '#F1F5F9', borderRadius: 1, width: 80 }}>
+                        <Box sx={{ height: '100%', width: `${Math.min((b.revenue / b.target) * 100, 100)}%`, bgcolor: b.revenue >= b.target ? 'success.main' : 'warning.main', borderRadius: 1 }} />
+                      </Box>
                       <TrendIndicator value={b.revenue} target={b.target} />
-                    </div>
-                  </td>
-                  <td style={{ fontWeight: 600 }}>{b.jobs}</td>
-                  <td>
-                    <span style={{ color: b.csat >= 4.5 ? '#10B981' : '#F59E0B', fontWeight: 700 }}>
-                      ⭐ {b.csat}
-                    </span>
-                  </td>
-                  <td style={{ fontSize: '0.875rem' }}>{b.avgTAT}</td>
-                  <td>
-                    <span style={{ color: b.onTime >= 90 ? '#10B981' : b.onTime >= 80 ? '#F59E0B' : '#EF4444', fontWeight: 700 }}>
-                      {b.onTime}%
-                    </span>
-                  </td>
-                </tr>
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{b.jobs}</TableCell>
+                  <TableCell sx={{ color: b.csat >= 4.5 ? 'success.main' : 'warning.main', fontWeight: 700 }}>
+                    ⭐ {b.csat}
+                  </TableCell>
+                  <TableCell>{b.avgTAT}</TableCell>
+                  <TableCell sx={{ color: b.onTime >= 90 ? 'success.main' : b.onTime >= 80 ? 'warning.main' : 'error.main', fontWeight: 700 }}>
+                    {b.onTime}%
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Card>
+    </Box>
   );
 }

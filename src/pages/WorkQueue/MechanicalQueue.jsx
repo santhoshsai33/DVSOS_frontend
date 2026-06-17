@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Clock, Wrench, CheckCircle2, User, ArrowRight, Printer, AlertTriangle, Plus } from 'lucide-react';
 import Button from '../../components/common/Button';
+import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import Modal from '../../components/common/Modal';
 import PageHeader from '../../components/shared/PageHeader';
 import { toastSuccess, toastInfo } from '../../notifications/toast';
@@ -86,10 +87,9 @@ export default function MechanicalQueue() {
   const QueueCard = ({ item, status }) => (
     <div className={styles.card}>
       <div className={styles.cardHeader}>
-        <code className={styles.vehicleNum}>{item.vehicleNumber}</code>
+        <VehicleNumberPlate vehicleNumber={item.vehicleNumber} size="sm" />
         <span
-          className={styles.priority}
-          style={{ color: PRIORITY_COLORS[item.priority || 'NORMAL'], background: PRIORITY_COLORS[item.priority || 'NORMAL'] + '15' }}
+          className={`${styles.priority} priority-${(item.priority || 'NORMAL').toLowerCase()}`}
         >
           {item.priority || 'NORMAL'}
         </span>
@@ -117,7 +117,7 @@ export default function MechanicalQueue() {
           <Clock size={11} /> {item.waitTime}
         </span>
         {status === 'PENDING' && (
-          <div style={{ fontSize: '0.8rem', color: '#6B7280' }}>Awaiting Assignment</div>
+          <div className="text-muted text-sm">Awaiting Assignment</div>
         )}
         {status === 'ASSIGNED' && (
           <Button size="sm" variant="primary" rightIcon={ArrowRight} onClick={() => handleStart(item)}>
@@ -128,7 +128,7 @@ export default function MechanicalQueue() {
           <div className="d-flex gap-2">
             <Button size="sm" variant="outline" leftIcon={Plus}
               onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK)}
-              style={{ borderColor: '#F59E0B', color: '#F59E0B', fontSize: '0.75rem' }}
+              className="border-warning text-warning text-xs"
             >
               Add Work
             </Button>
@@ -155,8 +155,8 @@ export default function MechanicalQueue() {
           const Icon = col.icon;
           const count = queue[col.key]?.length || 0;
           return (
-            <div key={col.key} className={styles.summaryCard} style={{ '--col-color': col.color, '--col-bg': col.bg }}>
-              <Icon size={20} style={{ color: col.color }} />
+            <div key={col.key} className={`${styles.summaryCard} status-${col.key.toLowerCase().replace('_', '-')}`}>
+              <Icon size={20} className={`text-${col.key.toLowerCase().replace('_', '-')}`} />
               <div>
                 <p className={styles.summaryLabel}>{col.label}</p>
                 <p className={styles.summaryCount}>{count}</p>
@@ -175,12 +175,12 @@ export default function MechanicalQueue() {
           
           return (
             <div key={col.key} className={styles.column}>
-              <div className={styles.columnHeader} style={{ borderColor: col.color }}>
-                <div className={styles.columnTitle} style={{ color: col.color }}>
+              <div className={`${styles.columnHeader} border-${col.key.toLowerCase().replace('_', '-')}`}>
+                <div className={`${styles.columnTitle} text-${col.key.toLowerCase().replace('_', '-')}`}>
                   <Icon size={16} />
                   {col.label}
                 </div>
-                <span className={styles.columnCount} style={{ background: col.color + '20', color: col.color }}>
+                <span className={`${styles.columnCount} bg-${col.key.toLowerCase().replace('_', '-')}-20 text-${col.key.toLowerCase().replace('_', '-')}`}>
                   {items.length}
                 </span>
               </div>

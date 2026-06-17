@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Pagination, Dropdown } from 'react-bootstrap';
+import { Box, Card, Typography, IconButton, Menu, MenuItem, Select } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import { Plus, Eye, Edit, MoreVertical, PlusCircle, MessageCircle } from 'lucide-react';
 import { useJobCards } from '../../queries/useDataQueries';
@@ -8,12 +8,12 @@ import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
 import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
+import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROUTES } from '../../config/routes';
 import useAuthStore from '../../store/useAuthStore';
 import { ROLES } from '../../constants/roles';
-import styles from './JobCards.module.css';
 
 const PRIORITY_COLORS = {
   LOW: '#10B981',
@@ -21,35 +21,6 @@ const PRIORITY_COLORS = {
   HIGH: '#F59E0B',
   URGENT: '#EF4444',
 };
-
-const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => (
-  <button
-    ref={ref}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}
-    {...props}
-    style={{
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '4px',
-      color: 'var(--color-text-secondary)',
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: '50%',
-      width: '32px',
-      height: '32px',
-      transition: 'background 0.2s',
-    }}
-    onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
-    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-  >
-    <MoreVertical size={18} />
-  </button>
-));
 
 export default function JobCardList() {
   const navigate = useNavigate();
@@ -60,88 +31,62 @@ export default function JobCardList() {
 
   const { data, isLoading } = useJobCards({ search: debouncedSearch, status: statusFilter });
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedJob, setSelectedJob] = useState(null);
+
+  const handleMenuClick = (event, row) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedJob(row);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedJob(null);
+  };
+
   const columns = [
     {
       header: 'Job Card #',
       accessor: 'id',
       render: (row) => (
-        <span className={styles.jobId}>#{row.id}</span>
+        <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
+          #{row.id}
+        </Typography>
       ),
     },
     {
       header: 'Vehicle',
       render: (row) => (
-        <code className={styles.vehicleNum}>{row.vehicleNumber}</code>
+        <VehicleNumberPlate vehicleNumber={row.vehicleNumber} />
       ),
     },
     { header: 'Owner', accessor: 'ownerName' },
-    { header: 'Mobile Number', render: (row) => row.ownerMobile || row.mobile || <span className="text-muted">-</span> },
+    { header: 'Mobile Number', render: (row) => row.ownerMobile || row.mobile || <Typography color="text.secondary">-</Typography> },
     {
       header: 'Priority',
       render: (row) => (
-        <span style={{
-          background: `${PRIORITY_COLORS[row.priority || 'NORMAL']}12`,
+        <Typography variant="caption" sx={{
+          bgcolor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}15`,
           color: PRIORITY_COLORS[row.priority || 'NORMAL'],
-          padding: '4px 10px',
-          borderRadius: '12px',
-          fontSize: '0.75rem',
-          fontWeight: 700,
-          border: `1px solid ${PRIORITY_COLORS[row.priority || 'NORMAL']}25`,
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
+          px: 1.5, py: 0.5, borderRadius: 8, fontWeight: 700,
+          border: '1px solid', borderColor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}40`,
+          textTransform: 'uppercase', letterSpacing: '0.5px'
         }}>
           {row.priority || 'NORMAL'}
-        </span>
+        </Typography>
       ),
     },
     { header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
-    { header: 'Technician', accessor: 'technician', render: (row) => row.technician || <span className="text-muted">Unassigned</span> },
-    { header: 'Est. Cost', render: (row) => formatCurrency(row.estimatedCost) },
-    { header: 'Created', render: (row) => formatDateTime(row.createdAt) },
+    { header: 'Technician', accessor: 'technician', render: (row) => row.technician || <Typography color="text.secondary" variant="body2">Unassigned</Typography> },
+    { header: 'Est. Cost', render: (row) => <Typography variant="body2" fontWeight={600}>{formatCurrency(row.estimatedCost)}</Typography> },
+    { header: 'Created', render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography> },
     {
       header: 'Actions',
       render: (row) => (
-        <Dropdown align="end" onClick={(e) => e.stopPropagation()}>
-          <Dropdown.Toggle as={CustomToggle} id={`dropdown-action-${row.id}`} className={styles.dropdownToggleNoCaret} />
-          <Dropdown.Menu
-            style={{ padding: '6px', borderRadius: '10px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}
-          >
-            <Dropdown.Item
-              onClick={() => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
-            >
-              <Eye size={15} style={{ color: 'var(--color-primary)' }} />
-              <span>View</span>
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => navigate(`${ROUTES.JOB_CARDS}/${row.id}/edit`)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
-            >
-              <Edit size={15} style={{ color: 'var(--color-accent)' }} />
-              <span>Edit</span>
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => {
-                const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK;
-                navigate(`${targetRoute}?jobCardId=${row.id}`);
-              }}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
-            >
-              <PlusCircle size={15} style={{ color: 'var(--color-accent-2)' }} />
-              <span>Add Additional Work</span>
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => {
-                const message = `Hello ${row.ownerName || 'Customer'}, your vehicle service card #${row.id} estimate is ready. Please reply YES to approve work.`;
-                window.open(`https://wa.me/91${row.ownerMobile || row.mobile || ''}?text=${encodeURIComponent(message)}`, '_blank');
-              }}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, color: '#25D366' }}
-            >
-              <MessageCircle size={15} style={{ color: '#25D366' }} />
-              <span>WhatsApp Resend</span>
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
+        <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
+          <MoreVertical size={18} />
+        </IconButton>
       ),
     },
   ];
@@ -149,7 +94,7 @@ export default function JobCardList() {
   const tableData = data?.data || [];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Job Cards"
         breadcrumbs={[{ label: 'Job Cards' }]}
@@ -160,26 +105,35 @@ export default function JobCardList() {
         }
       />
 
-      <div className={styles.filterBar}>
-        <SearchBar
-          placeholder="Search vehicle, owner, job ID..."
-          value={search}
-          onChange={setSearch}
-          className={styles.searchBox}
-        />
-        <select
-          className={`${styles.filterSelect} form-select`}
-          style={{ width: 'auto', minWidth: '150px' }}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
+          <SearchBar
+            placeholder="Search vehicle, owner, job ID..."
+            value={search}
+            onChange={setSearch}
+          />
+        </Box>
+        <Select
+          size="small"
+          displayEmpty
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
+          sx={{ 
+            width: { xs: '100%', sm: 200 }, 
+            bgcolor: 'background.paper', 
+            borderRadius: '24px',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+          }}
         >
           {['', 'PENDING', 'IN_PROGRESS', 'BODY_SHOP', 'WATER_WASH', 'COMPLETED', 'DELAYED'].map((s) => (
-            <option key={s} value={s}>{s || 'All Statuses'}</option>
+            <MenuItem key={s} value={s}>{s || 'All Statuses'}</MenuItem>
           ))}
-        </select>
-      </div>
+        </Select>
+      </Box>
 
-      <div className="premium-card d-flex flex-column">
+      <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
           data={tableData}
@@ -187,7 +141,41 @@ export default function JobCardList() {
           onRowClick={(row) => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
           emptyMessage="No job cards found"
         />
-      </div>
-    </div>
+      </Card>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{ sx: { width: 220, borderRadius: 2, mt: 0.5 } }}
+      >
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/${selectedJob?.id}`); }}>
+          <Eye size={16} className="mr-3 text-primary" />
+          View
+        </MenuItem>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/${selectedJob?.id}/edit`); }}>
+          <Edit size={16} className="mr-3 text-warning" />
+          Edit
+        </MenuItem>
+        <MenuItem onClick={() => {
+          handleMenuClose();
+          const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK;
+          navigate(`${targetRoute}?jobCardId=${selectedJob?.id}`);
+        }}>
+          <PlusCircle size={16} className="mr-3 text-body-shop" />
+          Add Additional Work
+        </MenuItem>
+        <MenuItem onClick={() => {
+          handleMenuClose();
+          const message = `Hello ${selectedJob?.ownerName || 'Customer'}, your vehicle service card #${selectedJob?.id} estimate is ready. Please reply YES to approve work.`;
+          window.open(`https://wa.me/91${selectedJob?.ownerMobile || selectedJob?.mobile || ''}?text=${encodeURIComponent(message)}`, '_blank');
+        }} sx={{ color: '#10B981' }}>
+          <MessageCircle size={16} className="mr-3 text-success" />
+          WhatsApp Resend
+        </MenuItem>
+      </Menu>
+    </Box>
   );
 }

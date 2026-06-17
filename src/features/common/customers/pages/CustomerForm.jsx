@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Row, Col } from 'react-bootstrap';
+import { Box, Grid, Typography } from '@mui/material';
 import { ArrowLeft } from 'lucide-react';
 import RHFTextField from '../../../../components/form/RHFTextField';
 import RHFTextarea from '../../../../components/form/RHFTextarea';
@@ -81,63 +81,59 @@ export default function CustomerForm() {
   };
 
   return (
-    <div style={{ background: '#fff', minHeight: '100%', padding: '2rem 2.5rem' }}>
+    <Box sx={{ bgcolor: 'background.paper', minHeight: '100%', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
-        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '20px', color: '#152326' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit Customer' : 'Add New Customer'}
-        </h4>
-        <button
-          type="button"
+        </Typography>
+        <Box
+          component="button"
           onClick={() => navigate(ROUTES.CUSTOMERS)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#6B7280', fontSize: '14px', fontWeight: 500,
-            padding: 0,
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 1,
+            bgcolor: 'transparent', border: 'none', cursor: 'pointer',
+            color: 'text.secondary', fontSize: '0.875rem', fontWeight: 500, p: 0,
+            '&:hover': { color: 'text.primary' }
           }}
         >
-          <ArrowLeft size={15} /> Back to List
-        </button>
-      </div>
+          <ArrowLeft size={16} /> Back to List
+        </Box>
+      </Box>
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* Section: Customer Information */}
-          <p style={{ fontWeight: 600, fontSize: '16px', color: '#152326', marginBottom: '1.25rem' }}>
+          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
             Customer Information
-          </p>
+          </Typography>
 
-          <Row className="g-3 mb-3">
-            <Col md={6}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="name" label="Customer Full Name *" placeholder="Enter full name" required />
-            </Col>
-            <Col md={6}>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="email" label="Email Address *" type="email" placeholder="Enter email address" required />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
-          <Row className="g-3 mb-3">
-            <Col md={6}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="mobile" label="Mobile Number *" placeholder="Enter mobile number" required />
-            </Col>
-            <Col md={6}>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <RHFSelect name="status" label="Status" options={STATUS_OPTIONS} />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
-          <Row className="g-3 mb-3">
-            <Col md={12}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12}>
               <RHFTextarea name="address" label="Billing Address" placeholder="Enter address details" rows={3} />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
           {/* Footer Actions */}
-          <div style={{
-            borderTop: '1px solid #E2E5DC',
-            marginTop: '2rem', paddingTop: '1.5rem',
-            display: 'flex', justifyContent: 'flex-end', gap: '0.75rem',
-          }}>
+          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
             <Button
               variant="secondary"
               type="button"
@@ -152,9 +148,9 @@ export default function CustomerForm() {
             >
               {isEdit ? 'Save Changes' : 'Submit'}
             </Button>
-          </div>
+          </Box>
         </form>
       </FormProvider>
-    </div>
+    </Box>
   );
 }

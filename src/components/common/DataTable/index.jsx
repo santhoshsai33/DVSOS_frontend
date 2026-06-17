@@ -1,10 +1,22 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Box,
+  Typography,
+  Stack,
+  Select,
+  MenuItem,
+  Pagination,
+  Paper
+} from '@mui/material';
 import Loader from '../Loader';
 import EmptyState from '../EmptyState';
-import styles from './DataTable.module.css';
 
-// eslint-disable-next-line react/prop-types
 export default function DataTable({
   columns = [],
   data = [],
@@ -14,136 +26,165 @@ export default function DataTable({
   showPagination = true,
   defaultItemsPerPage = 10,
 }) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(defaultItemsPerPage);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-
-  const sortedData = [...data].sort((a, b) => {
-    if (!sortConfig.key) return 0;
-    const aValue = a[sortConfig.key] ?? '';
-    const bValue = b[sortConfig.key] ?? '';
-    return String(aValue).localeCompare(String(bValue), undefined, { numeric: true }) * (sortConfig.direction === 'asc' ? 1 : -1);
-  });
-
-  // Pagination Logic
-  const totalPages = showPagination ? (Math.ceil(sortedData.length / itemsPerPage) || 1) : 1;
-  const startIndex = showPagination ? ((currentPage - 1) * itemsPerPage) : 0;
-  const paginatedData = showPagination ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData;
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1);
-  };
-
-  const handleSort = (col) => {
-    if (!col.accessor || col.sortable === false) return;
-    setSortConfig((prev) => ({
-      key: col.accessor,
-      direction: prev.key === col.accessor && prev.direction === 'asc' ? 'desc' : 'asc',
-    }));
-    setCurrentPage(1);
-  };
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(defaultItemsPerPage);
 
   if (isLoading) return <Loader text="Loading data..." />;
-
   if (!data.length) return <EmptyState message={emptyMessage} />;
 
-  let paginationItems = [];
-  for (let number = 1; number <= totalPages; number++) {
-    // Show limited pages if there are many, but keep it simple for now
-    paginationItems.push(
-      <button
-        key={number}
-        className={[styles.pageBtn, number === currentPage ? styles.pageBtnActive : ''].join(' ')}
-        onClick={() => handlePageChange(number)}
-      >
-        {number}
-      </button>
-    );
-  }
+  const totalPages = Math.ceil(data.length / rowsPerPage);
+
+  const paginatedData = showPagination
+    ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    : data;
 
   return (
-    <div className={styles.tableWrapper}>
-      <div className={styles.scrollContainer}>
-        <table className={styles.table} style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
-          <thead>
-            <tr>
-              {columns.map((col, i) => (
-                <th key={i} style={{ width: col.width }}>
-                  {col.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.map((row, ri) => (
-              <tr
-                key={row.id || ri}
-                onClick={() => onRowClick && onRowClick(row)}
-                className={onRowClick ? styles.clickable : ''}
-              >
-                {columns.map((col, ci) => (
-                  <td key={ci}>
-                    {col.render
-                      ? col.render(row, ri)
-                      : col.accessor
-                        ? (row[col.accessor] ?? '—')
-                        : '—'}
-                  </td>
+    <Box>
+      <Paper
+        elevation={0}
+        sx={{
+          bgcolor: '#FFFFFF',
+          borderRadius: 0,
+          border: 'none',
+          boxShadow: 'none',
+          overflow: 'hidden'
+        }}
+      >
+        <TableContainer>
+          <Table sx={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+            <TableHead>
+              <TableRow>
+                {columns.map((col, index) => (
+                  <TableCell
+                    key={index}
+                    sx={{
+                      bgcolor: '#e0e2e6ff',
+                      color: '#000000',
+                      fontSize: '0.875rem',
+                      fontWeight: 700,
+                      textTransform: 'none',
+                      borderBottom: 'none',
+                      py: 2,
+                      px: 3,
+                      whiteSpace: 'nowrap',
+                      '&:first-of-type': { pl: 4 },
+                      '&:last-of-type': { pr: 4 }
+                    }}
+                    width={col.width || 'auto'}
+                  >
+                    {col.header}
+                  </TableCell>
                 ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedData.map((row, index) => (
+                <TableRow
+                  key={row.id || index}
+                  onClick={() => onRowClick && onRowClick(row)}
+                  sx={{
+                    bgcolor: '#FFFFFF',
+                    cursor: onRowClick ? 'pointer' : 'default',
+                    transition: 'background-color 0.2s',
+                    '&:hover': {
+                      bgcolor: '#F8FAFC',
+                    },
+                    '& td': {
+                      borderBottom: index === paginatedData.length - 1 ? 'none' : '1px dashed #CBD5E1',
+                    }
+                  }}
+                >
+                  {columns.map((col, colIndex) => (
+                    <TableCell
+                      key={colIndex}
+                      sx={{
+                        py: 2.25,
+                        px: 3,
+                        color: '#334155',
+                        fontSize: '0.875rem',
+                        fontWeight: 500,
+                        '&:first-of-type': { pl: 4 },
+                        '&:last-of-type': { pr: 4 }
+                      }}
+                    >
+                      {col.render
+                        ? col.render(row)
+                        : (row[col.accessor] !== undefined && row[col.accessor] !== null ? row[col.accessor] : '—')}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      {showPagination && data.length > 0 && (
-        <div className={styles.paginationRow}>
-          <div className={styles.paginationInfo}>
-            <span>
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedData.length)} of {sortedData.length} entries
-            </span>
-            <span>
-              Show
-              <select className={styles.perPageSelect} value={itemsPerPage} onChange={handleItemsPerPageChange}>
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              entries
-            </span>
-          </div>
-
-          {totalPages > 1 && (
-            <div className={styles.paginationControls}>
-              <button
-                className={[styles.pageBtn, styles.pageBtnIcon].join(' ')}
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
+        {showPagination && data.length > 0 && (
+          <Box sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'center', sm: 'center' },
+            p: 2,
+            px: 3,
+            gap: { xs: 2, sm: 0 },
+            borderTop: '1px solid #E2E8F0',
+            // bgcolor: '#FAFAFA'
+          }}>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Select
+                size="small"
+                value={rowsPerPage}
+                onChange={(e) => {
+                  setRowsPerPage(Number(e.target.value));
+                  setPage(0);
+                }}
+                sx={{
+                  fontSize: '0.875rem',
+                  color: '#334155',
+                  fontWeight: 600,
+                  bgcolor: '#FFFFFF',
+                  fieldset: { borderColor: '#E2E8F0', borderRadius: 2 },
+                  '&:hover fieldset': { borderColor: '#CBD5E1 !important' },
+                  height: 36
+                }}
               >
-                <ChevronLeft size={14} /> Previous
-              </button>
+                {[10, 25, 50].map((num) => (
+                  <MenuItem key={num} value={num} sx={{ fontSize: '0.875rem' }}>{num}</MenuItem>
+                ))}
+              </Select>
+              <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 500 }}>
+                Showing {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, data.length)} of {data.length}
+              </Typography>
+            </Stack>
 
-              {paginationItems}
-
-              <button
-                className={[styles.pageBtn, styles.pageBtnIcon].join(' ')}
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Next <ChevronRight size={14} />
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+            <Pagination
+              count={totalPages}
+              page={page + 1}
+              onChange={(e, value) => setPage(value - 1)}
+              shape="rounded"
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  fontWeight: 600,
+                  color: '#475569',
+                  border: '1px solid transparent',
+                  '&:hover': {
+                    bgcolor: '#F1F5F9',
+                  }
+                },
+                '& .Mui-selected': {
+                  bgcolor: '#FFFFFF !important',
+                  color: '#0F766E', // Brand teal
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  '&:hover': {
+                    bgcolor: '#F8FAFC !important',
+                  }
+                }
+              }}
+            />
+          </Box>
+        )}
+      </Paper>
+    </Box>
   );
 }

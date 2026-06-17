@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Row, Col } from 'react-bootstrap';
-import { AlertTriangle, Clock, Car, Wrench, PhoneCall, ChevronRight } from 'lucide-react';
+import { Box, Grid, Card, CardContent, Typography } from '@mui/material';
+import { AlertTriangle, Clock, Car, PhoneCall, ChevronRight } from 'lucide-react';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import SearchBar from '../../components/common/SearchBar';
 import DataTable from '../../components/common/DataTable';
+import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { useDebounce } from '../../hooks/useDebounce';
 import { formatDateTime } from '../../utils/formatters';
 import { useNavigate } from 'react-router-dom';
@@ -51,12 +52,12 @@ const PRIORITY_COLORS = { URGENT: '#EF4444', HIGH: '#F59E0B', NORMAL: '#3B82F6',
 function DelayBadge({ hours }) {
   const color = hours >= 6 ? '#EF4444' : hours >= 3 ? '#F59E0B' : '#3B82F6';
   return (
-    <span style={{
-      background: color + '15', color, fontWeight: 700, fontSize: '0.75rem',
-      padding: '3px 10px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px'
+    <Box component="span" sx={{
+      bgcolor: color + '15', color, fontWeight: 700, fontSize: '0.75rem',
+      py: 0.5, px: 1.5, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 0.5
     }}>
-      <Clock size={11} /> {hours.toFixed(1)} hrs late
-    </span>
+      <Clock size={12} /> {hours.toFixed(1)} hrs late
+    </Box>
   );
 }
 
@@ -69,9 +70,9 @@ function StageBadge({ stage }) {
   };
   const style = colors[stage] || { bg: '#F1F5F9', color: '#64748B' };
   return (
-    <span style={{ background: style.bg, color: style.color, fontWeight: 600, fontSize: '0.75rem', padding: '3px 10px', borderRadius: '20px' }}>
+    <Box component="span" sx={{ bgcolor: style.bg, color: style.color, fontWeight: 600, fontSize: '0.75rem', py: 0.5, px: 1.5, borderRadius: 8 }}>
       {stage}
-    </span>
+    </Box>
   );
 }
 
@@ -95,45 +96,45 @@ export default function DelayedJobs() {
     {
       header: 'Job Card',
       render: (row) => (
-        <div>
-          <code style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-primary)' }}>{row.id}</code>
-          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: 2 }}>{row.serviceType}</div>
-        </div>
+        <Box>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>{row.id}</Typography>
+          <Typography variant="caption" color="text.secondary">{row.serviceType}</Typography>
+        </Box>
       ),
     },
     {
       header: 'Vehicle',
       render: (row) => (
-        <div>
-          <code style={{ fontSize: '0.82rem', fontWeight: 700 }}>{row.vehicleNumber}</code>
-          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{row.makeModel}</div>
-        </div>
+        <Box>
+          <VehicleNumberPlate vehicleNumber={row.vehicleNumber} size="sm" />
+          <Typography variant="caption" color="text.secondary">{row.makeModel}</Typography>
+        </Box>
       ),
     },
     {
       header: 'Customer',
       render: (row) => (
-        <div>
-          <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{row.ownerName}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{row.mobile}</div>
-        </div>
+        <Box>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>{row.ownerName}</Typography>
+          <Typography variant="caption" color="text.secondary">{row.mobile}</Typography>
+        </Box>
       ),
     },
     { header: 'Stage', render: (row) => <StageBadge stage={row.stage} /> },
-    { header: 'Promised Delivery', render: (row) => <span style={{ fontSize: '0.82rem' }}>{formatDateTime(row.promisedDelivery)}</span> },
+    { header: 'Promised Delivery', render: (row) => <Typography variant="body2" sx={{ fontSize: '0.82rem' }}>{formatDateTime(row.promisedDelivery)}</Typography> },
     { header: 'Delay', render: (row) => <DelayBadge hours={row.delayHours} /> },
     {
       header: 'Priority',
       render: (row) => (
-        <span style={{ color: PRIORITY_COLORS[row.priority], fontWeight: 700, fontSize: '0.78rem' }}>
+        <Typography variant="body2" sx={{ color: PRIORITY_COLORS[row.priority], fontWeight: 700, fontSize: '0.78rem' }}>
           {row.priority}
-        </span>
+        </Typography>
       ),
     },
     {
       header: 'Action',
       render: (row) => (
-        <div className="d-flex gap-2">
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             size="sm" variant="ghost"
             leftIcon={PhoneCall}
@@ -148,13 +149,13 @@ export default function DelayedJobs() {
           >
             View
           </Button>
-        </div>
+        </Box>
       ),
     },
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Delayed Jobs"
         subtitle={`${filtered.length} vehicles past promised delivery time`}
@@ -165,53 +166,53 @@ export default function DelayedJobs() {
       />
 
       {/* Summary Alerts */}
-      <Row className="g-3 mb-4">
-        <Col md={4}>
-          <div style={{ background: '#FEF2F2', border: '1.5px solid #FCA5A5', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <AlertTriangle size={28} style={{ color: '#EF4444', flexShrink: 0 }} />
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '1.5rem', color: '#DC2626' }}>{critical}</div>
-              <div style={{ fontSize: '0.8rem', color: '#7F1D1D', fontWeight: 600 }}>Critical (6+ hrs overdue)</div>
-            </div>
-          </div>
-        </Col>
-        <Col md={4}>
-          <div style={{ background: '#FFFBEB', border: '1.5px solid #FCD34D', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <Clock size={28} style={{ color: '#F59E0B', flexShrink: 0 }} />
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '1.5rem', color: '#D97706' }}>{warning}</div>
-              <div style={{ fontSize: '0.8rem', color: '#78350F', fontWeight: 600 }}>Warning (3–6 hrs overdue)</div>
-            </div>
-          </div>
-        </Col>
-        <Col md={4}>
-          <div style={{ background: 'var(--color-bg-card)', border: '1.5px solid var(--color-border)', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <Car size={28} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '1.5rem', color: 'var(--color-primary)' }}>{filtered.length}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Total Delayed Vehicles</div>
-            </div>
-          </div>
-        </Col>
-      </Row>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={4}>
+          <Box sx={{ bgcolor: '#FEF2F2', border: '1.5px solid #FCA5A5', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <AlertTriangle size={32} color="#EF4444" className="flex-shrink-0" />
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#DC2626' }}>{critical}</Typography>
+              <Typography variant="body2" sx={{ color: '#7F1D1D', fontWeight: 600 }}>Critical (6+ hrs overdue)</Typography>
+            </Box>
+          </Box>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Box sx={{ bgcolor: '#FFFBEB', border: '1.5px solid #FCD34D', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Clock size={32} color="#F59E0B" className="flex-shrink-0" />
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#D97706' }}>{warning}</Typography>
+              <Typography variant="body2" sx={{ color: '#78350F', fontWeight: 600 }}>Warning (3–6 hrs overdue)</Typography>
+            </Box>
+          </Box>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Box sx={{ bgcolor: 'background.paper', border: '1.5px solid', borderColor: 'divider', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Car size={32} color="#3B82F6" className="flex-shrink-0" />
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>{filtered.length}</Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>Total Delayed Vehicles</Typography>
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
 
       {/* Filter Bar */}
-      <div className="mb-3">
+      <Box sx={{ mb: 3, width: { xs: '100%', md: 350 } }}>
         <SearchBar
           placeholder="Search by job card, vehicle number, owner..."
           value={search}
           onChange={setSearch}
         />
-      </div>
+      </Box>
 
       {/* Table */}
-      <div className="premium-card">
+      <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
           data={filtered}
           emptyMessage="No delayed vehicles. Great job! 🎉"
         />
-      </div>
-    </div>
+      </Card>
+    </Box>
   );
 }

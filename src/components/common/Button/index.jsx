@@ -1,22 +1,4 @@
-import styles from './Button.module.css';
-import { Loader2 } from 'lucide-react';
-
-const VARIANTS = {
-  primary: styles.primary,
-  secondary: styles.secondary,
-  success: styles.success,
-  danger: styles.danger,
-  warning: styles.warning,
-  ghost: styles.ghost,
-  outline: styles.outline,
-  link: styles.link,
-};
-
-const SIZES = {
-  sm: styles.sm,
-  md: styles.md,
-  lg: styles.lg,
-};
+import { Button as MuiButton, CircularProgress } from '@mui/material';
 
 // eslint-disable-next-line react/prop-types
 export default function Button({
@@ -31,27 +13,73 @@ export default function Button({
   className = '',
   onClick,
   type = 'button',
+  sx = {},
   ...props
 }) {
+  let muiVariant = 'contained';
+  let color = 'primary';
+
+  let baseSx = {};
+
+  switch (variant) {
+    case 'primary': 
+      muiVariant = 'contained'; 
+      color = 'primary'; 
+      baseSx = {
+        boxShadow: 'none',
+        border: '1px solid transparent',
+        '&:hover': {
+          backgroundColor: 'transparent',
+          color: 'primary.main',
+          border: '1px solid',
+          borderColor: 'primary.main',
+          boxShadow: 'none',
+        }
+      };
+      break;
+    case 'secondary': 
+      muiVariant = 'outlined'; 
+      color = 'inherit'; 
+      baseSx = {
+        color: '#64748B',
+        borderColor: '#CBD5E1',
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        '&:hover': {
+          backgroundColor: '#F1F5F9',
+          borderColor: 'transparent',
+          color: '#0F172A',
+          boxShadow: 'none',
+        }
+      };
+      break;
+    case 'success': muiVariant = 'contained'; color = 'success'; break;
+    case 'danger': muiVariant = 'contained'; color = 'error'; break;
+    case 'warning': muiVariant = 'contained'; color = 'warning'; break;
+    case 'ghost': muiVariant = 'text'; color = 'inherit'; break;
+    case 'outline': muiVariant = 'outlined'; color = 'inherit'; break;
+    case 'link': muiVariant = 'text'; color = 'info'; break;
+    default: break;
+  }
+
+  const muiSize = size === 'sm' ? 'small' : size === 'lg' ? 'large' : 'medium';
+
   return (
-    <button
+    <MuiButton
       type={type}
-      className={[
-        styles.btn,
-        VARIANTS[variant] || VARIANTS.primary,
-        SIZES[size] || SIZES.md,
-        fullWidth ? styles.fullWidth : '',
-        isLoading ? styles.loading : '',
-        className,
-      ].join(' ')}
+      variant={muiVariant}
+      color={color}
+      size={muiSize}
+      fullWidth={fullWidth}
       disabled={disabled || isLoading}
       onClick={onClick}
+      className={className}
+      startIcon={isLoading ? <CircularProgress size={16} color="inherit" /> : LeftIcon ? <LeftIcon size={16} /> : null}
+      endIcon={!isLoading && RightIcon ? <RightIcon size={16} /> : null}
+      sx={{ ...baseSx, ...sx }}
       {...props}
     >
-      {isLoading && <Loader2 size={16} className={styles.spinner} />}
-      {!isLoading && LeftIcon && <LeftIcon size={16} />}
-      <span>{children}</span>
-      {!isLoading && RightIcon && <RightIcon size={16} />}
-    </button>
+      {children}
+    </MuiButton>
   );
 }

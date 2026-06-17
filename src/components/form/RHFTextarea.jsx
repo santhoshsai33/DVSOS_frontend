@@ -1,5 +1,5 @@
-import { useFormContext } from 'react-hook-form';
-import styles from './FormField.module.css';
+import { useFormContext, Controller } from 'react-hook-form';
+import { TextField, Box, Typography } from '@mui/material';
 
 // eslint-disable-next-line react/prop-types
 export default function RHFTextarea({
@@ -11,33 +11,43 @@ export default function RHFTextarea({
   disabled = false,
   hint,
   className = '',
+  sx = {},
+  ...props
 }) {
-  const { register, formState: { errors } } = useFormContext();
-  const error = errors[name];
+  const { control } = useFormContext();
 
   return (
-    <div className={[styles.group, className].join(' ')}>
-      {label && (
-        <label htmlFor={name} className={styles.label}>
-          {label}
-          {required && <span className={styles.required}>*</span>}
-        </label>
+    <Controller
+      name={name}
+      control={control}
+      render={({ field, fieldState: { error } }) => (
+        <Box sx={{ mb: 2 }}>
+          {label && (
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', mb: 0.75 }}>
+              {label} {required && <span style={{ color: '#E11D48' }}>*</span>}
+            </Typography>
+          )}
+          <TextField
+            {...field}
+            multiline
+            rows={rows}
+            placeholder={placeholder}
+            disabled={disabled}
+            error={!!error}
+            helperText={error ? error.message : hint}
+            fullWidth
+            className={className}
+            sx={{ 
+              ...sx,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '8px',
+                bgcolor: '#FFFFFF'
+              }
+            }}
+            {...props}
+          />
+        </Box>
       )}
-      <textarea
-        id={name}
-        placeholder={placeholder}
-        rows={rows}
-        disabled={disabled}
-        {...register(name)}
-        className={[styles.textarea, error ? styles.error : ''].join(' ')}
-        aria-invalid={!!error}
-      />
-      {hint && !error && <p className={styles.hint}>{hint}</p>}
-      {error && (
-        <p className={styles.errorMsg} role="alert">
-          {error.message}
-        </p>
-      )}
-    </div>
+    />
   );
 }

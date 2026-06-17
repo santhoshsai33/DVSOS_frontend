@@ -79,9 +79,26 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.MD]: [
     { label: 'MD Dashboard', path: ROUTES.MD_DASHBOARD, icon: LayoutDashboard },
-    { label: 'Executive Overview', path: ROUTES.MD_EXECUTIVE_OVERVIEW, icon: BarChart2 },
-    { label: 'Performance Report', path: ROUTES.MD_PERFORMANCE_REPORT, icon: FileText },
-    { label: 'Service KPI', path: ROUTES.MD_SERVICE_KPI, icon: CheckSquare },
+    // { label: 'Executive Overview', path: ROUTES.MD_EXECUTIVE_OVERVIEW, icon: BarChart2 },
+    // { label: 'Performance Report', path: ROUTES.MD_PERFORMANCE_REPORT, icon: FileText },
+    // { label: 'Service KPI', path: ROUTES.MD_SERVICE_KPI, icon: CheckSquare },
+    {
+      label: 'Master Menu',
+      icon: Database,
+      children: [
+        { label: 'Service Categories', path: ROUTES.ADMIN_MASTER_CATEGORIES, icon: ClipboardList },
+        { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench }
+      ]
+    },
+    { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },
+    { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
+    { label: 'Customers', path: ROUTES.CUSTOMERS, icon: Users },
+    { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
+    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
+    { label: 'Vehicle Entry', path: ROUTES.GATE_ENTRY, icon: LogIn },
+    { label: 'Audit Logs', path: ROUTES.ADMIN_AUDIT_LOGS, icon: FileText },
+    { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
+    { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },
   ],
 
   [ROLES.SUPER_ADMIN]: [
@@ -99,7 +116,7 @@ export const SIDEBAR_MENUS = {
     { label: 'Customers', path: ROUTES.CUSTOMERS, icon: Users },
     { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
     { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
-    { label: 'Gate Security Form', path: ROUTES.GATE_ENTRY, icon: LogIn },
+    { label: 'Vehicle Entry', path: ROUTES.GATE_ENTRY, icon: LogIn },
     { label: 'Audit Logs', path: ROUTES.ADMIN_AUDIT_LOGS, icon: FileText },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
     { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },

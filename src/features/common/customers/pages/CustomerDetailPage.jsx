@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Phone, Mail, MapPin, Calendar, Clock, Car } from 'lucide-react';
-import { Row, Col, Card } from 'react-bootstrap';
+import { Box, Grid, Card, Typography, Divider } from '@mui/material';
 import PageHeader from '../../../../components/shared/PageHeader';
 import Button from '../../../../components/common/Button';
 import { ROUTES } from '../../../../config/routes';
@@ -39,19 +39,19 @@ export default function CustomerDetailPage() {
 
   if (!customer) {
     return (
-      <div className="p-4 text-center">
-        <h5 className="text-muted">Customer not found</h5>
-        <Button variant="primary" className="mt-3" onClick={() => navigate(ROUTES.CUSTOMERS)}>
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h6" color="text.secondary">Customer not found</Typography>
+        <Button variant="primary" sx={{ mt: 3 }} onClick={() => navigate(ROUTES.CUSTOMERS)}>
           Back to Directory
         </Button>
-      </div>
+      </Box>
     );
   }
 
   const history = MOCK_SERVICE_HISTORY[customer.id] || [];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Customer Profile"
         breadcrumbs={[{ label: 'Customers', path: ROUTES.CUSTOMERS }, { label: customer.name }]}
@@ -62,111 +62,117 @@ export default function CustomerDetailPage() {
         }
       />
 
-      <Row className="g-4">
+      <Grid container spacing={4}>
         {/* Profile Info */}
-        <Col lg={4}>
-          <Card className="border-0 shadow-sm p-4" style={{ borderRadius: '12px', height: '100%' }}>
-            <div className="text-center mb-4">
-              <div style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ borderRadius: 3, boxShadow: 1, p: 4, height: '100%' }}>
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Box sx={{
+                width: 80, height: 80, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)',
-                color: '#fff',
-                fontSize: '2rem',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1rem auto',
-                boxShadow: '0 4px 14px rgba(20, 184, 166, 0.3)'
+                color: '#fff', fontSize: '2rem', fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                mx: 'auto', mb: 2, boxShadow: '0 4px 14px rgba(20, 184, 166, 0.3)'
               }}>
                 {customer.name.charAt(0)}
-              </div>
-              <h5 style={{ fontWeight: 700, margin: '0 0 4px 0' }}>{customer.name}</h5>
-              <span className={`badge ${customer.status === 'ACTIVE' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle'}`}>
+              </Box>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>{customer.name}</Typography>
+              <Typography variant="caption" sx={{
+                px: 1.5, py: 0.5, borderRadius: 8, fontWeight: 600, border: '1px solid',
+                bgcolor: customer.status === 'ACTIVE' ? 'success.light' : 'error.light',
+                color: customer.status === 'ACTIVE' ? 'success.main' : 'error.main',
+                borderColor: customer.status === 'ACTIVE' ? 'success.light' : 'error.light'
+              }}>
                 {customer.status}
-              </span>
-            </div>
+              </Typography>
+            </Box>
 
-            <hr style={{ borderStyle: 'dashed', color: '#CBD5E0' }} />
+            <Divider sx={{ borderStyle: 'dashed', my: 2 }} />
 
-            <div className="d-flex flex-column gap-3 mt-2">
-              <div className="d-flex align-items-center gap-3">
-                <Mail size={18} className="text-muted" />
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Email Address</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{customer.email}</div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center gap-3">
-                <Phone size={18} className="text-muted" />
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Mobile Number</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{customer.mobile}</div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center gap-3">
-                <MapPin size={18} className="text-muted" />
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Address</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{customer.address || '-'}</div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center gap-3">
-                <Calendar size={18} className="text-muted" />
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Total Service Visits</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{customer.visits || 0} visits</div>
-                </div>
-              </div>
-            </div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Mail size={18} color="#6b7280" />
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={500}>Email Address</Typography>
+                  <Typography variant="body2" fontWeight={600}>{customer.email}</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Phone size={18} color="#6b7280" />
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={500}>Mobile Number</Typography>
+                  <Typography variant="body2" fontWeight={600}>{customer.mobile}</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <MapPin size={18} color="#6b7280" />
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={500}>Address</Typography>
+                  <Typography variant="body2" fontWeight={600}>{customer.address || '-'}</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Calendar size={18} color="#6b7280" />
+                <Box>
+                  <Typography variant="caption" color="text.secondary" fontWeight={500}>Total Service Visits</Typography>
+                  <Typography variant="body2" fontWeight={600}>{customer.visits || 0} visits</Typography>
+                </Box>
+              </Box>
+            </Box>
           </Card>
-        </Col>
+        </Grid>
 
         {/* Service History */}
-        <Col lg={8}>
-          <Card className="border-0 shadow-sm p-4" style={{ borderRadius: '12px', height: '100%' }}>
-            <h5 className="mb-4 fs-6 fw-bold" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Clock size={18} className="text-primary" /> Service History & Job Cards
-            </h5>
+        <Grid item xs={12} lg={8}>
+          <Card sx={{ borderRadius: 3, boxShadow: 1, p: 4, height: '100%' }}>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 4 }}>
+              <Clock size={18} color="#0d9488" /> Service History & Job Cards
+            </Typography>
 
             {history.length === 0 ? (
-              <div className="text-center py-5 text-muted">
-                <Car size={36} className="mb-2 text-muted opacity-50" />
-                <p style={{ fontSize: '0.9rem' }}>No past service visits recorded for this customer.</p>
-              </div>
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <Car size={36} color="#9ca3af" style={{ marginBottom: 8, opacity: 0.5 }} />
+                <Typography variant="body2" color="text.secondary">No past service visits recorded for this customer.</Typography>
+              </Box>
             ) : (
-              <div className="table-responsive">
-                <table className="table align-middle">
-                  <thead>
-                    <tr style={{ background: '#F8F9FA' }}>
-                      <th style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-secondary)', padding: '12px' }}>Job Card</th>
-                      <th style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-secondary)', padding: '12px' }}>Vehicle</th>
-                      <th style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-secondary)', padding: '12px' }}>Date</th>
-                      <th style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-secondary)', padding: '12px' }}>Services Rendered</th>
-                      <th style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-secondary)', padding: '12px' }}>Total Cost</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+              <Box sx={{ overflowX: 'auto' }}>
+                <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <Box component="thead">
+                    <Box component="tr" sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
+                      <Box component="th" sx={{ p: 2, fontSize: '0.8rem', fontWeight: 600, color: 'text.secondary', textAlign: 'left' }}>Job Card</Box>
+                      <Box component="th" sx={{ p: 2, fontSize: '0.8rem', fontWeight: 600, color: 'text.secondary', textAlign: 'left' }}>Vehicle</Box>
+                      <Box component="th" sx={{ p: 2, fontSize: '0.8rem', fontWeight: 600, color: 'text.secondary', textAlign: 'left' }}>Date</Box>
+                      <Box component="th" sx={{ p: 2, fontSize: '0.8rem', fontWeight: 600, color: 'text.secondary', textAlign: 'left' }}>Services Rendered</Box>
+                      <Box component="th" sx={{ p: 2, fontSize: '0.8rem', fontWeight: 600, color: 'text.secondary', textAlign: 'left' }}>Total Cost</Box>
+                    </Box>
+                  </Box>
+                  <Box component="tbody">
                     {history.map((h, i) => (
-                      <tr key={i}>
-                        <td style={{ padding: '12px' }}>
-                          <span style={{ fontWeight: 600, color: 'var(--color-accent)' }}>{h.jobCardId}</span>
-                        </td>
-                        <td style={{ fontSize: '0.875rem', fontWeight: 500, padding: '12px' }}>{h.vehicle}</td>
-                        <td style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', padding: '12px' }}>{h.date}</td>
-                        <td style={{ fontSize: '0.85rem', padding: '12px' }}>{h.service}</td>
-                        <td style={{ fontSize: '0.875rem', fontWeight: 600, padding: '12px' }}>₹{h.cost.toLocaleString('en-IN')}</td>
-                      </tr>
+                      <Box component="tr" key={i} sx={{ borderBottom: i < history.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
+                        <Box component="td" sx={{ p: 2 }}>
+                          <Typography variant="body2" fontWeight={600} color="primary.main">{h.jobCardId}</Typography>
+                        </Box>
+                        <Box component="td" sx={{ p: 2 }}>
+                          <Typography variant="body2" fontWeight={500}>{h.vehicle}</Typography>
+                        </Box>
+                        <Box component="td" sx={{ p: 2 }}>
+                          <Typography variant="caption" color="text.secondary">{h.date}</Typography>
+                        </Box>
+                        <Box component="td" sx={{ p: 2 }}>
+                          <Typography variant="body2">{h.service}</Typography>
+                        </Box>
+                        <Box component="td" sx={{ p: 2 }}>
+                          <Typography variant="body2" fontWeight={600}>₹{h.cost.toLocaleString('en-IN')}</Typography>
+                        </Box>
+                      </Box>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </Box>
+                </Box>
+              </Box>
             )}
           </Card>
-        </Col>
-      </Row>
-    </div>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }

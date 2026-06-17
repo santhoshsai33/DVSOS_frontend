@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Dropdown } from 'react-bootstrap';
+import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Mail, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Box, IconButton, Menu, MenuItem, Typography, Select, Card, Avatar } from '@mui/material';
 import { useUsers } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
@@ -13,40 +13,6 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { ROLE_LABELS } from '../../constants/roles';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import styles from './Users.module.css';
-
-const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => {
-  const cleanedClassName = (props.className || '').replace('dropdown-toggle', '');
-  return (
-    <button
-      ref={ref}
-      onClick={(e) => {
-        e.preventDefault();
-        onClick(e);
-      }}
-      {...props}
-      className={cleanedClassName}
-      style={{
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        padding: '4px',
-        color: 'var(--color-text-secondary)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '50%',
-        width: '32px',
-        height: '32px',
-        transition: 'background 0.2s',
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-    >
-      <MoreVertical size={18} />
-    </button>
-  );
-});
 
 export default function UserList() {
   const navigate = useNavigate();
@@ -56,6 +22,21 @@ export default function UserList() {
 
   const { data, isLoading } = useUsers({ search: debSearch, role: roleFilter });
   const [usersList, setUsersList] = useState([]);
+
+  // For Dropdown Menu
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  const handleMenuClick = (event, row) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedUser(row);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedUser(null);
+  };
 
   useEffect(() => {
     if (data?.data) {
@@ -80,19 +61,20 @@ export default function UserList() {
     toastSuccess('User status updated successfully!');
   };
 
-  const handleDeleteUser = (user) => {
-    if (window.confirm(`Are you sure you want to remove "${user.name}"?\nThis action cannot be undone.`)) {
-      const updated = usersList.filter(u => u.id !== user.id);
+  const handleDeleteUser = () => {
+    if (selectedUser && window.confirm(`Are you sure you want to remove "${selectedUser.name}"?\nThis action cannot be undone.`)) {
+      const updated = usersList.filter(u => u.id !== selectedUser.id);
       setUsersList(updated);
       localStorage.setItem('dvsos_users_list', JSON.stringify(updated));
-      toastSuccess(`User "${user.name}" removed successfully.`);
+      toastSuccess(`User "${selectedUser.name}" removed successfully.`);
     }
+    handleMenuClose();
   };
 
   const filteredUsers = usersList.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase()) ||
-                          user.email.toLowerCase().includes(search.toLowerCase()) ||
-                          user.mobile.includes(search);
+      user.email.toLowerCase().includes(search.toLowerCase()) ||
+      user.mobile.includes(search);
     const matchesRole = !roleFilter || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -102,19 +84,21 @@ export default function UserList() {
       header: 'Name',
       accessor: 'name',
       render: (row) => (
-        <div className="d-flex align-items-center gap-2">
-          <div className={styles.avatar}>{row.name.charAt(0)}</div>
-          <span className={styles.userName}>{row.name}</span>
-        </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.875rem' }}>
+            {row.name.charAt(0)}
+          </Avatar>
+          <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
+        </Box>
       ),
     },
     {
       header: 'Email',
       accessor: 'email',
       render: (row) => (
-        <a href={`mailto:${row.email}`} className={styles.emailLink}>
-          <Mail size={12} className="me-1" /> {row.email}
-        </a>
+        <Box component="a" href={`mailto:${row.email}`} sx={{ display: 'flex', alignItems: 'center', color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+          <Mail size={14} className="mr-2" /> {row.email}
+        </Box>
       ),
     },
     { header: 'Mobile', accessor: 'mobile' },
@@ -122,69 +106,51 @@ export default function UserList() {
       header: 'Role',
       accessor: 'role',
       render: (row) => (
-        <span className={styles.roleBadge}>{ROLE_LABELS[row.role] || row.role}</span>
+        <Typography variant="caption" sx={{ bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', py: 0.5, px: 1, borderRadius: 1, fontWeight: 600 }}>
+          {ROLE_LABELS[row.role] || row.role}
+        </Typography>
       ),
     },
     {
       header: 'Status',
       accessor: 'status',
       render: (row) => (
-        <select
-          className="form-select form-select-sm"
-          style={{
-            width: '120px',
-            fontSize: '0.85rem',
-            padding: '0.35rem 0.5rem',
-            borderRadius: '6px',
-            borderColor: 'var(--color-border)',
-            backgroundColor: '#FFFFFF',
-            color: 'var(--color-text-primary)',
-            fontWeight: 500,
-            cursor: 'pointer'
-          }}
+        <Select
+          size="small"
           value={row.status || 'ACTIVE'}
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
+          sx={{ 
+            width: 120, 
+            height: 32, 
+            fontSize: '0.85rem',
+            borderRadius: '16px',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+          }}
         >
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </select>
+          <MenuItem value="ACTIVE">Active</MenuItem>
+          <MenuItem value="INACTIVE">Inactive</MenuItem>
+        </Select>
       ),
     },
     {
       header: 'Last Login',
       accessor: 'lastLogin',
-      render: (row) => formatDateTime(row.lastLogin),
+      render: (row) => <Typography variant="body2">{formatDateTime(row.lastLogin)}</Typography>,
     },
     {
       header: 'Actions',
       render: (row) => (
-        <Dropdown align="end" onClick={(e) => e.stopPropagation()}>
-          <Dropdown.Toggle as={CustomToggle} id={`dropdown-action-${row.id}`} />
-          <Dropdown.Menu
-            style={{ padding: '6px', borderRadius: '10px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}
-          >
-            <Dropdown.Item
-              onClick={() => navigate(`/admin/users/${row.id}/edit`)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
-            >
-              <Edit size={15} style={{ color: 'var(--color-accent)' }} />
-              <span>Edit User</span>
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => handleDeleteUser(row)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, color: 'var(--color-danger)' }}
-            >
-              <Trash2 size={15} style={{ color: 'red' }} />
-              <span>Delete User</span>
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
+        <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
+          <MoreVertical size={18} />
+        </IconButton>
       ),
     },
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="User Management"
         breadcrumbs={[{ label: 'Settings' }, { label: 'Users' }]}
@@ -199,34 +165,61 @@ export default function UserList() {
         }
       />
 
-      <div className={styles.filterBar}>
-        <SearchBar
-          placeholder="Search by name, email, or mobile..."
-          value={search}
-          onChange={setSearch}
-          className={styles.searchBox}
-        />
-        <select
-          className={`${styles.filterSelect} form-select`}
-          style={{ width: 'auto', minWidth: '150px' }}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
+          <SearchBar
+            placeholder="Search by name, email, or mobile..."
+            value={search}
+            onChange={setSearch}
+          />
+        </Box>
+        <Select
+          size="small"
+          displayEmpty
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
+          sx={{ 
+            width: { xs: '100%', sm: 200 }, 
+            bgcolor: 'background.paper', 
+            borderRadius: '24px',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+          }}
         >
-          <option value="">All Roles</option>
+          <MenuItem value="">All Roles</MenuItem>
           {Object.entries(ROLE_LABELS).map(([val, label]) => (
-            <option key={val} value={val}>{label}</option>
+            <MenuItem key={val} value={val}>{label}</MenuItem>
           ))}
-        </select>
-      </div>
+        </Select>
+      </Box>
 
-      <div className="premium-card d-flex flex-column">
+      <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
           data={filteredUsers}
           isLoading={isLoading && usersList.length === 0}
           emptyMessage="No users found"
         />
-      </div>
-    </div>
+      </Card>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
+      >
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/users/${selectedUser?.id}/edit`); }}>
+          <Edit size={16} className="mr-3 text-primary" />
+          Edit User
+        </MenuItem>
+        <MenuItem onClick={handleDeleteUser} sx={{ color: 'error.main' }}>
+          <Trash2 size={16} className="mr-3" />
+          Delete User
+        </MenuItem>
+      </Menu>
+    </Box>
   );
 }

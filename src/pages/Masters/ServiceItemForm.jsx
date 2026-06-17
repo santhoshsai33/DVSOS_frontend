@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Row, Col } from 'react-bootstrap';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
+import { Box, Grid, Typography } from '@mui/material';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFSelect from '../../components/form/RHFSelect';
 import Button from '../../components/common/Button';
+import BackButton from '../../components/common/BackButton';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import useMasterDataStore from '../../store/useMasterDataStore';
@@ -74,32 +75,23 @@ export default function ServiceItemForm() {
   }));
 
   return (
-    <div style={{ background: '#fff', padding: '32px 40px' }}>
+    <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '21px', color: '#152326' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit' : 'Add'} Service Item
-        </h4>
-        <button
-          type="button"
-          onClick={() => navigate(ROUTES.ADMIN_MASTER_ITEMS)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#6B7280', fontSize: '14px', fontWeight: 500,
-            padding: 0,
-          }}
-        >
-          <ArrowLeft size={15} /> Back to Service Items
-        </button>
-      </div>
+        </Typography>
+        <BackButton
+          to={ROUTES.ADMIN_MASTER_ITEMS}
+          label="Back to Service Items"
+        />
+      </Box>
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
 
-          <Row className="g-3 mb-3">
-
-            <Col md={6}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
               <RHFSelect
                 name="category"
                 label="Category Group"
@@ -107,19 +99,19 @@ export default function ServiceItemForm() {
                 options={categoryOptions}
                 required
               />
-            </Col>
-            <Col md={6}>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <RHFTextField
                 name="name"
                 label="Service Item Name"
                 placeholder="e.g. Wheel Alignment"
                 required
               />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
-          <Row className="g-3 mb-3">
-            <Col md={6}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
               <RHFTextField
                 name="price"
                 type="number"
@@ -127,8 +119,8 @@ export default function ServiceItemForm() {
                 placeholder="e.g. 1500"
                 required
               />
-            </Col>
-            <Col md={6}>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <RHFTextField
                 name="estimatedMinutes"
                 type="number"
@@ -136,15 +128,11 @@ export default function ServiceItemForm() {
                 placeholder="e.g. 45"
                 required
               />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
           {/* Footer Actions */}
-          <div style={{
-            borderTop: '1px solid #E2E5DC',
-            marginTop: '32px', paddingTop: '24px',
-            display: 'flex', justifyContent: 'flex-end', gap: '12px',
-          }}>
+          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
             <Button
               variant="secondary"
               type="button"
@@ -159,9 +147,9 @@ export default function ServiceItemForm() {
             >
               {isEdit ? 'Save Changes' : 'Create Service Item'}
             </Button>
-          </div>
+          </Box>
         </form>
       </FormProvider>
-    </div>
+    </Box>
   );
 }

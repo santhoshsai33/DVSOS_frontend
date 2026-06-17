@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Printer, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
 import Button from '../../components/common/Button';
+import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import Modal from '../../components/common/Modal';
 import PageHeader from '../../components/shared/PageHeader';
 import { toastSuccess, toastInfo } from '../../notifications/toast';
@@ -53,23 +54,22 @@ export default function AssignMechanicList() {
         breadcrumbs={[{ label: 'Assign Mechanic' }]}
       />
 
-      <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', padding: '1.5rem', marginTop: '1.5rem' }}>
-        <h4 style={{ marginBottom: '1.5rem', fontWeight: 600, fontSize: '1.1rem', color: 'var(--color-text)' }}>Pending Allocation</h4>
+      <div className="surface-card mt-3">
+        <h4 className="heading-md mb-3">Pending Allocation</h4>
         
         {jobs.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-            <User size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
+          <div className="p-4 text-center text-muted">
+            <User size={48} className="icon-faded mb-4" />
             <p>No jobs pending allocation.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+          <div className="grid-auto-fill">
             {jobs.map(item => (
-              <div key={item.id} className={styles.card} style={{ margin: 0, border: '1px solid var(--color-border)', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <div key={item.id} className={`${styles.card} m-0 border shadow-sm`}>
                 <div className={styles.cardHeader}>
-                  <code className={styles.vehicleNum}>{item.vehicleNumber}</code>
+                <VehicleNumberPlate vehicleNumber={item.vehicleNumber} size="sm" />
                   <span
-                    className={styles.priority}
-                    style={{ color: PRIORITY_COLORS[item.priority || 'NORMAL'], background: PRIORITY_COLORS[item.priority || 'NORMAL'] + '15' }}
+                    className={`${styles.priority} priority-${(item.priority || 'NORMAL').toLowerCase()}`}
                   >
                     {item.priority || 'NORMAL'}
                   </span>
@@ -77,13 +77,13 @@ export default function AssignMechanicList() {
                 <p className={styles.ownerName}>{item.ownerName}</p>
                 <p className={styles.makeModel}>{item.makeModel}</p>
                 
-                <div className={styles.deliveryAlert} style={{ marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                <div className={`${styles.deliveryAlert} my-2`}>
                   <AlertTriangle size={12} /> Expected: {formatDateTime(item.deliveryDate)}
                 </div>
                 
                 <div className={styles.serviceTag}>{item.serviceType}</div>
                 
-                <div className={styles.cardFooter} style={{ marginTop: '1rem' }}>
+                <div className={`${styles.cardFooter} mt-4`}>
                   <span className={styles.waitTime}>
                     <Clock size={11} /> Waited: {item.waitTime}
                   </span>
@@ -107,7 +107,7 @@ export default function AssignMechanicList() {
       >
         {assignModal.item && (
           <div className="d-flex flex-column gap-3">
-            <div className={styles.card} style={{ margin: 0, border: 'none', boxShadow: 'none', padding: '0 0 1rem 0' }}>
+            <div className={`${styles.card} m-0 border-0 shadow-none pb-4`}>
               <p><strong>Job Card:</strong> #{assignModal.item.id}</p>
               <p><strong>Vehicle:</strong> {assignModal.item.vehicleNumber} ({assignModal.item.makeModel})</p>
               <p><strong>Service:</strong> {assignModal.item.serviceType}</p>
@@ -115,14 +115,13 @@ export default function AssignMechanicList() {
             </div>
             
             <div className="form-group">
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', display: 'block' }}>
+              <label className="form-label">
                 Select Mechanic
               </label>
               <select
                 className="form-control"
                 value={selectedMechanic}
                 onChange={(e) => setSelectedMechanic(e.target.value)}
-                style={{ padding: '0.5rem', borderRadius: '6px', border: '1.5px solid var(--color-border)', width: '100%' }}
               >
                 <option value="">-- Choose Mechanic --</option>
                 {MECHANICS.map(m => (
@@ -131,7 +130,7 @@ export default function AssignMechanicList() {
               </select>
             </div>
             
-            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="help-text mt-2">
               <Printer size={12} /> Assigning will automatically print a hard copy of the job card.
             </div>
           </div>

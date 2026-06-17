@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Box } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import { FileText } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
@@ -15,7 +16,7 @@ export default function DeliveredVehicles() {
     {
       header: 'Job Card',
       accessor: 'id',
-      render: (row) => <strong style={{ color: 'var(--color-accent)' }}>{row.id}</strong>,
+      render: (row) => <span style={{ fontWeight: 600, color: '#334155' }}>{row.id}</span>,
     },
     {
       header: 'Vehicle',
@@ -33,7 +34,7 @@ export default function DeliveredVehicles() {
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Delivered Vehicles"
         subtitle="Log of all vehicles handed over to customers"
@@ -47,6 +48,6 @@ export default function DeliveredVehicles() {
           emptyMessage="No delivered vehicles"
         />
       </div>
-    </div>
+    </Box>
   );
 }

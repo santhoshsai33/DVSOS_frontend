@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Row, Col } from 'react-bootstrap';
+import { Grid, Box } from '@mui/material';
 import { Car, Clock, Wrench, CheckCircle2, Volume2, Maximize } from 'lucide-react';
 import styles from './Kiosk.module.css';
 import { formatDateTime } from '../../utils/formatters';
@@ -25,9 +25,9 @@ const MOCK_LIVE_DATA = {
   ],
 };
 
-function DisplaySection({ title, icon: Icon, items, color, bg }) {
+function DisplaySection({ title, icon: Icon, items, statusClass }) {
   return (
-    <div className={styles.section} style={{ '--section-color': color, '--section-bg': bg }}>
+    <div className={`${styles.section} ${statusClass}`}>
       <div className={styles.sectionHeader}>
         <div className={styles.sectionTitle}>
           <Icon size={24} /> {title}
@@ -104,18 +104,18 @@ export default function KioskDisplay() {
 
       {/* Main Grid */}
       <div className={styles.grid}>
-        <Row className="g-4 h-100">
-          <Col lg={3} className="h-100">
-            <DisplaySection title="Mechanical" icon={Wrench} items={MOCK_LIVE_DATA.mechanical} color="#3B82F6" bg="rgba(59, 130, 246, 0.1)" />
-          </Col>
-          <Col lg={3} className="h-100">
-            <DisplaySection title="Body Shop" icon={Wrench} items={MOCK_LIVE_DATA.bodyShop} color="#F59E0B" bg="rgba(245, 158, 11, 0.1)" />
-          </Col>
-          <Col lg={3} className="h-100">
-            <DisplaySection title="Water Wash" icon={Wrench} items={MOCK_LIVE_DATA.waterWash} color="#06B6D4" bg="rgba(6, 182, 212, 0.1)" />
-          </Col>
-          <Col lg={3} className="h-100">
-            <div className={styles.section} style={{ '--section-color': '#10B981', '--section-bg': 'rgba(16, 185, 129, 0.1)' }}>
+        <Grid container spacing={3} sx={{ height: '100%' }}>
+          <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
+            <DisplaySection title="Mechanical" icon={Wrench} items={MOCK_LIVE_DATA.mechanical} statusClass="status-kiosk-mechanical" />
+          </Grid>
+          <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
+            <DisplaySection title="Body Shop" icon={Wrench} items={MOCK_LIVE_DATA.bodyShop} statusClass="status-kiosk-bodyshop" />
+          </Grid>
+          <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
+            <DisplaySection title="Water Wash" icon={Wrench} items={MOCK_LIVE_DATA.waterWash} statusClass="status-kiosk-waterwash" />
+          </Grid>
+          <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
+            <div className={`${styles.section} status-kiosk-ready`}>
               <div className={styles.sectionHeader}>
                 <div className={styles.sectionTitle}><CheckCircle2 size={24} /> Ready for Delivery</div>
               </div>
@@ -134,8 +134,8 @@ export default function KioskDisplay() {
                 ))}
               </div>
             </div>
-          </Col>
-        </Row>
+          </Grid>
+        </Grid>
       </div>
     </div>
   );

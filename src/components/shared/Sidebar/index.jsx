@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Car, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Car, Menu } from 'lucide-react';
+import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Box, Typography, Divider, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import useAuthStore from '../../../store/useAuthStore';
 import useUIStore from '../../../store/useUIStore';
 import { SIDEBAR_MENUS } from '../../../constants/menus';
-import { ROLE_LABELS } from '../../../constants/roles';
-import { getInitials, avatarColor } from '../../../utils/helpers';
-import styles from './Sidebar.module.css';
 
 const PERMISSION_ROWS = [
   { module: 'Administration', subModule: 'Admin Dashboard' },
@@ -51,8 +49,10 @@ const roleToDesignationMap = {
 };
 
 export default function Sidebar() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
   const { pathname } = useLocation();
-  const { role, user } = useAuthStore();
+  const { role } = useAuthStore();
   const { sidebarCollapsed, sidebarMobileOpen, setSidebarMobileOpen } = useUIStore();
   const [expandedGroups, setExpandedGroups] = useState({});
 
@@ -60,12 +60,11 @@ export default function Sidebar() {
   const savedPrivileges = JSON.parse(localStorage.getItem('dvsos_role_privileges') || '{}');
   const rolePrivs = savedPrivileges[designationName];
 
-  // Helper to check if a submodule has read permission
   const hasReadPermission = (label) => {
-    if (role === 'SUPER_ADMIN') return true; // Always show all menus for Admin
-    if (!rolePrivs) return true; // If no privileges configured yet, default to showing
+    if (role === 'SUPER_ADMIN') return true;
+    if (!rolePrivs) return true;
     const idx = PERMISSION_ROWS.findIndex(row => row.subModule === label);
-    if (idx === -1) return true; // Default show if not in list
+    if (idx === -1) return true;
     return !!rolePrivs[idx]?.read;
   };
 
@@ -101,142 +100,126 @@ export default function Sidebar() {
     setExpandedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-  const initColor = avatarColor(user?.name);
-  const initials = getInitials(user?.name || role || 'U');
+  const sidebarWidth = sidebarCollapsed && !isMobile ? 80 : 260;
 
   const renderMenuItem = (item, depth = 0) => {
     const hasChildren = item.children && item.children.length > 0;
     const groupActive = isGroupActive(item);
-    const isExpanded = expandedGroups[item.label] !== undefined
-      ? expandedGroups[item.label]
-      : groupActive;
+    const isExpanded = expandedGroups[item.label] !== undefined ? expandedGroups[item.label] : groupActive;
     const Icon = item.icon;
+    const active = isActive(item.path);
+    const isCollapsedState = sidebarCollapsed && !isMobile;
 
     if (hasChildren) {
       return (
-        <li key={item.label} className={styles.menuGroup}>
-          <button
-            className={[
-              styles.groupToggle,
-              groupActive ? styles.groupActive : '',
-              sidebarCollapsed ? styles.collapsed : '',
-            ].join(' ')}
+        <Box key={item.label}>
+          <ListItemButton
             onClick={() => toggleGroup(item.label)}
-            title={sidebarCollapsed ? item.label : undefined}
+            sx={{
+              borderRadius: 2,
+              mb: 0.5,
+              mx: 1,
+              bgcolor: groupActive ? 'action.hover' : 'transparent',
+              justifyContent: isCollapsedState ? 'center' : 'flex-start',
+            }}
           >
-            <span className={styles.itemInner}>
-              {Icon && <Icon size={18} className={styles.menuIcon} />}
-              {!sidebarCollapsed && <span className={styles.menuLabel}>{item.label}</span>}
-            </span>
-            {!sidebarCollapsed && (
-              isExpanded
-                ? <ChevronDown size={14} className={styles.chevron} />
-                : <ChevronRight size={14} className={styles.chevron} />
+            {Icon && (
+              <ListItemIcon sx={{ minWidth: isCollapsedState ? 0 : 40, color: groupActive ? 'primary.main' : 'inherit' }}>
+                <Icon size={20} />
+              </ListItemIcon>
             )}
-          </button>
-          {isExpanded && !sidebarCollapsed && (
-            <ul className={styles.subMenu}>
+            {!isCollapsedState && <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: groupActive ? 600 : 500 }} />}
+            {!isCollapsedState && (isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
+          </ListItemButton>
+          <Collapse in={isExpanded && !isCollapsedState} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
               {item.children.map((child) => renderMenuItem(child, depth + 1))}
-            </ul>
-          )}
-        </li>
+            </List>
+          </Collapse>
+        </Box>
       );
     }
 
-    const active = isActive(item.path);
-    const ItemIcon = item.icon;
-
     return (
-      <li key={item.path || item.label}>
-        <Link
+      <ListItem key={item.path || item.label} disablePadding sx={{ display: 'block', mb: 0.5, px: 1 }}>
+        <ListItemButton
+          component={Link}
           to={item.path || '#'}
-          className={[
-            styles.menuItem,
-            active ? styles.active : '',
-            depth > 0 ? styles.subItem : '',
-            sidebarCollapsed ? styles.collapsed : '',
-          ].join(' ')}
-          onClick={() => setSidebarMobileOpen(false)}
-          title={sidebarCollapsed ? item.label : undefined}
+          onClick={() => isMobile && setSidebarMobileOpen(false)}
+          sx={{
+            borderRadius: 2,
+            pl: isCollapsedState ? 'auto' : (depth > 0 ? 4 : 2),
+            justifyContent: isCollapsedState ? 'center' : 'flex-start',
+            bgcolor: active ? 'primary.main' : 'transparent',
+            color: active ? 'primary.contrastText' : 'inherit',
+            '&:hover': {
+              bgcolor: active ? 'primary.dark' : 'action.hover',
+            },
+          }}
         >
-          {ItemIcon && <ItemIcon size={depth > 0 ? 15 : 18} className={styles.menuIcon} />}
-          {!sidebarCollapsed && <span className={styles.menuLabel}>{item.label}</span>}
-          {active && !sidebarCollapsed && <span className={styles.activePip} />}
-        </Link>
-      </li>
+          {Icon && (
+            <ListItemIcon sx={{ minWidth: isCollapsedState ? 0 : 40, color: 'inherit' }}>
+              <Icon size={depth > 0 ? 16 : 20} />
+            </ListItemIcon>
+          )}
+          {!isCollapsedState && <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: depth > 0 ? '0.875rem' : '0.95rem', fontWeight: active ? 600 : 500 }} />}
+        </ListItemButton>
+      </ListItem>
     );
   };
 
-  const sidebarContent = (
-    <aside
-      className={[
-        styles.sidebar,
-        sidebarCollapsed ? styles.collapsed : '',
-      ].join(' ')}
-    >
-      {/* Logo & Brand */}
-      <div className={styles.brand}>
-        <div className={styles.logoIcon}>
-          <Car size={20} />
-        </div>
-        {!sidebarCollapsed && (
-          <div className={styles.brandText}>
-            <span className={styles.brandName}>DVSOS</span>
-            <span className={styles.brandTagline}>Service Platform</span>
-          </div>
+  const drawerContent = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRight: '1px solid', borderColor: 'divider' }}>
+      {/* Brand */}
+      <Box sx={{ height: 64, display: 'flex', alignItems: 'center', px: sidebarCollapsed && !isMobile ? 0 : 3, justifyContent: sidebarCollapsed && !isMobile ? 'center' : 'flex-start' }}>
+        <Box sx={{ width: 32, height: 32, borderRadius: 1.5, bgcolor: 'primary.main', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: sidebarCollapsed && !isMobile ? 0 : 1.5 }}>
+          <Car size={18} />
+        </Box>
+        {(!sidebarCollapsed || isMobile) && (
+          <Typography variant="h6" fontWeight={700} sx={{ letterSpacing: '-0.02em', color: 'text.primary' }}>
+            DVSOS
+          </Typography>
         )}
-      </div>
+      </Box>
 
-      {/* User Profile */}
-      {/* <div className={[styles.profile, sidebarCollapsed ? styles.profileCollapsed : ''].join(' ')}>
-        <div
-          className={styles.avatar}
-          style={{ background: initColor }}
-        >
-          {initials}
-        </div>
-        {!sidebarCollapsed && (
-          <div className={styles.profileInfo}>
-            <span className={styles.profileName}>{user?.name || 'User'}</span>
-            <span className={styles.profileRole}>{ROLE_LABELS[role] || role}</span>
-          </div>
-        )}
-      </div> */}
+      <Divider />
 
-      <div className={styles.divider} />
-
-      {/* Navigation */}
-      <nav className={styles.nav}>
-        <ul className={styles.menuList}>
+      {/* Nav */}
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', py: 2 }}>
+        <List>
           {menus.map((item) => renderMenuItem(item))}
-        </ul>
-      </nav>
-
-      {/* Footer */}
-      <div className={styles.sidebarFooter}>
-        {!sidebarCollapsed && (
-          <p className={styles.footerText}>2026 DVSOS</p>
-        )}
-      </div>
-    </aside>
+        </List>
+      </Box>
+    </Box>
   );
 
   return (
-    <>
-      {/* Desktop Sidebar */}
-      <div className={styles.desktopWrapper}>{sidebarContent}</div>
-
-      {/* Mobile Overlay */}
-      {sidebarMobileOpen && (
-        <div className={styles.overlay} onClick={() => setSidebarMobileOpen(false)}>
-          <div className={styles.mobileDrawer} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setSidebarMobileOpen(false)}>
-              <X size={20} />
-            </button>
-            {sidebarContent}
-          </div>
-        </div>
-      )}
-    </>
+    <Box component="nav" sx={{ width: { lg: sidebarWidth }, flexShrink: { lg: 0 } }}>
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={sidebarMobileOpen}
+        onClose={() => setSidebarMobileOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', lg: 'none' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 260 },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+      
+      {/* Desktop Drawer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', lg: 'block' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: sidebarWidth, height: '100vh', transition: theme.transitions.create('width', { easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen }) },
+        }}
+        open
+      >
+        {drawerContent}
+      </Drawer>
+    </Box>
   );
 }

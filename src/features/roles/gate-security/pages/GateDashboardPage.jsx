@@ -1,6 +1,8 @@
 import { LogIn, Clock, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Box } from '@mui/material';
 import DataTable from '../../../../components/common/DataTable';
 import StatusBadge from '../../../../components/common/StatusBadge';
+import VehicleNumberPlate from '../../../../components/common/VehicleNumberPlate';
 import PageHeader from '../../../../components/shared/PageHeader';
 import { formatDateTime } from '../../../../utils/formatters';
 import styles from '../../../../pages/GateEntry/GateEntry.module.css';
@@ -31,7 +33,7 @@ export default function GateDashboardPage() {
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Gate Dashboard"
         breadcrumbs={[{ label: 'Gate Entry' }]}
@@ -68,6 +70,6 @@ export default function GateDashboardPage() {
           showPagination={false}
         />
       </div>
-    </div>
+    </Box>
   );
 }

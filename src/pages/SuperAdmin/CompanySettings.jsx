@@ -1,7 +1,7 @@
 import { useForm, FormProvider, useFieldArray } from 'react-hook-form';
-import { Row, Col } from 'react-bootstrap';
 import { Save, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Box, Grid, Typography, IconButton, Divider } from '@mui/material';
 import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
 import { toastSuccess } from '../../notifications/toast';
@@ -36,147 +36,118 @@ export default function CompanySettings() {
       await new Promise((r) => setTimeout(r, 600)); // Simulating API call
       updateCompanySettings(data);
       toastSuccess('Company settings updated successfully!');
-      navigate(ROUTES.ADMIN_DASHBOARD);
+      navigate(ROUTES.MD_DASHBOARD);
     } catch (err) {
       console.error(err);
     }
   };
 
   return (
-    <div style={{ background: '#fff', padding: '2rem 2.5rem' }}>
+    <Box sx={{ bgcolor: 'background.paper', minHeight: '100%', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
 
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
-        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '20px', color: '#152326' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h5" fontWeight={700}>
           Company Settings
-        </h4>
-        <button
-          type="button"
+        </Typography>
+        {/* <Box
+          component="button"
           onClick={() => navigate(ROUTES.ADMIN_DASHBOARD)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#6B7280', fontSize: '14px', fontWeight: 500,
-            padding: 0,
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 1,
+            bgcolor: 'transparent', border: 'none', cursor: 'pointer',
+            color: 'text.secondary', fontSize: '0.875rem', fontWeight: 500, p: 0,
+            '&:hover': { color: 'text.primary' }
           }}
         >
-          <ArrowLeft size={15} /> Back to Dashboard
-        </button>
-      </div>
+          <ArrowLeft size={16} /> Back to Dashboard
+        </Box> */}
+      </Box>
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
 
-          <Row className="g-3 mb-3">
-            <Col md={6}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="companyName" label="Company Name" placeholder="e.g. DVSOS Auto Services" required />
-            </Col>
-            <Col md={6}>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="address" label="Registered Address" placeholder="Full address" required />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
-          <Row className="g-3 mb-3">
-            <Col md={6}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="phone" label="Contact Phone" placeholder="e.g. +91 98765 43210" required />
-            </Col>
-            <Col md={6}>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="email" label="Contact Email" type="email" placeholder="e.g. info@company.com" required />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
-          <Row className="g-3 mb-3">
-            <Col md={6}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="gstNumber" label="GST Number" placeholder="Enter GSTIN" required />
-            </Col>
-            <Col md={6}>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="defaultTaxRate" label="Default Tax Rate (%)" type="number" required />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
-          <hr style={{ margin: '2rem 0', borderColor: '#E2E5DC' }} />
+          <Divider sx={{ my: 4 }} />
 
-          <div style={{ marginBottom: '1rem' }}>
-            <h5 style={{ margin: 0, fontWeight: 600, fontSize: '1rem', color: '#152326' }}>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" fontWeight={600}>
               Set Interval
-            </h5>
-          </div>
+            </Typography>
+          </Box>
 
           {fields.map((field, index) => {
             const isLast = index === fields.length - 1;
             return (
-              <Row key={field.id} className="g-3 mb-3 align-items-start">
-                <Col md={5}>
+              <Grid container spacing={3} sx={{ mb: 3, alignItems: 'center' }} key={field.id}>
+                <Grid item xs={12} md={5}>
                   <RHFTextField
                     name={`intervals.${index}.type`}
                     placeholder="Interval Type (e.g. Break, Service)"
                     required
                   />
-                </Col>
-                <Col md={5}>
+                </Grid>
+                <Grid item xs={12} md={5}>
                   <RHFTextField
                     name={`intervals.${index}.time`}
                     type="number"
                     placeholder="Time in Mins (e.g. 15)"
                     required
                   />
-                </Col>
-                <Col md={2} style={{ display: 'flex', gap: '0.5rem', paddingTop: '2px' }}>
+                </Grid>
+                <Grid item xs={12} md={2} sx={{ display: 'flex', gap: 1, pt: '2px !important' }}>
                   {isLast && (
-                    <button
-                      type="button"
+                    <IconButton
                       onClick={() => append({ type: '', time: '' })}
-                      style={{
-                        backgroundColor: 'var(--color-primary)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '6px',
-                        width: '38px',
-                        height: '38px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer'
-                      }}
+                      sx={{ bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' }, width: 38, height: 38, borderRadius: '4px' }}
                     >
                       <Plus size={18} strokeWidth={3} />
-                    </button>
+                    </IconButton>
                   )}
-                  <button
-                    type="button"
+                  <IconButton
                     onClick={() => remove(index)}
                     disabled={fields.length === 1}
-                    style={{
-                      backgroundColor: 'transparent',
-                      color: 'var(--color-danger)',
-                      border: '1px solid rgba(180, 35, 24, 0.3)',
-                      borderRadius: '6px',
-                      width: '38px',
-                      height: '38px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: fields.length === 1 ? 'not-allowed' : 'pointer',
-                      opacity: fields.length === 1 ? 0.5 : 1
-                    }}
+                    sx={{ border: '1px solid', borderColor: 'error.main', color: 'error.main', width: 38, height: 38, borderRadius: '4px' }}
                   >
                     <Trash2 size={18} />
-                  </button>
-                </Col>
-              </Row>
+                  </IconButton>
+                </Grid>
+              </Grid>
             );
           })}
 
           {/* Footer Actions */}
-          <div style={{
-            borderTop: '1px solid #E2E5DC',
-            marginTop: '2rem', paddingTop: '1.5rem',
-            display: 'flex', justifyContent: 'flex-end', gap: '0.75rem',
-          }}>
+          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
             <Button
               variant="secondary"
               type="button"
-              onClick={() => navigate(ROUTES.ADMIN_DASHBOARD)}
+              onClick={() => navigate(ROUTES.MD_DASHBOARD)}
             >
               Cancel
             </Button>
@@ -187,9 +158,9 @@ export default function CompanySettings() {
             >
               Submit
             </Button>
-          </div>
+          </Box>
         </form>
       </FormProvider>
-    </div>
+    </Box>
   );
 }

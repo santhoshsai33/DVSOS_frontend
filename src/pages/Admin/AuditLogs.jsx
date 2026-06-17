@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import DataTable from '../../components/common/DataTable';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Eye } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
+import { Box, Card, IconButton } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '../../utils/formatters';
 
 const MOCK_LOGS = [
@@ -10,27 +12,40 @@ const MOCK_LOGS = [
 ];
 
 export default function AuditLogs() {
+  const navigate = useNavigate();
   const columns = [
     { header: 'Timestamp', render: (row) => formatDateTime(row.timestamp) },
     { header: 'User', render: (row) => <strong>{row.user}</strong> },
     { header: 'Action', accessor: 'action' },
     { header: 'Entity', accessor: 'entity' },
     { header: 'Details', accessor: 'details' },
+    {
+      header: 'Actions',
+      render: (row) => (
+        <IconButton 
+          size="small" 
+          onClick={() => navigate(`/audit-logs/${row.id}`)}
+          sx={{ color: 'primary.main', bgcolor: 'primary.50', '&:hover': { bgcolor: 'primary.100' }, width: 32, height: 32 }}
+        >
+          <Eye size={16} />
+        </IconButton>
+      ),
+    },
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Audit Logs"
         breadcrumbs={[{ label: 'Settings' }, { label: 'Audit Logs' }]}
       />
-      <div className="premium-card d-flex flex-column">
+      <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
           data={MOCK_LOGS}
           emptyMessage="No audit logs found"
         />
-      </div>
-    </div>
+      </Card>
+    </Box>
   );
 }

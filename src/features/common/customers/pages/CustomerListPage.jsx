@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dropdown } from 'react-bootstrap';
+import { Menu, MenuItem, IconButton, Select, Typography, Box, Card } from '@mui/material';
 import { Plus, Edit, Trash2, Mail, Search, MoreVertical, MapPin } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import Button from '../../../../components/common/Button';
@@ -16,39 +16,6 @@ const INITIAL_CUSTOMERS = [
   { id: '4', name: 'Srinivasan R', email: 'srini@outlook.com', mobile: '9789012345', address: '303 Anna Nagar, Madurai', visits: 1, status: 'INACTIVE' }
 ];
 
-const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => {
-  const cleanedClassName = (props.className || '').replace('dropdown-toggle', '');
-  return (
-    <button
-      ref={ref}
-      onClick={(e) => {
-        e.preventDefault();
-        onClick(e);
-      }}
-      {...props}
-      className={cleanedClassName}
-      style={{
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        padding: '4px',
-        color: 'var(--color-text-secondary)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '50%',
-        width: '32px',
-        height: '32px',
-        transition: 'background 0.2s',
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-    >
-      <MoreVertical size={18} />
-    </button>
-  );
-});
-
 export default function CustomerListPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
@@ -62,9 +29,23 @@ export default function CustomerListPage() {
     return INITIAL_CUSTOMERS;
   });
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+
   useEffect(() => {
     localStorage.setItem('dvsos_customers', JSON.stringify(customers));
   }, [customers]);
+
+  const handleMenuClick = (event, row) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedCustomer(row);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedCustomer(null);
+  };
 
   const handleStatusChange = (id, newStatus) => {
     const updated = customers.map(c => {
@@ -126,77 +107,71 @@ export default function CustomerListPage() {
     {
       header: 'Total Visits',
       accessor: 'visits',
-      render: (row) => <span className="badge bg-light text-dark border">{row.visits || 0} visits</span>
+      render: (row) => <Typography variant="caption" sx={{ bgcolor: 'grey.100', color: 'text.primary', border: '1px solid', borderColor: 'divider', borderRadius: 1, px: 1, py: 0.5 }}>{row.visits || 0} visits</Typography>
     },
     {
       header: 'Status',
       render: (row) => (
-        <select
-          className="form-select form-select-sm"
-          style={{
-            width: '120px',
-            fontSize: '0.85rem',
-            padding: '0.35rem 0.5rem',
-            borderRadius: '6px',
-            borderColor: 'var(--color-border)',
-            backgroundColor: 'var(--color-bg-card)',
-            color: 'var(--color-text-primary)',
-            fontWeight: 500,
-            cursor: 'pointer'
-          }}
+        <Select
+          native
+          size="small"
           value={row.status || 'ACTIVE'}
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
+          sx={{ width: 120, height: 32, fontSize: '0.85rem' }}
         >
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
-        </select>
+        </Select>
       )
     },
     {
       header: 'Actions',
       render: (row) => (
-        <Dropdown align="end" onClick={(e) => e.stopPropagation()}>
-          <Dropdown.Toggle as={CustomToggle} id={`dropdown-action-${row.id}`} />
-          <Dropdown.Menu
-            style={{ padding: '6px', borderRadius: '10px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}
-          >
-            <Dropdown.Item
-              onClick={() => navigate(`/customers/${row.id}/edit`)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
-            >
-              <Edit size={15} style={{ color: 'var(--color-accent)' }} />
-              <span>Edit Customer</span>
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
+        <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
+          <MoreVertical size={18} />
+        </IconButton>
       )
     }
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Customer Directory"
         breadcrumbs={[{ label: 'Home', path: ROUTES.ADMIN_DASHBOARD }, { label: 'Customers' }]}
       />
 
-      <div className="d-flex mb-4" style={{ gap: '1rem' }}>
-        <div style={{ flex: 1, maxWidth: '400px' }}>
+      <Box sx={{ display: 'flex', mb: 4, gap: 2 }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
             placeholder="Search by name, email, or mobile..."
             value={search}
             onChange={setSearch}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="premium-card d-flex flex-column">
+      <Card sx={{ boxShadow: 1, borderRadius: 0 }}>
         <DataTable
           columns={columns}
           data={filteredCustomers}
           emptyMessage="No customers found"
         />
-      </div>
-    </div>
+      </Card>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
+      >
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`/customers/${selectedCustomer?.id}/edit`); }}>
+          <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
+          Edit Customer
+        </MenuItem>
+      </Menu>
+    </Box>
   );
 }

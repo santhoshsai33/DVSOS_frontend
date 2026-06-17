@@ -1,5 +1,5 @@
 import { useForm, FormProvider } from 'react-hook-form';
-import { Row, Col } from 'react-bootstrap';
+import { Box, Grid, Typography, Avatar } from '@mui/material';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RHFTextField from '../../../../components/form/RHFTextField';
@@ -34,83 +34,71 @@ export default function ProfilePage() {
   };
 
   return (
-    <div style={{ background: '#fff', padding: '2rem 2.5rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
-        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.3rem', color: '#152326' }}>
+    <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, minHeight: '100%', borderRadius: 3, m: { xs: 2, md: 4 } }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h5" fontWeight={700}>
           Profile & Settings
-        </h4>
-        <button
-          type="button"
+        </Typography>
+        <Box
+          component="button"
           onClick={() => navigate(-1)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#6B7280', fontSize: '0.875rem', fontWeight: 500,
-            padding: 0,
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 1,
+            bgcolor: 'transparent', border: 'none', cursor: 'pointer',
+            color: 'text.secondary', fontSize: '0.875rem', fontWeight: 500, p: 0,
+            '&:hover': { color: 'text.primary' }
           }}
         >
-          <ArrowLeft size={15} /> Back
-        </button>
-      </div>
+          <ArrowLeft size={16} /> Back
+        </Box>
+      </Box>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '2rem' }}>
-        <div style={{
-          width: '80px', height: '80px', borderRadius: '50%',
-          background: avatarColor(user?.name), color: 'white',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '24px', fontWeight: 'bold'
-        }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4 }}>
+        <Avatar
+          sx={{
+            width: 80, height: 80, bgcolor: avatarColor(user?.name),
+            fontSize: '24px', fontWeight: 'bold'
+          }}
+        >
           {getInitials(user?.name || 'U')}
-        </div>
-        <div>
-          <h4 style={{ margin: 0 }}>{user?.name || 'User'}</h4>
-          <p className="text-muted" style={{ margin: 0 }}>{ROLE_LABELS[role] || role}</p>
-        </div>
-      </div>
+        </Avatar>
+        <Box>
+          <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>{user?.name || 'User'}</Typography>
+          <Typography variant="body2" color="text.secondary">{ROLE_LABELS[role] || role}</Typography>
+        </Box>
+      </Box>
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
+          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
             Personal Information
-          </p>
+          </Typography>
 
-          <Row className="g-3 mb-3">
-            <Col md={6}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="name" label="Full Name" placeholder="Enter full name" required />
-            </Col>
-            <Col md={6}>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="email" label="Email Address" type="email" placeholder="Enter email address" required />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
-          <Row className="g-3 mb-3">
-            <Col md={6}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
               <RHFTextField name="phone" label="Phone Number" placeholder="Enter phone number" required />
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
 
-          <div style={{
-            borderTop: '1px solid #E2E5DC',
-            marginTop: '2rem', paddingTop: '1.5rem',
-            display: 'flex', justifyContent: 'flex-end', gap: '0.75rem',
-          }}>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={isSubmitting}
-            >
-              Save Changes
-            </Button>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => methods.reset()}
-            >
+          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Button variant="secondary" type="button" onClick={() => methods.reset()}>
               Cancel
             </Button>
-          </div>
+            <Button variant="primary" type="submit" isLoading={isSubmitting}>
+              Save Changes
+            </Button>
+          </Box>
         </form>
       </FormProvider>
-    </div>
+    </Box>
   );
 }

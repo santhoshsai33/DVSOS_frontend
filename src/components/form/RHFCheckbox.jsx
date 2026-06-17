@@ -1,25 +1,32 @@
-import { useFormContext } from 'react-hook-form';
-import styles from './FormField.module.css';
+import { useFormContext, Controller } from 'react-hook-form';
+import { Checkbox, FormControlLabel, FormControl, FormHelperText } from '@mui/material';
 
 // eslint-disable-next-line react/prop-types
-export default function RHFCheckbox({ name, label, hint, disabled = false, className = '' }) {
-  const { register, formState: { errors } } = useFormContext();
-  const error = errors[name];
+export default function RHFCheckbox({ name, label, hint, disabled = false, className = '', sx = {} }) {
+  const { control } = useFormContext();
 
   return (
-    <div className={[styles.group, className].join(' ')}>
-      <label className={styles.checkboxGroup}>
-        <input
-          type="checkbox"
-          id={name}
-          disabled={disabled}
-          {...register(name)}
-          className={styles.checkbox}
-        />
-        <span className={styles.label} style={{ marginBottom: 0 }}>{label}</span>
-      </label>
-      {hint && !error && <p className={styles.hint}>{hint}</p>}
-      {error && <p className={styles.errorMsg}>{error.message}</p>}
-    </div>
+    <Controller
+      name={name}
+      control={control}
+      render={({ field, fieldState: { error } }) => (
+        <FormControl error={!!error} component="fieldset" className={className} sx={{ mb: 2, ...sx }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                {...field}
+                checked={!!field.value}
+                disabled={disabled}
+                color="primary"
+              />
+            }
+            label={label}
+          />
+          {(error || hint) && (
+            <FormHelperText>{error ? error.message : hint}</FormHelperText>
+          )}
+        </FormControl>
+      )}
+    />
   );
 }

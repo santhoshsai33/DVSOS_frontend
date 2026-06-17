@@ -1,5 +1,5 @@
-import React from 'react';
-import { Dropdown } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Box, Card, IconButton, Menu, MenuItem, Select, Typography } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
@@ -9,44 +9,23 @@ import { toastSuccess } from '../../notifications/toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 
-const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => {
-  const cleanedProps = { ...props };
-  if (cleanedProps.className) {
-    cleanedProps.className = cleanedProps.className.replace('dropdown-toggle', '');
-  }
-  return (
-    <button
-      ref={ref}
-      onClick={(e) => {
-        e.preventDefault();
-        onClick(e);
-      }}
-      {...cleanedProps}
-      style={{
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        padding: '4px',
-        color: 'var(--color-text-secondary)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '50%',
-        width: '32px',
-        height: '32px',
-        transition: 'background 0.2s',
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-    >
-      <MoreVertical size={18} />
-    </button>
-  );
-});
-
 export default function ServiceCategories() {
   const navigate = useNavigate();
   const { serviceCategories, deleteCategory, updateCategory } = useMasterDataStore();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const handleMenuClick = (event, row) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedCategory(row);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedCategory(null);
+  };
 
   const handleDelete = (item) => {
     if (window.confirm(`Are you sure you want to delete category "${item.name}"?`)) {
@@ -64,64 +43,37 @@ export default function ServiceCategories() {
     {
       header: 'Category Name',
       accessor: 'name',
-      render: (row) => <strong style={{ color: 'var(--color-text-primary)' }}>{row.name}</strong>
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
     },
     { header: 'Description', accessor: 'description' },
     {
       header: 'Status',
       accessor: 'status',
       render: (row) => (
-        <select
-          className="form-select form-select-sm"
-          style={{
-            width: '120px',
-            fontSize: '0.85rem',
-            padding: '0.35rem 0.5rem',
-            borderRadius: '6px',
-            borderColor: 'var(--color-border)',
-            backgroundColor: '#FFFFFF',
-            color: 'var(--color-text-primary)',
-            fontWeight: 500,
-            cursor: 'pointer'
-          }}
+        <Select
+          native
+          size="small"
           value={row.status || 'ACTIVE'}
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
+          sx={{ width: 120, height: 32, fontSize: '0.85rem' }}
         >
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
-        </select>
+        </Select>
       )
     },
     {
       header: 'Actions',
       render: (row) => (
-        <Dropdown align="end" onClick={(e) => e.stopPropagation()}>
-          <Dropdown.Toggle as={CustomToggle} id={`dropdown-action-${row.id}`} />
-          <Dropdown.Menu
-            style={{ padding: '6px', borderRadius: '10px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}
-          >
-            <Dropdown.Item
-              onClick={() => navigate(`/admin/master/categories/${row.id}/edit`)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
-            >
-              <Edit size={15} style={{ color: 'var(--color-accent)' }} />
-              <span>Edit Category</span>
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => handleDelete(row)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, color: 'var(--color-danger)' }}
-            >
-              <Trash2 size={15} style={{ color: 'red' }} />
-              <span>Delete Category</span>
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
+        <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
+          <MoreVertical size={18} />
+        </IconButton>
       )
     }
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Service Categories"
         breadcrumbs={[{ label: 'Settings' }, { label: 'Categories' }]}
@@ -132,13 +84,31 @@ export default function ServiceCategories() {
         }
       />
 
-      <div className="premium-card d-flex flex-column">
+      <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
           data={serviceCategories}
           emptyMessage="No service categories found"
         />
-      </div>
-    </div>
+      </Card>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
+      >
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/master/categories/${selectedCategory?.id}/edit`); }}>
+          <Edit size={16} className="mr-3 text-primary" />
+          Edit Category
+        </MenuItem>
+        <MenuItem onClick={() => { handleMenuClose(); handleDelete(selectedCategory); }} sx={{ color: 'error.main' }}>
+          <Trash2 size={16} className="mr-3" />
+          Delete Category
+        </MenuItem>
+      </Menu>
+    </Box>
   );
 }

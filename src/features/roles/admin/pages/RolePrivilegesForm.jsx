@@ -1,7 +1,23 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { 
+  Box, 
+  Card, 
+  Typography, 
+  Grid, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow,
+  Checkbox,
+  MenuItem,
+  Select
+} from '@mui/material';
 import Button from '../../../../components/common/Button';
+import BackButton from '../../../../components/common/BackButton';
+import Input from '../../../../components/common/Input';
 import { toastSuccess } from '../../../../notifications/toast';
 import { ROUTES } from '../../../../config/routes';
 
@@ -36,9 +52,6 @@ const PERMISSION_ROWS = [
   { module: 'Common Pages', subModule: 'Job Cards' },
   { module: 'Common Pages', subModule: 'Notifications' }
 ];
-
-const DESIGNATIONS = ['Super Admin', 'General Manager', 'Floor Supervisor', 'Gate Security Executive', 'CRM Officer', 'Body Shop Lead', 'Water Wash Lead', 'Managing Director'];
-const ROLES = ['SUPER_ADMIN', 'MANAGER', 'FLOOR_SUPERVISOR', 'GATE_SECURITY', 'CRM_TEAM', 'BODY_SHOP_SUPERVISOR', 'WATER_WASH_TEAM', 'MD'];
 
 const MODULES = ['Administration', 'Gate Operations', 'CRM Operations', 'Floor Workshop', 'Body Shop', 'Water Wash', 'Manager Operations', 'MD Analytics', 'Common Pages'];
 
@@ -172,179 +185,136 @@ export default function RolePrivilegesForm() {
     .filter(row => !selectedModule || row.module === selectedModule);
 
   return (
-    <div style={{ background: '#F8F9FA', minHeight: '100vh', padding: '1.5rem 0' }}>
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4 px-3">
-        <h4 className="fw-bold m-0" style={{ color: '#2D3748', fontSize: '1.25rem' }}>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit' : 'Add'} Role Privileges
-        </h4>
-        <button
-          onClick={() => navigate(ROUTES.ADMIN_ROLES)}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#4A5568',
-            fontSize: '0.85rem',
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            cursor: 'pointer'
-          }}
-        >
-          <ArrowLeft size={16} /> Back to Role Privileges
-        </button>
-      </div>
+        </Typography>
+        <BackButton to={ROUTES.ADMIN_ROLES} label="Back to Role Privileges" />
+      </Box>
 
-      <div className="container-fluid px-3">
-        {/* Dropdowns selection row */}
-        <div className="card border-0 shadow-sm p-4 mb-4" style={{ borderRadius: '12px' }}>
-          <div className="row g-3">
-            <div className="col-md-6">
-              <label className="form-label fw-semibold small text-muted">
-                Role Name <span className="text-danger">*</span>
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter Role Name"
-                style={{ fontSize: '0.9rem', padding: '0.6rem' }}
-                value={designation}
-                onChange={(e) => setDesignation(e.target.value)}
-                disabled={isEdit}
-              />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label fw-semibold small text-muted">
-                Module <span className="text-danger">*</span>
-              </label>
-              <select
-                className="form-select"
-                style={{ fontSize: '0.9rem', padding: '0.6rem' }}
+      {/* Form Controls */}
+      <Card sx={{ p: 3, mb: 4, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E2E8F0' }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Input
+              label="Role Name"
+              required
+              placeholder="Enter Role Name"
+              value={designation}
+              onChange={(e) => setDesignation(e.target.value)}
+              disabled={isEdit}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ mb: 2, width: '100%' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', mb: 0.75 }}>
+                Module <span style={{ color: '#E11D48' }}>*</span>
+              </Typography>
+              <Select
                 value={selectedModule}
                 onChange={(e) => setSelectedModule(e.target.value)}
+                fullWidth
+                size="small"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    bgcolor: '#FFFFFF'
+                  }
+                }}
               >
-                <option value="">All Modules</option>
+                <MenuItem value="">All Modules</MenuItem>
                 {MODULES.map(m => (
-                  <option key={m} value={m}>{m === 'Administration' ? 'Admin' : m}</option>
+                  <MenuItem key={m} value={m}>{m === 'Administration' ? 'Admin' : m}</MenuItem>
                 ))}
-              </select>
-            </div>
-          </div>
-        </div>
+              </Select>
+            </Box>
+          </Grid>
+        </Grid>
+      </Card>
 
-        {/* Privileges Table */}
-        <div className="card border-0 shadow-sm overflow-hidden" style={{ borderRadius: '12px' }}>
-          <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0" style={{ borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: '#E2E8F0', borderBottom: '2px solid #CBD5E0' }}>
-                  <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem' }}>Module Name</th>
-                  <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}>Read</th>
-                  <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}>Create</th>
-                  <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}>Update</th>
-                  <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}>Delete</th>
-                  <th style={{ padding: '1rem', color: '#4A5568', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}>Select All</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRows.map((row) => {
-                  const idx = row.originalIdx;
-                  const state = privileges[idx] || { read: false, create: false, update: false, delete: false };
-                  const allChecked = state.read && state.create && state.update && state.delete;
-                  return (
-                    <tr key={idx} style={{ borderBottom: '1px solid #EDF2F7' }}>
-                      <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem', fontWeight: 600, color: '#2D3748' }}>
-                        {row.subModule}
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          style={{ cursor: 'pointer', scale: '1.1' }}
-                          checked={state.read}
-                          onChange={() => handleCheckboxChange(idx, 'read')}
-                        />
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          style={{ cursor: 'pointer', scale: '1.1' }}
-                          checked={state.create}
-                          onChange={() => handleCheckboxChange(idx, 'create')}
-                        />
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          style={{ cursor: 'pointer', scale: '1.1' }}
-                          checked={state.update}
-                          onChange={() => handleCheckboxChange(idx, 'update')}
-                        />
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          style={{ cursor: 'pointer', scale: '1.1' }}
-                          checked={state.delete}
-                          onChange={() => handleCheckboxChange(idx, 'delete')}
-                        />
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          style={{ cursor: 'pointer', scale: '1.1' }}
-                          checked={allChecked}
-                          onChange={() => handleSelectAllChange(idx)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      {/* Privileges Table */}
+      <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+        <TableContainer>
+          <Table sx={{ minWidth: 650 }}>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#F8FAFC' }}>
+                <TableCell sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Module Name</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Read</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Create</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Update</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Delete</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Select All</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredRows.map((row) => {
+                const idx = row.originalIdx;
+                const state = privileges[idx] || { read: false, create: false, update: false, delete: false };
+                const allChecked = state.read && state.create && state.update && state.delete;
+                return (
+                  <TableRow key={idx} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                    <TableCell sx={{ fontWeight: 600, color: '#334155' }}>
+                      {row.subModule}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Checkbox 
+                        checked={state.read} 
+                        onChange={() => handleCheckboxChange(idx, 'read')} 
+                        sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Checkbox 
+                        checked={state.create} 
+                        onChange={() => handleCheckboxChange(idx, 'create')} 
+                        sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Checkbox 
+                        checked={state.update} 
+                        onChange={() => handleCheckboxChange(idx, 'update')} 
+                        sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Checkbox 
+                        checked={state.delete} 
+                        onChange={() => handleCheckboxChange(idx, 'delete')} 
+                        sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Checkbox 
+                        checked={allChecked} 
+                        onChange={() => handleSelectAllChange(idx)} 
+                        sx={{ color: '#94A3B8', '&.Mui-checked': { color: 'primary.main' } }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Card>
 
-        {/* Footer Actions */}
-        <div className="d-flex justify-content-end gap-3 mt-4 px-2">
-          <Button
-            variant="secondary"
-            onClick={() => navigate(ROUTES.ADMIN_ROLES)}
-            style={{
-              background: '#FFFFFF',
-              color: '#4A5568',
-              border: '1px solid #CBD5E0',
-              padding: '0.6rem 1.75rem',
-              borderRadius: '6px',
-              fontWeight: 600,
-              fontSize: '0.85rem'
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            isLoading={saving}
-            onClick={handleSave}
-            style={{
-              background: '#FD7E14',
-              borderColor: '#FD7E14',
-              color: '#FFFFFF',
-              padding: '0.6rem 1.75rem',
-              borderRadius: '6px',
-              fontWeight: 600,
-              fontSize: '0.85rem'
-            }}
-          >
-            {isEdit ? 'Save' : 'Add'}
-          </Button>
-        </div>
-      </div>
-    </div>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
+        <Button
+          variant="secondary"
+          onClick={() => navigate(ROUTES.ADMIN_ROLES)}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          isLoading={saving}
+          onClick={handleSave}
+        >
+          {isEdit ? 'Save Changes' : 'Add Role Privileges'}
+        </Button>
+      </Box>
+    </Box>
   );
 }

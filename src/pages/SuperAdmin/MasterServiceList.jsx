@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Row, Col, Modal } from 'react-bootstrap';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Plus, Edit2, Trash2, Save, Database } from 'lucide-react';
+import { Box, Card, Dialog, DialogTitle, DialogContent, DialogActions, Grid, IconButton, Typography } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
@@ -20,7 +20,7 @@ const CATEGORY_OPTIONS = [
 
 function ServiceFormModal({ show, onHide, serviceToEdit }) {
   const { addService, updateService } = useMasterDataStore();
-  
+
   const methods = useForm({
     defaultValues: {
       name: serviceToEdit?.name || '',
@@ -54,36 +54,34 @@ function ServiceFormModal({ show, onHide, serviceToEdit }) {
   };
 
   return (
-    <Modal show={show} onHide={onHide} centered>
-      <Modal.Header closeButton className="border-bottom-0 pb-0">
-        <Modal.Title className="fw-bold fs-5">
-          {serviceToEdit ? 'Edit Service' : 'Add New Service'}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+    <Dialog open={show} onClose={onHide} fullWidth maxWidth="sm">
+      <DialogTitle sx={{ fontWeight: 700 }}>
+        {serviceToEdit ? 'Edit Service' : 'Add New Service'}
+      </DialogTitle>
+      <DialogContent dividers>
         <FormProvider {...methods}>
           <form id="serviceForm" onSubmit={handleSubmit(onSubmit)}>
-            <Row className="g-3">
-              <Col md={12}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
                 <RHFTextField name="name" label="Service Name" placeholder="e.g. Ceramic Coating" required />
-              </Col>
-              <Col md={12}>
+              </Grid>
+              <Grid item xs={12}>
                 <RHFSelect name="category" label="Category" options={CATEGORY_OPTIONS} required />
-              </Col>
-              <Col md={12}>
+              </Grid>
+              <Grid item xs={12}>
                 <RHFTextField name="price" label="Base Price (₹)" type="number" placeholder="0" required />
-              </Col>
-            </Row>
+              </Grid>
+            </Grid>
           </form>
         </FormProvider>
-      </Modal.Body>
-      <Modal.Footer className="border-top-0 pt-0">
+      </DialogContent>
+      <DialogActions sx={{ p: 2 }}>
         <Button variant="secondary" onClick={onHide}>Cancel</Button>
         <Button variant="primary" form="serviceForm" type="submit" leftIcon={Save} isLoading={isSubmitting}>
           Save Service
         </Button>
-      </Modal.Footer>
-    </Modal>
+      </DialogActions>
+    </Dialog>
   );
 }
 
@@ -105,35 +103,35 @@ export default function MasterServiceList() {
   };
 
   const columns = [
-    { header: 'ID', accessor: 'id', render: (row) => <strong className="text-muted">{row.id}</strong> },
-    { header: 'Service Name', accessor: 'name', render: (row) => <span className="fw-semibold">{row.name}</span> },
-    { 
-      header: 'Category', 
+    { header: 'ID', accessor: 'id', render: (row) => <Typography variant="body2" color="text.secondary" fontWeight={600}>{row.id}</Typography> },
+    { header: 'Service Name', accessor: 'name', render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography> },
+    {
+      header: 'Category',
       accessor: 'category',
       render: (row) => (
-        <span className="badge rounded-pill px-3 py-2" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6', fontWeight: 600 }}>
+        <Typography variant="caption" sx={{ bgcolor: 'primary.light', color: 'primary.main', fontWeight: 600, py: 0.5, px: 1.5, borderRadius: 8 }}>
           {row.category}
-        </span>
+        </Typography>
       )
     },
-    { header: 'Base Amount', accessor: 'price', render: (row) => <span className="fw-bold">{formatCurrency(row.price)}</span> },
+    { header: 'Base Amount', accessor: 'price', render: (row) => <Typography variant="body2" fontWeight={700}>{formatCurrency(row.price)}</Typography> },
     {
       header: 'Actions',
       render: (row) => (
-        <div className="d-flex gap-2">
-          <Button variant="ghost" size="sm" onClick={() => handleEdit(row)} title="Edit">
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton size="small" onClick={() => handleEdit(row)} title="Edit">
             <Edit2 size={16} />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleDelete(row.id)} title="Delete" style={{ color: '#EF4444' }}>
+          </IconButton>
+          <IconButton size="small" onClick={() => handleDelete(row.id)} title="Delete" sx={{ color: 'error.main' }}>
             <Trash2 size={16} />
-          </Button>
-        </div>
+          </IconButton>
+        </Box>
       ),
     },
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Master Service List"
         subtitle="Manage the global catalog of services and their base amounts"
@@ -148,30 +146,30 @@ export default function MasterServiceList() {
         }
       />
 
-      <div className="premium-card">
-        <div className="p-4 border-bottom d-flex align-items-center gap-3">
-          <div className="icon-wrapper" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3B82F6', padding: '0.75rem', borderRadius: '12px' }}>
+      <Card sx={{ borderRadius: 0 }}>
+        <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ bgcolor: 'primary.light', color: 'primary.main', p: 1.5, borderRadius: 2, display: 'flex' }}>
             <Database size={24} />
-          </div>
-          <div>
-            <h5 className="mb-1 fw-bold">Service Catalog</h5>
-            <p className="text-muted mb-0 small">These services will appear in the Job Card Create form for the CRM team.</p>
-          </div>
-        </div>
+          </Box>
+          <Box>
+            <Typography variant="h6" fontWeight={700}>Service Catalog</Typography>
+            <Typography variant="body2" color="text.secondary">These services will appear in the Job Card Create form for the CRM team.</Typography>
+          </Box>
+        </Box>
         <DataTable
           columns={columns}
           data={masterServices}
           emptyMessage="No master services found. Add one to get started."
         />
-      </div>
+      </Card>
 
       {showModal && (
-        <ServiceFormModal 
-          show={showModal} 
-          onHide={() => setShowModal(false)} 
-          serviceToEdit={editingService} 
+        <ServiceFormModal
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          serviceToEdit={editingService}
         />
       )}
-    </div>
+    </Box>
   );
 }

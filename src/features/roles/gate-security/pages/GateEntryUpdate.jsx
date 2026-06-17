@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Row, Col, Form } from 'react-bootstrap';
+import { Box, Grid, Typography, TextField } from '@mui/material';
 import { ArrowLeft, Upload, Save } from 'lucide-react';
 import Button from '../../../../components/common/Button';
 import { toastSuccess } from '../../../../notifications/toast';
@@ -25,71 +25,69 @@ export default function GateEntryUpdate({ vehicle, onBack }) {
   if (!vehicle) return null;
 
   return (
-    <div style={{ background: '#fff', minHeight: '100%', padding: '2rem 2.5rem' }}>
+    <Box sx={{ bgcolor: 'background.paper', minHeight: '100%', p: { xs: 2, md: 4 } }}>
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
-        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.3rem', color: '#152326' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h5" fontWeight={700}>
           Update Entry Log Details
-        </h4>
-        <button
-          type="button"
+        </Typography>
+        <Box
+          component="button"
           onClick={onBack}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#6B7280', fontSize: '0.875rem', fontWeight: 500,
-            padding: 0,
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 1,
+            bgcolor: 'transparent', border: 'none', cursor: 'pointer',
+            color: 'text.secondary', fontSize: '0.875rem', fontWeight: 500, p: 0,
+            '&:hover': { color: 'text.primary' }
           }}
         >
-          <ArrowLeft size={15} /> Back to List
-        </button>
-      </div>
+          <ArrowLeft size={16} /> Back to List
+        </Box>
+      </Box>
 
-      <Form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#F9FAFB', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
-          <div style={{ fontSize: '0.75rem', color: '#6B7280', textTransform: 'uppercase', fontWeight: 600 }}>Vehicle Details</div>
-          <div style={{ fontWeight: 700, color: '#152326', fontSize: '1.05rem', marginTop: 2 }}>{vehicle.vehicleNumber}</div>
-          <div style={{ fontSize: '0.85rem', color: '#4B5563', marginTop: 2 }}>{vehicle.makeModel} • {vehicle.ownerName}</div>
-        </div>
+      <form onSubmit={handleSubmit}>
+        <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+          <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Vehicle Details</Typography>
+          <Typography variant="h6" fontWeight={700} sx={{ mt: 0.5 }}>{vehicle.vehicleNumber}</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>{vehicle.makeModel} • {vehicle.ownerName}</Typography>
+        </Box>
 
-        <Row className="g-3 mb-4">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '0.25rem' }}>
-                Vehicle Entry Date *
-              </Form.Label>
-              <Form.Control
-                type="date"
-                required
-                value={entryDate}
-                onChange={(e) => setEntryDate(e.target.value)}
-                style={{ borderRadius: '8px' }}
-              />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '0.25rem' }}>
-                Vehicle Entry Time *
-              </Form.Label>
-              <Form.Control
-                type="time"
-                required
-                value={entryTime}
-                onChange={(e) => setEntryTime(e.target.value)}
-                style={{ borderRadius: '8px' }}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={6}>
+            <Typography variant="body2" fontWeight={500} color="text.secondary" sx={{ mb: 1 }}>
+              Vehicle Entry Date *
+            </Typography>
+            <TextField
+              type="date"
+              fullWidth
+              required
+              value={entryDate}
+              onChange={(e) => setEntryDate(e.target.value)}
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="body2" fontWeight={500} color="text.secondary" sx={{ mb: 1 }}>
+              Vehicle Entry Time *
+            </Typography>
+            <TextField
+              type="time"
+              fullWidth
+              required
+              value={entryTime}
+              onChange={(e) => setEntryTime(e.target.value)}
+              size="small"
+            />
+          </Grid>
+        </Grid>
 
-        <div style={{ borderTop: '1px solid #E2E5DC', margin: '1.5rem 0' }} />
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', my: 3 }} />
 
         {/* Upload Images */}
-        <p style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginBottom: '1.25rem' }}>
+        <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
           Upload Vehicle Images
-        </p>
-        <div className={styles.imageUploadArea} style={{ position: 'relative' }}>
+        </Typography>
+        <Box className={styles.imageUploadArea} sx={{ position: 'relative' }}>
           <input
             type="file"
             multiple
@@ -105,23 +103,22 @@ export default function GateEntryUpdate({ vehicle, onBack }) {
             {images.length > 0 ? `${images.length} files selected` : <>Drag & drop vehicle images or <span>browse</span></>}
           </p>
           <p className={styles.uploadHint}>Supports JPG, PNG up to 10MB each</p>
-        </div>
+        </Box>
 
         {images.length > 0 && (
-          <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {images.map((file, idx) => (
-              <div key={idx} style={{ padding: '0.25rem 0.5rem', background: '#E2E5DC', borderRadius: '4px', fontSize: '0.75rem', color: '#152326' }}>
+              <Box key={idx} sx={{ p: '4px 8px', bgcolor: 'grey.200', borderRadius: 1, fontSize: '0.75rem' }}>
                 {file.name}
-              </div>
+              </Box>
             ))}
-          </div>
+          </Box>
         )}
 
         {/* Footer Actions */}
-        <div style={{
-          borderTop: '1px solid #E2E5DC',
-          marginTop: '3rem', paddingTop: '1.5rem',
-          display: 'flex', justifyContent: 'flex-end', gap: '0.75rem',
+        <Box sx={{
+          borderTop: '1px solid', borderColor: 'divider',
+          mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2,
         }}>
           <Button variant="secondary" type="button" onClick={onBack}>
             Cancel
@@ -129,8 +126,8 @@ export default function GateEntryUpdate({ vehicle, onBack }) {
           <Button variant="primary" type="submit" leftIcon={Save}>
             Save Changes
           </Button>
-        </div>
-      </Form>
-    </div>
+        </Box>
+      </form>
+    </Box>
   );
 }

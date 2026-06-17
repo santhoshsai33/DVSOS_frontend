@@ -1,21 +1,31 @@
 import { Outlet } from 'react-router-dom';
+import { Box } from '@mui/material';
 import Sidebar from '../../components/shared/Sidebar';
 import Topbar from '../../components/shared/Topbar';
 import useUIStore from '../../store/useUIStore';
-import styles from './DashboardLayout.module.css';
 
 export default function DashboardLayout() {
   const { sidebarCollapsed } = useUIStore();
+  const sidebarWidth = sidebarCollapsed ? 80 : 260;
 
   return (
-    <div className={[styles.layout, sidebarCollapsed ? styles.collapsed : ''].join(' ')}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', bgcolor: 'background.default' }}>
       <Sidebar />
-      <div className={styles.main}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0, // important to prevent flex items from overflowing
+          transition: 'margin-left 0.3s',
+          height: '100vh',
+        }}
+      >
         <Topbar />
-        <main className={styles.content}>
+        <Box component="main" sx={{ flexGrow: 1, pb: { xs: 2, md: 3 }, pt: { xs: 10, md: 11 }, overflowY: 'auto' }}>
           <Outlet />
-        </main>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

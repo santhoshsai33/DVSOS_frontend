@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Box } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import { CheckCircle2, Clock, XCircle, RefreshCw } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
@@ -31,7 +32,7 @@ export default function ApprovalStatus() {
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="WhatsApp Approval Status"
         subtitle="Track customer responses to additional work requests"
@@ -72,6 +73,6 @@ export default function ApprovalStatus() {
           emptyMessage="No approvals found"
         />
       </div>
-    </div>
+    </Box>
   );
 }

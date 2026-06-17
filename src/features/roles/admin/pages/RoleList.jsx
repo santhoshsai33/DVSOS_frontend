@@ -1,11 +1,10 @@
 import React from 'react';
 import { ShieldCheck, Edit, Trash2, Plus, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Dropdown } from 'react-bootstrap';
+import { Box, Menu, MenuItem, IconButton, Typography, Select } from '@mui/material';
 import Button from '../../../../components/common/Button';
 import PageHeader from '../../../../components/shared/PageHeader';
 import DataTable from '../../../../components/common/DataTable';
-import StatusBadge from '../../../../components/common/StatusBadge';
 import { toastSuccess } from '../../../../notifications/toast';
 import { ROUTES } from '../../../../config/routes';
 
@@ -20,39 +19,6 @@ const MOCK_ROLES_LIST = [
   { id: 8, designation: 'Managing Director', roleCode: 'MD', accessLevel: 'Custom Access', active: true }
 ];
 
-const CustomToggle = React.forwardRef(({ children, onClick, ...props }, ref) => {
-  const cleanedClassName = (props.className || '').replace('dropdown-toggle', '');
-  return (
-    <button
-      ref={ref}
-      onClick={(e) => {
-        e.preventDefault();
-        onClick(e);
-      }}
-      {...props}
-      className={cleanedClassName}
-      style={{
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        padding: '4px',
-        color: 'var(--color-text-secondary)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '50%',
-        width: '32px',
-        height: '32px',
-        transition: 'background 0.2s',
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = '#F3F4F6'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-    >
-      <MoreVertical size={18} />
-    </button>
-  );
-});
-
 export default function RoleList() {
   const navigate = useNavigate();
   const [roles, setRoles] = React.useState(() => {
@@ -64,6 +30,20 @@ export default function RoleList() {
     }
     return MOCK_ROLES_LIST;
   });
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [selectedRole, setSelectedRole] = React.useState(null);
+
+  const handleMenuClick = (event, row) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedRole(row);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedRole(null);
+  };
 
   const handleStatusChange = (id, newActive) => {
     const updated = roles.map(roleItem => {
@@ -91,68 +71,48 @@ export default function RoleList() {
       header: 'Designation Name',
       accessor: 'designation',
       render: (row) => (
-        <strong style={{ color: 'var(--color-text-primary)' }}>{row.designation}</strong>
+        <Typography variant="body2" fontWeight={600} color="text.primary">{row.designation}</Typography>
       )
     },
     {
       header: 'Role Code',
       accessor: 'roleCode',
-      render: (row) => <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-text-primary)' }}>{row.roleCode.replace(/_/g, ' ')}</span>
+      render: (row) => <Typography variant="body2" fontWeight={500} color="text.primary">{row.roleCode.replace(/_/g, ' ')}</Typography>
     },
     {
       header: 'Status',
       render: (row) => (
-        <select
-          className="form-select form-select-sm"
-          style={{
-            width: '120px',
-            fontSize: '0.85rem',
-            padding: '0.35rem 0.5rem',
-            borderRadius: '6px',
-            borderColor: 'var(--color-border)',
-            background: 'var(--color-bg-card)',
-            color: 'var(--color-text-primary)',
-            fontWeight: 500,
-            cursor: 'pointer'
-          }}
+        <Select
+          size="small"
           value={row.active ? 'Active' : 'Inactive'}
           onChange={(e) => handleStatusChange(row.id, e.target.value === 'Active')}
+          sx={{ 
+            width: 120, 
+            height: 32, 
+            fontSize: '0.85rem',
+            borderRadius: '16px',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+          }}
         >
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
+          <MenuItem value="Active">Active</MenuItem>
+          <MenuItem value="Inactive">Inactive</MenuItem>
+        </Select>
       )
     },
     {
       header: 'Actions',
       render: (row) => (
-        <Dropdown align="end" onClick={(e) => e.stopPropagation()}>
-          <Dropdown.Toggle as={CustomToggle} id={`dropdown-action-${row.id}`} />
-          <Dropdown.Menu
-            style={{ padding: '6px', borderRadius: '10px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}
-          >
-            <Dropdown.Item
-              onClick={() => navigate(`/admin/roles/privileges/${row.id}/edit`)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500 }}
-            >
-              <Edit size={15} style={{ color: 'var(--color-accent)' }} />
-              <span>Edit Privileges</span>
-            </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => handleDelete(row)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 500, color: 'var(--color-danger)' }}
-            >
-              <Trash2 size={15} style={{ color: 'red' }} />
-              <span>Delete Policy</span>
-            </Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
+        <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
+          <MoreVertical size={18} />
+        </IconButton>
       )
     }
   ];
 
   return (
-    <div>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Role Management"
         breadcrumbs={[{ label: 'Admin', path: ROUTES.ADMIN_DASHBOARD }, { label: 'Roles' }]}
@@ -163,13 +123,31 @@ export default function RoleList() {
         }
       />
 
-      <div className="premium-card d-flex flex-column">
+      <Box sx={{ bgcolor: 'background.paper', borderRadius: 0 }}>
         <DataTable
           columns={columns}
           data={roles}
           emptyMessage="No role policies found"
         />
-      </div>
-    </div>
+      </Box>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
+      >
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/roles/privileges/${selectedRole?.id}/edit`); }}>
+          <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
+          Edit Privileges
+        </MenuItem>
+        <MenuItem onClick={() => { handleMenuClose(); handleDelete(selectedRole); }} sx={{ color: 'error.main' }}>
+          <Trash2 size={16} style={{ marginRight: 12, color: 'inherit' }} />
+          Delete Policy
+        </MenuItem>
+      </Menu>
+    </Box>
   );
 }

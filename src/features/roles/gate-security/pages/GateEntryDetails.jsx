@@ -1,4 +1,4 @@
-import { Row, Col } from 'react-bootstrap';
+import { Box, Grid, Typography } from '@mui/material';
 import { ArrowLeft, LogIn, LogOut, Clock } from 'lucide-react';
 import Button from '../../../../components/common/Button';
 import StatusBadge from '../../../../components/common/StatusBadge';
@@ -9,116 +9,116 @@ export default function GateEntryDetails({ vehicle, onBack }) {
   if (!vehicle) return null;
 
   return (
-    <div style={{ background: '#fff', minHeight: '100%', padding: '2rem 2.5rem' }}>
+    <Box sx={{ bgcolor: 'background.paper', minHeight: '100%', p: { xs: 2, md: 4 } }}>
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
-        <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.3rem', color: '#152326' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h5" fontWeight={700}>
           Vehicle Pass Details
-        </h4>
-        <button
-          type="button"
+        </Typography>
+        <Box
+          component="button"
           onClick={onBack}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#6B7280', fontSize: '0.875rem', fontWeight: 500,
-            padding: 0,
+          sx={{
+            display: 'flex', alignItems: 'center', gap: 1,
+            bgcolor: 'transparent', border: 'none', cursor: 'pointer',
+            color: 'text.secondary', fontSize: '0.875rem', fontWeight: 500, p: 0,
+            '&:hover': { color: 'text.primary' }
           }}
         >
-          <ArrowLeft size={15} /> Back to List
-        </button>
-      </div>
+          <ArrowLeft size={16} /> Back to List
+        </Box>
+      </Box>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {/* Vehicle Section */}
-        <div>
-          <h5 style={{ fontWeight: 700, color: 'var(--color-primary)', marginBottom: '1rem', borderBottom: '1.5px solid var(--color-divider)', paddingBottom: '0.25rem' }}>
+        <Box>
+          <Typography variant="subtitle1" fontWeight={700} color="primary.main" sx={{ mb: 2, borderBottom: '1.5px solid', borderColor: 'divider', pb: 0.5 }}>
             Vehicle Information
-          </h5>
-          <Row className="g-3">
-            <Col md={4}>
-              <div style={{ fontSize: '0.75rem', color: '#6B7280', textTransform: 'uppercase', fontWeight: 600 }}>Vehicle Number</div>
-              <div style={{ marginTop: 4 }}><code className={styles.vehicleNum}>{vehicle.vehicleNumber}</code></div>
-            </Col>
-            <Col md={4}>
-              <div style={{ fontSize: '0.75rem', color: '#6B7280', textTransform: 'uppercase', fontWeight: 600 }}>Make & Model</div>
-              <div style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginTop: 4 }}>{vehicle.makeModel}</div>
-            </Col>
-            <Col md={4}>
-              <div style={{ fontSize: '0.75rem', color: '#6B7280', textTransform: 'uppercase', fontWeight: 600 }}>Status</div>
-              <div style={{ marginTop: 4 }}><StatusBadge status={vehicle.status} /></div>
-            </Col>
-          </Row>
-        </div>
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Vehicle Number</Typography>
+              <Box sx={{ mt: 0.5 }}><code className={styles.vehicleNum}>{vehicle.vehicleNumber}</code></Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Make & Model</Typography>
+              <Typography variant="body1" fontWeight={600} sx={{ mt: 0.5 }}>{vehicle.makeModel}</Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Status</Typography>
+              <Box sx={{ mt: 0.5 }}><StatusBadge status={vehicle.status} /></Box>
+            </Grid>
+          </Grid>
+        </Box>
 
         {/* Owner Section */}
-        <div>
-          <h5 style={{ fontWeight: 700, color: 'var(--color-primary)', marginBottom: '1rem', borderBottom: '1.5px solid var(--color-divider)', paddingBottom: '0.25rem' }}>
+        <Box>
+          <Typography variant="subtitle1" fontWeight={700} color="primary.main" sx={{ mb: 2, borderBottom: '1.5px solid', borderColor: 'divider', pb: 0.5 }}>
             Owner Information
-          </h5>
-          <Row className="g-3">
-            <Col md={4}>
-              <div style={{ fontSize: '0.75rem', color: '#6B7280', textTransform: 'uppercase', fontWeight: 600 }}>Owner Name</div>
-              <div style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginTop: 4 }}>{vehicle.ownerName}</div>
-            </Col>
-            <Col md={4}>
-              <div style={{ fontSize: '0.75rem', color: '#6B7280', textTransform: 'uppercase', fontWeight: 600 }}>Mobile Number</div>
-              <div style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginTop: 4 }}>{vehicle.mobile}</div>
-            </Col>
-            <Col md={4}>
-              <div style={{ fontSize: '0.75rem', color: '#6B7280', textTransform: 'uppercase', fontWeight: 600 }}>Email</div>
-              <div style={{ fontWeight: 600, fontSize: '1rem', color: '#152326', marginTop: 4 }}>{vehicle.email || '—'}</div>
-            </Col>
-          </Row>
-        </div>
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Owner Name</Typography>
+              <Typography variant="body1" fontWeight={600} sx={{ mt: 0.5 }}>{vehicle.ownerName}</Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Mobile Number</Typography>
+              <Typography variant="body1" fontWeight={600} sx={{ mt: 0.5 }}>{vehicle.mobile}</Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase' }}>Email</Typography>
+              <Typography variant="body1" fontWeight={600} sx={{ mt: 0.5 }}>{vehicle.email || '—'}</Typography>
+            </Grid>
+          </Grid>
+        </Box>
 
         {/* Operations Logs Section */}
-        <div>
-          <h5 style={{ fontWeight: 700, color: 'var(--color-primary)', marginBottom: '1rem', borderBottom: '1.5px solid var(--color-divider)', paddingBottom: '0.25rem' }}>
+        <Box>
+          <Typography variant="subtitle1" fontWeight={700} color="primary.main" sx={{ mb: 2, borderBottom: '1.5px solid', borderColor: 'divider', pb: 0.5 }}>
             Entry & Exit Timeline
-          </h5>
-          <Row className="g-3">
-            <Col md={6}>
-              <div style={{ padding: '1.25rem', background: '#F0FDF4', borderRadius: '8px', border: '1.5px solid #DCFCE7' }}>
-                <div style={{ fontWeight: 700, color: '#15803D', fontSize: '0.95rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ p: 2, bgcolor: 'success.50', borderRadius: 2, border: '1.5px solid', borderColor: 'success.100' }}>
+                <Typography variant="subtitle2" fontWeight={700} color="success.main" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                   <LogIn size={16} /> Entry Logged
-                </div>
-                <div style={{ fontSize: '0.85rem', color: '#15803D' }}>
+                </Typography>
+                <Typography variant="body2" color="success.main">
                   <strong>Time:</strong> {formatDateTime(vehicle.entryTime)}
-                </div>
-                <div style={{ fontSize: '0.85rem', color: '#15803D', marginTop: '0.25rem' }}>
+                </Typography>
+                <Typography variant="body2" color="success.main" sx={{ mt: 0.5 }}>
                   <strong>By:</strong> {vehicle.entryBy}
-                </div>
-              </div>
-            </Col>
-            <Col md={6}>
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
               {vehicle.status === 'COMPLETED' ? (
-                <div style={{ padding: '1.25rem', background: '#FEF2F2', borderRadius: '8px', border: '1.5px solid #FEE2E2' }}>
-                  <div style={{ fontWeight: 700, color: '#B91C1C', fontSize: '0.95rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <LogOut size={16} style={{ color: '#B91C1C' }} /> Exit Logged
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: '#B91C1C' }}>
+                <Box sx={{ p: 2, bgcolor: 'error.50', borderRadius: 2, border: '1.5px solid', borderColor: 'error.100' }}>
+                  <Typography variant="subtitle2" fontWeight={700} color="error.main" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LogOut size={16} /> Exit Logged
+                  </Typography>
+                  <Typography variant="body2" color="error.main">
                     <strong>Time:</strong> {formatDateTime(new Date(new Date(vehicle.entryTime).getTime() + 2 * 60 * 60 * 1000).toISOString())}
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: '#B91C1C', marginTop: '0.25rem' }}>
+                  </Typography>
+                  <Typography variant="body2" color="error.main" sx={{ mt: 0.5 }}>
                     <strong>By:</strong> Gate Guard A
-                  </div>
-                </div>
+                  </Typography>
+                </Box>
               ) : (
-                <div style={{ padding: '1.25rem', background: '#FFFBEB', borderRadius: '8px', border: '1.5px solid #FEF3C7', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ fontWeight: 700, color: '#D97706', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Clock size={16} style={{ color: '#D97706' }} /> Exit Pending
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: '#D97706', marginTop: '0.25rem' }}>
+                <Box sx={{ p: 2, bgcolor: 'warning.50', borderRadius: 2, border: '1.5px solid', borderColor: 'warning.100', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <Typography variant="subtitle2" fontWeight={700} color="warning.main" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Clock size={16} /> Exit Pending
+                  </Typography>
+                  <Typography variant="body2" color="warning.main" sx={{ mt: 0.5 }}>
                     Vehicle is currently inside premises.
-                  </div>
-                </div>
+                  </Typography>
+                </Box>
               )}
-            </Col>
-          </Row>
-        </div>
-      </div>
+            </Grid>
+          </Grid>
+        </Box>
+      </Box>
 
-    </div>
+    </Box>
   );
 }
