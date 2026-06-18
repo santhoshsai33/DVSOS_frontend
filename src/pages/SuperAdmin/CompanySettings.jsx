@@ -53,12 +53,7 @@ export default function CompanySettings() {
         {/* <Box
           component="button"
           onClick={() => navigate(ROUTES.ADMIN_DASHBOARD)}
-          sx={{
-            display: 'flex', alignItems: 'center', gap: 1,
-            bgcolor: 'transparent', border: 'none', cursor: 'pointer',
-            color: 'text.secondary', fontSize: '0.875rem', fontWeight: 500, p: 0,
-            '&:hover': { color: 'text.primary' }
-          }}
+          className="back-btn"
         >
           <ArrowLeft size={16} /> Back to Dashboard
         </Box> */}

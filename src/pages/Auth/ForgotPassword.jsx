@@ -59,9 +59,13 @@ export default function ForgotPassword() {
       </FormProvider>
 
       <div className="mt-4 text-center">
-        <Link to="/login" className={styles.forgotLink} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+        <Box
+          component={Link}
+          to="/login"
+          className="back-btn"
+        >
           <ArrowLeft size={14} /> Back to Sign In
-        </Link>
+        </Box>
       </div>
     </div>
   );

@@ -42,12 +42,7 @@ export default function SettingsPage() {
         <Box
           component="button"
           onClick={() => navigate(-1)}
-          sx={{
-            display: 'flex', alignItems: 'center', gap: 1,
-            bgcolor: 'transparent', border: 'none', cursor: 'pointer',
-            color: 'text.secondary', fontSize: '0.875rem', fontWeight: 500, p: 0,
-            '&:hover': { color: 'text.primary' }
-          }}
+          className="back-btn"
         >
           <ArrowLeft size={16} /> Back
         </Box>

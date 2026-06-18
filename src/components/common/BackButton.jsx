@@ -21,22 +21,7 @@ export default function BackButton({
     <Box
       component="button"
       onClick={handleClick}
-      sx={{
-        display: 'inline-flex', 
-        alignItems: 'center', 
-        gap: 1,
-        bgcolor: 'transparent', 
-        border: 'none', 
-        cursor: 'pointer',
-        color: 'text.secondary', 
-        fontSize: '0.875rem', 
-        fontWeight: 500,
-        fontFamily: "'Poppins', sans-serif",
-        p: 0,
-        transition: 'color 0.2s',
-        '&:hover': { color: 'text.primary' },
-        ...sx
-      }}
+      className="back-btn"
     >
       <ArrowLeft size={16} /> {label}
     </Box>
