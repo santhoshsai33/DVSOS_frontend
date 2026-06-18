@@ -1,8 +1,9 @@
 import { useForm, FormProvider } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { Box, Typography, Divider, Select, MenuItem, Stack } from '@mui/material';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Box, Typography, Divider, Select, MenuItem, Stack, IconButton, InputAdornment } from '@mui/material';
 import useAuthStore from '../../store/useAuthStore';
 import { authSchema } from '../../validations/authSchema';
 import RHFTextField from '../../components/form/RHFTextField';
@@ -47,6 +48,7 @@ const ROLE_REDIRECTS = {
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
 
   const methods = useForm({
     resolver: zodResolver(authSchema),
@@ -134,8 +136,22 @@ export default function Login() {
               name="password"
               label="Password"
               placeholder="Enter your password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      edge="end"
+                      onClick={() => setShowPassword((current) => !current)}
+                      onMouseDown={(event) => event.preventDefault()}
+                    >
+                      {showPassword ? <Eye size={20} />  : <EyeOff size={20} />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: -1 }}>

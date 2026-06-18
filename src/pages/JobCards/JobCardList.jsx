@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Card, Typography, IconButton, Menu, MenuItem, Select } from '@mui/material';
+import { Box, Card, Typography, IconButton, Menu, MenuItem, Select, Chip } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import { Plus, Eye, Edit, MoreVertical, PlusCircle, MessageCircle } from 'lucide-react';
 import { useJobCards } from '../../queries/useDataQueries';
@@ -78,7 +78,26 @@ export default function JobCardList() {
       ),
     },
     { header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
-    { header: 'Technician', accessor: 'technician', render: (row) => row.technician || <Typography color="text.secondary" variant="body2">Unassigned</Typography> },
+    {
+      header: 'MECHANIC',
+      accessor: 'technician',
+      render: (row) => {
+        const mechanicName = row.technician || 'Unassigned';
+        return (
+          <Chip
+            label={mechanicName}
+            size="small"
+            sx={{
+              bgcolor: mechanicName === 'Unassigned' ? 'transparent' : '#eff6ff',
+              color: mechanicName === 'Unassigned' ? '#d97706' : '#2563eb',
+              border: `1px solid ${mechanicName === 'Unassigned' ? '#fcd34d' : '#bfdbfe'}`,
+              fontWeight: 600,
+              borderRadius: '9999px'
+            }}
+          />
+        );
+      }
+    },
     { header: 'Est. Cost', render: (row) => <Typography variant="body2" fontWeight={600}>{formatCurrency(row.estimatedCost)}</Typography> },
     { header: 'Created', render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography> },
     {
@@ -91,7 +110,9 @@ export default function JobCardList() {
     },
   ];
 
-  const tableData = data?.data || [];
+  const tableData = (data?.data || []).filter(job => 
+    role === ROLES.BODY_SHOP_SUPERVISOR ? job.status === 'BODY_SHOP' : true
+  );
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
@@ -161,8 +182,12 @@ export default function JobCardList() {
         </MenuItem>
         <MenuItem onClick={() => {
           handleMenuClose();
-          const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK;
-          navigate(`${targetRoute}?jobCardId=${selectedJob?.id}`);
+          if (role === ROLES.FLOOR_SUPERVISOR) {
+            navigate(`${ROUTES.JOB_CARDS}/${selectedJob?.id}/edit`);
+          } else {
+            const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK;
+            navigate(`${targetRoute}?jobCardId=${selectedJob?.id}`);
+          }
         }}>
           <PlusCircle size={16} className="mr-3 text-body-shop" />
           Add Additional Work

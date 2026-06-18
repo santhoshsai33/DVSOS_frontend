@@ -1,7 +1,7 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Save, MessageCircle, ArrowLeft } from 'lucide-react';
-import { Box, Grid, Typography, Card, CardContent, Checkbox, FormControlLabel, Divider } from '@mui/material';
+import { Save, MessageCircle, ArrowLeft, Plus } from 'lucide-react';
+import { Box, Grid, Typography, Card, CardContent, Checkbox, FormControlLabel, Divider, Chip, TextField } from '@mui/material';
 import Button from '../../components/common/Button';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFSelect from '../../components/form/RHFSelect';
@@ -12,6 +12,8 @@ import { formatCurrency } from '../../utils/formatters';
 import { useState, useMemo, useEffect } from 'react';
 import useMasterDataStore from '../../store/useMasterDataStore';
 import { useJobCard } from '../../queries/useDataQueries';
+import useAuthStore from '../../store/useAuthStore';
+import { ROLES } from '../../constants/roles';
 import Loader from '../../components/common/Loader';
 
 const PRIORITY_OPTIONS = [
@@ -28,6 +30,15 @@ export default function CrmAdditionalWork() {
   const { data: jobCard, isLoading: isJobCardLoading } = useJobCard(jobCardId);
   const { masterServices, serviceCategories, companySettings } = useMasterDataStore();
   const [selectedServices, setSelectedServices] = useState([]);
+  const [customService, setCustomService] = useState({ name: '', price: '' });
+
+  const { role } = useAuthStore();
+  const roleCategoryMap = {
+    [ROLES.FLOOR_SUPERVISOR]: 'Mechanical',
+    [ROLES.BODY_SHOP_SUPERVISOR]: 'Body Shop',
+    [ROLES.WATER_WASH_TEAM]: 'Water Wash',
+  };
+  const restrictedCategory = roleCategoryMap[role];
 
   const methods = useForm({
     defaultValues: {
@@ -49,9 +60,20 @@ export default function CrmAdditionalWork() {
   const selectedCategory = watch('serviceType');
 
   const filteredServices = useMemo(() => {
-    if (!selectedCategory) return masterServices;
-    return masterServices.filter(s => s.category?.toLowerCase() === selectedCategory.toLowerCase());
-  }, [masterServices, selectedCategory]);
+    let categoryToFilter = selectedCategory;
+    if (restrictedCategory && (!selectedCategory || selectedCategory === 'ALL')) {
+      categoryToFilter = restrictedCategory;
+    }
+
+    if (!categoryToFilter || categoryToFilter === 'ALL') return masterServices;
+    return masterServices.filter(s => s.category?.toLowerCase() === categoryToFilter.toLowerCase());
+  }, [masterServices, selectedCategory, restrictedCategory]);
+
+  useEffect(() => {
+    if (restrictedCategory) {
+      setValue('serviceType', restrictedCategory);
+    }
+  }, [restrictedCategory, setValue]);
 
   useEffect(() => {
     if (jobCard) {
@@ -61,7 +83,7 @@ export default function CrmAdditionalWork() {
       setValue('makeModel', jobCard.makeModel || '');
       setValue('serviceType', jobCard.serviceType || '');
       setValue('priority', jobCard.priority || 'NORMAL');
-      
+
       if (jobCard.createdAt) {
         const date = new Date(jobCard.createdAt);
         const formattedDate = date.toISOString().slice(0, 16);
@@ -125,7 +147,21 @@ export default function CrmAdditionalWork() {
     }
   };
 
-  const CATEGORY_OPTS = serviceCategories.map(c => ({ value: c.name, label: c.name }));
+  const CATEGORY_OPTS = useMemo(() => {
+    let categories = serviceCategories;
+    if (restrictedCategory) {
+      categories = serviceCategories.filter(c => c.name === restrictedCategory);
+    }
+
+    if (restrictedCategory) {
+      return categories.map(c => ({ value: c.name, label: c.name }));
+    }
+
+    return [
+      { value: 'ALL', label: 'All Categories' },
+      ...categories.map(c => ({ value: c.name, label: c.name }))
+    ];
+  }, [serviceCategories, restrictedCategory]);
 
   if (isJobCardLoading) {
     return <Loader fullPage text="Loading job card details..." />;
@@ -133,7 +169,7 @@ export default function CrmAdditionalWork() {
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100%', p: { xs: 2, md: 4 } }}>
-      
+
       {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
@@ -160,34 +196,35 @@ export default function CrmAdditionalWork() {
             <Grid item xs={12} lg={8}>
               <Card sx={{ borderRadius: 3, boxShadow: 1, p: 3, mb: 4 }}>
                 <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
-                  Vehicle & Customer Information (Read-only)
+                  Vehicle & Customer Details
                 </Typography>
-                
-                <Grid container spacing={3} sx={{ mb: 3 }}>
-                  <Grid item xs={12} md={6}>
-                    <RHFTextField name="vehicleNumber" label="Registration Number" disabled sx={{ bgcolor: '#F9FAFB', borderRadius: 1 }} />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <RHFTextField name="makeModel" label="Make & Model" disabled sx={{ bgcolor: '#F9FAFB', borderRadius: 1 }} />
-                  </Grid>
-                </Grid>
 
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <RHFTextField name="ownerName" label="Owner Name" disabled sx={{ bgcolor: '#F9FAFB', borderRadius: 1 }} />
+                  <Grid item xs={6} md={3}>
+                    <Typography variant="caption" color="text.secondary">Registration Number</Typography>
+                    <Typography variant="body1" fontWeight={600}>{jobCard?.vehicleNumber || 'N/A'}</Typography>
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    <RHFTextField name="ownerMobile" label="Mobile Number" disabled sx={{ bgcolor: '#F9FAFB', borderRadius: 1 }} />
+                  <Grid item xs={6} md={3}>
+                    <Typography variant="caption" color="text.secondary">Make & Model</Typography>
+                    <Typography variant="body1" fontWeight={600}>{jobCard?.makeModel || 'N/A'}</Typography>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Typography variant="caption" color="text.secondary">Owner Name</Typography>
+                    <Typography variant="body1" fontWeight={600}>{jobCard?.ownerName || 'N/A'}</Typography>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Typography variant="caption" color="text.secondary">Mobile Number</Typography>
+                    <Typography variant="body1" fontWeight={600}>{jobCard?.ownerMobile || jobCard?.mobile || 'N/A'}</Typography>
                   </Grid>
                 </Grid>
               </Card>
 
               <Card sx={{ borderRadius: 3, boxShadow: 1, p: 3, mb: 4 }}>
                 <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
-                  Service Configuration
+                  Service Configuration & Master List
                 </Typography>
-                
-                <Grid container spacing={3}>
+
+                <Grid container spacing={3} sx={{ mb: 4 }}>
                   <Grid item xs={12} md={4}>
                     <RHFSelect name="serviceType" label="Primary Category" options={CATEGORY_OPTS} placeholder="Select category" required />
                   </Grid>
@@ -198,13 +235,11 @@ export default function CrmAdditionalWork() {
                     <RHFTextField name="deliveryDate" label="Expected Delivery" type="datetime-local" required />
                   </Grid>
                 </Grid>
-              </Card>
 
-              <Card sx={{ borderRadius: 3, boxShadow: 1, p: 3, mb: 4 }}>
-                <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
-                  Select Additional Services
+                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase' }}>
+                  Available Additional Services
                 </Typography>
-                
+
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                   {filteredServices.map((service) => {
                     const isSelected = selectedServices.some((s) => s.id === service.id);
@@ -221,8 +256,23 @@ export default function CrmAdditionalWork() {
                         }}
                       >
                         <FormControlLabel
-                          control={<Checkbox checked={isSelected} onChange={() => {}} sx={{ p: 0.5 }} />}
-                          label={<Typography variant="body2" fontWeight={600}>{service.name}</Typography>}
+                          control={<Checkbox checked={isSelected} onChange={() => { }} sx={{ p: 0.5 }} />}
+                          label={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="body2" fontWeight={600}>{service.name}</Typography>
+                              <Chip
+                                label={service.category}
+                                size="small"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.65rem',
+                                  bgcolor: isSelected ? 'rgba(255,255,255,0.4)' : 'action.selected',
+                                  color: isSelected ? '#000' : 'text.primary',
+                                  fontWeight: 600
+                                }}
+                              />
+                            </Box>
+                          }
                           sx={{ m: 0 }}
                         />
                         <Typography variant="body2" fontWeight={700}>{formatCurrency(service.price)}</Typography>
@@ -230,6 +280,69 @@ export default function CrmAdditionalWork() {
                     );
                   })}
                 </Box>
+
+              </Card>
+
+              <Card sx={{ borderRadius: 3, boxShadow: 1, p: 3, mb: 4 }}>
+                <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
+                  Add Custom Service
+                </Typography>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={12} md={5}>
+                    <TextField
+                      label="Service Name"
+                      fullWidth
+                      size="small"
+                      value={customService.name}
+                      onChange={(e) => setCustomService({ ...customService, name: e.target.value })}
+                      placeholder="e.g. Special Engine Polish"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      label="Estimated Price"
+                      type="number"
+                      fullWidth
+                      size="small"
+                      value={customService.price}
+                      onChange={(e) => setCustomService({ ...customService, price: e.target.value })}
+                      placeholder="e.g. 1500"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={3}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      fullWidth
+                      leftIcon={Plus}
+                      onClick={() => {
+                        if (!customService.name || !customService.price) {
+                          toastError("Please enter service name and price");
+                          return;
+                        }
+                        const newService = {
+                          id: `custom_${Date.now()}`,
+                          name: customService.name,
+                          price: Number(customService.price),
+                          category: 'Custom'
+                        };
+
+                        const updated = [...selectedServices, newService];
+                        setSelectedServices(updated);
+                        setValue('services', updated.map(s => s.id));
+
+                        const totalCost = updated.reduce((sum, s) => sum + s.price, 0);
+                        const tax = totalCost * (companySettings.defaultTaxRate / 100);
+                        setValue('estimatedCost', totalCost + tax);
+
+                        toastSuccess("Custom service added to list!");
+                        setCustomService({ name: '', price: '' });
+                      }}
+                    >
+                      Add Service
+                    </Button>
+                  </Grid>
+                </Grid>
               </Card>
 
               <Card sx={{ borderRadius: 3, boxShadow: 1, p: 3 }}>

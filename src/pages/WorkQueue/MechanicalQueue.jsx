@@ -1,202 +1,262 @@
 import { useState } from 'react';
-import { Clock, Wrench, CheckCircle2, User, ArrowRight, Printer, AlertTriangle, Plus } from 'lucide-react';
-import Button from '../../components/common/Button';
-import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
-import { Box } from '@mui/material';
-import Modal from '../../components/common/Modal';
+import { Grid, Box, Typography, Card, CardContent, Chip } from '@mui/material';
+import { Clock, Wrench, CheckCircle2, User, AlertTriangle, ArrowRight } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
-import { toastSuccess, toastInfo } from '../../notifications/toast';
-import { formatDateTime } from '../../utils/formatters';
 import { useNavigate } from 'react-router-dom';
+import DataTable from '../../components/common/DataTable';
+import Button from '../../components/common/Button';
 import { ROUTES } from '../../config/routes';
-import styles from './WorkQueue.module.css';
 
-// Mock queue data with deliveryDate and subsequent stages
-const INITIAL_QUEUE = {
-  PENDING: [
-    { id: 'Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'General Service', priority: 'HIGH', waitTime: '1 hr 20 min', deliveryDate: new Date(Date.now() + 2 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
-    { id: 'Q2', vehicleNumber: 'KA 05 XY 9876', ownerName: 'Priya Singh', makeModel: 'Maruti Swift', serviceType: 'Oil Change', priority: 'NORMAL', waitTime: '45 min', deliveryDate: new Date(Date.now() + 4 * 3600000).toISOString(), requiredServices: [] },
-    { id: 'Q3', vehicleNumber: 'AP 16 ZZ 7700', ownerName: 'Kiran Reddy', makeModel: 'Tata Nexon', serviceType: 'Brake Service', priority: 'URGENT', waitTime: '10 min', deliveryDate: new Date(Date.now() + 1 * 3600000).toISOString(), requiredServices: ['Body Shop'] },
-  ],
-  ASSIGNED: [
-    { id: 'Q4', vehicleNumber: 'MH 12 PQ 4567', ownerName: 'Arun Patel', makeModel: 'Honda City', serviceType: 'Engine Repair', priority: 'HIGH', technician: 'Rajan M.', waitTime: '2 hrs', deliveryDate: new Date(Date.now() + 5 * 3600000).toISOString(), requiredServices: [] },
-  ],
-  IN_PROGRESS: [
-    { id: 'Q5', vehicleNumber: 'DL 04 RS 3344', ownerName: 'Suresh Nair', makeModel: 'Toyota Fortuner', serviceType: 'Engine Repair', priority: 'URGENT', technician: 'Anand P.', waitTime: '4 hrs 10 min', deliveryDate: new Date(Date.now() + 0.5 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
-    { id: 'Q6', vehicleNumber: 'TN 09 LM 8899', ownerName: 'Deepa Menon', makeModel: 'Mahindra XUV500', serviceType: 'Full Inspection', priority: 'NORMAL', technician: 'Vikram S.', waitTime: '1 hr 5 min', deliveryDate: new Date(Date.now() + 24 * 3600000).toISOString(), requiredServices: [] },
-  ],
-  COMPLETED: [
-    { id: 'Q7', vehicleNumber: 'TN 02 CD 5566', ownerName: 'Vinoth Kumar', makeModel: 'Hyundai Creta', serviceType: 'Oil Change', priority: 'NORMAL', technician: 'Rajan M.', waitTime: 'Done in 1.5 hrs', deliveryDate: new Date(Date.now() - 2 * 3600000).toISOString(), requiredServices: [] },
-  ],
-};
-
-const COLS = [
-  { key: 'PENDING', label: 'Pending', icon: Clock, color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.08)' },
-  { key: 'ASSIGNED', label: 'Assigned', icon: User, color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.08)' },
-  { key: 'IN_PROGRESS', label: 'In Progress', icon: Wrench, color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.08)' },
-  { key: 'COMPLETED', label: 'Completed', icon: CheckCircle2, color: '#10B981', bg: 'rgba(16, 185, 129, 0.08)' },
+// mock data matching the image
+const QUEUE_DATA = [
+  {
+    id: 'JC001',
+    vehicleNumber: 'TN 09 AB 1234',
+    customerName: 'Rajesh Kumar',
+    phone: '+91 98765 43210',
+    vehicleInfo: 'Maruti Swift 2019',
+    vehicleSpec: 'White - Petrol',
+    services: 'Oil Change, Brake Pad, Air Filter',
+    mechanic: 'Unassigned',
+    status: 'In Queue',
+    delivery: '5:00 PM',
+  },
+  {
+    id: 'JC002',
+    vehicleNumber: 'KA 01 MX 5678',
+    customerName: 'Priya Sharma',
+    phone: '+91 87654 32109',
+    vehicleInfo: 'Honda City 2021',
+    vehicleSpec: 'Silver - Petrol',
+    services: 'Engine Checkup, Coolant',
+    mechanic: 'Ravi Kumar',
+    status: 'Approval',
+    delivery: '3:00 PM',
+  },
+  {
+    id: 'JC003',
+    vehicleNumber: 'MH 02 XY 9012',
+    customerName: 'Arun Pillai',
+    phone: '+91 76543 21098',
+    vehicleInfo: 'Hyundai i20 2022',
+    vehicleSpec: 'Red - Diesel',
+    services: 'Full Service Package',
+    mechanic: 'Suresh M.',
+    status: 'In Progress',
+    delivery: 'Tomorrow 10 AM',
+  },
+  {
+    id: 'JC004',
+    vehicleNumber: 'DL 01 BC 3344',
+    customerName: 'Meena S.',
+    phone: '+91 65432 10987',
+    vehicleInfo: 'Tata Nexon 2020',
+    vehicleSpec: 'Blue - Diesel',
+    services: 'Tyre Rotation, Battery Check',
+    mechanic: 'Unassigned',
+    status: 'In Queue',
+    delivery: '4:00 PM',
+  },
+  {
+    id: 'JC005',
+    vehicleNumber: 'TN 33 PQ 7788',
+    customerName: 'Vikram Rajan',
+    phone: '+91 54321 09876',
+    vehicleInfo: 'Maruti Baleno 2023',
+    vehicleSpec: 'Grey - Petrol',
+    services: 'AC Service, Oil Change',
+    mechanic: 'Manoj T.',
+    status: 'Done',
+    delivery: '12:00 PM ✓',
+  }
 ];
 
-const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', URGENT: '#EF4444' };
+const COLS = [
+  { key: 'PENDING', label: 'Pending', icon: Clock, color: '#F59E0B' },
+  { key: 'ASSIGNED', label: 'Assigned', icon: User, color: '#3B82F6' },
+  { key: 'IN_PROGRESS', label: 'In Progress', icon: Wrench, color: '#8B5CF6' },
+  { key: 'COMPLETED', label: 'Completed', icon: CheckCircle2, color: '#10B981' },
+];
 
 export default function MechanicalQueue() {
   const navigate = useNavigate();
-  const [queue, setQueue] = useState(INITIAL_QUEUE);
-  
-  // Sort function: URGENT first, then closest delivery time
-  const sortJobs = (jobs) => {
-    const priorityWeight = { URGENT: 4, HIGH: 3, NORMAL: 2, LOW: 1 };
-    return [...jobs].sort((a, b) => {
-      if (priorityWeight[b.priority] !== priorityWeight[a.priority]) {
-        return priorityWeight[b.priority] - priorityWeight[a.priority];
-      }
-      return new Date(a.deliveryDate) - new Date(b.deliveryDate);
-    });
+  const [queue, setQueue] = useState(QUEUE_DATA);
+
+  // Derive counts from QUEUE_DATA
+  const summaryCounts = {
+    PENDING: queue.filter(q => q.status === 'In Queue').length,
+    ASSIGNED: queue.filter(q => q.mechanic !== 'Unassigned' && q.status !== 'In Queue' && q.status !== 'Done').length,
+    IN_PROGRESS: queue.filter(q => q.status === 'In Progress' || q.status === 'Approval').length,
+    COMPLETED: queue.filter(q => q.status === 'Done').length,
   };
 
-  const moveItem = (itemId, fromCol, toCol, updates = {}) => {
-    setQueue(prev => {
-      const itemToMove = prev[fromCol].find(i => i.id === itemId);
-      if (!itemToMove) return prev;
-      
-      const updatedItem = { ...itemToMove, ...updates };
-      const newFrom = prev[fromCol].filter(i => i.id !== itemId);
-      const newTo = sortJobs([...prev[toCol], updatedItem]);
-      
-      return { ...prev, [fromCol]: newFrom, [toCol]: newTo };
-    });
-  };
-
-  const handleStart = (item) => {
-    moveItem(item.id, 'ASSIGNED', 'IN_PROGRESS');
-    toastSuccess(`Work started for ${item.vehicleNumber}`);
-  };
-
-  const handleComplete = (item) => {
-    moveItem(item.id, 'IN_PROGRESS', 'COMPLETED');
-    
-    // Check if handoff is needed
-    if (item.requiredServices?.includes('Water Wash')) {
-      toastSuccess(`Mechanical complete. Vehicle auto-moved to Water Wash Queue.`);
-    } else if (item.requiredServices?.includes('Body Shop')) {
-      toastSuccess(`Mechanical complete. Vehicle auto-moved to Body Shop Queue.`);
-    } else {
-      toastSuccess(`Work completed for ${item.vehicleNumber}. Ready for delivery check.`);
-    }
-  };
-
-  const QueueCard = ({ item, status }) => (
-    <div className={styles.card}>
-      <div className={styles.cardHeader}>
-        <VehicleNumberPlate vehicleNumber={item.vehicleNumber} size="sm" />
-        <span
-          className={`${styles.priority} priority-${(item.priority || 'NORMAL').toLowerCase()}`}
+  const columns = [
+    {
+      header: 'VEHICLE NO.',
+      render: (row) => (
+        <Typography sx={{ color: '#3b82f6', fontFamily: 'monospace', fontWeight: 600, fontSize: '0.875rem' }}>
+          {row.vehicleNumber}
+        </Typography>
+      ),
+    },
+    {
+      header: 'CUSTOMER',
+      render: (row) => (
+        <Box>
+          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.customerName}</Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.phone}</Typography>
+        </Box>
+      ),
+    },
+    {
+      header: 'VEHICLE',
+      render: (row) => (
+        <Box>
+          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.vehicleInfo}</Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.vehicleSpec}</Typography>
+        </Box>
+      ),
+    },
+    {
+      header: 'SERVICES',
+      render: (row) => (
+        <Typography sx={{ fontSize: '0.875rem', color: '#374151' }}>{row.services}</Typography>
+      ),
+    },
+    {
+      header: 'MECHANIC',
+      render: (row) => (
+        <Chip
+          label={row.mechanic}
+          size="small"
+          sx={{
+            bgcolor: row.mechanic === 'Unassigned' ? 'transparent' : '#eff6ff',
+            color: row.mechanic === 'Unassigned' ? '#d97706' : '#2563eb',
+            border: `1px solid ${row.mechanic === 'Unassigned' ? '#fcd34d' : '#bfdbfe'}`,
+            fontWeight: 600,
+            borderRadius: '9999px'
+          }}
+        />
+      ),
+    },
+    {
+      header: 'STATUS',
+      render: (row) => (
+        <Chip
+          icon={row.status === 'Approval' ? <AlertTriangle size={14} /> : row.status === 'Done' ? <CheckCircle2 size={14} /> : undefined}
+          label={row.status}
+          size="small"
+          sx={{
+            bgcolor: row.status === 'In Queue' ? 'transparent' :
+              row.status === 'Approval' ? '#fef3c7' :
+                row.status === 'In Progress' ? '#eff6ff' :
+                  row.status === 'Done' ? '#ecfdf5' : '#f3f4f6',
+            color: row.status === 'In Queue' ? '#d97706' :
+              row.status === 'Approval' ? '#d97706' :
+                row.status === 'In Progress' ? '#2563eb' :
+                  row.status === 'Done' ? '#059669' : '#4b5563',
+            border: `1px solid ${row.status === 'In Queue' ? '#fcd34d' :
+              row.status === 'Approval' ? '#fcd34d' :
+                row.status === 'In Progress' ? '#bfdbfe' :
+                  row.status === 'Done' ? '#a7f3d0' : '#e5e7eb'}`,
+            fontWeight: 600,
+            borderRadius: '9999px',
+            '& .MuiChip-icon': { color: 'inherit', ml: 1 }
+          }}
+        />
+      ),
+    },
+    {
+      header: 'DELIVERY',
+      render: (row) => (
+        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>{row.delivery}</Typography>
+      ),
+    },
+    {
+      header: 'ACTION',
+      render: (row) => (
+        <Button
+          variant="primary"
+          size="sm"
+          rightIcon={ArrowRight}
+          onClick={() => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
+          sx={{
+            fontWeight: 600,
+            textTransform: 'none',
+          }}
         >
-          {item.priority || 'NORMAL'}
-        </span>
-      </div>
-      <p className={styles.ownerName}>{item.ownerName}</p>
-      <p className={styles.makeModel}>{item.makeModel}</p>
-      
-      {status === 'PENDING' && (
-        <div className={styles.deliveryAlert}>
-          <AlertTriangle size={12} /> Expected: {formatDateTime(item.deliveryDate)}
-        </div>
-      )}
-      
-      <div className={styles.serviceTag}>{item.serviceType}</div>
-      
-      {item.technician && (
-        <div className={styles.techRow}>
-          <User size={12} />
-          {item.technician}
-        </div>
-      )}
-      
-      <div className={styles.cardFooter}>
-        <span className={styles.waitTime}>
-          <Clock size={11} /> {item.waitTime}
-        </span>
-        {status === 'PENDING' && (
-          <div className="text-muted text-sm">Awaiting Assignment</div>
-        )}
-        {status === 'ASSIGNED' && (
-          <Button size="sm" variant="primary" rightIcon={ArrowRight} onClick={() => handleStart(item)}>
-            Start
-          </Button>
-        )}
-        {status === 'IN_PROGRESS' && (
-          <div className="d-flex gap-2">
-            <Button size="sm" variant="outline" leftIcon={Plus}
-              onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK)}
-              className="border-warning text-warning text-xs"
-            >
-              Add Work
-            </Button>
-            <Button size="sm" variant="success" rightIcon={CheckCircle2} onClick={() => handleComplete(item)}>
-              Complete
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+          Open
+        </Button>
+      ),
+    },
+  ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F4F6F9', minHeight: '100%' }}>
       <PageHeader
         title="Mechanical Queue"
-        subtitle="Manage mechanical work assignments and track progress"
         breadcrumbs={[{ label: 'Mechanical Queue' }]}
       />
 
-      {/* Summary Stats */}
-      <div className={styles.summaryRow}>
-        {COLS.map((col) => {
+      {/* KPI Cards Row */}
+      <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
+        {COLS.map((col, i) => {
           const Icon = col.icon;
-          const count = queue[col.key]?.length || 0;
+          const count = summaryCounts[col.key] || 0;
           return (
-            <div key={col.key} className={`${styles.summaryCard} status-${col.key.toLowerCase().replace('_', '-')}`}>
-              <Icon size={20} className={`text-${col.key.toLowerCase().replace('_', '-')}`} />
-              <div>
-                <p className={styles.summaryLabel}>{col.label}</p>
-                <p className={styles.summaryCount}>{count}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            <Grid item xs={12} sm={6} md={3} key={i}>
+              <Card
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+                  borderTop: `4px solid ${col.color}`,
+                  height: '100%',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
 
-      {/* Kanban Board */}
-      <div className={styles.board}>
-        {COLS.map((col) => {
-          const Icon = col.icon;
-          // Ensure sorted representation
-          const items = col.key === 'PENDING' ? sortJobs(queue[col.key]) : queue[col.key] || [];
-          
-          return (
-            <div key={col.key} className={styles.column}>
-              <div className={`${styles.columnHeader} border-${col.key.toLowerCase().replace('_', '-')}`}>
-                <div className={`${styles.columnTitle} text-${col.key.toLowerCase().replace('_', '-')}`}>
-                  <Icon size={16} />
-                  {col.label}
-                </div>
-                <span className={`${styles.columnCount} bg-${col.key.toLowerCase().replace('_', '-')}-20 text-${col.key.toLowerCase().replace('_', '-')}`}>
-                  {items.length}
-                </span>
-              </div>
-              <div className={styles.columnBody}>
-                {items.map((item) => (
-                  <QueueCard key={item.id} item={item} status={col.key} />
-                ))}
-                {items.length === 0 && (
-                  <div className={styles.emptyCol}>No items in {col.label.toLowerCase()}</div>
-                )}
-              </div>
-            </div>
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: col.color, mb: 1 }}>
+                    {count}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" fontWeight={600}>
+                    {col.label}
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${col.color}15`, color: col.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={20} />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
           );
         })}
-      </div>
+      </Grid>
+
+      {/* Data Tables Row */}
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
+            <CardContent sx={{ p: 3, pb: '24px !important' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <Wrench size={20} color="#6b7280" />
+                <Typography variant="h6" fontWeight={800} sx={{ color: '#6b7280', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  RECENT MECHANICAL QUEUE
+                </Typography>
+              </Box>
+
+              <DataTable
+                columns={columns}
+                data={queue}
+                emptyMessage="No jobs in queue"
+                showPagination={false}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Box>
   );
 }

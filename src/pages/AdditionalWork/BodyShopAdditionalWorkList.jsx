@@ -5,23 +5,22 @@ import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { ROUTES } from '../../config/routes';
 import { formatDateTime } from '../../utils/formatters';
-import styles from '../WorkQueue/WorkQueue.module.css';
 
 const MOCK_REQUESTS = [
-  { id: 'AW-001', vehicleNumber: 'TN 01 AB 1234', requestDate: new Date(Date.now() - 3600000).toISOString(), description: 'Brake pads worn out, needs replacement', estimatedCost: '2,500', status: 'PENDING_APPROVAL' },
-  { id: 'AW-002', vehicleNumber: 'KA 05 XY 9876', requestDate: new Date(Date.now() - 86400000).toISOString(), description: 'Engine oil leak detected', estimatedCost: '4,000', status: 'APPROVED' },
+  { id: 'AW-B01', vehicleNumber: 'TN 01 AB 1234', requestDate: new Date(Date.now() - 3600000).toISOString(), description: 'Found deep scratch on rear bumper, needs paint touchup', estimatedCost: '1,500', status: 'PENDING_APPROVAL' },
+  { id: 'AW-B02', vehicleNumber: 'KA 05 XY 9876', requestDate: new Date(Date.now() - 86400000).toISOString(), description: 'Right fender dent removal required', estimatedCost: '3,000', status: 'APPROVED' },
 ];
 
-export default function AdditionalWorkList() {
+export default function BodyShopAdditionalWorkList() {
   const navigate = useNavigate();
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
-        title="Additional Work Requests"
+        title="Additional Work Requests (Body Shop)"
         breadcrumbs={[{ label: 'Additional Work' }]}
         action={
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK_NEW)}>
+          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW)}>
             New Request
           </Button>
         }
