@@ -105,16 +105,16 @@ export default function CustomerForm() {
 
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="name" label="Customer Full Name *" placeholder="Enter full name" required />
+              <RHFTextField name="name" label="Customer Full Name" placeholder="Enter full name" required />
             </Grid>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="email" label="Email Address *" type="email" placeholder="Enter email address" required />
+              <RHFTextField name="email" label="Email Address" type="email" placeholder="Enter email address" required />
             </Grid>
           </Grid>
 
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="mobile" label="Mobile Number *" placeholder="Enter mobile number" required />
+              <RHFTextField name="mobile" label="Mobile Number" placeholder="Enter mobile number" required />
             </Grid>
             <Grid item xs={12} md={6}>
               <RHFSelect name="status" label="Status" options={STATUS_OPTIONS} />

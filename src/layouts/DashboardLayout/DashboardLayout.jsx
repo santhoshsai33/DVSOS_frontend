@@ -22,7 +22,7 @@ export default function DashboardLayout() {
         }}
       >
         <Topbar />
-        <Box component="main" sx={{ flexGrow: 1, pb: { xs: 2, md: 3 }, pt: { xs: 10, md: 11 }, overflowY: 'auto' }}>
+        <Box component="main" sx={{ flexGrow: 1, pb: { xs: 2, md: 3 }, pt: 8, overflowY: 'auto' }}>
           <Outlet />
         </Box>
       </Box>

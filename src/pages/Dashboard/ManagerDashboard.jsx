@@ -1,196 +1,307 @@
-import { useState } from 'react';
-import { Box, Grid, Card, CardContent, Typography } from '@mui/material';
-import DataTable from '../../components/common/DataTable';
+import { Box, Card, Grid, Typography } from '@mui/material';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
-} from 'recharts';
-import {
-  Car, Clock, CheckCircle2, AlertTriangle, TrendingUp,
-  RefreshCw, Plus
+  AlertTriangle,
+  BarChart3,
+  Car,
+  CheckCircle2,
+  ClipboardList,
+  Eye,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useManagerDashboard } from '../../queries/useDashboardQueries';
-import StatusBadge from '../../components/common/StatusBadge';
-import Loader from '../../components/common/Loader';
 import Button from '../../components/common/Button';
-import PageHeader from '../../components/shared/PageHeader';
-import { formatCurrency } from '../../utils/formatters';
-import useAuthStore from '../../store/useAuthStore';
+import DataTable from '../../components/common/DataTable';
+import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { ROUTES } from '../../config/routes';
 
-const PIE_COLORS = ['#0F766E', '#B7791F', '#2563EB', '#B42318', '#6B7280'];
+const kpis = [
+  { label: 'Total Today', value: 23, color: '#12343B', iconBg: '#E9EEF1', icon: Car },
+  { label: 'Completed', value: 9, color: '#22C7B8', iconBg: '#E8FAF8', icon: CheckCircle2 },
+  { label: 'JC Pending', value: 2, color: '#D97706', iconBg: '#FFF4E5', icon: ClipboardList },
+  { label: 'Delayed', value: 3, color: '#0EA5E9', iconBg: '#EAF8FF', icon: AlertTriangle },
+];
+
+const pipeline = [
+  { label: 'Gate / JC Pending', value: 2, meta: 'Awaiting job card', color: '#D97706', bg: '#FFF7ED', route: ROUTES.CRM_PENDING_JOB_CARDS },
+  { label: 'Mechanical', value: 8, meta: '3 active - 5 waiting', color: '#2563EB', bg: '#EFF6FF', route: ROUTES.FLOOR_MECHANICAL_QUEUE },
+  { label: 'Body Shop', value: 4, meta: '2 active - 2 waiting', color: '#7C3AED', bg: '#F5F3FF', route: ROUTES.BODY_SHOP_QUEUE },
+  { label: 'Water Wash', value: 5, meta: '2 washing - 3 queue', color: '#0891B2', bg: '#ECFEFF', route: ROUTES.WATER_WASH_QUEUE },
+  { label: 'Completed', value: 9, meta: 'Ready for delivery', color: '#059669', bg: '#ECFDF5', route: ROUTES.CRM_DELIVERY_READY },
+];
+
+const vehicles = [
+  {
+    id: 'JC002',
+    vehicleNumber: 'KA 05 XY 9876',
+    ownerName: 'Priya Singh',
+    ownerMobile: '9876543211',
+    serviceType: 'Oil Change',
+    services: ['Oil Change'],
+    status: 'PENDING',
+    technician: '',
+    estimatedCost: 1200,
+    createdAt: '2024-06-12T09:15:00Z',
+    stage: 'Approval Pending',
+    stageTone: 'danger',
+    delivery: '5:00 PM',
+  },
+  {
+    id: 'JC001',
+    vehicleNumber: 'TN 01 AB 1234',
+    ownerName: 'Ramesh Kumar',
+    ownerMobile: '9876543210',
+    serviceType: 'General Service',
+    services: ['Oil Change', 'Brake Check', 'AC Service'],
+    status: 'IN_PROGRESS',
+    technician: 'Rajan M.',
+    estimatedCost: 3500,
+    createdAt: '2024-06-12T08:00:00Z',
+    stage: 'Mechanical',
+    stageTone: 'warning',
+    delivery: '5:00 PM',
+  },
+  {
+    id: 'JC003',
+    vehicleNumber: 'MH 12 PQ 4567',
+    ownerName: 'Arun Patel',
+    ownerMobile: '9876543212',
+    serviceType: 'Body Repair',
+    services: ['Body Repair', 'Paint Job'],
+    status: 'COMPLETED',
+    technician: 'Vikram S.',
+    estimatedCost: 18500,
+    createdAt: '2024-06-12T07:30:00Z',
+    stage: 'Completed',
+    stageTone: 'info',
+    delivery: '3:00 PM',
+  },
+  {
+    id: 'JC004',
+    vehicleNumber: 'DL 04 RS 3344',
+    ownerName: 'Suresh Nair',
+    ownerMobile: '9876543213',
+    serviceType: 'Engine Repair',
+    services: ['Engine Repair', 'Brake Service'],
+    status: 'DELAYED',
+    technician: 'Anand P.',
+    estimatedCost: 25000,
+    createdAt: '2024-06-11T10:00:00Z',
+    stage: 'Body Shop',
+    stageTone: 'purple',
+    delivery: 'Tomorrow',
+  },
+  {
+    id: 'JC005',
+    vehicleNumber: 'TN 09 LM 8899',
+    ownerName: 'Deepa Menon',
+    ownerMobile: '9876543214',
+    serviceType: 'General Service',
+    services: ['General Service', 'Tyre Rotation'],
+    status: 'BODY_SHOP',
+    technician: 'Rajan M.',
+    estimatedCost: 8000,
+    createdAt: '2024-06-12T08:45:00Z',
+    stage: 'Body Shop',
+    stageTone: 'success',
+    delivery: '11 AM',
+  },
+];
+
+const toneStyles = {
+  danger: { bg: '#FEF2F2', border: '#FCA5A5', color: '#B42318' },
+  warning: { bg: '#FFFBEB', border: '#FCD34D', color: '#B7791F' },
+  success: { bg: '#ECFDF5', border: '#86EFAC', color: '#047857' },
+  info: { bg: '#EFF6FF', border: '#BFDBFE', color: '#2563EB' },
+  purple: { bg: '#F5F3FF', border: '#DDD6FE', color: '#7C3AED' },
+};
+
+function StagePill({ tone, children }) {
+  const style = toneStyles[tone] || toneStyles.info;
+  return (
+    <Box
+      component="span"
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        border: '1px solid',
+        borderColor: style.border,
+        bgcolor: style.bg,
+        color: style.color,
+        borderRadius: '999px',
+        px: 1,
+        py: 0.35,
+        fontSize: 11,
+        fontWeight: 800,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
 
 export default function ManagerDashboard() {
-  const { data, isLoading, refetch, isFetching } = useManagerDashboard();
-  const { user } = useAuthStore();
   const navigate = useNavigate();
-
-  if (isLoading) return <Loader fullPage text="Loading dashboard..." />;
-
-  const kpis = [
+  const jobCardColumns = [
     {
-      label: 'Vehicles Today',
-      value: data?.totalVehiclesToday ?? 0,
-      icon: Car,
-      color: '#3B82F6',
-      change: '+12% vs yesterday',
-      positive: true,
+      header: 'Job Card #',
+      accessor: 'id',
+      render: (row) => (
+        <Typography variant="body2" sx={{ fontWeight: 800, color: '#334155' }}>
+          #{row.id}
+        </Typography>
+      ),
     },
     {
-      label: 'Pending Approvals',
-      value: data?.pendingApprovals ?? 0,
-      icon: Clock,
-      color: '#F59E0B',
-      change: '2 require urgent action',
-      positive: false,
+      header: 'Vehicle',
+      render: (row) => <VehicleNumberPlate vehicleNumber={row.vehicleNumber} />,
+    },
+    { header: 'Owner', accessor: 'ownerName' },
+    { header: 'Mobile Number', accessor: 'ownerMobile' },
+    {
+      header: 'Stage',
+      render: (row) => <StagePill tone={row.stageTone}>{row.stage}</StagePill>,
     },
     {
-      label: 'Completed Jobs',
-      value: data?.completedJobs ?? 0,
-      icon: CheckCircle2,
-      color: '#10B981',
-      change: '+8% vs yesterday',
-      positive: true,
+      header: 'Technician',
+      render: (row) => row.technician || <Typography variant="body2" color="text.secondary">Unassigned</Typography>,
     },
     {
-      label: 'Delayed Vehicles',
-      value: data?.delayedJobs ?? 0,
-      icon: AlertTriangle,
-      color: '#EF4444',
-      change: '1 over 24 hrs',
-      positive: false,
+      header: 'Est. Cost',
+      render: (row) => (
+        <Typography variant="body2" fontWeight={800}>
+          Rs. {row.estimatedCost.toLocaleString('en-IN')}
+        </Typography>
+      ),
+    },
+    {
+      header: 'Action',
+      render: (row) => (
+        <Button
+          variant="primary"
+          size="sm"
+          rightIcon={Eye}
+          onClick={(event) => {
+            event.stopPropagation();
+            navigate(`${ROUTES.JOB_CARDS}/${row.id}`);
+          }}
+        >
+          Open
+        </Button>
+      ),
     },
   ];
-
-  const jobColumns = [
-    { header: 'Vehicle No', accessor: 'vehicleNo', render: (row) => <Typography variant="body2" fontWeight={700}>{row.vehicleNo}</Typography> },
-    { header: 'Customer', accessor: 'customer' },
-    { header: 'Stage', accessor: 'stage' },
-    { header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
-    { header: 'Time in Stage', accessor: 'timeInStage' },
-  ];
-
-  const recentJobs = data?.recentJobs || [];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
-      <PageHeader
-        title={`Good ${new Date().getHours() < 12 ? 'Morning' : 'Afternoon'}, ${user?.name?.split(' ')[0] || 'Manager'} 👋`}
-        subtitle="Here's your operations overview for today"
-        actions={
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button variant="secondary" size="sm" leftIcon={RefreshCw} isLoading={isFetching} onClick={() => refetch()}>
-              Refresh
-            </Button>
-            <Button variant="primary" size="sm" leftIcon={Plus} onClick={() => navigate(ROUTES.GATE_ENTRY)}>
-              New Entry
-            </Button>
-          </Box>
-        }
-      />
-
-      {/* KPI Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {kpis.map((kpi, i) => {
+    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#EEF4FF', minHeight: '100%' }}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
+        {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <Grid item xs={12} sm={6} md={3} key={i}>
-              <Card sx={{ borderRadius: 0 }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, mr: 2 }}>
-                      <Icon size={24} />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                      {kpi.label}
-                    </Typography>
-                  </Box>
-                  <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
+            <Grid item xs={12} sm={6} md={3} key={kpi.label}>
+              <Card
+                sx={{
+                  minHeight: 170,
+                  borderRadius: 3,
+                  border: '1px solid #E2E8F0',
+                  borderTop: '6px solid',
+                  borderTopColor: kpi.color,
+                  boxShadow: '0 12px 24px -22px rgba(15, 23, 42, 0.7)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  bgcolor: '#FFFFFF',
+                }}
+              >
+                <Box sx={{ p: 3, minHeight: 170, display: 'flex', flexDirection: 'column' }}>
+                  <Typography variant="h3" sx={{ fontWeight: 900, color: kpi.color, lineHeight: 1, mb: 2 }}>
                     {kpi.value}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: kpi.positive ? 'success.main' : 'error.main', display: 'flex', alignItems: 'center' }}>
-                    {kpi.positive ? <TrendingUp size={14} className="mr-1" /> : <AlertTriangle size={14} className="mr-1" />}
-                    {kpi.change}
+                  <Typography variant="subtitle1" sx={{ color: '#334155', fontWeight: 800 }}>
+                    {kpi.label}
                   </Typography>
-                </CardContent>
+                  <Box sx={{ flex: 1 }} />
+                  <Box
+                    sx={{
+                      alignSelf: 'flex-end',
+                      width: 46,
+                      height: 46,
+                      borderRadius: 3,
+                      bgcolor: kpi.iconBg,
+                      color: kpi.color,
+                      display: 'grid',
+                      placeItems: 'center',
+                    }}
+                  >
+                    <Icon size={21} />
+                  </Box>
+                </Box>
               </Card>
             </Grid>
           );
         })}
       </Grid>
 
-      {/* Charts Row */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={8}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h6" fontWeight={700}>Weekly Revenue & Jobs</Typography>
-                <Typography variant="body2" color="text.secondary" fontWeight={600}>{formatCurrency(data?.revenueToday ?? 0)} today</Typography>
+      <Card sx={{ borderRadius: 2, border: '1px solid #D8E2F3', mb: 2 }}>
+        <Box sx={{ p: 2.25 }}>
+          <Typography variant="caption" sx={{ color: '#8A9AB5', fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            Live pipeline overview - click a stage to view that queue
+          </Typography>
+          <Box
+            sx={{
+              borderTop: '1px solid #D8E2F3',
+              mt: 1.25,
+              pt: 2,
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: 'repeat(5, 130px)',
+                lg: 'repeat(5, minmax(130px, 1fr))',
+              },
+              columnGap: { xs: 1.25, lg: 3 },
+              overflowX: 'auto',
+              pb: 0.5,
+            }}
+          >
+            {pipeline.map((stage, index) => (
+              <Box key={stage.label} sx={{ display: 'grid', gridTemplateColumns: index < pipeline.length - 1 ? '1fr auto' : '1fr', alignItems: 'center', gap: { xs: 1.25, lg: 2 } }}>
+                <Box
+                  onClick={() => navigate(stage.route)}
+                  sx={{
+                    width: '100%',
+                    minHeight: 96,
+                    borderRadius: 1.5,
+                    border: '1px solid',
+                    borderColor: stage.color,
+                    bgcolor: stage.bg,
+                    p: 1.5,
+                    cursor: 'pointer',
+                    '&:hover': { boxShadow: '0 10px 20px -18px rgba(15,23,42,0.9)' },
+                  }}
+                >
+                  <Typography variant="caption" sx={{ display: 'block', color: stage.color, fontWeight: 900, textTransform: 'uppercase', fontSize: 10 }}>
+                    {stage.label}
+                  </Typography>
+                  <Typography variant="h5" sx={{ color: stage.color, fontWeight: 900, my: 0.5 }}>{stage.value}</Typography>
+                  <Typography variant="caption" sx={{ color: '#64748B', fontSize: 10 }}>{stage.meta}</Typography>
+                </Box>
+                {index < pipeline.length - 1 && <Typography sx={{ color: '#94A3B8', fontWeight: 900 }}>{'->'}</Typography>}
               </Box>
-              <Box sx={{ height: 280, width: '100%' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data?.weeklyRevenue || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#0F766E" stopOpacity={0.15} />
-                        <stop offset="95%" stopColor="#0F766E" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                    <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
-                    <Tooltip formatter={(v, name) => [name === 'revenue' ? formatCurrency(v) : v, name === 'revenue' ? 'Revenue' : 'Jobs']} contentStyle={{ borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
-                    <Area type="monotone" dataKey="revenue" stroke="#0F766E" strokeWidth={3} fill="url(#revenueGrad)" dot={false} />
-                    <Area type="monotone" dataKey="jobs" stroke="#B7791F" strokeWidth={2} fill="none" dot={false} strokeDasharray="4 2" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Service Breakdown</Typography>
-              <Box sx={{ height: 250, width: '100%' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={data?.serviceBreakdown || []}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {(data?.serviceBreakdown || []).map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(v) => [`${v}%`, 'Share']} contentStyle={{ borderRadius: '8px' }} />
-                    <Legend iconSize={8} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+            ))}
+          </Box>
+        </Box>
+      </Card>
 
-      {/* Recent Jobs Table */}
-      <Card sx={{ borderRadius: 0 }}>
-        <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
-          <Typography variant="h6" fontWeight={700}>Active Jobs</Typography>
-          <Button variant="ghost" size="sm" onClick={() => navigate(ROUTES.JOB_CARDS)}>View All</Button>
+      <Card sx={{ borderRadius: 2, border: '1px solid #D8E2F3', overflow: 'hidden' }}>
+        <Box sx={{ p: 2, borderBottom: '1px solid #D8E2F3', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <BarChart3 size={18} color="#2563EB" />
+          <Typography variant="caption" sx={{ color: '#8A9AB5', fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            Recent job cards - click a row to view details
+          </Typography>
         </Box>
         <DataTable
-          columns={jobColumns}
-          data={recentJobs}
+          columns={jobCardColumns}
+          data={vehicles}
+          showPagination={false}
           onRowClick={(row) => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
-          emptyMessage="No active jobs found"
+          emptyMessage="No recent job cards found"
         />
       </Card>
     </Box>

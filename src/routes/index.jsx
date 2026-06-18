@@ -56,7 +56,7 @@ import WaterWashDashboardPage from '../features/roles/water-wash/pages/WaterWash
 import WaterWashQueuePage from '../features/roles/water-wash/pages/WaterWashQueuePage';
 import WashJobDetailPage from '../features/roles/water-wash/pages/WashJobDetailPage';
 import ManagerDashboardPage from '../features/roles/manager/pages/ManagerDashboardPage';
-import OperationsOverviewPage from '../features/roles/manager/pages/OperationsOverviewPage';
+import ManagerJobCardPrototypePage from '../features/roles/manager/pages/ManagerJobCardPrototypePage';
 import DelayedJobsPage from '../features/roles/manager/pages/DelayedJobsPage';
 import PendingApprovalsPage from '../features/roles/manager/pages/PendingApprovalsPage';
 import ManagerReportsPage from '../features/roles/manager/pages/ReportsPage';
@@ -70,9 +70,11 @@ import CustomerDetailPage from '../features/common/customers/pages/CustomerDetai
 import CustomerForm from '../features/common/customers/pages/CustomerForm';
 import VehicleListPage from '../features/common/vehicles/pages/VehicleListPage';
 import VehicleDetailPage from '../features/common/vehicles/pages/VehicleDetailPage';
+import VehicleEditPage from '../features/common/vehicles/pages/VehicleEditPage';
 import JobCardListPage from '../features/common/job-cards/pages/JobCardListPage';
 import JobCardDetailPage from '../features/common/job-cards/pages/JobCardDetailPage';
 import ServiceHistoryPage from '../features/common/service-history/pages/ServiceHistoryPage';
+import ServiceHistoryJobCardPage from '../features/common/service-history/pages/ServiceHistoryJobCardPage';
 import NotificationsPage from '../features/common/notifications/pages/NotificationsPage';
 import ProfilePage from '../features/common/profile/pages/ProfilePage';
 import SettingsPage from '../features/common/settings/pages/SettingsPage';
@@ -83,7 +85,7 @@ const roleHome = {
   [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
   [ROLES.FLOOR_SUPERVISOR]: ROUTES.FLOOR_DASHBOARD,
   [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_QUEUE,
-  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_QUEUE,
+  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_DASHBOARD,
   [ROLES.MANAGER]: ROUTES.MANAGER_DASHBOARD,
   [ROLES.MD]: ROUTES.MD_DASHBOARD,
   [ROLES.SUPER_ADMIN]: ROUTES.ADMIN_DASHBOARD,
@@ -123,9 +125,6 @@ export const router = createBrowserRouter([
             element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_ADMIN} />,
             children: [
               { path: 'admin-dashboard', element: <AdminDashboardPage /> },
-              { path: 'users', element: <UserManagementPage /> },
-              { path: 'users/new', element: <UserForm /> },
-              { path: 'users/:id/edit', element: <UserForm /> },
               { path: 'roles', element: <RoleManagementPage /> },
               { path: 'roles/privileges', element: <RolePrivilegesForm /> },
               { path: 'roles/privileges/:id/edit', element: <RolePrivilegesForm /> },
@@ -197,7 +196,7 @@ export const router = createBrowserRouter([
           {
             element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_WATER_WASH} />,
             children: [
-              { path: 'water-wash-dashboard', element: <Navigate to={ROUTES.WATER_WASH_QUEUE} replace /> },
+              { path: 'water-wash-dashboard', element: <WaterWashDashboardPage /> },
               { path: 'water-wash-queue', element: <WaterWashQueuePage /> },
               { path: 'water-wash-jobs/:id', element: <WashJobDetailPage /> },
             ],
@@ -206,10 +205,14 @@ export const router = createBrowserRouter([
             element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_MANAGEMENT} />,
             children: [
               { path: 'manager-dashboard', element: <ManagerDashboardPage /> },
-              { path: 'operations', element: <OperationsOverviewPage /> },
+              { path: 'operations', element: <Navigate to={ROUTES.MANAGER_DASHBOARD} replace /> },
               { path: 'delayed-jobs', element: <DelayedJobsPage /> },
               { path: 'pending-approvals', element: <PendingApprovalsPage /> },
               { path: 'reports', element: <ManagerReportsPage /> },
+              { path: 'manager-job-cards/:id', element: <ManagerJobCardPrototypePage /> },
+              { path: 'users', element: <UserManagementPage /> },
+              { path: 'users/new', element: <UserForm /> },
+              { path: 'users/:id/edit', element: <UserForm /> },
             ],
           },
           {
@@ -229,11 +232,14 @@ export const router = createBrowserRouter([
               { path: 'customers/:id/edit', element: <CustomerForm /> },
               { path: 'vehicles', element: <VehicleListPage /> },
               { path: 'vehicles/:id', element: <VehicleDetailPage /> },
+              { path: 'vehicles/:id/edit', element: <VehicleEditPage /> },
+              { path: 'vehicles/:id/history', element: <ServiceHistoryPage /> },
               { path: 'job-cards', element: <JobCardListPage /> },
               { path: 'job-cards/create', element: <CreateJobCardPage /> },
               { path: 'job-cards/:id', element: <JobCardDetailPage title="Job Card Detail" /> },
               { path: 'job-cards/:id/edit', element: <CreateJobCardPage /> },
               { path: 'service-history', element: <ServiceHistoryPage /> },
+              { path: 'service-history/job-cards/:jobCardId', element: <ServiceHistoryJobCardPage /> },
               { path: 'notifications', element: <NotificationsPage title="Notifications" /> },
               { path: 'profile', element: <ProfilePage title="Profile" /> },
               { path: 'settings', element: <SettingsPage /> },
@@ -245,7 +251,7 @@ export const router = createBrowserRouter([
           { path: 'work-queue/body-shop', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
           { path: 'body-shop/dashboard', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
           { path: 'work-queue/water-wash', element: <Navigate to={ROUTES.WATER_WASH_QUEUE} replace /> },
-          { path: 'water-wash/dashboard', element: <Navigate to={ROUTES.WATER_WASH_QUEUE} replace /> },
+          { path: 'water-wash/dashboard', element: <Navigate to={ROUTES.WATER_WASH_DASHBOARD} replace /> },
           { path: 'approvals', element: <Navigate to={ROUTES.MANAGER_PENDING_APPROVALS} replace /> },
           { path: 'kpi-dashboard', element: <Navigate to={ROUTES.MD_SERVICE_KPI} replace /> },
           { path: 'executive-dashboard', element: <Navigate to={ROUTES.MD_EXECUTIVE_OVERVIEW} replace /> },

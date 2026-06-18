@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Filter, MoreVertical, Eye, Clock } from 'lucide-react';
+import { Edit3, MoreVertical, Eye, Clock } from 'lucide-react';
 import { Box, Card, IconButton, Menu, MenuItem, Select, Typography } from '@mui/material';
 import { useVehicles } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
-import Button from '../../components/common/Button';
 import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
 import DataTable from '../../components/common/DataTable';
@@ -75,11 +74,6 @@ export default function VehicleList() {
       <PageHeader
         title="Vehicle Management"
         breadcrumbs={[{ label: 'Vehicles' }]}
-        actions={
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.GATE_ENTRY)}>
-            New Entry
-          </Button>
-        }
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -132,7 +126,11 @@ export default function VehicleList() {
           <Eye size={16} className="mr-3 text-primary" />
           View Details
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/${selectedVehicle?.id}`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/${selectedVehicle?.id}/edit`); }}>
+          <Edit3 size={16} className="mr-3 text-warning" />
+          Edit Vehicle
+        </MenuItem>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/${selectedVehicle?.id}/history`); }}>
           <Clock size={16} className="mr-3 text-warning" />
           History
         </MenuItem>
