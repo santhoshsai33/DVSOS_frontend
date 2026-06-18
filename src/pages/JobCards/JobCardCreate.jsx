@@ -1,7 +1,7 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Grid, Typography, Divider, Card, CardContent, Checkbox, FormControlLabel, IconButton } from '@mui/material';
-import { Save, Search, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Box, Grid, Typography, Divider, Card, CardContent, Checkbox, FormControlLabel, IconButton, Chip, TextField } from '@mui/material';
+import { Save, Search, MessageCircle, ArrowLeft, X, Plus } from 'lucide-react';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
 import RHFTextField from '../../components/form/RHFTextField';
@@ -13,6 +13,8 @@ import { formatCurrency } from '../../utils/formatters';
 import { useState, useMemo, useEffect } from 'react';
 import useMasterDataStore from '../../store/useMasterDataStore';
 import { useJobCard } from '../../queries/useDataQueries';
+import useAuthStore from '../../store/useAuthStore';
+import { ROLES } from '../../constants/roles';
 
 import Loader from '../../components/common/Loader';
 
@@ -31,6 +33,15 @@ export default function JobCardCreate() {
   const { masterServices, serviceCategories, companySettings } = useMasterDataStore();
   const [selectedServices, setSelectedServices] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [customService, setCustomService] = useState({ name: '', price: '' });
+
+  const { role } = useAuthStore();
+  const roleCategoryMap = {
+    [ROLES.FLOOR_SUPERVISOR]: 'Mechanical',
+    [ROLES.BODY_SHOP_SUPERVISOR]: 'Body Shop',
+    [ROLES.WATER_WASH_TEAM]: 'Water Wash',
+  };
+  const restrictedCategory = roleCategoryMap[role];
 
   const methods = useForm({
     defaultValues: {
@@ -54,9 +65,20 @@ export default function JobCardCreate() {
   const selectedCategory = watch('serviceType');
 
   const filteredServices = useMemo(() => {
-    if (!selectedCategory) return masterServices;
-    return masterServices.filter(s => s.category?.toLowerCase() === selectedCategory.toLowerCase());
-  }, [masterServices, selectedCategory]);
+    let categoryToFilter = selectedCategory;
+    if (restrictedCategory && (!selectedCategory || selectedCategory === 'ALL')) {
+      categoryToFilter = restrictedCategory;
+    }
+
+    if (!categoryToFilter || categoryToFilter === 'ALL') return masterServices;
+    return masterServices.filter(s => s.category?.toLowerCase() === categoryToFilter.toLowerCase());
+  }, [masterServices, selectedCategory, restrictedCategory]);
+
+  useEffect(() => {
+    if (!isEditMode && restrictedCategory) {
+      setValue('serviceType', restrictedCategory);
+    }
+  }, [isEditMode, restrictedCategory, setValue]);
 
   useEffect(() => {
     if (isEditMode && jobCard) {
@@ -74,9 +96,9 @@ export default function JobCardCreate() {
         const formattedDate = date.toISOString().slice(0, 16);
         setValue('deliveryDate', formattedDate);
       }
-      
+
       if (jobCard.services && masterServices.length > 0) {
-         const mappedServices = masterServices.filter(s => 
+        const mappedServices = masterServices.filter(s =>
           jobCard.services.includes(s.name) || jobCard.services.includes(s.id)
         );
         setSelectedServices(mappedServices);
@@ -86,6 +108,22 @@ export default function JobCardCreate() {
   }, [jobCard, isEditMode, setValue, masterServices]);
 
   const subtotal = useMemo(() => selectedServices.reduce((sum, s) => sum + s.price, 0), [selectedServices]);
+
+  const CATEGORY_OPTS = useMemo(() => {
+    let categories = serviceCategories;
+    if (restrictedCategory) {
+      categories = serviceCategories.filter(c => c.name === restrictedCategory);
+    }
+
+    if (restrictedCategory) {
+      return categories.map(c => ({ value: c.name, label: c.name }));
+    }
+
+    return [
+      { value: 'ALL', label: 'All Categories' },
+      ...categories.map(c => ({ value: c.name, label: c.name }))
+    ];
+  }, [serviceCategories, restrictedCategory]);
 
   if (isEditMode && isJobCardLoading) {
     return <Loader fullPage text="Loading job card details..." />;
@@ -126,7 +164,7 @@ export default function JobCardCreate() {
       setIsSearching(false);
     }
   };
-  
+
   const taxAmount = subtotal * (companySettings.defaultTaxRate / 100);
   const grandTotal = subtotal + taxAmount;
 
@@ -161,19 +199,17 @@ export default function JobCardCreate() {
     }
   };
 
-  const CATEGORY_OPTS = serviceCategories.map(c => ({ value: c.name, label: c.name }));
-
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100%', p: { xs: 2, md: 4 } }}>
-      
+
       {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
           {isEditMode ? 'Edit Job Card' : 'Create Job Card'}
         </Typography>
-        <BackButton 
-          to={ROUTES.JOB_CARDS} 
-          label="Back to List" 
+        <BackButton
+          to={ROUTES.JOB_CARDS}
+          label="Back to List"
         />
       </Box>
 
@@ -182,14 +218,14 @@ export default function JobCardCreate() {
           <Grid container spacing={4}>
             {/* LEFT COLUMN: FORM */}
             <Grid item xs={12} lg={8}>
-              <Card sx={{ borderRadius: 3, boxShadow: 1, p: 3, mb: 4 }}>
+              <Card sx={{ borderRadius: 3, boxShadow: 0, p: 3, mb: 4 }}>
                 <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
                   Vehicle & Customer Information
                 </Typography>
-                
+
                 <Grid container spacing={3} sx={{ mb: 3 }}>
                   <Grid item xs={12} md={6}>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                       <Box sx={{ flexGrow: 1 }}>
                         <RHFTextField name="vehicleNumber" label="Registration Number" placeholder="TN 01 AB 1234" required />
                       </Box>
@@ -199,7 +235,7 @@ export default function JobCardCreate() {
                         leftIcon={Search}
                         isLoading={isSearching}
                         onClick={handleSearchVehicle}
-                        style={{ height: '40px', marginTop: '24px' }}
+                        style={{ height: '40px' }}
                       >
                         Search
                       </Button>
@@ -220,12 +256,12 @@ export default function JobCardCreate() {
                 </Grid>
               </Card>
 
-              <Card sx={{ borderRadius: 3, boxShadow: 1, p: 3, mb: 4 }}>
+              <Card sx={{ borderRadius: 3, boxShadow: 0, p: 3, mb: 4 }}>
                 <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
-                  Service Configuration
+                  Service Configuration & Master List
                 </Typography>
-                
-                <Grid container spacing={3}>
+
+                <Grid container spacing={3} sx={{ mb: 4 }}>
                   <Grid item xs={12} md={4}>
                     <RHFSelect name="serviceType" label="Primary Category" options={CATEGORY_OPTS} placeholder="Select category" required />
                   </Grid>
@@ -236,13 +272,11 @@ export default function JobCardCreate() {
                     <RHFTextField name="deliveryDate" label="Expected Delivery" type="datetime-local" required />
                   </Grid>
                 </Grid>
-              </Card>
 
-              <Card sx={{ borderRadius: 3, boxShadow: 1, p: 3, mb: 4 }}>
-                <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
-                  Master Service List
+                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase' }}>
+                  Available Services
                 </Typography>
-                
+
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                   {filteredServices.map((service) => {
                     const isSelected = selectedServices.some((s) => s.id === service.id);
@@ -253,14 +287,30 @@ export default function JobCardCreate() {
                         sx={{
                           p: 2, borderRadius: 2, border: '1px solid',
                           borderColor: isSelected ? 'primary.main' : 'divider',
-                          bgcolor: isSelected ? 'primary.light' : 'background.paper',
+                          bgcolor: isSelected ? 'primary.main' : 'background.paper',
+                          color: isSelected ? '#FFFFFF' : 'inherit',
                           cursor: 'pointer', transition: 'all 0.2s',
                           display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                         }}
                       >
                         <FormControlLabel
-                          control={<Checkbox checked={isSelected} onChange={() => {}} sx={{ p: 0.5 }} />}
-                          label={<Typography variant="body2" fontWeight={600}>{service.name}</Typography>}
+                          control={<Checkbox checked={isSelected} onChange={() => { }} sx={{ p: 0.5, color: isSelected ? '#FFFFFF' : 'inherit', '&.Mui-checked': { color: '#FFFFFF' } }} />}
+                          label={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="body2" fontWeight={600}>{service.name}</Typography>
+                              <Chip
+                                label={service.category}
+                                size="small"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.65rem',
+                                  bgcolor: isSelected ? 'rgba(255,255,255,0.2)' : 'action.selected',
+                                  color: isSelected ? '#FFF' : 'text.primary',
+                                  fontWeight: 600
+                                }}
+                              />
+                            </Box>
+                          }
                           sx={{ m: 0 }}
                         />
                         <Typography variant="body2" fontWeight={700}>{formatCurrency(service.price)}</Typography>
@@ -270,7 +320,7 @@ export default function JobCardCreate() {
                 </Box>
               </Card>
 
-              <Card sx={{ borderRadius: 3, boxShadow: 1, p: 3 }}>
+              <Card sx={{ borderRadius: 3, boxShadow: 0, p: 3 }}>
                 <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
                   Additional Details
                 </Typography>
@@ -280,11 +330,11 @@ export default function JobCardCreate() {
 
             {/* RIGHT COLUMN: BILL PREVIEW */}
             <Grid item xs={12} lg={4}>
-              <Card sx={{ borderRadius: 3, boxShadow: 1, position: 'sticky', top: 80 }}>
+              <Card sx={{ borderRadius: 3, boxShadow: 0, position: 'sticky', top: 80 }}>
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, pb: 2, borderBottom: '1px dashed', borderColor: 'divider' }}>
                     <Typography variant="h6" fontWeight={700}>Bill Preview</Typography>
-                    <Typography variant="caption" sx={{ bgcolor: 'success.light', color: 'success.main', px: 1, py: 0.5, borderRadius: 8, fontWeight: 600 }}>Auto-generated</Typography>
+                    <Typography variant="caption" sx={{ bgcolor: 'success.main', color: '#FFFFFF', px: 1, py: 0.5, borderRadius: 8, fontWeight: 600 }}>Auto-generated</Typography>
                   </Box>
 
                   <Box sx={{ minHeight: 150, maxHeight: 300, overflowY: 'auto', mb: 3 }}>
@@ -294,8 +344,13 @@ export default function JobCardCreate() {
                       </Box>
                     ) : (
                       selectedServices.map((item) => (
-                        <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                          <Typography variant="body2" fontWeight={500}>{item.name} <Typography component="span" variant="caption" color="text.secondary">x1</Typography></Typography>
+                        <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <IconButton size="small" onClick={() => toggleService(item)} sx={{ color: 'error.main', p: 0.5 }}>
+                              <X size={16} />
+                            </IconButton>
+                            <Typography variant="body2" fontWeight={500}>{item.name} <Typography component="span" variant="caption" color="text.secondary">x1</Typography></Typography>
+                          </Box>
                           <Typography variant="body2" fontWeight={600}>{formatCurrency(item.price)}</Typography>
                         </Box>
                       ))

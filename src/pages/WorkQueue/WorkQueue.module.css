@@ -213,3 +213,175 @@
   color: var(--color-text-muted);
   font-style: italic;
 }
+
+/* Table Styles for Mechanical Queue */
+.tableContainer {
+  background: var(--color-bg-surface, #ffffff);
+  border-radius: var(--radius-lg, 8px);
+  border: 1px solid var(--color-border, #e5e7eb);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  margin-top: 1rem;
+}
+
+.tableHeaderSection {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  color: #6b7280;
+}
+
+.tableIcon {
+  color: #6b7280;
+}
+
+.tableTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  padding: 1rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover {
+  background-color: rgba(249, 250, 251, 0.5);
+}
+
+.vehicleNoText {
+  color: #3b82f6;
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.boldText {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.875rem;
+  margin-bottom: 0.2rem;
+}
+
+.subText {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.servicesText {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.bayText {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.deliveryText {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.pillIcon {
+  margin-right: 0.1rem;
+}
+
+.pillYellow {
+  color: #d97706;
+  border-color: #fcd34d;
+  background-color: transparent;
+}
+
+.pillYellowWarning {
+  color: #d97706;
+  border-color: #fcd34d;
+  background-color: #fef3c7;
+}
+
+.pillBlue {
+  color: #2563eb;
+  border-color: #bfdbfe;
+  background-color: #eff6ff;
+}
+
+.pillGreen {
+  color: #059669;
+  border-color: #a7f3d0;
+  background-color: #ecfdf5;
+}
+
+.pillGray {
+  color: #4b5563;
+  border-color: #e5e7eb;
+  background-color: #f3f4f6;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  color: white;
+}
+
+.actionBtn:hover {
+  opacity: 0.9;
+}
+
+.btnBlue {
+  background-color: #3b82f6;
+}
+
+.btnOrange {
+  background-color: #d97706;
+}

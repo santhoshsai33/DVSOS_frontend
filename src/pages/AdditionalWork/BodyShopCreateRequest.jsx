@@ -8,7 +8,7 @@ import RHFTextarea from '../../components/form/RHFTextarea';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 
-export default function CreateRequest() {
+export default function BodyShopCreateRequest() {
   const navigate = useNavigate();
   const methods = useForm({
     defaultValues: {
@@ -22,7 +22,7 @@ export default function CreateRequest() {
     // Simulate sending WhatsApp request
     await new Promise(r => setTimeout(r, 800));
     toastSuccess('Approval request sent to customer via WhatsApp');
-    navigate(ROUTES.FLOOR_ADDITIONAL_WORK);
+    navigate(ROUTES.BODY_SHOP_ADDITIONAL_WORK);
   };
 
   return (
@@ -31,11 +31,11 @@ export default function CreateRequest() {
       {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
-          Request Additional Work
+          Request Additional Work (Body Shop)
         </Typography>
         <Box
           component="button"
-          onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK)}
+          onClick={() => navigate(ROUTES.BODY_SHOP_ADDITIONAL_WORK)}
           sx={{
             display: 'flex', alignItems: 'center', gap: 1,
             bgcolor: 'transparent', border: 'none', cursor: 'pointer',
@@ -83,7 +83,7 @@ export default function CreateRequest() {
 
           {/* Footer Actions */}
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button variant="secondary" type="button" onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK)}>
+            <Button variant="secondary" type="button" onClick={() => navigate(ROUTES.BODY_SHOP_ADDITIONAL_WORK)}>
               Cancel
             </Button>
             <Button variant="primary" type="submit" leftIcon={Send} isLoading={methods.formState.isSubmitting}>

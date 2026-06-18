@@ -53,6 +53,10 @@ export const ROUTES = {
   BODY_SHOP_DASHBOARD: '/body-shop-dashboard',
   BODY_SHOP_QUEUE: '/body-shop-queue',
   BODY_SHOP_JOB: '/body-shop-jobs',
+  BODY_SHOP_ASSIGN_MECHANIC: '/body-shop-assign-mechanic',
+  BODY_SHOP_ADDITIONAL_WORK: '/body-shop-additional-work',
+  BODY_SHOP_ADDITIONAL_WORK_NEW: '/body-shop-additional-work/new',
+  BODY_SHOP_WORK_STATUS: '/body-shop-work-status',
 
   WATER_WASH_DASHBOARD: '/water-wash-dashboard',
   WATER_WASH_QUEUE: '/water-wash-queue',

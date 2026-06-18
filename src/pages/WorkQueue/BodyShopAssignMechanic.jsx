@@ -11,18 +11,17 @@ import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastInfo } from '../../notifications/toast';
 import { formatDateTime } from '../../utils/formatters';
 import styles from './WorkQueue.module.css';
-import { ROUTES } from '../../config/routes';
 
 const PENDING_JOBS = [
-  { id: 'Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'General Service', priority: 'HIGH', waitTime: '1 hr 20 min', deliveryDate: new Date(Date.now() + 2 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
-  { id: 'Q2', vehicleNumber: 'KA 05 XY 9876', ownerName: 'Priya Singh', makeModel: 'Maruti Swift', serviceType: 'Oil Change', priority: 'NORMAL', waitTime: '45 min', deliveryDate: new Date(Date.now() + 4 * 3600000).toISOString(), requiredServices: [] },
-  { id: 'Q3', vehicleNumber: 'AP 16 ZZ 7700', ownerName: 'Kiran Reddy', makeModel: 'Tata Nexon', serviceType: 'Brake Service', priority: 'URGENT', waitTime: '10 min', deliveryDate: new Date(Date.now() + 1 * 3600000).toISOString(), requiredServices: ['Body Shop'] },
+  { id: 'B-Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'Dent Removal', priority: 'HIGH', waitTime: '1 hr 20 min', deliveryDate: new Date(Date.now() + 2 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
+  { id: 'B-Q2', vehicleNumber: 'KA 05 XY 9876', ownerName: 'Priya Singh', makeModel: 'Maruti Swift', serviceType: 'Full Body Repaint', priority: 'NORMAL', waitTime: '45 min', deliveryDate: new Date(Date.now() + 48 * 3600000).toISOString(), requiredServices: [] },
+  { id: 'B-Q3', vehicleNumber: 'AP 16 ZZ 7700', ownerName: 'Kiran Reddy', makeModel: 'Tata Nexon', serviceType: 'Bumper Replacement', priority: 'URGENT', waitTime: '10 min', deliveryDate: new Date(Date.now() + 5 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
 ];
 
-const MECHANICS = ['Rajan M.', 'Vikram S.', 'Anand P.', 'Suresh K.'];
+const MECHANICS = ['Ravi B.', 'Suresh T.', 'Kumar M.', 'Vijay P.'];
 const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', URGENT: '#EF4444' };
 
-export default function AssignMechanicList() {
+export default function BodyShopAssignMechanic() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState(PENDING_JOBS);
   const [search, setSearch] = useState('');
@@ -120,7 +119,7 @@ export default function AssignMechanicList() {
 
   const handleConfirmAssign = () => {
     if (!selectedMechanic) {
-      toastInfo('Please select a mechanic');
+      toastInfo('Please select a technician');
       return;
     }
 
@@ -137,8 +136,8 @@ export default function AssignMechanicList() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
-        title="Assign Mechanic"
-        breadcrumbs={[{ label: 'Assign Mechanic' }]}
+        title="Assign Technician (Body Shop)"
+        breadcrumbs={[{ label: 'Assign Technician' }]}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, mt: 3, flexWrap: 'wrap' }}>
@@ -165,7 +164,7 @@ export default function AssignMechanicList() {
             <DataTable
               columns={columns}
               data={filteredJobs}
-              emptyMessage="No jobs pending allocation."
+              emptyMessage="No body shop jobs pending allocation."
               showPagination={true}
             />
           </Box>
@@ -175,7 +174,7 @@ export default function AssignMechanicList() {
       <Modal
         show={assignModal.isOpen}
         onHide={() => setAssignModal({ isOpen: false, item: null })}
-        title="Assign Mechanic & Print Card"
+        title="Assign Technician & Print Card"
         confirmLabel="Assign & Print"
         onConfirm={handleConfirmAssign}
         confirmIcon={Printer}
@@ -183,14 +182,14 @@ export default function AssignMechanicList() {
         {assignModal.item && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              Please assign a mechanic for job <strong>#{assignModal.item.id}</strong>.
+              Please assign a technician for job <strong>#{assignModal.item.id}</strong>.
             </Typography>
 
             <FormControl fullWidth size="small">
-              <InputLabel>Select Mechanic</InputLabel>
+              <InputLabel>Select Technician</InputLabel>
               <Select
                 value={selectedMechanic}
-                label="Select Mechanic"
+                label="Select Technician"
                 onChange={(e) => setSelectedMechanic(e.target.value)}
                 sx={{ borderRadius: 2 }}
               >

@@ -48,6 +48,10 @@ import CreateRequest from '../pages/AdditionalWork/CreateRequest';
 import BodyShopDashboardPage from '../features/roles/body-shop-supervisor/pages/BodyShopDashboardPage';
 import BodyShopQueuePage from '../features/roles/body-shop-supervisor/pages/BodyShopQueuePage';
 import BodyShopJobDetailPage from '../features/roles/body-shop-supervisor/pages/BodyShopJobDetailPage';
+import BodyShopAssignMechanicPage from '../features/roles/body-shop-supervisor/pages/BodyShopAssignMechanicPage';
+import BodyShopAdditionalWorkPage from '../features/roles/body-shop-supervisor/pages/BodyShopAdditionalWorkPage';
+import BodyShopCreateRequestPage from '../features/roles/body-shop-supervisor/pages/BodyShopCreateRequestPage';
+import BodyShopWorkStatusPage from '../features/roles/body-shop-supervisor/pages/BodyShopWorkStatusPage';
 import WaterWashDashboardPage from '../features/roles/water-wash/pages/WaterWashDashboardPage';
 import WaterWashQueuePage from '../features/roles/water-wash/pages/WaterWashQueuePage';
 import WashJobDetailPage from '../features/roles/water-wash/pages/WashJobDetailPage';
@@ -184,6 +188,10 @@ export const router = createBrowserRouter([
               { path: 'body-shop-dashboard', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
               { path: 'body-shop-queue', element: <BodyShopQueuePage /> },
               { path: 'body-shop-jobs/:id', element: <BodyShopJobDetailPage /> },
+              { path: 'body-shop-assign-mechanic', element: <BodyShopAssignMechanicPage /> },
+              { path: 'body-shop-additional-work', element: <BodyShopAdditionalWorkPage /> },
+              { path: 'body-shop-additional-work/new', element: <BodyShopCreateRequestPage /> },
+              { path: 'body-shop-work-status', element: <BodyShopWorkStatusPage /> },
             ],
           },
           {
