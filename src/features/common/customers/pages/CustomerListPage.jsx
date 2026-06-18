@@ -138,10 +138,10 @@ export default function CustomerListPage() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Customer Directory"
-        breadcrumbs={[{ label: 'Home', path: ROUTES.ADMIN_DASHBOARD }, { label: 'Customers' }]}
+        breadcrumbs={[{ label: 'Customers' }]}
       />
 
-      <Box sx={{ display: 'flex', mb: 4, gap: 2 }}>
+      <Box sx={{ display: 'flex', mb: 3, gap: 2 }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
             placeholder="Search by name, email, or mobile..."

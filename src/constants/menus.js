@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  BarChart2,
   Bell,
   Car,
   CheckSquare,
@@ -65,6 +64,7 @@ export const SIDEBAR_MENUS = {
   ],
 
   [ROLES.WATER_WASH_TEAM]: [
+    { label: 'Water Wash Dashboard', path: ROUTES.WATER_WASH_DASHBOARD, icon: LayoutDashboard },
     { label: 'Water Wash Queue', path: ROUTES.WATER_WASH_QUEUE, icon: Droplets },
     { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
@@ -72,10 +72,7 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.MANAGER]: [
     { label: 'Manager Dashboard', path: ROUTES.MANAGER_DASHBOARD, icon: LayoutDashboard },
-    { label: 'Operations Overview', path: ROUTES.MANAGER_OPERATIONS, icon: BarChart2 },
-    { label: 'Delayed Jobs', path: ROUTES.MANAGER_DELAYED_JOBS, icon: AlertCircle },
-    { label: 'Pending Approvals', path: ROUTES.MANAGER_PENDING_APPROVALS, icon: CheckSquare },
-    { label: 'Reports', path: ROUTES.MANAGER_REPORTS, icon: FileText },
+    { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
     ...commonLinks,
   ],
 
