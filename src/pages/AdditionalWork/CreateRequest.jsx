@@ -76,67 +76,13 @@ function serviceRows(jobCard) {
 
 function InfoItem({ label, value }) {
   return (
-    <Box sx={{ bgcolor: 'background.paper', minHeight: '100%', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
-
-      {/* Page Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5" fontWeight={700}>
-          Request Additional Work
-        </Typography>
-        <Box
-          component="button"
-          onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK)}
-          className="back-btn"
-        >
-          <ArrowLeft size={16} /> Back to Requests
-        </Box>
-      </Box>
-
-      <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)}>
-
-          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, color: 'text.primary' }}>
-            Work Details
-          </Typography>
-
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField name="vehicleNumber" label="Vehicle Number / Job Card ID *" placeholder="Enter Vehicle No" required />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <RHFTextField name="estimatedCost" label="Estimated Additional Cost (₹) *" placeholder="0.00" type="number" required />
-            </Grid>
-          </Grid>
-
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12}>
-              <RHFTextarea name="description" label="Additional Work Description *" placeholder="Explain the extra work required..." rows={4} required />
-            </Grid>
-          </Grid>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', fontSize: '0.875rem' }}>
-              <ImageIcon size={16} /> <span>You can attach photos to this request from the mobile/tablet app.</span>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#0F766E', fontSize: '0.875rem', bgcolor: '#F0FDF4', p: 1.5, borderRadius: 2 }}>
-              <Mic size={16} /> <span><strong>Voice Notes Supported:</strong> When WhatsApp opens, you can hold the microphone icon to record and send a voice note explaining the issue to the customer.</span>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#B7791F', fontSize: '0.875rem', bgcolor: '#FEF3C7', p: 1.5, borderRadius: 2 }}>
-              <AlertTriangle size={16} /> <span><strong>Important:</strong> If the customer rejects the additional work, it will be marked as REJECTED and only the original job card services will proceed.</span>
-            </Box>
-          </Box>
-
-          {/* Footer Actions */}
-          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button variant="secondary" type="button" onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK)}>
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit" leftIcon={Send} isLoading={methods.formState.isSubmitting}>
-              Send WhatsApp Approval
-            </Button>
-          </Box>
-        </form>
-      </FormProvider>
+    <Box>
+      <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+        {label}
+      </Typography>
+      <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 700, mt: 0.5 }}>
+        {value || '-'}
+      </Typography>
     </Box>
   );
 }
@@ -192,7 +138,7 @@ export function AdditionalWorkRequestScreen({
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
   const [priority, setPriority] = useState('NORMAL');
   const [expectedDelivery, setExpectedDelivery] = useState('');
-  const [requestSource, setRequestSource] = useState('MECHANIC_IDENTIFIED');
+  const [requestSource, setRequestSource] = useState(requestSources[0]?.value || 'MECHANIC_IDENTIFIED');
   const [notes, setNotes] = useState('');
   const [selectedAdditionalServices, setSelectedAdditionalServices] = useState([]);
   const [isSending, setIsSending] = useState(false);
@@ -203,9 +149,9 @@ export function AdditionalWorkRequestScreen({
     return masterServices.filter((service) => service.category?.toLowerCase() === selectedCategory.toLowerCase());
   }, [masterServices, selectedCategory]);
   const categoryOptions = useMemo(() => {
-    const categories = serviceCategories.length ? serviceCategories : [{ id: 'C1', name: 'Mechanical' }];
+    const categories = serviceCategories.length ? serviceCategories : [{ id: 'C1', name: defaultCategory }];
     return categories.map((category) => ({ value: category.name, label: category.name }));
-  }, [serviceCategories]);
+  }, [defaultCategory, serviceCategories]);
   const baseSubtotal = currentServices.reduce((sum, service) => sum + Number(service.price || 0) * Number(service.qty || 1), 0);
   const additionalSubtotal = selectedAdditionalServices.reduce((sum, service) => sum + Number(service.price || 0), 0);
   const subtotal = baseSubtotal + additionalSubtotal;
@@ -349,10 +295,7 @@ export function AdditionalWorkRequestScreen({
               </Box>
             </SectionCard>
 
-            <SectionCard
-              icon={Wrench}
-              title={serviceSectionTitle}
-            >
+            <SectionCard icon={Wrench} title={serviceSectionTitle}>
               <Grid container spacing={2.5} sx={{ mb: 4 }}>
                 <Grid item xs={12} md={4}>
                   <FieldLabel required>Primary Category</FieldLabel>
@@ -365,9 +308,7 @@ export function AdditionalWorkRequestScreen({
                       setSelectedAdditionalServices([]);
                     }}
                     required
-                    sx={{
-                      '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' },
-                    }}
+                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
                   >
                     {categoryOptions.map((category) => (
                       <MenuItem key={category.value} value={category.value}>{category.label}</MenuItem>
@@ -381,9 +322,7 @@ export function AdditionalWorkRequestScreen({
                     fullWidth
                     value={priority}
                     onChange={(event) => setPriority(event.target.value)}
-                    sx={{
-                      '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' },
-                    }}
+                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
                   >
                     <MenuItem value="LOW">Low</MenuItem>
                     <MenuItem value="NORMAL">Normal</MenuItem>
@@ -399,9 +338,7 @@ export function AdditionalWorkRequestScreen({
                     value={expectedDelivery}
                     onChange={(event) => setExpectedDelivery(event.target.value)}
                     required
-                    sx={{
-                      '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' },
-                    }}
+                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -411,9 +348,7 @@ export function AdditionalWorkRequestScreen({
                     fullWidth
                     value={requestSource}
                     onChange={(event) => setRequestSource(event.target.value)}
-                    sx={{
-                      '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' },
-                    }}
+                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
                   >
                     {requestSources.map((source) => (
                       <MenuItem key={source.value} value={source.value}>{source.label}</MenuItem>
@@ -427,9 +362,7 @@ export function AdditionalWorkRequestScreen({
                     placeholder="Add notes for internal tracking"
                     value={notes}
                     onChange={(event) => setNotes(event.target.value)}
-                    sx={{
-                      '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' },
-                    }}
+                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
                   />
                 </Grid>
               </Grid>
@@ -466,10 +399,7 @@ export function AdditionalWorkRequestScreen({
                           <Checkbox
                             checked={isSelected}
                             onChange={() => toggleAdditionalService(service)}
-                            sx={{
-                              color: '#0F172A',
-                              '&.Mui-checked': { color: '#0F766E' },
-                            }}
+                            sx={{ color: '#0F172A', '&.Mui-checked': { color: '#0F766E' } }}
                           />
                         }
                         label={
@@ -587,7 +517,6 @@ export function AdditionalWorkRequestScreen({
                 {sendButtonLabel}
               </Button>
             </SectionCard>
-
           </Box>
         </Grid>
       </Grid>
