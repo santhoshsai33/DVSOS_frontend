@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Grid, Box } from '@mui/material';
-import { Car, Clock, Wrench, CheckCircle2, Volume2, Maximize } from 'lucide-react';
+import { Grid } from '@mui/material';
+import { Car, Clock, Wrench, CheckCircle2, LogOut, Maximize } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Kiosk.module.css';
-import { formatDateTime } from '../../utils/formatters';
+import { ROUTES } from '../../config/routes';
+import { ROLES } from '../../constants/roles';
+import useAuthStore from '../../store/useAuthStore';
 
 // Mock data simulating live updates
 const MOCK_LIVE_DATA = {
@@ -23,6 +26,17 @@ const MOCK_LIVE_DATA = {
     { id: 'JC-1033', vehicle: 'TN 02 CD 5566', model: 'Hyundai Creta', status: 'READY', time: '10:15 AM' },
     { id: 'JC-1035', vehicle: 'KL 10 EE 4433', model: 'Maruti Baleno', status: 'READY', time: '11:30 AM' },
   ],
+};
+
+const roleHome = {
+  [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
+  [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
+  [ROLES.FLOOR_SUPERVISOR]: ROUTES.FLOOR_DASHBOARD,
+  [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_QUEUE,
+  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_DASHBOARD,
+  [ROLES.MANAGER]: ROUTES.MANAGER_DASHBOARD,
+  [ROLES.MD]: ROUTES.MD_DASHBOARD,
+  [ROLES.SUPER_ADMIN]: ROUTES.ADMIN_DASHBOARD,
 };
 
 function DisplaySection({ title, icon: Icon, items, statusClass }) {
@@ -54,6 +68,8 @@ function DisplaySection({ title, icon: Icon, items, statusClass }) {
 }
 
 export default function KioskDisplay() {
+  const navigate = useNavigate();
+  const { role, isAuthenticated } = useAuthStore();
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -69,6 +85,13 @@ export default function KioskDisplay() {
     } else {
       document.exitFullscreen();
     }
+  };
+
+  const exitKiosk = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    navigate(isAuthenticated ? roleHome[role] || ROUTES.MANAGER_DASHBOARD : ROUTES.LOGIN);
   };
 
   return (
@@ -90,6 +113,10 @@ export default function KioskDisplay() {
           </div>
           <button className={styles.fsBtn} onClick={toggleFullscreen} title="Toggle Fullscreen">
             <Maximize size={22} />
+          </button>
+          <button className={styles.exitBtn} onClick={exitKiosk} title="Exit Kiosk">
+            <LogOut size={20} />
+            <span>Exit</span>
           </button>
         </div>
       </header>
@@ -119,7 +146,7 @@ export default function KioskDisplay() {
                       <span className={styles.modelName}>{item.model}</span>
                     </div>
                     <div className={styles.itemMeta}>
-                      <span className={styles.readyBadge}>READY</span>
+                      <span className={styles.jobId}>{item.id}</span>
                       <span className={styles.time}>Since {item.time}</span>
                     </div>
                   </div>
