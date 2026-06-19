@@ -51,10 +51,27 @@ export default function DataTable({
         }}
       >
         <TableContainer>
-          <Table sx={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+          <Table
+            sx={{
+              borderCollapse: 'separate',
+              borderSpacing: 0,
+              '& .MuiButton-root': {
+                width: 'auto',
+                minWidth: 'max-content',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              },
+              '& .MuiButton-startIcon, & .MuiButton-endIcon': {
+                flexShrink: 0,
+              },
+            }}
+          >
             <TableHead>
               <TableRow>
-                {columns.map((col, index) => (
+                {columns.map((col, index) => {
+                  const isActionColumn = String(col.header || '').toLowerCase().includes('action');
+
+                  return (
                   <TableCell
                     key={index}
                     sx={{
@@ -67,14 +84,16 @@ export default function DataTable({
                       py: 2,
                       px: 3,
                       whiteSpace: 'nowrap',
+                      width: isActionColumn ? '1%' : col.width || 'auto',
                       '&:first-of-type': { pl: 4 },
                       '&:last-of-type': { pr: 4 }
                     }}
-                    width={col.width || 'auto'}
+                    width={isActionColumn ? '1%' : col.width || 'auto'}
                   >
                     {col.header}
                   </TableCell>
-                ))}
+                  );
+                })}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -94,7 +113,10 @@ export default function DataTable({
                     }
                   }}
                 >
-                  {columns.map((col, colIndex) => (
+                  {columns.map((col, colIndex) => {
+                    const isActionColumn = String(col.header || '').toLowerCase().includes('action');
+
+                    return (
                     <TableCell
                       key={colIndex}
                       sx={{
@@ -103,6 +125,8 @@ export default function DataTable({
                         color: '#334155',
                         fontSize: '0.875rem',
                         fontWeight: 500,
+                        whiteSpace: isActionColumn ? 'nowrap' : 'normal',
+                        width: isActionColumn ? '1%' : col.width || 'auto',
                         '&:first-of-type': { pl: 4 },
                         '&:last-of-type': { pr: 4 }
                       }}
@@ -111,7 +135,8 @@ export default function DataTable({
                         ? col.render(row)
                         : (row[col.accessor] !== undefined && row[col.accessor] !== null ? row[col.accessor] : '—')}
                     </TableCell>
-                  ))}
+                    );
+                  })}
                 </TableRow>
               ))}
             </TableBody>
