@@ -22,9 +22,9 @@ export default function Button({
   let baseSx = {};
 
   switch (variant) {
-    case 'primary': 
-      muiVariant = 'contained'; 
-      color = 'primary'; 
+    case 'primary':
+      muiVariant = 'contained';
+      color = 'primary';
       baseSx = {
         boxShadow: 'none',
         border: '1px solid transparent',
@@ -37,9 +37,9 @@ export default function Button({
         }
       };
       break;
-    case 'secondary': 
-      muiVariant = 'outlined'; 
-      color = 'inherit'; 
+    case 'secondary':
+      muiVariant = 'outlined';
+      color = 'inherit';
       baseSx = {
         color: '#64748B',
         borderColor: '#CBD5E1',

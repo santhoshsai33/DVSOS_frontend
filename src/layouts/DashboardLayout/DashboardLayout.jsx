@@ -16,7 +16,7 @@ export default function DashboardLayout() {
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
-          minWidth: 0, // important to prevent flex items from overflowing
+          minWidth: 0,
           transition: 'margin-left 0.3s',
           height: '100vh',
         }}
