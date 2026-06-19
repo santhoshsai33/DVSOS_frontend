@@ -8,61 +8,63 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
-import { formatCurrency } from '../../utils/formatters';
 
-export default function ServiceItems() {
+export default function StatusList() {
   const navigate = useNavigate();
-  const { masterServices, deleteService, updateService } = useMasterDataStore();
+  const { masterStatuses, masterModules, deleteStatus, updateStatus } = useMasterDataStore();
 
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
-    setSelectedItem(row);
+    setSelectedStatus(row);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setSelectedItem(null);
+    setSelectedStatus(null);
   };
 
   const handleDelete = () => {
-    setDeleteItem(selectedItem);
+    setDeleteItem(selectedStatus);
     handleMenuClose();
   };
 
   const confirmDelete = () => {
     if (deleteItem) {
-      deleteService(deleteItem.id);
-      toastSuccess(`Service "${deleteItem.name}" deleted successfully.`);
+      deleteStatus(deleteItem.id);
+      toastSuccess(`Status "${deleteItem.name}" deleted successfully.`);
       setDeleteItem(null);
     }
   };
 
   const handleStatusChange = (id, newStatus) => {
-    updateService(id, { status: newStatus });
-    toastSuccess('Service status updated successfully!');
+    updateStatus(id, { status: newStatus });
+    toastSuccess('Status updated successfully!');
+  };
+
+  const getModuleName = (moduleId) => {
+    const module = masterModules?.find(m => m.id === moduleId);
+    return module ? module.name : 'Unknown Module';
   };
 
   const columns = [
     {
-      header: 'Service Item Name',
+      header: 'Module',
+      accessor: 'moduleId',
+      render: (row) => <Typography variant="body2">{getModuleName(row.moduleId)}</Typography>
+    },
+    {
+      header: 'Status Name',
       accessor: 'name',
       render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
     },
-    { header: 'Category Group', accessor: 'category' },
     {
-      header: 'Base Price (₹)',
-      accessor: 'price',
-      render: (row) => <Typography variant="body2" fontWeight={600} color="success.main">{formatCurrency(row.price || 0)}</Typography>
-    },
-    {
-      header: 'Est. Duration',
-      accessor: 'estimatedMinutes',
-      render: (row) => <Typography variant="body2">{row.estimatedMinutes ? `${row.estimatedMinutes} mins` : '-'}</Typography>
+      header: 'Description',
+      accessor: 'description',
     },
     {
       header: 'Status',
@@ -93,27 +95,27 @@ export default function ServiceItems() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
-        title="Service Items"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Service Items' }]}
+        title="Status Master"
+        breadcrumbs={[{ label: 'Settings' }, { label: 'Statuses' }]}
         actions={
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_ITEMS_NEW)}>
-            Add Service Item
+          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_STATUSES_NEW)}>
+            Add Status
           </Button>
         }
       />
 
-      <Card sx={{ boxShadow: 1, borderRadius: 0 }}>
+      <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={masterServices}
-          emptyMessage="No service items found"
+          data={masterStatuses || []}
+          emptyMessage="No statuses found"
         />
       </Card>
 
       <ConfirmDeleteDialog
         open={!!deleteItem}
-        title="Delete Service"
-        message={`Are you sure you want to delete service "${deleteItem?.name}"?`}
+        title="Delete Status"
+        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteItem(null)}
       />
@@ -126,13 +128,13 @@ export default function ServiceItems() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/master/items/${selectedItem?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_STATUSES_EDIT.replace(':id', selectedStatus?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
-          Edit Service
+          Edit Status
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete Service
+          Delete Status
         </MenuItem>
       </Menu>
     </Box>

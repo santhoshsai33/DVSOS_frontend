@@ -342,16 +342,10 @@ export default function WaterWashQueue() {
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F4F6F9', minHeight: '100%' }}>
-      <PageHeader
-        title="Water Wash Queue"
-        breadcrumbs={[{ label: 'Water Wash Queue' }]}
-      />
-
-      <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
-        {COLS.map((col) => {
-          const Icon = col.icon;
-          const count = summary[col.key] || 0;
+    <Box sx={{ p: { xs: 2, md: 3 }, minHeight: '100%' }}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
+        {summary.map((kpi) => {
+          const Icon = kpi.icon;
           return (
             <Grid item xs={12} sm={6} md={3} key={col.key}>
               <Card

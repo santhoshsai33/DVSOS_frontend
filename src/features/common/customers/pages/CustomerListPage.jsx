@@ -8,6 +8,7 @@ import DataTable from '../../../../components/common/DataTable';
 import SearchBar from '../../../../components/common/SearchBar';
 import { toastSuccess } from '../../../../notifications/toast';
 import { ROUTES } from '../../../../config/routes';
+import ConfirmDeleteDialog from '../../../../components/common/ConfirmDeleteDialog';
 
 const INITIAL_CUSTOMERS = [
   { id: '1', name: 'Ramesh Patel', email: 'ramesh@gmail.com', mobile: '9876543210', address: '45 Green Park, Madurai', visits: 4, status: 'ACTIVE' },
@@ -31,6 +32,7 @@ export default function CustomerListPage() {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('dvsos_customers', JSON.stringify(customers));
@@ -58,11 +60,17 @@ export default function CustomerListPage() {
     toastSuccess('Customer status updated successfully!');
   };
 
-  const handleDelete = (customer) => {
-    if (window.confirm(`Are you sure you want to delete customer "${customer.name}"?\nThis action cannot be undone.`)) {
-      const updated = customers.filter(c => c.id !== customer.id);
+  const handleDelete = () => {
+    setDeleteItem(selectedCustomer);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      const updated = customers.filter(c => c.id !== deleteItem.id);
       setCustomers(updated);
-      toastSuccess(`Customer "${customer.name}" deleted successfully.`);
+      toastSuccess(`Customer "${deleteItem.name}" deleted successfully.`);
+      setDeleteItem(null);
     }
   };
 
@@ -159,6 +167,14 @@ export default function CustomerListPage() {
         />
       </Card>
 
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title="Delete Customer"
+        message={`Are you sure you want to delete customer "${deleteItem?.name}"?\nThis action cannot be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -170,6 +186,10 @@ export default function CustomerListPage() {
         <MenuItem onClick={() => { handleMenuClose(); navigate(`/customers/${selectedCustomer?.id}/edit`); }}>
           <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
           Edit Customer
+        </MenuItem>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+          <Trash2 size={16} style={{ marginRight: 12, color: 'inherit' }} />
+          Delete Customer
         </MenuItem>
       </Menu>
     </Box>

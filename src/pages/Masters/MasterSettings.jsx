@@ -8,6 +8,7 @@ import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { formatCurrency } from '../../utils/formatters';
 import { toastSuccess } from '../../notifications/toast';
+import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import styles from './Masters.module.css';
 
 const TABS = [
@@ -23,6 +24,7 @@ export default function MasterSettings() {
   const [modalType, setModalType] = useState(''); // 'SERVICE' | 'BRAND'
   const [editMode, setEditMode] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   // Form States
   const [serviceForm, setServiceForm] = useState({ name: '', category: 'Maintenance', price: '', isActive: true });
@@ -58,14 +60,18 @@ export default function MasterSettings() {
   };
 
   const handleDelete = (item) => {
-    const itemName = item.name;
-    if (window.confirm(`Are you sure you want to delete "${itemName}"?`)) {
-      toastSuccess(`"${itemName}" deleted successfully.`);
+    setDeleteItem(item);
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      toastSuccess(`"${deleteItem.name}" deleted successfully.`);
       if (activeTab === 'SERVICES') {
         refetchServices();
       } else {
         refetchBrands();
       }
+      setDeleteItem(null);
     }
   };
 
@@ -202,6 +208,14 @@ export default function MasterSettings() {
           </div>
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title={`Delete ${activeTab === 'SERVICES' ? 'Service' : 'Brand'}`}
+        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
 
       {/* Add / Edit Modals */}
       <Modal

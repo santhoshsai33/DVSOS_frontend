@@ -24,6 +24,10 @@ import DistrictList from '../pages/Masters/DistrictList';
 import DistrictForm from '../pages/Masters/DistrictForm';
 import ServiceCenterList from '../pages/Masters/ServiceCenterList';
 import ServiceCenterForm from '../pages/Masters/ServiceCenterForm';
+import ModuleList from '../pages/Masters/ModuleList';
+import ModuleForm from '../pages/Masters/ModuleForm';
+import StatusList from '../pages/Masters/StatusList';
+import StatusForm from '../pages/Masters/StatusForm';
 import LocationList from '../pages/Locations/LocationList';
 import LocationForm from '../pages/Locations/LocationForm';
 import SystemSettingsPage from '../features/roles/admin/pages/SystemSettingsPage';
@@ -144,6 +148,12 @@ export const router = createBrowserRouter([
               { path: 'service-centers', element: <ServiceCenterList /> },
               { path: 'service-centers/new', element: <ServiceCenterForm /> },
               { path: 'service-centers/:id/edit', element: <ServiceCenterForm /> },
+              { path: 'modules', element: <ModuleList /> },
+              { path: 'modules/new', element: <ModuleForm /> },
+              { path: 'modules/:id/edit', element: <ModuleForm /> },
+              { path: 'master-statuses', element: <StatusList /> },
+              { path: 'master-statuses/new', element: <StatusForm /> },
+              { path: 'master-statuses/:id/edit', element: <StatusForm /> },
               { path: 'locations', element: <LocationList /> },
               { path: 'locations/new', element: <LocationForm /> },
               { path: 'locations/:id/edit', element: <LocationForm /> },

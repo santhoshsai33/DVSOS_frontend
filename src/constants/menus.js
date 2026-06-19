@@ -22,6 +22,7 @@ import {
   Package,
   MapPin,
   Building,
+  Monitor,
 } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import { ROLES } from './roles';
@@ -68,7 +69,7 @@ export const SIDEBAR_MENUS = {
   ],
 
   [ROLES.WATER_WASH_TEAM]: [
-    { label: 'Water Wash Dashboard', path: ROUTES.WATER_WASH_DASHBOARD, icon: LayoutDashboard },
+    { label: 'Dashboard', path: ROUTES.WATER_WASH_DASHBOARD, icon: LayoutDashboard },
     { label: 'Assign Member', path: ROUTES.WATER_WASH_ASSIGN_MEMBER, icon: User },
     { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
     { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
@@ -78,11 +79,13 @@ export const SIDEBAR_MENUS = {
   [ROLES.MANAGER]: [
     { label: 'Manager Dashboard', path: ROUTES.MANAGER_DASHBOARD, icon: LayoutDashboard },
     { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
+    { label: 'TV Display', path: ROUTES.KIOSK_TV, icon: Monitor },
     ...commonLinks,
   ],
 
   [ROLES.MD]: [
     { label: 'MD Dashboard', path: ROUTES.MD_DASHBOARD, icon: LayoutDashboard },
+    { label: 'TV Display', path: ROUTES.KIOSK_TV, icon: Monitor },
     // { label: 'Executive Overview', path: ROUTES.MD_EXECUTIVE_OVERVIEW, icon: BarChart2 },
     // { label: 'Performance Report', path: ROUTES.MD_PERFORMANCE_REPORT, icon: FileText },
     // { label: 'Service KPI', path: ROUTES.MD_SERVICE_KPI, icon: CheckSquare },
@@ -90,14 +93,16 @@ export const SIDEBAR_MENUS = {
       label: 'Master Menu',
       icon: Database,
       children: [
+        { label: 'States', path: ROUTES.ADMIN_MASTER_STATES, icon: MapPin },
+        { label: 'Districts', path: ROUTES.ADMIN_MASTER_DISTRICTS, icon: Building },
         { label: 'Service Categories', path: ROUTES.ADMIN_MASTER_CATEGORIES, icon: ClipboardList },
         { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench },
-        { label: 'States', path: ROUTES.ADMIN_MASTER_STATES, icon: MapPin },
-        { label: 'Districts', path: ROUTES.ADMIN_MASTER_DISTRICTS, icon: Building }
+        { label: 'Modules', path: ROUTES.ADMIN_MODULES, icon: Package },
+        { label: 'Statuses', path: ROUTES.ADMIN_MASTER_STATUSES, icon: CheckSquare },
       ]
     },
     { label: 'Service Centers', path: ROUTES.ADMIN_SERVICE_CENTERS, icon: Building },
-    { label: 'Locations', path: ROUTES.ADMIN_LOCATIONS, icon: MapPin },
+    // { label: 'Locations', path: ROUTES.ADMIN_LOCATIONS, icon: MapPin },
     { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },
     { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
     { label: 'Customers', path: ROUTES.CUSTOMERS, icon: Users },
@@ -111,14 +116,17 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.SUPER_ADMIN]: [
     { label: 'Admin Dashboard', path: ROUTES.ADMIN_DASHBOARD, icon: LayoutDashboard },
+    // { label: 'TV Display', path: ROUTES.KIOSK_TV, icon: Monitor },
     {
       label: 'Master Menu',
       icon: Database,
       children: [
+        { label: 'States', path: ROUTES.ADMIN_MASTER_STATES, icon: MapPin },
+        { label: 'Districts', path: ROUTES.ADMIN_MASTER_DISTRICTS, icon: Building },
         { label: 'Service Categories', path: ROUTES.ADMIN_MASTER_CATEGORIES, icon: ClipboardList },
         { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench },
-        { label: 'States', path: ROUTES.ADMIN_MASTER_STATES, icon: MapPin },
-        { label: 'Districts', path: ROUTES.ADMIN_MASTER_DISTRICTS, icon: Building }
+        { label: 'Modules', path: ROUTES.ADMIN_MODULES, icon: Package },
+        { label: 'Statuses', path: ROUTES.ADMIN_MASTER_STATUSES, icon: CheckSquare },
       ]
     },
     { label: 'Service Centers', path: ROUTES.ADMIN_SERVICE_CENTERS, icon: Building },

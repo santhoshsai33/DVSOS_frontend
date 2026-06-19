@@ -192,7 +192,7 @@ export default function ManagerDashboard() {
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#EEF4FF', minHeight: '100%' }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, minHeight: '100%' }}>
       <Grid container spacing={2} sx={{ mb: 2 }}>
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
@@ -250,18 +250,14 @@ export default function ManagerDashboard() {
               borderTop: '1px solid #D8E2F3',
               mt: 1.25,
               pt: 2,
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: 'repeat(5, 130px)',
-                lg: 'repeat(5, minmax(130px, 1fr))',
-              },
-              columnGap: { xs: 1.25, lg: 3 },
-              overflowX: 'auto',
+              display: 'flex',
+              flexDirection: { xs: 'column', lg: 'row' },
+              gap: { xs: 2, lg: 3 },
               pb: 0.5,
             }}
           >
             {pipeline.map((stage, index) => (
-              <Box key={stage.label} sx={{ display: 'grid', gridTemplateColumns: index < pipeline.length - 1 ? '1fr auto' : '1fr', alignItems: 'center', gap: { xs: 1.25, lg: 2 } }}>
+              <Box key={stage.label} sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: 'center', gap: { xs: 1.25, lg: 2 }, flex: 1, width: '100%' }}>
                 <Box
                   onClick={() => navigate(stage.route)}
                   sx={{
@@ -282,7 +278,11 @@ export default function ManagerDashboard() {
                   <Typography variant="h5" sx={{ color: stage.color, fontWeight: 900, my: 0.5 }}>{stage.value}</Typography>
                   <Typography variant="caption" sx={{ color: '#64748B', fontSize: 10 }}>{stage.meta}</Typography>
                 </Box>
-                {index < pipeline.length - 1 && <Typography sx={{ color: '#94A3B8', fontWeight: 900 }}>{'->'}</Typography>}
+                {index < pipeline.length - 1 && (
+                  <Typography sx={{ color: '#94A3B8', fontWeight: 900, transform: { xs: 'rotate(90deg)', lg: 'none' } }}>
+                    {/* {'->'} */}
+                  </Typography>
+                )}
               </Box>
             ))}
           </Box>

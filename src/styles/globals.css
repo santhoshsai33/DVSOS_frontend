@@ -42,6 +42,29 @@ code {
   border-radius: var(--radius-sm);
 }
 
+/* Common Back Button Styling */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--color-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+}
+
+.back-btn:hover {
+  background-color: var(--color-primary);
+  color: #ffffff !important;
+}
+
 /* Form Controls Premium Styling */
 .form-control,
 .form-select {

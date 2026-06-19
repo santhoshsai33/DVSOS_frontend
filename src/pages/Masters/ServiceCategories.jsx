@@ -5,9 +5,9 @@ import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
 import useMasterDataStore from '../../store/useMasterDataStore';
-import { toastSuccess } from '../../notifications/toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
+import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 
 export default function ServiceCategories() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function ServiceCategories() {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -27,10 +28,16 @@ export default function ServiceCategories() {
     setSelectedCategory(null);
   };
 
-  const handleDelete = (item) => {
-    if (window.confirm(`Are you sure you want to delete category "${item.name}"?`)) {
-      deleteCategory(item.id);
-      toastSuccess(`Category "${item.name}" deleted successfully.`);
+  const handleDelete = () => {
+    setDeleteItem(selectedCategory);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      deleteCategory(deleteItem.id);
+      toastSuccess(`Category "${deleteItem.name}" deleted successfully.`);
+      setDeleteItem(null);
     }
   };
 
@@ -92,6 +99,14 @@ export default function ServiceCategories() {
         />
       </Card>
 
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title="Delete Category"
+        message={`Are you sure you want to delete category "${deleteItem?.name}"?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -104,7 +119,7 @@ export default function ServiceCategories() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit Category
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); handleDelete(selectedCategory); }} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Delete Category
         </MenuItem>

@@ -7,6 +7,7 @@ import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import styles from './Auth.module.css';
+import { Box } from '@mui/material';
 
 const schema = z.object({
   email: z.string().email('Enter a valid email address'),
@@ -59,9 +60,13 @@ export default function ForgotPassword() {
       </FormProvider>
 
       <div className="mt-4 text-center">
-        <Link to="/login" className={styles.forgotLink} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+        <Box
+          component={Link}
+          to="/login"
+          className="back-btn"
+        >
           <ArrowLeft size={14} /> Back to Sign In
-        </Link>
+        </Box>
       </div>
     </div>
   );
