@@ -85,7 +85,7 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.MD]: [
     { label: 'MD Dashboard', path: ROUTES.MD_DASHBOARD, icon: LayoutDashboard },
-    { label: 'TV Display', path: ROUTES.KIOSK_TV, icon: Monitor },
+
     // { label: 'Executive Overview', path: ROUTES.MD_EXECUTIVE_OVERVIEW, icon: BarChart2 },
     // { label: 'Performance Report', path: ROUTES.MD_PERFORMANCE_REPORT, icon: FileText },
     // { label: 'Service KPI', path: ROUTES.MD_SERVICE_KPI, icon: CheckSquare },
@@ -112,6 +112,7 @@ export const SIDEBAR_MENUS = {
     { label: 'Audit Logs', path: ROUTES.ADMIN_AUDIT_LOGS, icon: FileText },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
     { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },
+    { label: 'TV Display', path: ROUTES.KIOSK_TV, icon: Monitor },
   ],
 
   [ROLES.SUPER_ADMIN]: [
