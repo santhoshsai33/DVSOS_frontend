@@ -1,21 +1,19 @@
 import { useMemo, useState } from 'react';
-import { Box, Card, FormControl, Grid, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Box, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
 import {
   AlertTriangle,
-  BarChart3,
+  ArrowRight,
   CheckCircle2,
   Clock,
   Droplets,
-  Eye,
   Truck,
   UserPlus,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import DataTable from '../../components/common/DataTable';
-import Modal from '../../components/common/Modal';
+import PageHeader from '../../components/shared/PageHeader';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
-import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 
 const INITIAL_WASH_JOBS = [
@@ -26,12 +24,14 @@ const INITIAL_WASH_JOBS = [
     mobile: '+91 98765 43210',
     vehicle: 'Maruti Swift 2019',
     details: 'White - Petrol',
+    washService: 'Premium Wash',
     previousStages: ['Mech'],
     waitMinutes: 22,
     movedAt: '2026-06-18T10:45:00+05:30',
     status: 'UNASSIGNED',
     assignee: '',
     priority: 'HIGH',
+    delivery: '5:30 PM',
   },
   {
     id: 'W2',
@@ -40,12 +40,14 @@ const INITIAL_WASH_JOBS = [
     mobile: '+91 87654 32109',
     vehicle: 'Honda City 2021',
     details: 'Silver - Petrol',
+    washService: 'Exterior Wash',
     previousStages: ['Mech'],
     waitMinutes: 5,
     movedAt: '2026-06-18T10:38:00+05:30',
     status: 'ASSIGNED',
     assignee: 'Wash Team A',
     priority: 'NORMAL',
+    delivery: '4:45 PM',
   },
   {
     id: 'W3',
@@ -54,12 +56,14 @@ const INITIAL_WASH_JOBS = [
     mobile: '+91 76543 21098',
     vehicle: 'Hyundai i20 2022',
     details: 'Red - Diesel',
+    washService: 'Foam Wash',
     previousStages: ['Mech', 'Body'],
     waitMinutes: 3,
     movedAt: '2026-06-18T10:25:00+05:30',
     status: 'UNASSIGNED',
     assignee: '',
     priority: 'NORMAL',
+    delivery: '6:00 PM',
   },
   {
     id: 'W4',
@@ -68,12 +72,14 @@ const INITIAL_WASH_JOBS = [
     mobile: '+91 65432 10987',
     vehicle: 'Toyota Innova 2020',
     details: 'Grey - Diesel',
+    washService: 'Full Detail Wash',
     previousStages: ['Mech', 'Body'],
     waitMinutes: 0,
     movedAt: '2026-06-18T09:58:00+05:30',
     status: 'READY_FOR_DELIVERY',
     assignee: 'Wash Team B',
     priority: 'NORMAL',
+    delivery: 'Ready',
   },
   {
     id: 'W5',
@@ -82,12 +88,14 @@ const INITIAL_WASH_JOBS = [
     mobile: '+91 90000 11223',
     vehicle: 'Tata Nexon 2023',
     details: 'Blue - Diesel',
+    washService: 'Interior Cleaning',
     previousStages: ['Mech'],
     waitMinutes: 38,
     movedAt: '2026-06-18T09:42:00+05:30',
     status: 'UNASSIGNED',
     assignee: '',
     priority: 'HIGH',
+    delivery: 'Overdue',
   },
   {
     id: 'W6',
@@ -96,17 +104,24 @@ const INITIAL_WASH_JOBS = [
     mobile: '+91 94444 99887',
     vehicle: 'Maruti Dzire 2021',
     details: 'Brown - Petrol',
+    washService: 'Basic Wash',
     previousStages: ['Mech'],
     waitMinutes: 0,
     movedAt: '2026-06-18T09:15:00+05:30',
     status: 'COMPLETED',
     assignee: 'Wash Team C',
     priority: 'NORMAL',
+    delivery: '12:30 PM',
   },
 ];
 
 const SLA_MINUTES = 20;
-const WATER_WASH_EMPLOYEES = ['Wash Team A', 'Wash Team B', 'Wash Team C', 'Selvam R.', 'Naveen K.'];
+const COLS = [
+  { key: 'PENDING', label: 'Pending', icon: Clock, color: '#F59E0B' },
+  { key: 'ASSIGNED', label: 'Assigned', icon: UserPlus, color: '#3B82F6' },
+  { key: 'IN_PROGRESS', label: 'In Progress', icon: Droplets, color: '#8B5CF6' },
+  { key: 'COMPLETED', label: 'Completed', icon: CheckCircle2, color: '#10B981' },
+];
 
 const statusMeta = {
   UNASSIGNED: {
@@ -127,7 +142,6 @@ const statusMeta = {
   READY_FOR_DELIVERY: {
     label: 'Ready for Delivery',
     tone: 'success',
-    action: 'View',
   },
 };
 
@@ -138,28 +152,22 @@ const toneStyles = {
   danger: { bg: '#FEF2F2', border: '#FCA5A5', color: '#B42318' },
 };
 
-function StatusPill({ tone, children }) {
+function StatusChip({ tone, icon, children }) {
   const style = toneStyles[tone] || toneStyles.info;
   return (
-    <Box
-      component="span"
+    <Chip
+      icon={icon}
+      label={children}
+      size="small"
       sx={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        border: '1px solid',
-        borderColor: style.border,
         bgcolor: style.bg,
         color: style.color,
-        borderRadius: '999px',
-        px: 1,
-        py: 0.35,
-        fontSize: 11,
+        border: `1px solid ${style.border}`,
         fontWeight: 800,
-        whiteSpace: 'nowrap',
+        borderRadius: '9999px',
+        '& .MuiChip-icon': { color: 'inherit', ml: 1 },
       }}
-    >
-      {children}
-    </Box>
+    />
   );
 }
 
@@ -190,82 +198,23 @@ function StageChip({ label }) {
 export default function WaterWashQueue() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [jobs, setJobs] = useState(INITIAL_WASH_JOBS);
-  const [assignJob, setAssignJob] = useState(null);
-  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [jobs] = useState(INITIAL_WASH_JOBS);
 
   const isDashboard = location.pathname === ROUTES.WATER_WASH_DASHBOARD;
 
   const summary = useMemo(() => {
     const waiting = jobs.filter((job) => job.status === 'UNASSIGNED').length;
-    const overdue = jobs.filter((job) => !['COMPLETED', 'READY_FOR_DELIVERY'].includes(job.status) && job.waitMinutes > SLA_MINUTES).length;
-    const doneToday = jobs.filter((job) => ['COMPLETED', 'READY_FOR_DELIVERY'].includes(job.status)).length;
 
-    return [
-      { label: 'Total Today', value: jobs.length, color: '#12343B', iconBg: '#E9EEF1', icon: Droplets },
-      { label: 'Completed', value: doneToday, color: '#22C7B8', iconBg: '#E8FAF8', icon: CheckCircle2 },
-      { label: 'Waiting', value: waiting, color: '#D97706', iconBg: '#FFF4E5', icon: Clock },
-      { label: 'Delayed', value: overdue, color: '#0EA5E9', iconBg: '#EAF8FF', icon: AlertTriangle },
-    ];
+    return {
+      PENDING: waiting,
+      ASSIGNED: jobs.filter((job) => job.status === 'ASSIGNED').length,
+      IN_PROGRESS: jobs.filter((job) => job.status === 'ASSIGNED').length,
+      COMPLETED: jobs.filter((job) => ['COMPLETED', 'READY_FOR_DELIVERY'].includes(job.status)).length,
+    };
   }, [jobs]);
 
   const openJob = (job) => {
-    navigate(`${ROUTES.WATER_WASH_JOB}/${job.id}`);
-  };
-
-  const openAssignModal = (job) => {
-    setAssignJob(job);
-    setSelectedEmployee(job.assignee || WATER_WASH_EMPLOYEES[0]);
-  };
-
-  const closeAssignModal = () => {
-    setAssignJob(null);
-    setSelectedEmployee('');
-  };
-
-  const handleAssign = () => {
-    if (!assignJob || !selectedEmployee) return;
-
-    setJobs((current) => current.map((job) => (
-      job.id === assignJob.id
-        ? { ...job, assignee: selectedEmployee, status: 'ASSIGNED', waitMinutes: 0 }
-        : job
-    )));
-    toastSuccess(`${assignJob.vehicleNumber} assigned to ${selectedEmployee}`);
-    closeAssignModal();
-  };
-
-  const handleComplete = (job) => {
-    setJobs((current) => current.map((item) => (
-      item.id === job.id ? { ...item, status: 'COMPLETED', waitMinutes: 0 } : item
-    )));
-    toastSuccess(`Water wash completed for ${job.vehicleNumber}`);
-  };
-
-  const handleReadyForDelivery = (job) => {
-    setJobs((current) => current.map((item) => (
-      item.id === job.id ? { ...item, status: 'READY_FOR_DELIVERY', waitMinutes: 0 } : item
-    )));
-    toastSuccess(`${job.vehicleNumber} moved to ready for delivery`);
-  };
-
-  const handleAction = (row) => {
-    if (row.status === 'UNASSIGNED') {
-      openAssignModal(row);
-      return;
-    }
-
-    if (row.status === 'ASSIGNED') {
-      handleComplete(row);
-      return;
-    }
-
-    if (row.status === 'COMPLETED') {
-      handleReadyForDelivery(row);
-      return;
-    }
-
-    openJob(row);
+    navigate(`${ROUTES.JOB_CARDS}/${job.id}`);
   };
 
   const displayedJobs = useMemo(() => {
@@ -275,37 +224,45 @@ export default function WaterWashQueue() {
 
   const columns = [
     {
-      header: 'Vehicle No.',
+      header: 'VEHICLE NO.',
       render: (row) => <VehicleNumberPlate vehicleNumber={row.vehicleNumber} />,
     },
     {
-      header: 'Customer',
+      header: 'CUSTOMER',
       render: (row) => (
         <Box>
-          <Typography variant="body2" sx={{ fontWeight: 800, color: '#0F172A' }}>
+          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>
             {row.customer}
           </Typography>
-          <Typography variant="caption" sx={{ color: '#8A9AB5', fontWeight: 600 }}>
+          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
             {row.mobile}
           </Typography>
         </Box>
       ),
     },
     {
-      header: 'Vehicle',
+      header: 'VEHICLE',
       render: (row) => (
         <Box>
-          <Typography variant="body2" sx={{ fontWeight: 700, color: '#334155' }}>
+          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>
             {row.vehicle}
           </Typography>
-          <Typography variant="caption" sx={{ color: '#64748B' }}>
+          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
             {row.details}
           </Typography>
         </Box>
       ),
     },
     {
-      header: 'Previous Stages',
+      header: 'WASH DETAILS',
+      render: (row) => (
+        <Typography sx={{ fontSize: '0.875rem', color: '#374151' }}>
+          {row.washService}
+        </Typography>
+      ),
+    },
+    {
+      header: 'PREVIOUS STAGES',
       render: (row) => (
         <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
           {row.previousStages.map((stage) => <StageChip key={stage} label={stage} />)}
@@ -313,166 +270,141 @@ export default function WaterWashQueue() {
       ),
     },
     {
-      header: 'Assigned To',
-      render: (row) => row.assignee || (
-        <Typography variant="body2" color="text.secondary">
-          Unassigned
-        </Typography>
+      header: 'EMPLOYEE',
+      render: (row) => (
+        <Chip
+          label={row.assignee || 'Unassigned'}
+          size="small"
+          sx={{
+            bgcolor: row.assignee ? '#eff6ff' : 'transparent',
+            color: row.assignee ? '#2563eb' : '#d97706',
+            border: `1px solid ${row.assignee ? '#bfdbfe' : '#fcd34d'}`,
+            fontWeight: 600,
+            borderRadius: '9999px',
+          }}
+        />
       ),
     },
     {
-      header: 'Wait Time',
+      header: 'WAIT TIME',
       render: (row) => {
         if (['COMPLETED', 'READY_FOR_DELIVERY'].includes(row.status)) {
-          return <Typography variant="body2" sx={{ color: '#059669', fontWeight: 800 }}>Done</Typography>;
+          return <Typography sx={{ color: '#059669', fontWeight: 800, fontSize: '0.875rem' }}>Done</Typography>;
         }
 
         const overdue = row.waitMinutes > SLA_MINUTES;
         return (
-          <StatusPill tone={overdue ? 'danger' : 'info'}>
+          <StatusChip tone={overdue ? 'danger' : 'info'} icon={overdue ? <AlertTriangle size={14} /> : undefined}>
             {overdue ? `${row.waitMinutes} min - overdue` : `${row.waitMinutes} min`}
-          </StatusPill>
+          </StatusChip>
         );
       },
     },
     {
-      header: 'Status',
-      render: (row) => {
-        const meta = statusMeta[row.status];
-        return <StatusPill tone={meta.tone}>{meta.label}</StatusPill>;
-      },
-    },
-    {
-      header: 'Action',
+      header: 'STATUS',
       render: (row) => {
         const meta = statusMeta[row.status];
         return (
-          <Button
-            variant={row.status === 'COMPLETED' ? 'success' : row.status === 'READY_FOR_DELIVERY' ? 'outline' : 'primary'}
-            size="sm"
-            rightIcon={
-              row.status === 'UNASSIGNED'
-                ? UserPlus
-                : row.status === 'ASSIGNED'
-                  ? CheckCircle2
-                  : row.status === 'COMPLETED'
-                    ? Truck
-                    : Eye
-            }
-            onClick={(event) => {
-              event.stopPropagation();
-              handleAction(row);
-            }}
-            sx={{ minWidth: row.status === 'COMPLETED' ? 148 : 104 }}
+          <StatusChip
+            tone={meta.tone}
+            icon={row.status === 'READY_FOR_DELIVERY' ? <Truck size={14} /> : row.status === 'COMPLETED' ? <CheckCircle2 size={14} /> : undefined}
           >
-            {meta.action}
-          </Button>
+            {meta.label}
+          </StatusChip>
         );
       },
+    },
+    {
+      header: 'DELIVERY',
+      render: (row) => (
+        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>
+          {row.status === 'READY_FOR_DELIVERY' ? `${row.delivery} ✓` : row.delivery}
+        </Typography>
+      ),
+    },
+    {
+      header: 'ACTION',
+      render: (row) => (
+        <Button
+          variant="primary"
+          size="sm"
+          rightIcon={ArrowRight}
+          onClick={(event) => {
+            event.stopPropagation();
+            openJob(row);
+          }}
+          sx={{ fontWeight: 600, textTransform: 'none' }}
+        >
+          Open
+        </Button>
+      ),
     },
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#EEF4FF', minHeight: '100%' }}>
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        {summary.map((kpi) => {
-          const Icon = kpi.icon;
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F4F6F9', minHeight: '100%' }}>
+      <PageHeader
+        title="Water Wash Queue"
+        breadcrumbs={[{ label: 'Water Wash Queue' }]}
+      />
+
+      <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
+        {COLS.map((col) => {
+          const Icon = col.icon;
+          const count = summary[col.key] || 0;
           return (
-            <Grid item xs={12} sm={6} md={3} key={kpi.label}>
+            <Grid item xs={12} sm={6} md={3} key={col.key}>
               <Card
                 sx={{
-                  minHeight: 170,
                   borderRadius: 3,
-                  border: '1px solid #E2E8F0',
-                  borderTop: '6px solid',
-                  borderTopColor: kpi.color,
-                  boxShadow: '0 12px 24px -22px rgba(15, 23, 42, 0.7)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  bgcolor: '#FFFFFF',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+                  borderTop: `4px solid ${col.color}`,
+                  height: '100%',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
                 }}
               >
-                <Box sx={{ p: 3, minHeight: 170, display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h3" sx={{ fontWeight: 900, color: kpi.color, lineHeight: 1, mb: 2 }}>
-                    {kpi.value}
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h3" fontWeight={800} sx={{ color: col.color, mb: 1 }}>
+                    {count}
                   </Typography>
-                  <Typography variant="subtitle1" sx={{ color: '#334155', fontWeight: 800 }}>
-                    {kpi.label}
+                  <Typography variant="body1" color="text.secondary" fontWeight={600}>
+                    {col.label}
                   </Typography>
-                  <Box sx={{ flex: 1 }} />
-                  <Box
-                    sx={{
-                      alignSelf: 'flex-end',
-                      width: 46,
-                      height: 46,
-                      borderRadius: 3,
-                      bgcolor: kpi.iconBg,
-                      color: kpi.color,
-                      display: 'grid',
-                      placeItems: 'center',
-                    }}
-                  >
-                    <Icon size={21} />
+
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${col.color}15`, color: col.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={20} />
+                    </Box>
                   </Box>
-                </Box>
+                </CardContent>
               </Card>
             </Grid>
           );
         })}
       </Grid>
 
-      <Card sx={{ borderRadius: 2, border: '1px solid #D8E2F3', overflow: 'hidden' }}>
-        <Box sx={{ p: 2, borderBottom: '1px solid #D8E2F3', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <BarChart3 size={18} color="#2563EB" />
-          <Typography variant="caption" sx={{ color: '#8A9AB5', fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            {isDashboard
-              ? 'Recently moved to water wash queue - assign employee to start wash'
-              : 'All water wash queue - assign employee and update wash status'}
-          </Typography>
-        </Box>
-        <DataTable
-          columns={columns}
-          data={displayedJobs}
-          showPagination={false}
-          onRowClick={openJob}
-          emptyMessage="No vehicles in water wash queue"
-        />
-      </Card>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
+            <CardContent sx={{ p: 3, pb: '24px !important' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                <Droplets size={20} color="#6b7280" />
+                <Typography variant="h6" fontWeight={800} sx={{ color: '#6b7280', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {isDashboard ? 'RECENT WATER WASH QUEUE' : 'WATER WASH JOB QUEUE'}
+                </Typography>
+              </Box>
 
-      <Modal
-        show={Boolean(assignJob)}
-        onHide={closeAssignModal}
-        title="Assign Water Wash Employee"
-        confirmLabel="Assign"
-        onConfirm={handleAssign}
-      >
-        <Box sx={{ display: 'grid', gap: 2 }}>
-          {assignJob && (
-            <Box sx={{ display: 'grid', gap: 0.5 }}>
-              <VehicleNumberPlate vehicleNumber={assignJob.vehicleNumber} />
-              <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
-                {assignJob.customer} - {assignJob.vehicle}
-              </Typography>
-            </Box>
-          )}
-
-          <FormControl fullWidth>
-            <InputLabel id="water-wash-employee-label">Water wash employee</InputLabel>
-            <Select
-              labelId="water-wash-employee-label"
-              label="Water wash employee"
-              value={selectedEmployee}
-              onChange={(event) => setSelectedEmployee(event.target.value)}
-            >
-              {WATER_WASH_EMPLOYEES.map((employee) => (
-                <MenuItem key={employee} value={employee}>
-                  {employee}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
-      </Modal>
+              <DataTable
+                columns={columns}
+                data={displayedJobs}
+                showPagination={false}
+                onRowClick={openJob}
+                emptyMessage="No vehicles in water wash queue"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
     </Box>
   );
 }

@@ -60,6 +60,7 @@ export const ROUTES = {
 
   WATER_WASH_DASHBOARD: '/water-wash-dashboard',
   WATER_WASH_QUEUE: '/water-wash-queue',
+  WATER_WASH_ASSIGN_MEMBER: '/water-wash-assign-member',
   WATER_WASH_JOB: '/water-wash-jobs',
 
   MANAGER_DASHBOARD: '/manager-dashboard',

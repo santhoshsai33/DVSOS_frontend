@@ -28,6 +28,7 @@ export default function JobCardList() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const debouncedSearch = useDebounce(search, 300);
+  const canCreateJobCard = ![ROLES.BODY_SHOP_SUPERVISOR, ROLES.WATER_WASH_TEAM].includes(role);
 
   const { data, isLoading } = useJobCards({ search: debouncedSearch, status: statusFilter });
 
@@ -119,11 +120,11 @@ export default function JobCardList() {
       <PageHeader
         title="Job Cards"
         breadcrumbs={[{ label: 'Job Cards' }]}
-        actions={
+        actions={canCreateJobCard ? (
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
             Create Job Card
           </Button>
-        }
+        ) : null}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -183,7 +184,9 @@ export default function JobCardList() {
         <MenuItem onClick={() => {
           handleMenuClose();
           if (role === ROLES.FLOOR_SUPERVISOR) {
-            navigate(`${ROUTES.JOB_CARDS}/${selectedJob?.id}/edit`);
+            navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
+          } else if (role === ROLES.BODY_SHOP_SUPERVISOR) {
+            navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
           } else {
             const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK;
             navigate(`${targetRoute}?jobCardId=${selectedJob?.id}`);

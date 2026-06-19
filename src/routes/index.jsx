@@ -54,6 +54,7 @@ import BodyShopCreateRequestPage from '../features/roles/body-shop-supervisor/pa
 import BodyShopWorkStatusPage from '../features/roles/body-shop-supervisor/pages/BodyShopWorkStatusPage';
 import WaterWashDashboardPage from '../features/roles/water-wash/pages/WaterWashDashboardPage';
 import WaterWashQueuePage from '../features/roles/water-wash/pages/WaterWashQueuePage';
+import WaterWashAssignMemberPage from '../features/roles/water-wash/pages/WaterWashAssignMemberPage';
 import WashJobDetailPage from '../features/roles/water-wash/pages/WashJobDetailPage';
 import ManagerDashboardPage from '../features/roles/manager/pages/ManagerDashboardPage';
 import ManagerJobCardPrototypePage from '../features/roles/manager/pages/ManagerJobCardPrototypePage';
@@ -198,6 +199,7 @@ export const router = createBrowserRouter([
             children: [
               { path: 'water-wash-dashboard', element: <WaterWashDashboardPage /> },
               { path: 'water-wash-queue', element: <WaterWashQueuePage /> },
+              { path: 'water-wash-assign-member', element: <WaterWashAssignMemberPage /> },
               { path: 'water-wash-jobs/:id', element: <WashJobDetailPage /> },
             ],
           },

@@ -69,8 +69,9 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.WATER_WASH_TEAM]: [
     { label: 'Water Wash Dashboard', path: ROUTES.WATER_WASH_DASHBOARD, icon: LayoutDashboard },
-    { label: 'Water Wash Queue', path: ROUTES.WATER_WASH_QUEUE, icon: Droplets },
+    { label: 'Assign Member', path: ROUTES.WATER_WASH_ASSIGN_MEMBER, icon: User },
     { label: 'Vehicles', path: ROUTES.VEHICLES, icon: Car },
+    { label: 'Job Cards', path: ROUTES.JOB_CARDS, icon: ClipboardList },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
   ],
 

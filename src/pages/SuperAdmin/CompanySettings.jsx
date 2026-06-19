@@ -98,7 +98,7 @@ export default function CompanySettings() {
 
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle1" fontWeight={600}>
-              Set Interval
+              Stage Alert Intervals
             </Typography>
           </Box>
 

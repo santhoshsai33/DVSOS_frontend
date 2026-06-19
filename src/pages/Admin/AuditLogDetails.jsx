@@ -1,5 +1,7 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Card, Typography, Grid, Divider } from '@mui/material';
+import { ArrowLeft } from 'lucide-react';
+import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { ROUTES } from '../../config/routes';
 import { formatDateTime } from '../../utils/formatters';
@@ -9,6 +11,8 @@ const MOCK_DETAILS = {
     id: 101,
     audit_log_id: 1,
     field_name: 'role',
+    field_label: 'Role',
+    changed_by_name: 'Suresh Floor',
     old_value: 'null',
     new_value: 'FLOOR_SUPERVISOR',
     data_type: 'varchar',
@@ -18,6 +22,8 @@ const MOCK_DETAILS = {
     id: 102,
     audit_log_id: 2,
     field_name: 'mechanic_id',
+    field_label: 'Mechanic',
+    changed_by_name: 'Rajan M.',
     old_value: 'null',
     new_value: '45',
     data_type: 'bigint',
@@ -25,7 +31,15 @@ const MOCK_DETAILS = {
   }
 };
 
+const toFieldLabel = (value) => {
+  if (!value) return '-';
+  return value
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
 export default function AuditLogDetails() {
+  const navigate = useNavigate();
   const { id } = useParams();
 
   // Simulated fetch
@@ -39,6 +53,11 @@ export default function AuditLogDetails() {
           { label: 'Audit Logs', path: ROUTES.ADMIN_AUDIT_LOGS },
           { label: `Log #${detail.audit_log_id}` }
         ]}
+        actions={
+          <Button variant="secondary" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.ADMIN_AUDIT_LOGS)}>
+            Back to Audit Logs
+          </Button>
+        }
       />
       <Card sx={{ borderRadius: 0, p: { xs: 2, md: 4 } }}>
         <Typography variant="h6" fontWeight={700} mb={3}>
@@ -63,12 +82,14 @@ export default function AuditLogDetails() {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Typography variant="caption" color="text.secondary" display="block">Field Name</Typography>
-            <Typography variant="body1" fontWeight={600}>{detail.field_name}</Typography>
+            <Typography variant="caption" color="text.secondary" display="block">Field Changed</Typography>
+            <Typography variant="body1" fontWeight={600}>{detail.field_label || toFieldLabel(detail.field_name)}</Typography>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Typography variant="caption" color="text.secondary" display="block">Data Type</Typography>
-            <Typography variant="body1" fontWeight={600}>{detail.data_type}</Typography>
+            <Typography variant="caption" color="text.secondary" display="block">Changed By</Typography>
+            <Typography variant="body1" fontWeight={600}>
+              {detail.changed_by_name || detail.changedByName || detail.user_name || detail.userName || '-'}
+            </Typography>
           </Grid>
 
           <Grid item xs={12}>
