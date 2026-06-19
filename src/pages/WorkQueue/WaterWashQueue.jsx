@@ -344,8 +344,9 @@ export default function WaterWashQueue() {
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, minHeight: '100%' }}>
       <Grid container spacing={2} sx={{ mb: 2 }}>
-        {summary.map((kpi) => {
-          const Icon = kpi.icon;
+        {COLS.map((col) => {
+          const Icon = col.icon;
+          const count = summary[col.key] || 0;
           return (
             <Grid item xs={12} sm={6} md={3} key={col.key}>
               <Card
