@@ -5,9 +5,9 @@ import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
 import useMasterDataStore from '../../store/useMasterDataStore';
-import { toastSuccess } from '../../notifications/toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
+import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 
 export default function StateList() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function StateList() {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -27,10 +28,16 @@ export default function StateList() {
     setSelectedState(null);
   };
 
-  const handleDelete = (item) => {
-    if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      deleteState(item.id);
-      toastSuccess(`State "${item.name}" deleted successfully.`);
+  const handleDelete = () => {
+    setDeleteItem(selectedState);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      deleteState(deleteItem.id);
+      toastSuccess(`State "${deleteItem.name}" deleted successfully.`);
+      setDeleteItem(null);
     }
   };
 
@@ -91,6 +98,14 @@ export default function StateList() {
         />
       </Card>
 
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title="Delete State"
+        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -103,7 +118,7 @@ export default function StateList() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit State
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); handleDelete(selectedState); }} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Delete State
         </MenuItem>

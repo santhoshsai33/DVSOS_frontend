@@ -31,6 +31,14 @@ export const ROUTES = {
   ADMIN_AUDIT_LOGS: '/audit-logs',
   ADMIN_AUDIT_LOG_DETAILS: '/audit-logs/:id',
 
+  ADMIN_MODULES: '/modules',
+  ADMIN_MODULES_NEW: '/modules/new',
+  ADMIN_MODULES_EDIT: '/modules/:id/edit',
+
+  ADMIN_MASTER_STATUSES: '/master-statuses',
+  ADMIN_MASTER_STATUSES_NEW: '/master-statuses/new',
+  ADMIN_MASTER_STATUSES_EDIT: '/master-statuses/:id/edit',
+
   GATE_DASHBOARD: '/gate-dashboard',
   GATE_ENTRY: '/gate-entry',
   GATE_EXIT: '/gate-exit',

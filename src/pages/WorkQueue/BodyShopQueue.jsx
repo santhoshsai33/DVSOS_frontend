@@ -193,10 +193,6 @@ export default function BodyShopQueue() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F4F6F9', minHeight: '100%' }}>
-      <PageHeader
-        title="Body Shop Queue"
-        breadcrumbs={[{ label: 'Body Shop Queue' }]}
-      />
 
       {/* KPI Cards Row */}
       <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>

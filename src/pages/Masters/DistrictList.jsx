@@ -5,9 +5,9 @@ import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
 import useMasterDataStore from '../../store/useMasterDataStore';
-import { toastSuccess } from '../../notifications/toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
+import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 
 export default function DistrictList() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function DistrictList() {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -27,10 +28,16 @@ export default function DistrictList() {
     setSelectedDistrict(null);
   };
 
-  const handleDelete = (item) => {
-    if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      deleteDistrict(item.id);
-      toastSuccess(`District "${item.name}" deleted successfully.`);
+  const handleDelete = () => {
+    setDeleteItem(selectedDistrict);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      deleteDistrict(deleteItem.id);
+      toastSuccess(`District "${deleteItem.name}" deleted successfully.`);
+      setDeleteItem(null);
     }
   };
 
@@ -102,6 +109,14 @@ export default function DistrictList() {
         />
       </Card>
 
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title="Delete District"
+        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -114,7 +129,7 @@ export default function DistrictList() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit District
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); handleDelete(selectedDistrict); }} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Delete District
         </MenuItem>

@@ -5,9 +5,9 @@ import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
 import useMasterDataStore from '../../store/useMasterDataStore';
-import { toastSuccess } from '../../notifications/toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
+import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 
 export default function LocationList() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function LocationList() {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -27,10 +28,16 @@ export default function LocationList() {
     setSelectedLocation(null);
   };
 
-  const handleDelete = (item) => {
-    if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      deleteLocation(item.id);
-      toastSuccess(`Location "${item.name}" deleted successfully.`);
+  const handleDelete = () => {
+    setDeleteItem(selectedLocation);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      deleteLocation(deleteItem.id);
+      toastSuccess(`Location "${deleteItem.name}" deleted successfully.`);
+      setDeleteItem(null);
     }
   };
 
@@ -103,6 +110,14 @@ export default function LocationList() {
         />
       </Card>
 
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title="Delete Location"
+        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -115,7 +130,7 @@ export default function LocationList() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit Location
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); handleDelete(selectedLocation); }} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Delete Location
         </MenuItem>

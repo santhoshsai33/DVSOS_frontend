@@ -83,21 +83,13 @@ export default function KioskDisplay() {
           </div>
         </div>
 
-        {/* Announcement Ticker */}
-        <div className={styles.tickerWrapper}>
-          <Volume2 size={18} className={styles.tickerIcon} />
-          <div className={styles.tickerText}>
-            <span>Welcome to DVSOS Service Center • Please wait in the lounge while your vehicle is serviced • Vehicle TN 02 CD 5566 is ready for delivery • Please collect your gate pass at the billing counter</span>
-          </div>
-        </div>
-
-        <div className={styles.clockControls}>
-          <div className={styles.clock}>
-            <span className={styles.timeStr}>{formatDateTime(time).split(' ')[1]}</span>
-            <span className={styles.dateStr}>{formatDateTime(time).split(' ')[0]}</span>
+        <div className={styles.controlsGroup}>
+          <div className={styles.clockRight}>
+            <div className={styles.clockDate}>{time.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+            <div className={styles.clockTime}>{time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</div>
           </div>
           <button className={styles.fsBtn} onClick={toggleFullscreen} title="Toggle Fullscreen">
-            <Maximize size={20} />
+            <Maximize size={22} />
           </button>
         </div>
       </header>
@@ -106,16 +98,16 @@ export default function KioskDisplay() {
       <div className={styles.grid}>
         <Grid container spacing={3} sx={{ height: '100%' }}>
           <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
-            <DisplaySection title="Mechanical" icon={Wrench} items={MOCK_LIVE_DATA.mechanical} statusClass="status-kiosk-mechanical" />
+            <DisplaySection title="Mechanical" icon={Wrench} items={MOCK_LIVE_DATA.mechanical} statusClass={styles.mechSection} />
           </Grid>
           <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
-            <DisplaySection title="Body Shop" icon={Wrench} items={MOCK_LIVE_DATA.bodyShop} statusClass="status-kiosk-bodyshop" />
+            <DisplaySection title="Body Shop" icon={Wrench} items={MOCK_LIVE_DATA.bodyShop} statusClass={styles.bodySection} />
           </Grid>
           <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
-            <DisplaySection title="Water Wash" icon={Wrench} items={MOCK_LIVE_DATA.waterWash} statusClass="status-kiosk-waterwash" />
+            <DisplaySection title="Water Wash" icon={Wrench} items={MOCK_LIVE_DATA.waterWash} statusClass={styles.washSection} />
           </Grid>
           <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
-            <div className={`${styles.section} status-kiosk-ready`}>
+            <div className={`${styles.section} ${styles.readySection}`}>
               <div className={styles.sectionHeader}>
                 <div className={styles.sectionTitle}><CheckCircle2 size={24} /> Ready for Delivery</div>
               </div>

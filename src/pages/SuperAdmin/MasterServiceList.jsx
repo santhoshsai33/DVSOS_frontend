@@ -10,6 +10,7 @@ import RHFSelect from '../../components/form/RHFSelect';
 import { toastSuccess } from '../../notifications/toast';
 import useMasterDataStore from '../../store/useMasterDataStore';
 import { formatCurrency } from '../../utils/formatters';
+import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 
 const CATEGORY_OPTIONS = [
   { value: 'Mechanical', label: 'Mechanical' },
@@ -89,16 +90,22 @@ export default function MasterServiceList() {
   const { masterServices, deleteService } = useMasterDataStore();
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   const handleEdit = (service) => {
     setEditingService(service);
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this service?')) {
-      deleteService(id);
+  const handleDelete = (service) => {
+    setDeleteItem(service);
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      deleteService(deleteItem.id);
       toastSuccess('Service removed from master list');
+      setDeleteItem(null);
     }
   };
 
@@ -122,7 +129,7 @@ export default function MasterServiceList() {
           <IconButton size="small" onClick={() => handleEdit(row)} title="Edit">
             <Edit2 size={16} />
           </IconButton>
-          <IconButton size="small" onClick={() => handleDelete(row.id)} title="Delete" sx={{ color: 'error.main' }}>
+          <IconButton size="small" onClick={() => handleDelete(row)} title="Delete" sx={{ color: 'error.main' }}>
             <Trash2 size={16} />
           </IconButton>
         </Box>
@@ -170,6 +177,14 @@ export default function MasterServiceList() {
           serviceToEdit={editingService}
         />
       )}
+
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title="Delete Service"
+        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
     </Box>
   );
 }

@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
-import { TextField, Box, Typography } from '@mui/material';
+import { TextField, Box, Typography, InputAdornment, IconButton } from '@mui/material';
+import { Eye, EyeOff } from 'lucide-react';
 
 // eslint-disable-next-line react/prop-types
 export default function RHFTextField({
@@ -16,6 +18,8 @@ export default function RHFTextField({
   ...props
 }) {
   const { control } = useFormContext();
+  const [showPassword, setShowPassword] = useState(false);
+  const isPasswordType = type === 'password';
 
   return (
     <Controller
@@ -30,17 +34,24 @@ export default function RHFTextField({
           )}
           <TextField
             {...field}
-            type={type}
+            type={isPasswordType && showPassword ? 'text' : type}
             placeholder={placeholder}
             disabled={disabled}
             InputProps={{
               readOnly: readOnly,
+              endAdornment: isPasswordType ? (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                    {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
             }}
             error={!!error}
             helperText={error ? error.message : hint}
             fullWidth
             className={className}
-            sx={{ 
+            sx={{
               ...sx,
               '& .MuiOutlinedInput-root': {
                 borderRadius: '8px',

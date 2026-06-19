@@ -373,7 +373,7 @@ export default function WaterWashQueue() {
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: '#EEF4FF', minHeight: '100%' }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, minHeight: '100%' }}>
       <Grid container spacing={2} sx={{ mb: 2 }}>
         {summary.map((kpi) => {
           const Icon = kpi.icon;

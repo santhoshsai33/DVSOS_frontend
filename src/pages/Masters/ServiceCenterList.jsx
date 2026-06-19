@@ -5,9 +5,9 @@ import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
 import useMasterDataStore from '../../store/useMasterDataStore';
-import { toastSuccess } from '../../notifications/toast';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
+import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 
 export default function ServiceCenterList() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function ServiceCenterList() {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCenter, setSelectedCenter] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -27,10 +28,16 @@ export default function ServiceCenterList() {
     setSelectedCenter(null);
   };
 
-  const handleDelete = (item) => {
-    if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      deleteServiceCenter(item.id);
-      toastSuccess(`Service Center "${item.name}" deleted successfully.`);
+  const handleDelete = () => {
+    setDeleteItem(selectedCenter);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      deleteServiceCenter(deleteItem.id);
+      toastSuccess(`Service Center "${deleteItem.name}" deleted successfully.`);
+      setDeleteItem(null);
     }
   };
 
@@ -99,6 +106,14 @@ export default function ServiceCenterList() {
         />
       </Card>
 
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title="Delete Service Center"
+        message="Are you sure you want to delete this service center? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -111,7 +126,7 @@ export default function ServiceCenterList() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit Service Center
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); handleDelete(selectedCenter); }} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Delete Service Center
         </MenuItem>
