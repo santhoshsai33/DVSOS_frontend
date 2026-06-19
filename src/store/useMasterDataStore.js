@@ -71,6 +71,16 @@ const INITIAL_COMPANY = {
   defaultTaxRate: 18,
 };
 
+const INITIAL_MODULES = [
+  { id: 'M1', name: 'Sales', description: 'Sales module', status: 'ACTIVE' },
+  { id: 'M2', name: 'Service', description: 'Service module', status: 'ACTIVE' },
+];
+
+const INITIAL_STATUSES = [
+  { id: 'STT1', moduleId: 'M1', name: 'Lead', description: 'Initial lead', status: 'ACTIVE' },
+  { id: 'STT2', moduleId: 'M2', name: 'Pending', description: 'Service pending', status: 'ACTIVE' },
+];
+
 const useMasterDataStore = create(
   persist(
     (set) => ({
@@ -81,6 +91,8 @@ const useMasterDataStore = create(
       masterDistricts: INITIAL_DISTRICTS,
       masterServiceCenters: INITIAL_SERVICE_CENTERS,
       locations: INITIAL_LOCATIONS,
+      masterModules: INITIAL_MODULES,
+      masterStatuses: INITIAL_STATUSES,
 
       updateCompanySettings: (newSettings) =>
         set((state) => ({
@@ -205,6 +217,46 @@ const useMasterDataStore = create(
       deleteLocation: (id) =>
         set((state) => ({
           locations: state.locations.filter((loc) => loc.id !== id),
+        })),
+
+      addModule: (newModule) =>
+        set((state) => ({
+          masterModules: [
+            ...state.masterModules,
+            { ...newModule, id: `M${Date.now()}`, status: 'ACTIVE' },
+          ],
+        })),
+
+      updateModule: (id, updatedModule) =>
+        set((state) => ({
+          masterModules: state.masterModules.map((m) =>
+            m.id === id ? { ...m, ...updatedModule } : m
+          ),
+        })),
+
+      deleteModule: (id) =>
+        set((state) => ({
+          masterModules: state.masterModules.filter((m) => m.id !== id),
+        })),
+
+      addStatus: (newStatus) =>
+        set((state) => ({
+          masterStatuses: [
+            ...state.masterStatuses,
+            { ...newStatus, id: `STT${Date.now()}`, status: 'ACTIVE' },
+          ],
+        })),
+
+      updateStatus: (id, updatedStatus) =>
+        set((state) => ({
+          masterStatuses: state.masterStatuses.map((s) =>
+            s.id === id ? { ...s, ...updatedStatus } : s
+          ),
+        })),
+
+      deleteStatus: (id) =>
+        set((state) => ({
+          masterStatuses: state.masterStatuses.filter((s) => s.id !== id),
         })),
     }),
     {

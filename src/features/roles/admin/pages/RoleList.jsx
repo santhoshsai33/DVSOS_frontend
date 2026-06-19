@@ -7,6 +7,7 @@ import PageHeader from '../../../../components/shared/PageHeader';
 import DataTable from '../../../../components/common/DataTable';
 import { toastSuccess } from '../../../../notifications/toast';
 import { ROUTES } from '../../../../config/routes';
+import ConfirmDeleteDialog from '../../../../components/common/ConfirmDeleteDialog';
 
 const MOCK_ROLES_LIST = [
   { id: 1, designation: 'Super Admin', roleCode: 'SUPER_ADMIN', accessLevel: 'Full Access', active: true },
@@ -33,6 +34,7 @@ export default function RoleList() {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [selectedRole, setSelectedRole] = React.useState(null);
+  const [deleteItem, setDeleteItem] = React.useState(null);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -57,12 +59,18 @@ export default function RoleList() {
     toastSuccess('Role status updated successfully!');
   };
 
-  const handleDelete = (item) => {
-    if (window.confirm(`Are you sure you want to delete the privileges policy for role "${item.designation}"?`)) {
-      const updated = roles.filter(roleItem => roleItem.id !== item.id);
+  const handleDelete = () => {
+    setDeleteItem(selectedRole);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      const updated = roles.filter(roleItem => roleItem.id !== deleteItem.id);
       setRoles(updated);
       localStorage.setItem('dvsos_roles_list', JSON.stringify(updated));
-      toastSuccess(`Role policy for "${item.designation}" removed successfully.`);
+      toastSuccess(`Role policy for "${deleteItem.designation}" removed successfully.`);
+      setDeleteItem(null);
     }
   };
 
@@ -131,6 +139,14 @@ export default function RoleList() {
         />
       </Box>
 
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title="Delete Role Policy"
+        message={`Are you sure you want to delete the privileges policy for role "${deleteItem?.designation}"?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -143,7 +159,7 @@ export default function RoleList() {
           <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
           Edit Privileges
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); handleDelete(selectedRole); }} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} style={{ marginRight: 12, color: 'inherit' }} />
           Delete Policy
         </MenuItem>

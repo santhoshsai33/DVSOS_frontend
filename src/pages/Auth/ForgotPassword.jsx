@@ -7,6 +7,7 @@ import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import styles from './Auth.module.css';
+import { Box } from '@mui/material';
 
 const schema = z.object({
   email: z.string().email('Enter a valid email address'),

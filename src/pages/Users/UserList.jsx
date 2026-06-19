@@ -8,6 +8,7 @@ import Button from '../../components/common/Button';
 import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
 import DataTable from '../../components/common/DataTable';
+import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import { formatDateTime } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROLE_LABELS } from '../../constants/roles';
@@ -26,6 +27,7 @@ export default function UserList() {
   // For Dropdown Menu
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -62,13 +64,18 @@ export default function UserList() {
   };
 
   const handleDeleteUser = () => {
-    if (selectedUser && window.confirm(`Are you sure you want to remove "${selectedUser.name}"?\nThis action cannot be undone.`)) {
-      const updated = usersList.filter(u => u.id !== selectedUser.id);
+    setDeleteItem(selectedUser);
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    if (deleteItem) {
+      const updated = usersList.filter(u => u.id !== deleteItem.id);
       setUsersList(updated);
       localStorage.setItem('dvsos_users_list', JSON.stringify(updated));
-      toastSuccess(`User "${selectedUser.name}" removed successfully.`);
+      toastSuccess(`User "${deleteItem.name}" removed successfully.`);
+      setDeleteItem(null);
     }
-    handleMenuClose();
   };
 
   const filteredUsers = usersList.filter(user => {
@@ -202,6 +209,14 @@ export default function UserList() {
           emptyMessage="No users found"
         />
       </Card>
+
+      <ConfirmDeleteDialog
+        open={!!deleteItem}
+        title="Remove User"
+        message={`Are you sure you want to remove "${deleteItem?.name}"?\nThis action cannot be undone.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteItem(null)}
+      />
 
       <Menu
         anchorEl={anchorEl}
