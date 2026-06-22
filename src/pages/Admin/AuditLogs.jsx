@@ -5,6 +5,7 @@ import PageHeader from '../../components/shared/PageHeader';
 import { Box, Card, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '../../utils/formatters';
+import SearchBar from '../../components/common/SearchBar';
 
 const MOCK_LOGS = [
   { id: 1, user: 'Admin User', action: 'Created User', entity: 'User', details: 'Added new floor supervisor: Rajan M.', timestamp: '2024-06-12T10:05:00Z' },
@@ -13,6 +14,15 @@ const MOCK_LOGS = [
 
 export default function AuditLogs() {
   const navigate = useNavigate();
+  const [search, setSearch] = useState('');
+
+  const filteredLogs = MOCK_LOGS.filter(log => 
+    log.user.toLowerCase().includes(search.toLowerCase()) ||
+    log.action.toLowerCase().includes(search.toLowerCase()) ||
+    log.entity.toLowerCase().includes(search.toLowerCase()) ||
+    log.details.toLowerCase().includes(search.toLowerCase())
+  );
+
   const columns = [
     { header: 'Timestamp', render: (row) => formatDateTime(row.timestamp) },
     { header: 'User', render: (row) => <strong>{row.user}</strong> },
@@ -39,10 +49,19 @@ export default function AuditLogs() {
         title="Audit Logs"
         breadcrumbs={[{ label: 'Settings' }, { label: 'Audit Logs' }]}
       />
+
+      <Box sx={{ mb: 3, width: { xs: '100%', md: 350 } }}>
+        <SearchBar
+          placeholder="Search audit logs..."
+          value={search}
+          onChange={setSearch}
+        />
+      </Box>
+
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={MOCK_LOGS}
+          data={filteredLogs}
           emptyMessage="No audit logs found"
         />
       </Card>

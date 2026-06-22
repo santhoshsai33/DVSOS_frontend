@@ -118,7 +118,7 @@ export default function Topbar() {
               ml: 1,
               p: 0.5,
               pr: 1.5,
-              borderRadius: 8,
+              borderRadius: 0,
               transition: 'background-color 0.2s',
               '&:hover': { bgcolor: 'action.hover' }
             }}
@@ -141,7 +141,7 @@ export default function Topbar() {
             anchorEl={userAnchorEl}
             open={Boolean(userAnchorEl)}
             onClose={() => setUserAnchorEl(null)}
-            PaperProps={{ sx: { width: 200, mt: 1.5, borderRadius: 2 } }}
+            PaperProps={{ sx: { width: 200, mt: 1.5, borderRadius: 1 } }}
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           >

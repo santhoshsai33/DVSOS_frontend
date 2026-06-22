@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Card, IconButton, Menu, MenuItem, Modal, Typography, TextField, Grid } from '@mui/material';
+import { Box, Card, IconButton, Menu, MenuItem, Modal, Typography, TextField, Grid, Select } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import { Plus, LogIn, Eye, LogOut, MoreVertical } from 'lucide-react';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -23,6 +23,8 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const debSearch = useDebounce(search, 300);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [serviceTypeFilter, setServiceTypeFilter] = useState('');
 
   const [showExitModal, setShowExitModal] = useState(false);
   const [exitVehicle, setExitVehicle] = useState(null);
@@ -51,13 +53,17 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
     setExitVehicle(null);
   };
 
-  const filtered = MOCK_ENTRIES.filter(
-    (e) =>
-      !debSearch ||
+  const filtered = MOCK_ENTRIES.filter((e) => {
+    const matchesSearch = !debSearch ||
       e.vehicleNumber.toLowerCase().includes(debSearch.toLowerCase()) ||
       e.ownerName.toLowerCase().includes(debSearch.toLowerCase()) ||
-      e.mobile.includes(debSearch)
-  );
+      e.mobile.includes(debSearch);
+    
+    const matchesStatus = !statusFilter || e.status === statusFilter;
+    const matchesServiceType = !serviceTypeFilter || e.serviceType === serviceTypeFilter;
+
+    return matchesSearch && matchesStatus && matchesServiceType;
+  });
 
   const columns = [
     {
@@ -94,12 +100,56 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
         }
       />
 
-      <Box sx={{ mb: 3, width: { xs: '100%', md: 350 } }}>
-        <SearchBar
-          placeholder="Search by vehicle number, owner, mobile..."
-          value={search}
-          onChange={setSearch}
-        />
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
+          <SearchBar
+            placeholder="Search by vehicle number, owner, mobile..."
+            value={search}
+            onChange={setSearch}
+          />
+        </Box>
+        <Select
+          size="small"
+          displayEmpty
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          sx={{ 
+            width: { xs: '100%', sm: 180 }, 
+            bgcolor: 'background.paper', 
+            borderRadius: '24px',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+          }}
+        >
+          <MenuItem value="">All Statuses</MenuItem>
+          <MenuItem value="PENDING">Pending</MenuItem>
+          <MenuItem value="IN_PROGRESS">In Progress</MenuItem>
+          <MenuItem value="COMPLETED">Completed</MenuItem>
+          <MenuItem value="DELAYED">Delayed</MenuItem>
+          <MenuItem value="BODY_SHOP">Body Shop</MenuItem>
+        </Select>
+
+        <Select
+          size="small"
+          displayEmpty
+          value={serviceTypeFilter}
+          onChange={(e) => setServiceTypeFilter(e.target.value)}
+          sx={{ 
+            width: { xs: '100%', sm: 180 }, 
+            bgcolor: 'background.paper', 
+            borderRadius: '24px',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+          }}
+        >
+          <MenuItem value="">All Service Types</MenuItem>
+          <MenuItem value="General Service">General Service</MenuItem>
+          <MenuItem value="Oil Change">Oil Change</MenuItem>
+          <MenuItem value="Body Repair">Body Repair</MenuItem>
+          <MenuItem value="Engine Repair">Engine Repair</MenuItem>
+        </Select>
       </Box>
 
       <Card sx={{ borderRadius: 0, }}>
