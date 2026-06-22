@@ -213,13 +213,13 @@ export default function UserList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/users/${selectedUser?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_USER_EDIT.replace(':id', selectedUser?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
-          Edit User
+          Edit
         </MenuItem>
         <MenuItem onClick={handleDeleteUser} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete User
+          Delete
         </MenuItem>
       </Menu>
     </Box>

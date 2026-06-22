@@ -126,13 +126,13 @@ export default function StateList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/master-states/${selectedState?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_STATES_EDIT.replace(':id', selectedState?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
-          Edit State
+          Edit
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete State
+          Delete
         </MenuItem>
       </Menu>
     </Box>

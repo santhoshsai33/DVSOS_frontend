@@ -136,13 +136,13 @@ export default function ServiceCenterList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/service-centers/${selectedCenter?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_SERVICE_CENTERS_EDIT.replace(':id', selectedCenter?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
-          Edit Service Center
+          Edit
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete Service Center
+          Delete
         </MenuItem>
       </Menu>
     </Box>

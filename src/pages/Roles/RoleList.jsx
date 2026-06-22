@@ -160,13 +160,13 @@ export default function RoleList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/roles/privileges/${selectedRole?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_ROLE_PRIVILEGES_EDIT.replace(':id', selectedRole?.id)); }}>
           <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
-          Edit Privileges
+          Edit
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} style={{ marginRight: 12, color: 'inherit' }} />
-          Delete Policy
+          Delete
         </MenuItem>
       </Menu>
     </Box>
