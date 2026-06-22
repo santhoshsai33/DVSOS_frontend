@@ -8,10 +8,14 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
+import RHFSwitch from '../../components/form/RHFSwitch';
+import SearchBar from '../../components/common/SearchBar';
+import { toastSuccess } from '../../notifications/toast';
 
 export default function DistrictList() {
   const navigate = useNavigate();
   const { masterDistricts, masterStates, deleteDistrict, updateDistrict } = useMasterDataStore();
+  const [search, setSearch] = useState('');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
@@ -52,6 +56,11 @@ export default function DistrictList() {
     return state ? state.name : 'Unknown State';
   };
 
+  const filteredDistricts = (masterDistricts || []).filter(dist =>
+    dist.name.toLowerCase().includes(search.toLowerCase()) ||
+    getStateName(dist.stateId).toLowerCase().includes(search.toLowerCase())
+  );
+
   const columns = [
     {
       header: 'District Name',
@@ -67,16 +76,10 @@ export default function DistrictList() {
       header: 'Status',
       accessor: 'status',
       render: (row) => (
-        <Select
-          native
-          size="small"
+        <RHFSwitch
           value={row.status || 'ACTIVE'}
-          onChange={(e) => handleStatusChange(row.id, e.target.value)}
-          sx={{ width: 120, height: 32, fontSize: '0.85rem' }}
-        >
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </Select>
+          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+        />
       )
     },
     {
@@ -101,10 +104,20 @@ export default function DistrictList() {
         }
       />
 
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
+          <SearchBar
+            placeholder="Search district or state..."
+            value={search}
+            onChange={setSearch}
+          />
+        </Box>
+      </Box>
+
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={masterDistricts || []}
+          data={filteredDistricts}
           emptyMessage="No districts found"
         />
       </Card>

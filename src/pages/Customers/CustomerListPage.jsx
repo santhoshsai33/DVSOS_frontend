@@ -9,6 +9,7 @@ import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
+import RHFSwitch from '../../components/form/RHFSwitch';
 
 const INITIAL_CUSTOMERS = [
   { id: '1', name: 'Ramesh Patel', email: 'ramesh@gmail.com', mobile: '9876543210', address: '45 Green Park, Madurai', visits: 4, status: 'ACTIVE' },
@@ -120,16 +121,10 @@ export default function CustomerListPage() {
     {
       header: 'Status',
       render: (row) => (
-        <Select
-          native
-          size="small"
+        <RHFSwitch
           value={row.status || 'ACTIVE'}
-          onChange={(e) => handleStatusChange(row.id, e.target.value)}
-          sx={{ width: 120, height: 32, fontSize: '0.85rem' }}
-        >
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </Select>
+          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+        />
       )
     },
     {

@@ -8,6 +8,8 @@ import DataTable from '../../components/common/DataTable';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
+import RHFSwitch from '../../components/form/RHFSwitch';
+import SearchBar from '../../components/common/SearchBar';
 
 const MOCK_ROLES_LIST = [
   { id: 1, designation: 'Super Admin', roleCode: 'SUPER_ADMIN', accessLevel: 'Full Access', active: true },
@@ -22,6 +24,7 @@ const MOCK_ROLES_LIST = [
 
 export default function RoleList() {
   const navigate = useNavigate();
+  const [search, setSearch] = React.useState('');
   const [roles, setRoles] = React.useState(() => {
     try {
       const saved = localStorage.getItem('dvsos_roles_list');
@@ -74,6 +77,11 @@ export default function RoleList() {
     }
   };
 
+  const filteredRoles = (roles || []).filter(role =>
+    role.designation.toLowerCase().includes(search.toLowerCase()) ||
+    role.roleCode.toLowerCase().includes(search.toLowerCase())
+  );
+
   const columns = [
     {
       header: 'Designation Name',
@@ -90,23 +98,10 @@ export default function RoleList() {
     {
       header: 'Status',
       render: (row) => (
-        <Select
-          size="small"
-          value={row.active ? 'Active' : 'Inactive'}
-          onChange={(e) => handleStatusChange(row.id, e.target.value === 'Active')}
-          sx={{ 
-            width: 120, 
-            height: 32, 
-            fontSize: '0.85rem',
-            borderRadius: '16px',
-            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
-          }}
-        >
-          <MenuItem value="Active">Active</MenuItem>
-          <MenuItem value="Inactive">Inactive</MenuItem>
-        </Select>
+        <RHFSwitch
+          value={row.active}
+          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+        />
       )
     },
     {
@@ -131,10 +126,20 @@ export default function RoleList() {
         }
       />
 
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
+          <SearchBar
+            placeholder="Search role designation or code..."
+            value={search}
+            onChange={setSearch}
+          />
+        </Box>
+      </Box>
+
       <Box sx={{ bgcolor: 'background.paper', borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={roles}
+          data={filteredRoles}
           emptyMessage="No role policies found"
         />
       </Box>

@@ -8,10 +8,14 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
+import RHFSwitch from '../../components/form/RHFSwitch';
+import SearchBar from '../../components/common/SearchBar';
+import { toastSuccess } from '../../notifications/toast';
 
 export default function StatusList() {
   const navigate = useNavigate();
   const { masterStatuses, masterModules, deleteStatus, updateStatus } = useMasterDataStore();
+  const [search, setSearch] = useState('');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
@@ -51,6 +55,11 @@ export default function StatusList() {
     return module ? module.name : 'Unknown Module';
   };
 
+  const filteredStatuses = (masterStatuses || []).filter(status =>
+    status.name.toLowerCase().includes(search.toLowerCase()) ||
+    getModuleName(status.moduleId).toLowerCase().includes(search.toLowerCase())
+  );
+
   const columns = [
     {
       header: 'Module',
@@ -70,16 +79,10 @@ export default function StatusList() {
       header: 'Status',
       accessor: 'status',
       render: (row) => (
-        <Select
-          native
-          size="small"
+        <RHFSwitch
           value={row.status || 'ACTIVE'}
-          onChange={(e) => handleStatusChange(row.id, e.target.value)}
-          sx={{ width: 120, height: 32, fontSize: '0.85rem' }}
-        >
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </Select>
+          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+        />
       )
     },
     {
@@ -104,10 +107,20 @@ export default function StatusList() {
         }
       />
 
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
+          <SearchBar
+            placeholder="Search status or module..."
+            value={search}
+            onChange={setSearch}
+          />
+        </Box>
+      </Box>
+
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={masterStatuses || []}
+          data={filteredStatuses}
           emptyMessage="No statuses found"
         />
       </Card>

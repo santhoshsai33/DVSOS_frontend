@@ -3,7 +3,7 @@ import { Plus, Edit, Trash2, Mail, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Box, IconButton, Menu, MenuItem, Typography, Select, Card, Avatar } from '@mui/material';
 import { useUsers } from '../../queries/useDataQueries';
-import StatusBadge from '../../components/common/StatusBadge';
+import RHFSwitch from '../../components/form/RHFSwitch';
 import Button from '../../components/common/Button';
 import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
@@ -122,23 +122,10 @@ export default function UserList() {
       header: 'Status',
       accessor: 'status',
       render: (row) => (
-        <Select
-          size="small"
+        <RHFSwitch
           value={row.status || 'ACTIVE'}
-          onChange={(e) => handleStatusChange(row.id, e.target.value)}
-          sx={{ 
-            width: 120, 
-            height: 32, 
-            fontSize: '0.85rem',
-            borderRadius: '16px',
-            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
-          }}
-        >
-          <MenuItem value="ACTIVE">Active</MenuItem>
-          <MenuItem value="INACTIVE">Inactive</MenuItem>
-        </Select>
+          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+        />
       ),
     },
     {

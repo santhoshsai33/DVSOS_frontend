@@ -8,6 +8,7 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { useUsers } from '../../queries/useDataQueries';
 import DataTable from '../../components/common/DataTable';
 import { toastSuccess } from '../../notifications/toast';
+import RHFSwitch from '../../components/form/RHFSwitch';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -50,25 +51,10 @@ export default function AdminDashboard() {
       header: 'Status',
       accessor: 'status',
       render: (row) => (
-        <Select
-          native
-          size="small"
+        <RHFSwitch
           value={row.status || 'ACTIVE'}
-          onChange={(e) => handleStatusChange(row.id, e.target.value)}
-          sx={{
-            width: 120,
-            height: 32,
-            fontSize: '0.85rem',
-            bgcolor: '#FFFFFF',
-            borderRadius: '6px',
-            '& select': { py: 0.5, px: 1 },
-            fieldset: { borderColor: '#E2E8F0' },
-            '&:hover fieldset': { borderColor: '#CBD5E1 !important' }
-          }}
-        >
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </Select>
+          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+        />
       )
     }
   ];

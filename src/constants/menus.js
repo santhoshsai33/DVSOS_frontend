@@ -89,19 +89,8 @@ export const SIDEBAR_MENUS = {
     // { label: 'Executive Overview', path: ROUTES.MD_EXECUTIVE_OVERVIEW, icon: BarChart2 },
     // { label: 'Performance Report', path: ROUTES.MD_PERFORMANCE_REPORT, icon: FileText },
     // { label: 'Service KPI', path: ROUTES.MD_SERVICE_KPI, icon: CheckSquare },
-    {
-      label: 'Master Menu',
-      icon: Database,
-      children: [
-        { label: 'States', path: ROUTES.ADMIN_MASTER_STATES, icon: MapPin },
-        { label: 'Districts', path: ROUTES.ADMIN_MASTER_DISTRICTS, icon: Building },
-        { label: 'Service Categories', path: ROUTES.ADMIN_MASTER_CATEGORIES, icon: ClipboardList },
-        { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench },
-        { label: 'Modules', path: ROUTES.ADMIN_MODULES, icon: Package },
-        { label: 'Statuses', path: ROUTES.ADMIN_MASTER_STATUSES, icon: CheckSquare },
-      ]
-    },
-    { label: 'Service Centers', path: ROUTES.ADMIN_SERVICE_CENTERS, icon: Building },
+
+
     // { label: 'Locations', path: ROUTES.ADMIN_LOCATIONS, icon: MapPin },
     { label: 'Role Management', path: ROUTES.ADMIN_ROLES, icon: ShieldCheck },
     { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
