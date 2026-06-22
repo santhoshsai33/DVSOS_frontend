@@ -8,6 +8,7 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
+import RHFSwitch from '../../components/form/RHFSwitch';
 
 export default function LocationList() {
   const navigate = useNavigate();
@@ -68,16 +69,10 @@ export default function LocationList() {
       header: 'Status',
       accessor: 'status',
       render: (row) => (
-        <Select
-          native
-          size="small"
+        <RHFSwitch
           value={row.status || 'ACTIVE'}
-          onChange={(e) => handleStatusChange(row.id, e.target.value)}
-          sx={{ width: 120, height: 32, fontSize: '0.85rem' }}
-        >
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </Select>
+          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+        />
       )
     },
     {

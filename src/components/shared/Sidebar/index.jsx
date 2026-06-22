@@ -116,7 +116,7 @@ export default function Sidebar() {
           <ListItemButton
             onClick={() => toggleGroup(item.label)}
             sx={{
-              borderRadius: 2,
+              borderRadius: 0,
               mb: 0.5,
               mx: 1,
               bgcolor: groupActive ? 'primary.main' : 'transparent',
@@ -151,18 +151,18 @@ export default function Sidebar() {
           to={item.path || '#'}
           onClick={() => isMobile && setSidebarMobileOpen(false)}
           sx={{
-            borderRadius: 2,
+            borderRadius: 0,
             pl: isCollapsedState ? 'auto' : (depth > 0 ? 4 : 2),
             justifyContent: isCollapsedState ? 'center' : 'flex-start',
-            bgcolor: active 
-              ? (depth > 0 ? 'rgba(26, 67, 77, 0.08)' : 'primary.main') 
+            bgcolor: active
+              ? (depth > 0 ? 'rgba(26, 67, 77, 0.08)' : 'primary.main')
               : 'transparent',
-            color: active 
-              ? (depth > 0 ? 'primary.main' : 'primary.contrastText') 
+            color: active
+              ? (depth > 0 ? 'primary.main' : 'primary.contrastText')
               : 'inherit',
             '&:hover': {
-              bgcolor: active 
-                ? (depth > 0 ? 'rgba(26, 67, 77, 0.12)' : 'primary.dark') 
+              bgcolor: active
+                ? (depth > 0 ? 'rgba(26, 67, 77, 0.12)' : 'primary.dark')
                 : 'action.hover',
             },
           }}
@@ -182,7 +182,7 @@ export default function Sidebar() {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRight: '1px solid', borderColor: 'divider' }}>
       {/* Brand */}
       <Box sx={{ height: 64, display: 'flex', alignItems: 'center', px: sidebarCollapsed && !isMobile ? 0 : 3, justifyContent: sidebarCollapsed && !isMobile ? 'center' : 'flex-start' }}>
-        <Box sx={{ width: 32, height: 32, borderRadius: 1.5, bgcolor: 'primary.main', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: sidebarCollapsed && !isMobile ? 0 : 1.5 }}>
+        <Box sx={{ width: 32, height: 32, borderRadius: 0, bgcolor: 'primary.main', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: sidebarCollapsed && !isMobile ? 0 : 1.5 }}>
           <Car size={18} />
         </Box>
         {(!sidebarCollapsed || isMobile) && (
@@ -218,7 +218,7 @@ export default function Sidebar() {
       >
         {drawerContent}
       </Drawer>
-      
+
       {/* Desktop Drawer */}
       <Drawer
         variant="permanent"

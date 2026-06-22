@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Grid, Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from '@mui/material';
+import { Grid, Box, Typography, Card, CardContent, Select } from '@mui/material';
 import {
   Users, Crown, Building, MapPin, ShieldCheck
 } from 'lucide-react';
@@ -7,12 +6,15 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import useMasterDataStore from '../../store/useMasterDataStore';
 import { useUsers } from '../../queries/useDataQueries';
+import DataTable from '../../components/common/DataTable';
+import { toastSuccess } from '../../notifications/toast';
+import RHFSwitch from '../../components/form/RHFSwitch';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
   // Data sources
-  const { masterServiceCenters, locations } = useMasterDataStore();
+  const { masterServiceCenters, locations, updateServiceCenter } = useMasterDataStore();
   const { data: usersData } = useUsers();
 
   const usersList = usersData?.data || [];
@@ -21,9 +23,41 @@ export default function AdminDashboard() {
   const totalServiceCenters = masterServiceCenters.length;
   const totalLocations = locations.length;
   const totalUsers = usersList.length;
+  const activeServiceCenters = masterServiceCenters;
 
   // Get unique roles from users to simulate total roles
   const uniqueRoles = new Set(usersList.map(u => u.role)).size;
+
+  const handleStatusChange = (id, newStatus) => {
+    updateServiceCenter(id, { status: newStatus });
+    toastSuccess('Service Center status updated successfully!');
+  };
+
+  const columns = [
+    {
+      header: 'Service Center Name',
+      accessor: 'name',
+      render: (row) => <Typography variant="body2" fontWeight={600} color="#1E293B">{row.name}</Typography>
+    },
+    {
+      header: 'Contact Number',
+      accessor: 'contactNumber'
+    },
+    {
+      header: 'Email',
+      accessor: 'email'
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (row) => (
+        <RHFSwitch
+          value={row.status || 'ACTIVE'}
+          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+        />
+      )
+    }
+  ];
 
   const kpis = [
     {
@@ -132,39 +166,14 @@ export default function AdminDashboard() {
           <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
             <CardContent sx={{ p: 3, pb: '24px !important' }}>
               <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>
-                Active Service Centers
+                Service Centers
               </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ bgcolor: '#F8FAFC' }}>
-                      <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', py: 1.5, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderBottom: 'none' }}>Name</TableCell>
-                      <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', py: 1.5, borderBottom: 'none' }}>Contact</TableCell>
-                      <TableCell sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', py: 1.5, borderTopRightRadius: 8, borderBottomRightRadius: 8, borderBottom: 'none' }}>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {masterServiceCenters.slice(0, 5).map((center) => (
-                      <TableRow key={center.id} sx={{ '& td': { borderBottom: '1px solid #F1F5F9', py: 2 } }}>
-                        <TableCell sx={{ fontWeight: 600, color: '#1E293B' }}>{center.name}</TableCell>
-                        <TableCell sx={{ fontWeight: 500, color: '#475569' }}>{center.contactNumber}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={center.status}
-                            size="small"
-                            sx={{ bgcolor: center.status === 'ACTIVE' ? '#D1FAE5' : '#FEE2E2', color: center.status === 'ACTIVE' ? '#059669' : '#EF4444', fontWeight: 700, borderRadius: 1 }}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {masterServiceCenters.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={3} align="center" sx={{ py: 3, color: 'text.secondary' }}>No service centers available</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <DataTable
+                columns={columns}
+                data={activeServiceCenters || []}
+                emptyMessage="No active service centers found"
+                showPagination={false}
+              />
             </CardContent>
           </Card>
         </Grid>

@@ -72,26 +72,26 @@ export default function DataTable({
                   const isActionColumn = String(col.header || '').toLowerCase().includes('action');
 
                   return (
-                  <TableCell
-                    key={index}
-                    sx={{
-                      bgcolor: '#e0e2e6ff',
-                      color: '#000000',
-                      fontSize: '0.875rem',
-                      fontWeight: 700,
-                      textTransform: 'none',
-                      borderBottom: 'none',
-                      py: 2,
-                      px: 3,
-                      whiteSpace: 'nowrap',
-                      width: isActionColumn ? '1%' : col.width || 'auto',
-                      '&:first-of-type': { pl: 4 },
-                      '&:last-of-type': { pr: 4 }
-                    }}
-                    width={isActionColumn ? '1%' : col.width || 'auto'}
-                  >
-                    {col.header}
-                  </TableCell>
+                    <TableCell
+                      key={index}
+                      sx={{
+                        bgcolor: '#e0e2e6ff',
+                        color: '#000000',
+                        fontSize: '0.875rem',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        borderBottom: 'none',
+                        py: 2,
+                        px: 3,
+                        whiteSpace: 'nowrap',
+                        width: isActionColumn ? '1%' : col.width || 'auto',
+                        '&:first-of-type': { pl: 4 },
+                        '&:last-of-type': { pr: 4 }
+                      }}
+                      width={isActionColumn ? '1%' : col.width || 'auto'}
+                    >
+                      {col.header}
+                    </TableCell>
                   );
                 })}
               </TableRow>
@@ -117,24 +117,24 @@ export default function DataTable({
                     const isActionColumn = String(col.header || '').toLowerCase().includes('action');
 
                     return (
-                    <TableCell
-                      key={colIndex}
-                      sx={{
-                        py: 2.25,
-                        px: 3,
-                        color: '#334155',
-                        fontSize: '0.875rem',
-                        fontWeight: 500,
-                        whiteSpace: isActionColumn ? 'nowrap' : 'normal',
-                        width: isActionColumn ? '1%' : col.width || 'auto',
-                        '&:first-of-type': { pl: 4 },
-                        '&:last-of-type': { pr: 4 }
-                      }}
-                    >
-                      {col.render
-                        ? col.render(row)
-                        : (row[col.accessor] !== undefined && row[col.accessor] !== null ? row[col.accessor] : '—')}
-                    </TableCell>
+                      <TableCell
+                        key={colIndex}
+                        sx={{
+                          py: 2.25,
+                          px: 3,
+                          color: '#334155',
+                          fontSize: '0.875rem',
+                          fontWeight: 500,
+                          whiteSpace: isActionColumn ? 'nowrap' : 'normal',
+                          width: isActionColumn ? '1%' : col.width || 'auto',
+                          '&:first-of-type': { pl: 4 },
+                          '&:last-of-type': { pr: 4 }
+                        }}
+                      >
+                        {col.render
+                          ? col.render(row)
+                          : (row[col.accessor] !== undefined && row[col.accessor] !== null ? row[col.accessor] : '—')}
+                      </TableCell>
                     );
                   })}
                 </TableRow>

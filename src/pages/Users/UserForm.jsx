@@ -50,7 +50,7 @@ export default function UserForm() {
   };
 
   return (
-    <Box sx={{ bgcolor: 'background.paper', minHeight: '100%', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
+    <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
 
       {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
@@ -99,7 +99,7 @@ export default function UserForm() {
           </Grid>
 
           {/* Password — only on Add */}
-          {!isEdit && (
+          {/* {!isEdit && (
             <>
               <Divider sx={{ my: 4 }} />
               <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, color: 'text.primary' }}>
@@ -114,7 +114,7 @@ export default function UserForm() {
                 </Grid>
               </Grid>
             </>
-          )}
+          )} */}
 
           {/* Footer Actions */}
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>

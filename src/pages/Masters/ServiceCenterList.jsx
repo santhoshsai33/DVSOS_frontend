@@ -8,10 +8,14 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
+import RHFSwitch from '../../components/form/RHFSwitch';
+import SearchBar from '../../components/common/SearchBar';
+import { toastSuccess } from '../../notifications/toast';
 
 export default function ServiceCenterList() {
   const navigate = useNavigate();
   const { masterServiceCenters, deleteServiceCenter, updateServiceCenter } = useMasterDataStore();
+  const [search, setSearch] = useState('');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCenter, setSelectedCenter] = useState(null);
@@ -46,6 +50,12 @@ export default function ServiceCenterList() {
     toastSuccess('Service Center status updated successfully!');
   };
 
+  const filteredServiceCenters = (masterServiceCenters || []).filter(sc =>
+    sc.name.toLowerCase().includes(search.toLowerCase()) ||
+    (sc.contactNumber || '').includes(search) ||
+    (sc.email || '').toLowerCase().includes(search.toLowerCase())
+  );
+
   const columns = [
     {
       header: 'Service Center Name',
@@ -64,16 +74,10 @@ export default function ServiceCenterList() {
       header: 'Status',
       accessor: 'status',
       render: (row) => (
-        <Select
-          native
-          size="small"
+        <RHFSwitch
           value={row.status || 'ACTIVE'}
-          onChange={(e) => handleStatusChange(row.id, e.target.value)}
-          sx={{ width: 120, height: 32, fontSize: '0.85rem' }}
-        >
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </Select>
+          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+        />
       )
     },
     {
@@ -98,10 +102,20 @@ export default function ServiceCenterList() {
         }
       />
 
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
+          <SearchBar
+            placeholder="Search service center..."
+            value={search}
+            onChange={setSearch}
+          />
+        </Box>
+      </Box>
+
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={masterServiceCenters || []}
+          data={filteredServiceCenters}
           emptyMessage="No service centers found"
         />
       </Card>

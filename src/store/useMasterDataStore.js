@@ -43,6 +43,46 @@ const INITIAL_SERVICE_CENTERS = [
     logoUrl: 'https://via.placeholder.com/150',
     websiteUrl: 'https://www.dvsosmain.com',
     status: 'ACTIVE'
+  },
+  {
+    id: 'SC2',
+    name: 'Elite Auto Hub',
+    gstNumber: '33AAACE9876R1Z9',
+    contactNumber: '+91 9123456789',
+    email: 'info@eliteautohub.com',
+    logoUrl: '',
+    websiteUrl: 'https://www.eliteautohub.com',
+    status: 'ACTIVE'
+  },
+  {
+    id: 'SC3',
+    name: 'Apex Motors Care',
+    gstNumber: '27AABCA5678D1Z2',
+    contactNumber: '+91 8888888888',
+    email: 'support@apexmotors.com',
+    logoUrl: '',
+    websiteUrl: '',
+    status: 'ACTIVE'
+  },
+  {
+    id: 'SC4',
+    name: 'Rapid Repair Station',
+    gstNumber: '24AAACT7722A1Z4',
+    contactNumber: '+91 7777777777',
+    email: 'service@rapidrepair.com',
+    logoUrl: '',
+    websiteUrl: 'https://www.rapidrepair.com',
+    status: 'ACTIVE'
+  },
+  {
+    id: 'SC5',
+    name: 'Metropolitan Services',
+    gstNumber: '19AAACM1199K1Z0',
+    contactNumber: '+91 6666666666',
+    email: 'contact@metrosvc.in',
+    logoUrl: '',
+    websiteUrl: 'https://www.metrosvc.in',
+    status: 'ACTIVE'
   }
 ];
 
