@@ -15,50 +15,50 @@ export const ENDPOINTS = {
 
   // Vehicles
   VEHICLES: {
-    LIST: '/vehicles',
-    DETAIL: (id) => `/vehicles/${id}`,
-    CREATE: '/vehicles',
-    UPDATE: (id) => `/vehicles/${id}`,
-    DELETE: (id) => `/vehicles/${id}`,
-    HISTORY: (id) => `/vehicles/${id}/history`,
+    LIST: '/vehicles/list',
+    DETAIL: (id) => `/vehicles/detail/${id}`,
+    CREATE: '/vehicles/create',
+    UPDATE: (id) => `/vehicles/update/${id}`,
+    DELETE: (id) => `/vehicles/delete/${id}`,
+    HISTORY: (id) => `/vehicles/history/${id}`,
     SEARCH: '/vehicles/search',
   },
 
   // Gate Entry
   GATE_ENTRY: {
-    LIST: '/gate-entries',
-    CREATE: '/gate-entries',
-    DETAIL: (id) => `/gate-entries/${id}`,
-    UPDATE: (id) => `/gate-entries/${id}`,
+    LIST: '/gate-entries/list',
+    CREATE: '/gate-entries/create',
+    DETAIL: (id) => `/gate-entries/detail/${id}`,
+    UPDATE: (id) => `/gate-entries/update/${id}`,
     TODAY: '/gate-entries/today',
   },
 
   // Job Cards
   JOB_CARDS: {
-    LIST: '/job-cards',
-    CREATE: '/job-cards',
-    DETAIL: (id) => `/job-cards/${id}`,
-    UPDATE: (id) => `/job-cards/${id}`,
-    DELETE: (id) => `/job-cards/${id}`,
-    PENDING: '/job-cards?status=PENDING',
+    LIST: '/job-cards/list',
+    CREATE: '/job-cards/create',
+    DETAIL: (id) => `/job-cards/detail/${id}`,
+    UPDATE: (id) => `/job-cards/update/${id}`,
+    DELETE: (id) => `/job-cards/delete/${id}`,
+    PENDING: '/job-cards/list?status=PENDING',
   },
 
   // Approvals
   APPROVALS: {
-    LIST: '/approvals',
-    PENDING: '/approvals?status=PENDING',
-    APPROVE: (id) => `/approvals/${id}/approve`,
-    REJECT: (id) => `/approvals/${id}/reject`,
-    DETAIL: (id) => `/approvals/${id}`,
+    LIST: '/approvals/list',
+    PENDING: '/approvals/list?status=PENDING',
+    APPROVE: (id) => `/approvals/approve/${id}`,
+    REJECT: (id) => `/approvals/reject/${id}`,
+    DETAIL: (id) => `/approvals/detail/${id}`,
   },
 
   // Work Queues
   QUEUES: {
-    MECHANICAL: '/queues/mechanical',
-    BODY_SHOP: '/queues/body-shop',
-    WATER_WASH: '/queues/water-wash',
-    UPDATE_STATUS: (id) => `/queues/${id}/status`,
-    ASSIGN: (id) => `/queues/${id}/assign`,
+    MECHANICAL: '/queues/mechanical/list',
+    BODY_SHOP: '/queues/body-shop/list',
+    WATER_WASH: '/queues/water-wash/list',
+    UPDATE_STATUS: (id) => `/queues/status/${id}`,
+    ASSIGN: (id) => `/queues/assign/${id}`,
   },
 
   // Dashboard
@@ -82,24 +82,58 @@ export const ENDPOINTS = {
 
   // Users
   USERS: {
-    LIST: '/users',
-    CREATE: '/users',
-    DETAIL: (id) => `/users/${id}`,
-    UPDATE: (id) => `/users/${id}`,
-    DELETE: (id) => `/users/${id}`,
+    LIST: '/users/list',
+    CREATE: '/users/create',
+    DETAIL: (id) => `/users/detail/${id}`,
+    UPDATE: (id) => `/users/update/${id}`,
+    DELETE: (id) => `/users/delete/${id}`,
     CHANGE_PASSWORD: '/users/change-password',
+  },
+
+  // Roles
+  ROLES: {
+    LIST: '/roles/list',
+    CREATE: '/roles/create',
+    DETAIL: (id) => `/roles/detail/${id}`,
+    UPDATE: (id) => `/roles/update/${id}`,
+    STATUS: (id) => `/roles/status/${id}`,
+    MENU_PERMISSIONS: {
+      SAVE: (roleId) => `/roles/${roleId}/menu-permissions/save`,
+      LIST: (roleId) => `/roles/${roleId}/menu-permissions/list`,
+      UPDATE: (roleId) => `/roles/${roleId}/menu-permissions/update`,
+      DELETE: (roleId, menuId) => `/roles/${roleId}/menu-permissions/delete/${menuId}`,
+    },
+  },
+
+  // Menus
+  MENUS: {
+    LIST: '/menus/list',
+    MODULES: '/menus/modules/list',
+    BY_MODULE: (module) => `/menus/list-by-module/${module}`,
   },
 
   // Masters
   MASTERS: {
-    SERVICES: '/masters/services',
-    SERVICE_DETAIL: (id) => `/masters/services/${id}`,
-    BRANDS: '/masters/brands',
-    BRAND_DETAIL: (id) => `/masters/brands/${id}`,
-    MODELS: '/masters/models',
-    MODEL_DETAIL: (id) => `/masters/models/${id}`,
-    PRICING: '/masters/pricing',
-    PRICING_DETAIL: (id) => `/masters/pricing/${id}`,
+    SERVICES: '/masters/services/list',
+    SERVICE_DETAIL: (id) => `/masters/services/detail/${id}`,
+    SERVICE_CREATE: '/masters/services/create',
+    SERVICE_UPDATE: (id) => `/masters/services/update/${id}`,
+    SERVICE_DELETE: (id) => `/masters/services/delete/${id}`,
+    BRANDS: '/masters/brands/list',
+    BRAND_DETAIL: (id) => `/masters/brands/detail/${id}`,
+    BRAND_CREATE: '/masters/brands/create',
+    BRAND_UPDATE: (id) => `/masters/brands/update/${id}`,
+    BRAND_DELETE: (id) => `/masters/brands/delete/${id}`,
+    MODELS: '/masters/models/list',
+    MODEL_DETAIL: (id) => `/masters/models/detail/${id}`,
+    MODEL_CREATE: '/masters/models/create',
+    MODEL_UPDATE: (id) => `/masters/models/update/${id}`,
+    MODEL_DELETE: (id) => `/masters/models/delete/${id}`,
+    PRICING: '/masters/pricing/list',
+    PRICING_DETAIL: (id) => `/masters/pricing/detail/${id}`,
+    PRICING_CREATE: '/masters/pricing/create',
+    PRICING_UPDATE: (id) => `/masters/pricing/update/${id}`,
+    PRICING_DELETE: (id) => `/masters/pricing/delete/${id}`,
   },
 
   // Kiosk
