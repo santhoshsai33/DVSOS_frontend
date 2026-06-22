@@ -121,13 +121,13 @@ export default function LocationList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/locations/${selectedLocation?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_LOCATIONS_EDIT.replace(':id', selectedLocation?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
-          Edit Location
+          Edit
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete Location
+          Delete
         </MenuItem>
       </Menu>
     </Box>

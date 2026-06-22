@@ -128,13 +128,13 @@ export default function ServiceCategories() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/master/categories/${selectedCategory?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_CATEGORIES_EDIT.replace(':id', selectedCategory?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
-          Edit Category
+          Edit
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete Category
+          Delete
         </MenuItem>
       </Menu>
     </Box>

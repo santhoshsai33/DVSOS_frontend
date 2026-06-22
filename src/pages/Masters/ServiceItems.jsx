@@ -139,13 +139,13 @@ export default function ServiceItems() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/master/items/${selectedItem?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_ITEMS_EDIT.replace(':id', selectedItem?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
-          Edit Service
+          Edit
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete Service
+          Delete
         </MenuItem>
       </Menu>
     </Box>

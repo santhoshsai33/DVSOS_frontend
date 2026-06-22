@@ -138,13 +138,13 @@ export default function DistrictList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/admin/master-districts/${selectedDistrict?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_DISTRICTS_EDIT.replace(':id', selectedDistrict?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
-          Edit District
+          Edit
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete District
+          Delete
         </MenuItem>
       </Menu>
     </Box>
