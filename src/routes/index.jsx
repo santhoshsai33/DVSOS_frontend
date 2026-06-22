@@ -99,7 +99,7 @@ const roleHome = {
 function RootRedirect() {
   const { isAuthenticated, role } = useAuthStore();
   if (!isAuthenticated) return <Navigate to={ROUTES.LOGIN} replace />;
-  return <Navigate to={roleHome[role] || ROUTES.MANAGER_DASHBOARD} replace />;
+  return <Navigate to={roleHome[role] || ROUTES.ADMIN_DASHBOARD} replace />;
 }
 
 export const router = createBrowserRouter([

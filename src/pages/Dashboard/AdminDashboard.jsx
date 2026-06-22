@@ -17,7 +17,7 @@ export default function AdminDashboard() {
   const { masterServiceCenters, locations, updateServiceCenter } = useMasterDataStore();
   const { data: usersData } = useUsers();
 
-  const usersList = usersData?.data || [];
+  const usersList = usersData?.data?.users || (Array.isArray(usersData?.data) ? usersData.data : []);
 
   // Calculations
   const totalServiceCenters = masterServiceCenters.length;

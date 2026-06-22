@@ -29,7 +29,7 @@ axiosInstance.interceptors.response.use(
     const message =
       error?.response?.data?.message || error?.message || 'Something went wrong';
 
-    if (status === 401) {
+    if (status === 401 && window.location.pathname !== '/login') {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }

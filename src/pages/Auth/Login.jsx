@@ -1,5 +1,5 @@
 import { useForm, FormProvider } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
@@ -11,6 +11,7 @@ import Button from '../../components/common/Button';
 import { ROLES } from '../../constants/roles';
 import { ROUTES } from '../../config/routes';
 import { toastSuccess, toastError } from '../../notifications/toast';
+import { loginApi } from '../../api/authApi';
 
 const DEMO_ACCOUNTS = [
   // { label: 'Gate Security', email: 'gate@dvsos.com', role: ROLES.GATE_SECURITY },
@@ -47,8 +48,14 @@ const ROLE_REDIRECTS = {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuthStore();
+  const { login, isAuthenticated, role } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(ROLE_REDIRECTS[role]);
+    }
+  }, [isAuthenticated, role, navigate]);
 
   const methods = useForm({
     resolver: zodResolver(authSchema),
@@ -59,18 +66,32 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     try {
-      const role = ROLE_EMAIL_MAP[data.email.toLowerCase()] || ROLES.MANAGER;
-      const mockToken = 'dvsos-mock-jwt-' + Date.now();
-      const mockUser = {
-        id: '1',
-        name: data.email.split('@')[0].replace(/\b\w/g, (c) => c.toUpperCase()),
-        email: data.email,
+      const payload = {
+        emailId: data.email,
+        password: data.password
       };
-      login(mockUser, role, mockToken);
-      toastSuccess(`Welcome back, ${mockUser.name}!`);
-      navigate(ROLE_REDIRECTS[role] || ROUTES.MANAGER_DASHBOARD);
-    } catch {
-      toastError('Login failed. Please check your credentials.');
+      const response = await loginApi(payload);
+
+      if (response?.success) {
+        const { token, user, redirectPath } = response.data;
+
+        // Map backend role slug to frontend ROLES constant
+        let role = ROLES.SUPER_ADMIN; // Default fallback instead of MANAGER
+        if (user?.role?.slug) {
+          const matchedRole = Object.values(ROLES).find(r => r.toLowerCase() === user.role.slug.toLowerCase().replace('-', '_'));
+          if (matchedRole) role = matchedRole;
+        }
+
+        login(user, role, token);
+        toastSuccess(response.message || `Welcome back, ${user.fullName || 'User'}!`);
+        navigate(ROLE_REDIRECTS[role] || redirectPath || ROUTES.MANAGER_DASHBOARD);
+      } else {
+        toastError(response?.message || 'Login failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      const errorMessage = error?.message || 'Login failed. Please check your credentials.';
+      toastError(errorMessage);
     }
   };
 
@@ -147,7 +168,7 @@ export default function Login() {
                       onClick={() => setShowPassword((current) => !current)}
                       onMouseDown={(event) => event.preventDefault()}
                     >
-                      {showPassword ? <Eye size={20} />  : <EyeOff size={20} />}
+                      {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
                     </IconButton>
                   </InputAdornment>
                 ),
