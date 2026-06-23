@@ -1,33 +1,73 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, IconButton, Menu, MenuItem, Typography, Select, Avatar } from '@mui/material';
+import DataTable from '../../components/common/DataTable';
+import Button from '../../components/common/Button';
+import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, Mail, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Box, IconButton, Menu, MenuItem, Typography, Select, Card, Avatar } from '@mui/material';
-import { useUsers } from '../../queries/useDataQueries';
-import RHFSwitch from '../../components/form/RHFSwitch';
-import Button from '../../components/common/Button';
-import SearchBar from '../../components/common/SearchBar';
-import PageHeader from '../../components/shared/PageHeader';
-import DataTable from '../../components/common/DataTable';
-import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
-import { formatDateTime } from '../../utils/formatters';
-import { useDebounce } from '../../hooks/useDebounce';
-import { ROLE_LABELS } from '../../constants/roles';
-import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
+import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
+import RHFSwitch from '../../components/form/RHFSwitch';
+import SearchBar from '../../components/common/SearchBar';
+import { toastSuccess, toastError } from '../../notifications/toast';
+import { getUsersApi, updateUserStatusApi } from '../../api/userApi';
+import { getRolesApi } from '../../api/roleApi';
+import { formatDateTime } from '../../utils/formatters';
 
 export default function UserList() {
   const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
-  const debSearch = useDebounce(search, 300);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const { data, isLoading } = useUsers({ search: debSearch, role: roleFilter });
-  const [usersList, setUsersList] = useState([]);
-
-  // For Dropdown Menu
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await getRolesApi({ limit: 100 });
+        if (res?.success) {
+          setRoles(res.data.roles || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch roles');
+      }
+    };
+    fetchRoles();
+  }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const params = { page: page + 1, limit: rowsPerPage };
+        if (search) params.search = search;
+        if (roleFilter) params.roleId = roleFilter;
+        
+        const res = await getUsersApi(params);
+        if (res?.success) {
+          setUsers(res.data.users || []);
+          setTotalCount(res.meta?.total || 0);
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to fetch users');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchUsers();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, rowsPerPage, search, roleFilter]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -40,71 +80,49 @@ export default function UserList() {
     setSelectedUser(null);
   };
 
-  useEffect(() => {
-    if (data?.data) {
-      const saved = localStorage.getItem('dvsos_users_list');
-      if (saved) {
-        setUsersList(JSON.parse(saved));
-      } else {
-        const rawList = Array.isArray(data.data) ? data.data : data.data.users || [];
-        const formattedList = rawList.map(u => ({
-          ...u,
-          name: u.name || u.fullName || 'Unknown',
-          email: u.email || u.emailId || '',
-          mobile: u.mobile || u.mobileNo || '',
-          role: typeof u.role === 'object' ? u.role?.slug : (u.role || 'UNKNOWN'),
-          status: typeof u.isActive === 'boolean' ? (u.isActive ? 'ACTIVE' : 'INACTIVE') : (u.status || 'ACTIVE')
-        }));
-        setUsersList(formattedList);
-      }
-    }
-  }, [data]);
-
-  const handleStatusChange = (id, newStatus) => {
-    const updated = usersList.map(u => {
-      if (u.id === id) {
-        return { ...u, status: newStatus };
-      }
-      return u;
-    });
-    setUsersList(updated);
-    localStorage.setItem('dvsos_users_list', JSON.stringify(updated));
-    toastSuccess('User status updated successfully!');
-  };
-
-  const handleDeleteUser = () => {
+  const handleDelete = () => {
     setDeleteItem(selectedUser);
     handleMenuClose();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteItem) {
-      const updated = usersList.filter(u => u.id !== deleteItem.id);
-      setUsersList(updated);
-      localStorage.setItem('dvsos_users_list', JSON.stringify(updated));
-      toastSuccess(`User "${deleteItem.name}" removed successfully.`);
-      setDeleteItem(null);
+      try {
+        const res = await updateUserStatusApi(deleteItem.id, { isActive: false });
+        if (res?.success) {
+          toastSuccess(`User "${deleteItem.fullName}" deactivated successfully.`);
+          setUsers(prev => prev.map(u => u.id === deleteItem.id ? { ...u, isActive: false } : u));
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to deactivate user');
+      } finally {
+        setDeleteItem(null);
+      }
     }
   };
 
-  const filteredUsers = usersList.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase()) ||
-      user.mobile.includes(search);
-    const matchesRole = !roleFilter || user.role === roleFilter;
-    return matchesSearch && matchesRole;
-  });
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await updateUserStatusApi(id, { isActive: newStatus });
+      if (res?.success) {
+        toastSuccess('User status updated successfully!');
+        setUsers(prev => prev.map(u => u.id === id ? { ...u, isActive: newStatus } : u));
+      }
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to update status');
+    }
+  };
 
   const columns = [
     {
       header: 'Name',
-      accessor: 'name',
+      accessor: 'fullName',
       render: (row) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.875rem' }}>
-            {row.name.charAt(0)}
+            {row.fullName ? row.fullName.charAt(0) : 'U'}
           </Avatar>
-          <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
+          <Typography variant="body2" fontWeight={600}>{row.fullName}</Typography>
         </Box>
       ),
     },
@@ -117,22 +135,22 @@ export default function UserList() {
         </Box>
       ),
     },
-    { header: 'Mobile', accessor: 'mobile' },
+    { header: 'Mobile', accessor: 'mobile', render: (row) => row.mobile || '-' },
     {
       header: 'Role',
       accessor: 'role',
       render: (row) => (
         <Typography variant="caption" sx={{ bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', py: 0.5, px: 1, borderRadius: 1, fontWeight: 600 }}>
-          {ROLE_LABELS[row.role] || row.role}
+          {row.role?.name || '-'}
         </Typography>
       ),
     },
     {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'isActive',
       render: (row) => (
         <RHFSwitch
-          value={row.status || 'ACTIVE'}
+          value={row.isActive !== undefined ? row.isActive : true}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
       ),
@@ -140,7 +158,7 @@ export default function UserList() {
     {
       header: 'Last Login',
       accessor: 'lastLogin',
-      render: (row) => <Typography variant="body2">{formatDateTime(row.lastLogin)}</Typography>,
+      render: (row) => <Typography variant="body2">{row.lastLogin ? formatDateTime(row.lastLogin) : '-'}</Typography>,
     },
     {
       header: 'Actions',
@@ -173,14 +191,14 @@ export default function UserList() {
           <SearchBar
             placeholder="Search by name, email, or mobile..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
         <Select
           size="small"
           displayEmpty
           value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
+          onChange={(e) => { setRoleFilter(e.target.value); setPage(0); }}
           sx={{ 
             width: { xs: '100%', sm: 200 }, 
             bgcolor: 'background.paper', 
@@ -191,8 +209,8 @@ export default function UserList() {
           }}
         >
           <MenuItem value="">All Roles</MenuItem>
-          {Object.entries(ROLE_LABELS).map(([val, label]) => (
-            <MenuItem key={val} value={val}>{label}</MenuItem>
+          {roles.map((role) => (
+            <MenuItem key={role.id} value={role.id}>{role.name}</MenuItem>
           ))}
         </Select>
       </Box>
@@ -200,16 +218,22 @@ export default function UserList() {
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={filteredUsers}
-          isLoading={isLoading && usersList.length === 0}
+          data={users}
+          loading={loading}
           emptyMessage="No users found"
+          serverSide={true}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
 
       <ConfirmDeleteDialog
         open={!!deleteItem}
-        title="Remove User"
-        message={`Are you sure you want to remove "${deleteItem?.name}"?\nThis action cannot be undone.`}
+        title="Deactivate User"
+        message={`Are you sure you want to deactivate "${deleteItem?.fullName}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteItem(null)}
       />
@@ -226,9 +250,9 @@ export default function UserList() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDeleteUser} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete
+          Deactivate
         </MenuItem>
       </Menu>
     </Box>

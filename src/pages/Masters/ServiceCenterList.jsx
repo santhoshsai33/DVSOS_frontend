@@ -1,25 +1,51 @@
-import React, { useState } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Select, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
-import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
+import { getServiceCentersApi, updateServiceCenterStatusApi } from '../../api/adminServiceCenterApi';
 
 export default function ServiceCenterList() {
   const navigate = useNavigate();
-  const { masterServiceCenters, deleteServiceCenter, updateServiceCenter } = useMasterDataStore();
+  const [serviceCenters, setServiceCenters] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
+
+  useEffect(() => {
+    const fetchServiceCenters = async () => {
+      try {
+        setLoading(true);
+        const res = await getServiceCentersApi({ page: page + 1, limit: rowsPerPage, search });
+        if (res?.success) {
+          setServiceCenters(res.data.serviceCenters || []);
+          setTotalCount(res.meta?.total || 0);
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to fetch service centers');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchServiceCenters();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, rowsPerPage, search]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -37,45 +63,61 @@ export default function ServiceCenterList() {
     handleMenuClose();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteItem) {
-      deleteServiceCenter(deleteItem.id);
-      toastSuccess(`Service Center "${deleteItem.name}" deleted successfully.`);
-      setDeleteItem(null);
+      try {
+        const res = await updateServiceCenterStatusApi(deleteItem.id, { isActive: false });
+        if (res?.success) {
+          toastSuccess(`Service Center "${deleteItem.serviceCenterName}" deactivated successfully.`);
+          setServiceCenters(prev => prev.map(sc => sc.id === deleteItem.id ? { ...sc, isActive: false } : sc));
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to deactivate service center');
+      } finally {
+        setDeleteItem(null);
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    updateServiceCenter(id, { status: newStatus });
-    toastSuccess('Service Center status updated successfully!');
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await updateServiceCenterStatusApi(id, { isActive: newStatus });
+      if (res?.success) {
+        toastSuccess('Service Center status updated successfully!');
+        setServiceCenters(prev => prev.map(sc => sc.id === id ? { ...sc, isActive: newStatus } : sc));
+      }
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to update status');
+    }
   };
-
-  const filteredServiceCenters = (masterServiceCenters || []).filter(sc =>
-    sc.name.toLowerCase().includes(search.toLowerCase()) ||
-    (sc.contactNumber || '').includes(search) ||
-    (sc.email || '').toLowerCase().includes(search.toLowerCase())
-  );
 
   const columns = [
     {
+      header: 'Code',
+      accessor: 'serviceCenterCode',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.serviceCenterCode}</Typography>
+    },
+    {
       header: 'Service Center Name',
-      accessor: 'name',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
+      accessor: 'serviceCenterName',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.serviceCenterName}</Typography>
     },
     {
       header: 'Contact Number',
-      accessor: 'contactNumber'
+      accessor: 'contactPhone',
+      render: (row) => row.contactPhone || '-'
     },
     {
       header: 'Email',
-      accessor: 'email'
+      accessor: 'contactEmail',
+      render: (row) => row.contactEmail || '-'
     },
     {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'isActive',
       render: (row) => (
         <RHFSwitch
-          value={row.status || 'ACTIVE'}
+          value={row.isActive !== undefined ? row.isActive : true}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
       )
@@ -107,7 +149,7 @@ export default function ServiceCenterList() {
           <SearchBar
             placeholder="Search service center..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
       </Box>
@@ -115,15 +157,22 @@ export default function ServiceCenterList() {
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={filteredServiceCenters}
+          data={serviceCenters}
+          loading={loading}
           emptyMessage="No service centers found"
+          serverSide={true}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
 
       <ConfirmDeleteDialog
         open={!!deleteItem}
-        title="Delete Service Center"
-        message="Are you sure you want to delete this service center? This action cannot be undone."
+        title="Deactivate Service Center"
+        message={`Are you sure you want to deactivate "${deleteItem?.serviceCenterName}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteItem(null)}
       />
@@ -142,7 +191,7 @@ export default function ServiceCenterList() {
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete
+          Deactivate
         </MenuItem>
       </Menu>
     </Box>

@@ -127,6 +127,13 @@ export const ENDPOINTS = {
       CREATE: '/admin/districts/create',
       UPDATE: (id) => `/admin/districts/update/${id}`,
       STATUS: (id) => `/admin/districts/status/${id}`,
+    },
+    SERVICE_CENTERS: {
+      LIST: '/admin/service-centers/list',
+      DETAIL: (id) => `/admin/service-centers/detail/${id}`,
+      CREATE: '/admin/service-centers/create',
+      UPDATE: (id) => `/admin/service-centers/update/${id}`,
+      STATUS: (id) => `/admin/service-centers/status/${id}`,
     }
   },
 

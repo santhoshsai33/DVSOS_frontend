@@ -18,7 +18,8 @@ export default function LocationForm() {
   
   const { masterStates, masterDistricts, masterServiceCenters, locations, addLocation, updateLocation } = useMasterDataStore();
   const { data: usersData } = useUsers();
-  const mdUsers = usersData?.data?.filter(user => user.role === 'MD') || [];
+  const usersArray = Array.isArray(usersData?.data) ? usersData.data : (usersData?.data?.users || []);
+  const mdUsers = usersArray.filter(user => user.role === 'MD' || user.role?.slug === 'MD') || [];
 
   const [saving, setSaving] = useState(false);
 
@@ -134,7 +135,7 @@ export default function LocationForm() {
               >
                 <option value="" disabled>Select Managing Director</option>
                 {mdUsers.map(md => (
-                  <option key={md.id} value={md.id}>{md.name}</option>
+                  <option key={md.id} value={md.id}>{md.name || md.fullName || 'Unknown MD'}</option>
                 ))}
               </Select>
             </Grid>

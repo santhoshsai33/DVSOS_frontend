@@ -7,3 +7,4 @@ export const createUserApi = (data) => axiosInstance.post(ENDPOINTS.USERS.CREATE
 export const updateUserApi = (id, data) => axiosInstance.put(ENDPOINTS.USERS.UPDATE(id), data);
 export const deleteUserApi = (id) => axiosInstance.delete(ENDPOINTS.USERS.DELETE(id));
 export const changePasswordApi = (data) => axiosInstance.post(ENDPOINTS.USERS.CHANGE_PASSWORD, data);
+export const updateUserStatusApi = (id, data) => axiosInstance.patch(`/users/status/${id}`, data);
