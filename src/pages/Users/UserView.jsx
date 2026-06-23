@@ -97,6 +97,23 @@ export default function UserView() {
             </Box>
           </Card>
         </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Card sx={{ borderRadius: 1, boxShadow: 'none', border: '1px solid', borderColor: 'divider', height: '100%' }}>
+            <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+              <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+                Personal Details
+              </Typography>
+            </Box>
+            <Box sx={{ px: 2, pb: 1 }}>
+              <DetailRow label="Date of Birth" value={user?.dob ? new Date(user.dob).toLocaleDateString() : '-'} />
+              <DetailRow label="Gender" value={user?.gender} />
+              <DetailRow label="Licence Number" value={user?.licenceNumber} />
+              <DetailRow label="Emergency Contact" value={user?.emergencyContact} />
+              <DetailRow label="Address" value={user?.address} isLast={true} />
+            </Box>
+          </Card>
+        </Grid>
       </Grid>
     </Box>
   );

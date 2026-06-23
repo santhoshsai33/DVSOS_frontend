@@ -13,16 +13,7 @@ import { ROUTES } from '../../config/routes';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { loginApi } from '../../api/authApi';
 
-const DEMO_ACCOUNTS = [
-  // { label: 'Gate Security', email: 'gate@dvsos.com', role: ROLES.GATE_SECURITY },
-  // { label: 'CRM Team', email: 'crm@dvsos.com', role: ROLES.CRM_TEAM },
-  { label: 'Floor Supervisor', email: 'floor@dvsos.com', role: ROLES.FLOOR_SUPERVISOR },
-  { label: 'Body Shop', email: 'body@dvsos.com', role: ROLES.BODY_SHOP_SUPERVISOR },
-  { label: 'Water Wash', email: 'wash@dvsos.com', role: ROLES.WATER_WASH_TEAM },
-  { label: 'Manager', email: 'manager@dvsos.com', role: ROLES.MANAGER },
-  { label: 'Managing Director', email: 'md@dvsos.com', role: ROLES.MD },
-  { label: 'Super Admin', email: 'admin@dvsos.com', role: ROLES.SUPER_ADMIN },
-];
+
 
 const ROLE_EMAIL_MAP = {
   // 'gate@dvsos.com': ROLES.GATE_SECURITY,
@@ -91,16 +82,6 @@ export default function Login() {
     }
   };
 
-  const handleDemoSelect = (e) => {
-    const selectedEmail = e.target.value;
-    if (selectedEmail) {
-      setValue('email', selectedEmail);
-      setValue('password', 'password123');
-    } else {
-      setValue('email', '');
-      setValue('password', '');
-    }
-  };
 
   return (
     <Box>
@@ -114,29 +95,6 @@ export default function Login() {
         </Typography>
       </Box>
 
-      {/* Demo Accounts Dropdown */}
-      <Box sx={{ mb: 3 }}>
-        <Select
-          fullWidth
-          displayEmpty
-          defaultValue=""
-          onChange={handleDemoSelect}
-          sx={{ bgcolor: 'background.default', borderRadius: 2 }}
-        >
-          <MenuItem value="" disabled>
-            Quick Demo Sign In...
-          </MenuItem>
-          {DEMO_ACCOUNTS.map((acc) => (
-            <MenuItem key={acc.role} value={acc.email}>
-              Log in as {acc.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </Box>
-
-      <Divider sx={{ my: 3, typography: 'body2', color: 'text.secondary' }}>
-        Or sign in with email
-      </Divider>
 
       {/* Form */}
       <FormProvider {...methods}>
