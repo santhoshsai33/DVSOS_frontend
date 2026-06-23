@@ -23,3 +23,19 @@ export const ROLE_LABELS = {
 export const ALL_ROLES = Object.values(ROLES);
 
 export const MANAGEMENT_ROLES = [ROLES.MANAGER, ROLES.MD, ROLES.SUPER_ADMIN];
+
+export const mapSlugToRole = (slug) => {
+  if (!slug) return ROLES.SUPER_ADMIN;
+  const normalized = slug.toLowerCase().replace(/[-_]/g, '');
+  if (normalized === 'managingdirector' || normalized === 'md') {
+    return ROLES.MD;
+  }
+  if (normalized === 'admin' || normalized === 'superadmin') {
+    return ROLES.SUPER_ADMIN;
+  }
+  const matchedRole = Object.values(ROLES).find(r => {
+    const rNorm = r.toLowerCase().replace(/[-_]/g, '');
+    return rNorm === normalized;
+  });
+  return matchedRole || ROLES.SUPER_ADMIN;
+};

@@ -4,7 +4,7 @@ import Providers from './Providers';
 import { router } from '../routes/index';
 import useAuthStore from '../store/useAuthStore';
 import { getMeApi } from '../api/authApi';
-import { ROLES } from '../constants/roles';
+import { ROLES, mapSlugToRole } from '../constants/roles';
 
 function AuthInitializer({ children }) {
   const { login, logout, isAuthenticated } = useAuthStore();
@@ -17,12 +17,8 @@ function AuthInitializer({ children }) {
         try {
           const response = await getMeApi();
           if (response?.success) {
-            const user = response.data;
-            let role = ROLES.SUPER_ADMIN; // Default fallback for Admin
-            if (user?.role?.slug) {
-              const matchedRole = Object.values(ROLES).find(r => r.toLowerCase() === user.role.slug.toLowerCase().replace('-', '_'));
-              if (matchedRole) role = matchedRole;
-            }
+            const { user } = response.data;
+            const role = mapSlugToRole(user?.role?.slug);
             login(user, role, token);
           } else {
             logout();

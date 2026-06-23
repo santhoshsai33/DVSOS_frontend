@@ -47,12 +47,24 @@ const flattenMenus = (menus) => {
   return flat;
 };
 
+const validateDesignation = (value) => {
+  if (!value.trim()) {
+    return 'Role Name is required';
+  }
+  const lettersOnlyRegex = /^[a-zA-Z\s]+$/;
+  if (!lettersOnlyRegex.test(value)) {
+    return 'Role Name must contain letters and spaces only';
+  }
+  return '';
+};
+
 export default function RolePrivilegesForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
 
   const [designation, setDesignation] = useState('');
+  const [designationError, setDesignationError] = useState('');
   const [selectedModule, setSelectedModule] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -66,8 +78,24 @@ export default function RolePrivilegesForm() {
         if (isEdit) {
           const res = await getRoleMenuPermissionsApi(id);
           if (res?.success) {
-            setDesignation(res.data.role.name);
-            setModulesList(res.data.modules || []);
+            const roleName = res.data.role.name;
+            setDesignation(roleName);
+            const modules = res.data.modules || [];
+            setModulesList(modules);
+
+            // Auto-select matching module based on role name
+            if (roleName) {
+              const roleWords = roleName.toLowerCase().split(/[\s_-]+/);
+              const matchingModule = modules.find(m => {
+                const moduleWords = m.module.toLowerCase().split(/[\s_-]+/);
+                return roleWords.some(rWord =>
+                  moduleWords.some(mWord => mWord.includes(rWord) || rWord.includes(mWord))
+                );
+              });
+              if (matchingModule) {
+                setSelectedModule(matchingModule.module);
+              }
+            }
           }
         } else {
           const res = await getMenusApi();
@@ -110,8 +138,10 @@ export default function RolePrivilegesForm() {
   };
 
   const handleSave = async () => {
-    if (!designation.trim()) {
-      toastError('Please enter a Role Name.');
+    const errorMsg = validateDesignation(designation);
+    if (errorMsg) {
+      setDesignationError(errorMsg);
+      toastError(errorMsg);
       return;
     }
     
@@ -178,8 +208,14 @@ export default function RolePrivilegesForm() {
               required
               placeholder="Enter Role Name"
               value={designation}
-              onChange={(e) => setDesignation(e.target.value)}
-              disabled={loading || isEdit}
+              onChange={(e) => {
+                const val = e.target.value;
+                const cleanVal = val.replace(/[^a-zA-Z\s]/g, '');
+                setDesignation(cleanVal);
+                setDesignationError(validateDesignation(cleanVal));
+              }}
+              error={designationError}
+              disabled={loading}
             />
           </Grid>
           <Grid item xs={12} md={6}>
