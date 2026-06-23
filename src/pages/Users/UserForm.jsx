@@ -15,14 +15,28 @@ import { createUserApi, updateUserApi, getUserApi } from '../../api/userApi';
 import { getRolesApi } from '../../api/roleApi';
 import { getLocationsApi } from '../../api/adminLocationApi';
 
+const GENDER_OPTIONS = [
+  { value: 'MALE', label: 'Male' },
+  { value: 'FEMALE', label: 'Female' },
+  { value: 'OTHER', label: 'Other' },
+];
+
 const schema = z.object({
-  fullName: z.string().trim().min(1, 'Full Name is required'),
+  fullName: z.string().trim().min(1, 'Full Name is required').regex(/^[a-zA-Z\s]+$/, 'Full Name must contain letters and spaces only'),
   email: z.string().trim().min(1, 'Email is required').email('Invalid email format'),
-  mobile: z.string().trim().regex(/^\+?[0-9]{10,15}$/, 'Invalid mobile number format').optional().or(z.literal('')),
+  mobile: z.string().trim().min(1, 'Mobile Number is required').regex(/^[0-9]{10,15}$/, 'Mobile Number must be between 10 and 15 digits'),
   roleId: z.number().min(1, 'Role is required'),
   locationId: z.number({ required_error: 'Location is required', invalid_type_error: 'Location is required' }).min(1, 'Location is required'),
   password: z.string().optional(),
-  status: z.string().optional()
+  status: z.string().optional(),
+  dob: z.string().trim().min(1, 'Date of Birth is required').refine((val) => {
+    const date = new Date(val);
+    return date < new Date();
+  }, 'Date of Birth must be in the past'),
+  licenceNumber: z.string().trim().min(1, 'Licence Number is required'),
+  emergencyContact: z.string().trim().optional().or(z.literal('')),
+  gender: z.string().trim().min(1, 'Gender is required'),
+  address: z.string().trim().optional().or(z.literal('')),
 });
 
 export default function UserForm() {
@@ -45,6 +59,11 @@ export default function UserForm() {
       locationId: '',
       password: '',
       status: 'ACTIVE',
+      dob: '',
+      licenceNumber: '',
+      emergencyContact: '',
+      gender: '',
+      address: '',
     },
   });
 
@@ -91,6 +110,11 @@ export default function UserForm() {
               roleId: user.role?.id || user.roleId || '',
               locationId: user.location?.id || user.locationId || '',
               status: user.isActive ? 'ACTIVE' : 'INACTIVE',
+              dob: user.dob ? new Date(user.dob).toISOString().split('T')[0] : '',
+              licenceNumber: user.licenceNumber || '',
+              emergencyContact: user.emergencyContact || '',
+              gender: user.gender || '',
+              address: user.address || '',
             });
           }
         } catch (error) {
@@ -113,7 +137,12 @@ export default function UserForm() {
         roleId: data.roleId,
         locationId: data.locationId,
         password: isEdit ? undefined : (data.password || undefined),
-        isActive: data.status === 'ACTIVE'
+        isActive: data.status === 'ACTIVE',
+        dob: data.dob || undefined,
+        licenceNumber: data.licenceNumber || undefined,
+        emergencyContact: data.emergencyContact || undefined,
+        gender: data.gender || undefined,
+        address: data.address || undefined
       };
 
       if (isEdit) {
@@ -158,7 +187,16 @@ export default function UserForm() {
 
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
-                <RHFTextField name="fullName" label="Full Name" placeholder="Enter full name" required />
+                <RHFTextField
+                  name="fullName"
+                  label="Full Name"
+                  placeholder="Enter full name"
+                  required
+                  onChange={(e) => {
+                    const cleanVal = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                    methods.setValue('fullName', cleanVal, { shouldValidate: true });
+                  }}
+                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <RHFTextField name="email" label="Email Address" type="email" placeholder="Enter email address" required />
@@ -167,18 +205,78 @@ export default function UserForm() {
 
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
-                <RHFTextField 
-                  name="mobile" 
-                  label="Mobile Number" 
-                  placeholder="Enter 10-digit mobile number" 
-                  inputProps={{ maxLength: 10, pattern: '[0-9]*' }}
-                  onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                <RHFTextField
+                  name="mobile"
+                  label="Mobile Number"
+                  placeholder="Enter mobile number"
+                  required
+                  onChange={(e) => {
+                    const cleanVal = e.target.value.replace(/[^0-9]/g, '');
+                    methods.setValue('mobile', cleanVal, { shouldValidate: true });
                   }}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
                 <RHFSelect name="roleId" label="Role" options={roles} placeholder="Select role" required />
+              </Grid>
+            </Grid>
+
+            <Typography variant="subtitle1" fontWeight={600} sx={{ mt: 4, mb: 2, color: 'text.primary' }}>
+              Personal Details
+            </Typography>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="dob"
+                  label="Date of Birth"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <RHFSelect
+                  name="gender"
+                  label="Gender"
+                  options={GENDER_OPTIONS}
+                  placeholder="Select gender"
+                  required
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="licenceNumber"
+                  label="Licence Number"
+                  placeholder="Enter licence number"
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="emergencyContact"
+                  label="Emergency Contact Number"
+                  placeholder="Enter emergency contact number"
+                  onChange={(e) => {
+                    const cleanVal = e.target.value.replace(/[^0-9]/g, '');
+                    methods.setValue('emergencyContact', cleanVal, { shouldValidate: true });
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12}>
+                <RHFTextField
+                  name="address"
+                  label="Address"
+                  placeholder="Enter address"
+                  multiline
+                  rows={3}
+                />
               </Grid>
             </Grid>
 
@@ -206,7 +304,7 @@ export default function UserForm() {
             </Box>
           </form>
         </FormProvider>
-      )}
+      )};
     </Box>
   );
 }

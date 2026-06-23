@@ -8,7 +8,7 @@ import useAuthStore from '../../store/useAuthStore';
 import { authSchema } from '../../validations/authSchema';
 import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
-import { ROLES } from '../../constants/roles';
+import { ROLES, mapSlugToRole } from '../../constants/roles';
 import { ROUTES } from '../../config/routes';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { loginApi } from '../../api/authApi';
@@ -76,11 +76,7 @@ export default function Login() {
         const { token, user, redirectPath } = response.data;
 
         // Map backend role slug to frontend ROLES constant
-        let role = ROLES.SUPER_ADMIN; // Default fallback instead of MANAGER
-        if (user?.role?.slug) {
-          const matchedRole = Object.values(ROLES).find(r => r.toLowerCase() === user.role.slug.toLowerCase().replace('-', '_'));
-          if (matchedRole) role = matchedRole;
-        }
+        const role = mapSlugToRole(user?.role?.slug);
 
         login(user, role, token);
         toastSuccess(response.message || `Welcome back, ${user.fullName || 'User'}!`);
