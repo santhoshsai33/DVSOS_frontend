@@ -65,6 +65,8 @@ export default function AdminDashboard() {
       value: totalServiceCenters,
       icon: Building,
       color: '#1a434d',
+      progressBarColor: '#2563eb',
+      progress: 70,
       action: () => navigate(ROUTES.ADMIN_SERVICE_CENTERS),
     },
     {
@@ -72,6 +74,8 @@ export default function AdminDashboard() {
       value: totalLocations,
       icon: MapPin,
       color: '#2dd4bf',
+      progressBarColor: '#059669',
+      progress: 50,
       action: () => navigate(ROUTES.ADMIN_LOCATIONS),
     },
     {
@@ -79,6 +83,8 @@ export default function AdminDashboard() {
       value: totalUsers,
       icon: Users,
       color: '#13323a',
+      progressBarColor: '#dc2626',
+      progress: 35,
       action: () => navigate(ROUTES.ADMIN_USERS),
     },
     {
@@ -86,12 +92,14 @@ export default function AdminDashboard() {
       value: uniqueRoles,
       icon: ShieldCheck,
       color: '#0ea5e9',
+      progressBarColor: '#d97706',
+      progress: 20,
       action: () => navigate(ROUTES.ADMIN_ROLES),
     },
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F4F6F9', minHeight: '100%' }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f0f4ff', minHeight: '100%' }}>
 
       {/* Top Banner */}
       <Box sx={{
@@ -136,7 +144,7 @@ export default function AdminDashboard() {
                 }}
                 onClick={kpi.action}
               >
-                <CardContent sx={{ p: 3, pb: '45px !important' }}>
+                <CardContent sx={{ p: 3, pb: '24px !important' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <Box>
                       <Typography variant="h3" fontWeight={800} sx={{ color: kpi.color, mb: 1 }}>
@@ -150,6 +158,27 @@ export default function AdminDashboard() {
                       <Icon size={20} />
                     </Box>
                   </Box>
+                  {/* Progress Bar */}
+                  <Box sx={{ width: '100%', mt: 3.5 }}>
+                    <Box
+                      sx={{
+                        height: 5,
+                        width: '100%',
+                        bgcolor: '#E2E8F0',
+                        borderRadius: 999,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          height: '100%',
+                          width: `${kpi.progress}%`,
+                          bgcolor: kpi.progressBarColor,
+                          borderRadius: 999,
+                        }}
+                      />
+                    </Box>
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
@@ -161,17 +190,19 @@ export default function AdminDashboard() {
       <Grid container spacing={3}>
         {/* Recent Service Centers */}
         <Grid item xs={12} md={12}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
+          <Card sx={{ borderRadius: 0, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
             <CardContent sx={{ p: 3, pb: '24px !important' }}>
               <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>
                 Service Centers
               </Typography>
-              <DataTable
-                columns={columns}
-                data={activeServiceCenters || []}
-                emptyMessage="No active service centers found"
-                showPagination={false}
-              />
+              <Box sx={{ p: '20px' }}>
+                <DataTable
+                  columns={columns}
+                  data={activeServiceCenters || []}
+                  emptyMessage="No active service centers found"
+                  showPagination={false}
+                />
+              </Box>
             </CardContent>
           </Card>
         </Grid>

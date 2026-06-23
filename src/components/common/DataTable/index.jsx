@@ -74,13 +74,13 @@ export default function DataTable({
         elevation={0}
         sx={{
           bgcolor: '#FFFFFF',
-          borderRadius: 0,
-          border: 'none',
+          borderRadius: 1.5,
+          border: '1px solid rgba(0, 0, 0, 0.12)',
           boxShadow: 'none',
           overflow: 'hidden'
         }}
       >
-        <TableContainer>
+        <TableContainer sx={{ border: 'none', borderRadius: 0 }}>
           <Table
             sx={{
               borderCollapse: 'separate',
@@ -105,7 +105,7 @@ export default function DataTable({
                     <TableCell
                       key={index}
                       sx={{
-                        bgcolor: '#e0e2e6ff',
+                        bgcolor: '#f0f4ff',
                         color: '#000000',
                         fontSize: '0.875rem',
                         fontWeight: 700,
@@ -132,11 +132,11 @@ export default function DataTable({
                   key={row.id || index}
                   onClick={() => onRowClick && onRowClick(row)}
                   sx={{
-                    bgcolor: '#FFFFFF',
+                    bgcolor: index % 2 === 1 ? '#f0f4ff' : '#FFFFFF',
                     cursor: onRowClick ? 'pointer' : 'default',
                     transition: 'background-color 0.2s',
                     '&:hover': {
-                      bgcolor: '#F8FAFC',
+                      bgcolor: '#E0E8FF',
                     },
                     '& td': {
                       borderBottom: index === paginatedData.length - 1 ? 'none' : '1px dashed #CBD5E1',

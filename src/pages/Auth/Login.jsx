@@ -88,7 +88,7 @@ export default function Login() {
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 1 }}>
-          Welcome Back
+          DVSOS
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Sign in to your account to continue

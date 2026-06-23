@@ -13,7 +13,7 @@ export default function VehicleNumberPlate({ vehicleNumber, size = 'md' }) {
       component="span"
       sx={{
         display: 'inline-block',
-        fontFamily: "'Poppins', sans-serif",
+        fontFamily: "'Inter', sans-serif",
         fontWeight: 800,
         fontSize,
         color: '#0F172A',

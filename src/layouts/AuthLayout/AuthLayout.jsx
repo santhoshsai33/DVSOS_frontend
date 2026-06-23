@@ -32,13 +32,13 @@ export default function AuthLayout() {
             width: '100%',
             maxWidth: 500,
             bgcolor: 'background.paper',
-            borderRadius: 0,
+            borderRadius: '25px',
             p: { xs: 4, md: 6 },
             boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px',
           }}
         >
           <Outlet />
-          <Typography sx={{ mt: 4, color: '#153A42', fontSize: '0.8rem', fontWeight: 500, textAlign: 'center' }}>
+          <Typography sx={{ mt: 4, color: '#2563eb', fontSize: '0.8rem', fontWeight: 500, textAlign: 'center' }}>
             &copy; {new Date().getFullYear()} DVSOS. All rights reserved.
           </Typography>
         </Box>
