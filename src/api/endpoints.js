@@ -113,6 +113,23 @@ export const ENDPOINTS = {
   },
 
   // Masters
+  ADMIN_MASTERS: {
+    STATES: {
+      LIST: '/admin/states/list',
+      DETAIL: (id) => `/admin/states/detail/${id}`,
+      CREATE: '/admin/states/create',
+      UPDATE: (id) => `/admin/states/update/${id}`,
+      STATUS: (id) => `/admin/states/status/${id}`,
+    },
+    DISTRICTS: {
+      LIST: '/admin/districts/list',
+      DETAIL: (id) => `/admin/districts/detail/${id}`,
+      CREATE: '/admin/districts/create',
+      UPDATE: (id) => `/admin/districts/update/${id}`,
+      STATUS: (id) => `/admin/districts/status/${id}`,
+    }
+  },
+
   MASTERS: {
     SERVICES: '/masters/services/list',
     SERVICE_DETAIL: (id) => `/masters/services/detail/${id}`,

@@ -1,25 +1,51 @@
-import React, { useState } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Select, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
-import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
+import { getDistrictsApi, updateDistrictStatusApi } from '../../api/adminDistrictApi';
 
 export default function DistrictList() {
   const navigate = useNavigate();
-  const { masterDistricts, masterStates, deleteDistrict, updateDistrict } = useMasterDataStore();
+  const [districts, setDistricts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
+
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        setLoading(true);
+        const res = await getDistrictsApi({ page: page + 1, limit: rowsPerPage, search });
+        if (res?.success) {
+          setDistricts(res.data.districts || []);
+          setTotalCount(res.meta?.total || 0);
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to fetch districts');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchDistricts();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, rowsPerPage, search]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -37,47 +63,54 @@ export default function DistrictList() {
     handleMenuClose();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteItem) {
-      deleteDistrict(deleteItem.id);
-      toastSuccess(`District "${deleteItem.name}" deleted successfully.`);
-      setDeleteItem(null);
+      try {
+        const res = await updateDistrictStatusApi(deleteItem.id, { isActive: false });
+        if (res?.success) {
+          toastSuccess(`District "${deleteItem.districtName}" deactivated successfully.`);
+          setDistricts(prev => prev.map(d => d.id === deleteItem.id ? { ...d, isActive: false } : d));
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to deactivate district');
+      } finally {
+        setDeleteItem(null);
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    updateDistrict(id, { status: newStatus });
-    toastSuccess('District status updated successfully!');
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await updateDistrictStatusApi(id, { isActive: newStatus });
+      if (res?.success) {
+        toastSuccess('District status updated successfully!');
+        setDistricts(prev => prev.map(d => d.id === id ? { ...d, isActive: newStatus } : d));
+      }
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to update status');
+    }
   };
 
-  // Helper to get State Name from State ID
-  const getStateName = (stateId) => {
-    const state = masterStates.find(s => s.id === stateId);
-    return state ? state.name : 'Unknown State';
-  };
-
-  const filteredDistricts = (masterDistricts || []).filter(dist =>
-    dist.name.toLowerCase().includes(search.toLowerCase()) ||
-    getStateName(dist.stateId).toLowerCase().includes(search.toLowerCase())
-  );
+  // Filtering is now handled by the backend API via the search parameter
+  const filteredDistricts = districts;
 
   const columns = [
     {
       header: 'District Name',
-      accessor: 'name',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
+      accessor: 'districtName',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.districtName}</Typography>
     },
     {
       header: 'State',
       accessor: 'stateId',
-      render: (row) => <Typography variant="body2">{getStateName(row.stateId)}</Typography>
+      render: (row) => <Typography variant="body2">{row.state?.stateName || '-'}</Typography>
     },
     {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'isActive',
       render: (row) => (
         <RHFSwitch
-          value={row.status || 'ACTIVE'}
+          value={row.isActive !== undefined ? row.isActive : true}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
       )
@@ -109,7 +142,7 @@ export default function DistrictList() {
           <SearchBar
             placeholder="Search district or state..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
       </Box>
@@ -118,14 +151,21 @@ export default function DistrictList() {
         <DataTable
           columns={columns}
           data={filteredDistricts}
+          loading={loading}
           emptyMessage="No districts found"
+          serverSide={true}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
 
       <ConfirmDeleteDialog
         open={!!deleteItem}
-        title="Delete District"
-        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
+        title="Deactivate District"
+        message={`Are you sure you want to deactivate "${deleteItem?.districtName}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteItem(null)}
       />
@@ -144,7 +184,7 @@ export default function DistrictList() {
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete
+          Deactivate
         </MenuItem>
       </Menu>
     </Box>

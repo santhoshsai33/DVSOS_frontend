@@ -1,55 +1,82 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Box, Grid, Typography, Select } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import useMasterDataStore from '../../store/useMasterDataStore';
+import { getStateDetailApi, createStateApi, updateStateApi } from '../../api/adminStateApi';
+
+const schema = z.object({
+  stateName: z.string()
+    .trim()
+    .min(1, 'State name is required')
+    .regex(/^[a-zA-Z\s]+$/, 'Special characters and numbers are not allowed')
+});
 
 export default function StateForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
-  const { masterStates, addState, updateState } = useMasterDataStore();
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
-      name: '',
-      status: 'ACTIVE'
+      stateName: ''
     }
   });
 
   const { handleSubmit, reset } = methods;
 
   useEffect(() => {
-    if (isEdit && masterStates.length > 0) {
-      const stateToEdit = masterStates.find(s => s.id === id);
-      if (stateToEdit) {
-        reset({
-          name: stateToEdit.name,
-          status: stateToEdit.status || 'ACTIVE'
-        });
-      }
-    }
-  }, [isEdit, id, masterStates, reset]);
-
-  const onSubmit = (data) => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    const fetchState = async () => {
       if (isEdit) {
-        updateState(id, data);
-        toastSuccess(`State "${data.name}" updated successfully.`);
-      } else {
-        addState(data);
-        toastSuccess(`State "${data.name}" added successfully.`);
+        try {
+          setLoading(true);
+          const res = await getStateDetailApi(id);
+          if (res?.success) {
+            reset({
+              stateName: res.data.state.stateName
+            });
+          }
+        } catch (error) {
+          toastError(error?.response?.data?.message || 'Failed to load state details');
+          navigate(ROUTES.ADMIN_MASTER_STATES);
+        } finally {
+          setLoading(false);
+        }
       }
-      navigate(ROUTES.ADMIN_MASTER_STATES);
-    }, 800);
+    };
+    fetchState();
+  }, [isEdit, id, reset, navigate]);
+
+  const onSubmit = async (data) => {
+    try {
+      setSaving(true);
+      if (isEdit) {
+        const res = await updateStateApi(id, data);
+        if (res?.success) {
+          toastSuccess(`State "${data.stateName}" updated successfully.`);
+          navigate(ROUTES.ADMIN_MASTER_STATES);
+        }
+      } else {
+        const res = await createStateApi(data);
+        if (res?.success) {
+          toastSuccess(`State "${data.stateName}" added successfully.`);
+          navigate(ROUTES.ADMIN_MASTER_STATES);
+        }
+      }
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to save state');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -65,39 +92,44 @@ export default function StateForm() {
         />
       </Box>
 
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
+      {loading ? (
+        <Typography>Loading...</Typography>
+      ) : (
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
 
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="name"
-                label="State Name"
-                placeholder="e.g. California"
-                required
-              />
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="stateName"
+                  label="State Name"
+                  placeholder="e.g. Tamil Nadu"
+                  required
+                />
+              </Grid>
             </Grid>
-          </Grid>
 
-          {/* Footer Actions */}
-          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => navigate(ROUTES.ADMIN_MASTER_STATES)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={saving}
-            >
-              {isEdit ? 'Save Changes' : 'Create State'}
-            </Button>
-          </Box>
-        </form>
-      </FormProvider>
+            {/* Footer Actions */}
+            <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => navigate(ROUTES.ADMIN_MASTER_STATES)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                isLoading={saving}
+              >
+                {isEdit ? 'Save Changes' : 'Create State'}
+              </Button>
+            </Box>
+          </form>
+        </FormProvider>
+      )}
     </Box>
   );
 }

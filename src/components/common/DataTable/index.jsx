@@ -25,18 +25,48 @@ export default function DataTable({
   onRowClick,
   showPagination = true,
   defaultItemsPerPage = 10,
+  serverSide = false,
+  totalCount = 0,
+  page: serverPage = 0,
+  rowsPerPage: serverRowsPerPage = 10,
+  onPageChange,
+  onRowsPerPageChange
 }) {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(defaultItemsPerPage);
+  const [localPage, setLocalPage] = useState(0);
+  const [localRowsPerPage, setLocalRowsPerPage] = useState(defaultItemsPerPage);
+
+  const page = serverSide ? serverPage : localPage;
+  const rowsPerPage = serverSide ? serverRowsPerPage : localRowsPerPage;
 
   if (isLoading) return <Loader text="Loading data..." />;
   if (!data.length) return <EmptyState message={emptyMessage} />;
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
+  const totalPages = serverSide 
+    ? Math.ceil(totalCount / rowsPerPage) 
+    : Math.ceil(data.length / rowsPerPage);
 
-  const paginatedData = showPagination
+  const paginatedData = showPagination && !serverSide
     ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     : data;
+
+  const handlePageChange = (e, value) => {
+    const newPage = value - 1;
+    if (serverSide) {
+      if (onPageChange) onPageChange(newPage);
+    } else {
+      setLocalPage(newPage);
+    }
+  };
+
+  const handleRowsPerPageChange = (e) => {
+    const newLimit = Number(e.target.value);
+    if (serverSide) {
+      if (onRowsPerPageChange) onRowsPerPageChange(newLimit);
+    } else {
+      setLocalRowsPerPage(newLimit);
+      setLocalPage(0);
+    }
+  };
 
   return (
     <Box>
@@ -159,10 +189,7 @@ export default function DataTable({
               <Select
                 size="small"
                 value={rowsPerPage}
-                onChange={(e) => {
-                  setRowsPerPage(Number(e.target.value));
-                  setPage(0);
-                }}
+                onChange={handleRowsPerPageChange}
                 sx={{
                   fontSize: '0.875rem',
                   color: '#334155',
@@ -178,14 +205,14 @@ export default function DataTable({
                 ))}
               </Select>
               <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 500 }}>
-                Showing {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, data.length)} of {data.length}
+                Showing {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, serverSide ? totalCount : data.length)} of {serverSide ? totalCount : data.length}
               </Typography>
             </Stack>
 
             <Pagination
               count={totalPages}
               page={page + 1}
-              onChange={(e, value) => setPage(value - 1)}
+              onChange={handlePageChange}
               shape="rounded"
               sx={{
                 '& .MuiPaginationItem-root': {

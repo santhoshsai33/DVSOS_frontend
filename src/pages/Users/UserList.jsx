@@ -46,7 +46,16 @@ export default function UserList() {
       if (saved) {
         setUsersList(JSON.parse(saved));
       } else {
-        setUsersList(data.data);
+        const rawList = Array.isArray(data.data) ? data.data : data.data.users || [];
+        const formattedList = rawList.map(u => ({
+          ...u,
+          name: u.name || u.fullName || 'Unknown',
+          email: u.email || u.emailId || '',
+          mobile: u.mobile || u.mobileNo || '',
+          role: typeof u.role === 'object' ? u.role?.slug : (u.role || 'UNKNOWN'),
+          status: typeof u.isActive === 'boolean' ? (u.isActive ? 'ACTIVE' : 'INACTIVE') : (u.status || 'ACTIVE')
+        }));
+        setUsersList(formattedList);
       }
     }
   }, [data]);

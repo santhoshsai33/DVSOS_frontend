@@ -18,42 +18,34 @@ import {
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
 import Input from '../../components/common/Input';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
+import { getMenusApi } from '../../api/menuApi';
+import { 
+  getRoleMenuPermissionsApi, 
+  createRoleApi, 
+  updateRoleApi, 
+  saveRoleMenuPermissionsApi, 
+  updateRoleMenuPermissionsApi 
+} from '../../api/roleApi';
 
-const PERMISSION_ROWS = [
-  { module: 'Administration', subModule: 'Admin Dashboard' },
-  { module: 'Administration', subModule: 'User Management' },
-  { module: 'Administration', subModule: 'Role Management' },
-  { module: 'Administration', subModule: 'Service Items' },
-  { module: 'Administration', subModule: 'System Settings' },
-  { module: 'Administration', subModule: 'Audit Logs' },
-  { module: 'Gate Operations', subModule: 'Gate Dashboard' },
-  { module: 'Gate Operations', subModule: 'Vehicle Entry' },
-  { module: 'CRM Operations', subModule: 'CRM Dashboard' },
-  { module: 'CRM Operations', subModule: 'Pending Approvals' },
-  { module: 'CRM Operations', subModule: 'Delivery Ready' },
-  { module: 'Floor Workshop', subModule: 'Floor Dashboard' },
-  { module: 'Floor Workshop', subModule: 'Mechanical Queue' },
-  { module: 'Floor Workshop', subModule: 'Assign Mechanic' },
-  { module: 'Floor Workshop', subModule: 'Additional Work' },
-  { module: 'Body Shop', subModule: 'Body Shop Queue' },
-  { module: 'Water Wash', subModule: 'Water Wash Queue' },
-  { module: 'Manager Operations', subModule: 'Manager Dashboard' },
-  { module: 'Manager Operations', subModule: 'Operations Overview' },
-  { module: 'Manager Operations', subModule: 'Delayed Jobs' },
-  { module: 'Manager Operations', subModule: 'Reports' },
-  { module: 'MD Analytics', subModule: 'MD Dashboard' },
-  { module: 'MD Analytics', subModule: 'Executive Overview' },
-  { module: 'MD Analytics', subModule: 'Performance Report' },
-  { module: 'MD Analytics', subModule: 'Service KPI' },
-  { module: 'Common Pages', subModule: 'Customers' },
-  { module: 'Common Pages', subModule: 'Vehicles' },
-  { module: 'Common Pages', subModule: 'Job Cards' },
-  { module: 'Common Pages', subModule: 'Notifications' }
-];
-
-const MODULES = ['Administration', 'Gate Operations', 'CRM Operations', 'Floor Workshop', 'Body Shop', 'Water Wash', 'Manager Operations', 'MD Analytics', 'Common Pages'];
+const flattenMenus = (menus) => {
+  let flat = [];
+  menus.forEach(m => {
+    flat.push({
+      menuId: m.id || m.menuId,
+      name: m.name,
+      canRead: m.canRead || false,
+      canCreate: m.canCreate || false,
+      canUpdate: m.canUpdate || false,
+      canDelete: m.canDelete || false
+    });
+    if (m.children && m.children.length > 0) {
+      flat = [...flat, ...flattenMenus(m.children)];
+    }
+  });
+  return flat;
+};
 
 export default function RolePrivilegesForm() {
   const navigate = useNavigate();
@@ -61,128 +53,113 @@ export default function RolePrivilegesForm() {
   const isEdit = !!id;
 
   const [designation, setDesignation] = useState('');
-  const [selectedModule, setSelectedModule] = useState('Administration');
+  const [selectedModule, setSelectedModule] = useState('');
   const [saving, setSaving] = useState(false);
-
-  // Grid permissions state
-  const [privileges, setPrivileges] = useState(
-    PERMISSION_ROWS.reduce((acc, _, index) => {
-      acc[index] = { read: false, create: false, update: false, delete: false };
-      return acc;
-    }, {})
-  );
+  const [loading, setLoading] = useState(true);
+  
+  const [modulesList, setModulesList] = useState([]);
 
   useEffect(() => {
-    const savedPrivileges = JSON.parse(localStorage.getItem('dvsos_role_privileges') || '{}');
-    if (isEdit) {
-      const MOCK_ROLES_LIST = [
-        { id: 1, designation: 'Super Admin' },
-        { id: 2, designation: 'General Manager' },
-        { id: 3, designation: 'Floor Supervisor' },
-        { id: 4, designation: 'Gate Security Executive' },
-        { id: 5, designation: 'CRM Officer' },
-        { id: 6, designation: 'Body Shop Lead' },
-        { id: 7, designation: 'Water Wash Lead' },
-        { id: 8, designation: 'Managing Director' }
-      ];
-      const roleItem = MOCK_ROLES_LIST.find(r => String(r.id) === String(id));
-      const name = roleItem ? roleItem.designation : 'General Manager';
-      setDesignation(name);
-
-      if (savedPrivileges[name]) {
-        setPrivileges(savedPrivileges[name]);
-      } else {
-        // Fallback mock pre-population
-        setPrivileges(
-          PERMISSION_ROWS.reduce((acc, _, index) => {
-            acc[index] = { read: true, create: index % 2 === 0, update: index % 3 === 0, delete: false };
-            return acc;
-          }, {})
-        );
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        if (isEdit) {
+          const res = await getRoleMenuPermissionsApi(id);
+          if (res?.success) {
+            setDesignation(res.data.role.name);
+            setModulesList(res.data.modules || []);
+          }
+        } else {
+          const res = await getMenusApi();
+          if (res?.success) {
+            const mapped = (res.data.modules || []).map(mod => ({
+              module: mod.module,
+              menus: flattenMenus(mod.menus)
+            }));
+            setModulesList(mapped);
+          }
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to load data');
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+    loadData();
   }, [isEdit, id]);
 
-  const handleCheckboxChange = (index, type) => {
-    setPrivileges(prev => {
-      const row = { ...prev[index] };
-      row[type] = !row[type];
-      return { ...prev, [index]: row };
-    });
+  const handleCheckboxChange = (moduleIndex, menuIndex, type) => {
+    const updated = [...modulesList];
+    updated[moduleIndex].menus[menuIndex][type] = !updated[moduleIndex].menus[menuIndex][type];
+    setModulesList(updated);
   };
 
-  const handleSelectAllChange = (index) => {
-    setPrivileges(prev => {
-      const row = { ...prev[index] };
-      const allChecked = row.read && row.create && row.update && row.delete;
-      return {
-        ...prev,
-        [index]: {
-          read: !allChecked,
-          create: !allChecked,
-          update: !allChecked,
-          delete: !allChecked
-        }
-      };
-    });
+  const handleSelectAllChange = (moduleIndex, menuIndex) => {
+    const updated = [...modulesList];
+    const menu = updated[moduleIndex].menus[menuIndex];
+    const allChecked = menu.canRead && menu.canCreate && menu.canUpdate && menu.canDelete;
+    
+    updated[moduleIndex].menus[menuIndex] = {
+      ...menu,
+      canRead: !allChecked,
+      canCreate: !allChecked,
+      canUpdate: !allChecked,
+      canDelete: !allChecked
+    };
+    setModulesList(updated);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!designation.trim()) {
-      alert('Please enter a Role Name.');
+      toastError('Please enter a Role Name.');
       return;
     }
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      // Save to localStorage
-      const savedPrivileges = JSON.parse(localStorage.getItem('dvsos_role_privileges') || '{}');
-      savedPrivileges[designation.trim()] = privileges;
-      localStorage.setItem('dvsos_role_privileges', JSON.stringify(savedPrivileges));
-
-      // Append new role to dvsos_roles_list
-      let savedRoles = [];
-      try {
-        savedRoles = JSON.parse(localStorage.getItem('dvsos_roles_list') || '[]');
-      } catch (e) {
-        savedRoles = [];
-      }
-      // If savedRoles is empty, populate it with defaults first
-      if (savedRoles.length === 0) {
-        savedRoles = [
-          { id: 1, designation: 'Super Admin', roleCode: 'SUPER_ADMIN', accessLevel: 'Full Access', active: true },
-          { id: 2, designation: 'General Manager', roleCode: 'MANAGER', accessLevel: 'Custom Access', active: true },
-          { id: 3, designation: 'Floor Supervisor', roleCode: 'FLOOR_SUPERVISOR', accessLevel: 'Custom Access', active: true },
-          { id: 4, designation: 'Gate Security Executive', roleCode: 'GATE_SECURITY', accessLevel: 'Custom Access', active: true },
-          { id: 5, designation: 'CRM Officer', roleCode: 'CRM_TEAM', accessLevel: 'Custom Access', active: true },
-          { id: 6, designation: 'Body Shop Lead', roleCode: 'BODY_SHOP_SUPERVISOR', accessLevel: 'Custom Access', active: true },
-          { id: 7, designation: 'Water Wash Lead', roleCode: 'WATER_WASH_TEAM', accessLevel: 'Custom Access', active: true },
-          { id: 8, designation: 'Managing Director', roleCode: 'MD', accessLevel: 'Custom Access', active: true }
-        ];
-      }
-
-      const exists = savedRoles.some(r => r.designation.toLowerCase() === designation.trim().toLowerCase());
-      if (!exists) {
-        const nextId = savedRoles.length > 0 ? Math.max(...savedRoles.map(r => r.id)) + 1 : 1;
-        savedRoles.push({
-          id: nextId,
-          designation: designation.trim(),
-          roleCode: designation.trim().toUpperCase().replace(/\s+/g, '_'),
-          accessLevel: 'Custom Access',
-          active: true
+    
+    // Flatten payload
+    const permissionsPayload = [];
+    modulesList.forEach(mod => {
+      mod.menus.forEach(menu => {
+        permissionsPayload.push({
+          menuId: menu.menuId,
+          canRead: menu.canRead,
+          canCreate: menu.canCreate,
+          canUpdate: menu.canUpdate,
+          canDelete: menu.canDelete
         });
-      }
-      localStorage.setItem('dvsos_roles_list', JSON.stringify(savedRoles));
+      });
+    });
 
-      toastSuccess(`Role privileges for "${designation}" saved successfully!`);
+    if (permissionsPayload.length === 0) {
+      toastError('No permissions available to save.');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      let roleId = id;
+      
+      if (isEdit) {
+        await updateRoleApi(roleId, { name: designation.trim() });
+        await updateRoleMenuPermissionsApi(roleId, permissionsPayload);
+        toastSuccess(`Role privileges for "${designation}" updated successfully!`);
+      } else {
+        const roleRes = await createRoleApi({ name: designation.trim() });
+        roleId = roleRes.data.role.id;
+        await saveRoleMenuPermissionsApi(roleId, permissionsPayload);
+        toastSuccess(`Role privileges for "${designation}" saved successfully!`);
+      }
       navigate(ROUTES.ADMIN_ROLES);
-    }, 800);
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to save role privileges');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  // Filter permission rows by selected module
-  const filteredRows = PERMISSION_ROWS
-    .map((row, originalIdx) => ({ ...row, originalIdx }))
-    .filter(row => !selectedModule || row.module === selectedModule);
+  const availableModuleNames = modulesList.map(m => m.module);
+  const displayedModules = selectedModule 
+    ? modulesList.filter(m => m.module === selectedModule) 
+    : modulesList;
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
@@ -193,7 +170,6 @@ export default function RolePrivilegesForm() {
         <BackButton to={ROUTES.ADMIN_ROLES} label="Back to Role Privileges" />
       </Box>
 
-      {/* Form Controls */}
       <Card sx={{ p: 3, mb: 4, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E2E8F0' }}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
@@ -203,19 +179,20 @@ export default function RolePrivilegesForm() {
               placeholder="Enter Role Name"
               value={designation}
               onChange={(e) => setDesignation(e.target.value)}
-              disabled={isEdit}
+              disabled={loading || isEdit}
             />
           </Grid>
           <Grid item xs={12} md={6}>
             <Box sx={{ mb: 2, width: '100%' }}>
               <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', mb: 0.75 }}>
-                Module <span style={{ color: '#E11D48' }}>*</span>
+                Module
               </Typography>
               <Select
                 value={selectedModule}
                 onChange={(e) => setSelectedModule(e.target.value)}
                 fullWidth
                 size="small"
+                disabled={loading}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '8px',
@@ -224,8 +201,8 @@ export default function RolePrivilegesForm() {
                 }}
               >
                 <MenuItem value="">All Modules</MenuItem>
-                {MODULES.map(m => (
-                  <MenuItem key={m} value={m}>{m === 'Administration' ? 'Admin' : m}</MenuItem>
+                {availableModuleNames.map(m => (
+                  <MenuItem key={m} value={m}>{m}</MenuItem>
                 ))}
               </Select>
             </Box>
@@ -233,7 +210,6 @@ export default function RolePrivilegesForm() {
         </Grid>
       </Card>
 
-      {/* Privileges Table */}
       <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
         <TableContainer>
           <Table sx={{ minWidth: 650 }}>
@@ -248,52 +224,62 @@ export default function RolePrivilegesForm() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredRows.map((row) => {
-                const idx = row.originalIdx;
-                const state = privileges[idx] || { read: false, create: false, update: false, delete: false };
-                const allChecked = state.read && state.create && state.update && state.delete;
-                return (
-                  <TableRow key={idx} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                    <TableCell sx={{ fontWeight: 600, color: '#334155' }}>
-                      {row.subModule}
-                    </TableCell>
-                    <TableCell align="center">
-                      <Checkbox 
-                        checked={state.read} 
-                        onChange={() => handleCheckboxChange(idx, 'read')} 
-                        sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
-                      />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Checkbox 
-                        checked={state.create} 
-                        onChange={() => handleCheckboxChange(idx, 'create')} 
-                        sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
-                      />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Checkbox 
-                        checked={state.update} 
-                        onChange={() => handleCheckboxChange(idx, 'update')} 
-                        sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
-                      />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Checkbox 
-                        checked={state.delete} 
-                        onChange={() => handleCheckboxChange(idx, 'delete')} 
-                        sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
-                      />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Checkbox 
-                        checked={allChecked} 
-                        onChange={() => handleSelectAllChange(idx)} 
-                        sx={{ color: '#94A3B8', '&.Mui-checked': { color: 'primary.main' } }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 3 }}>Loading...</TableCell>
+                </TableRow>
+              ) : displayedModules.map((mod) => {
+                // Find original index to update state correctly
+                const moduleIndex = modulesList.findIndex(m => m.module === mod.module);
+                
+                return mod.menus.map((menu, menuIndex) => {
+                  const allChecked = menu.canRead && menu.canCreate && menu.canUpdate && menu.canDelete;
+                  return (
+                    <TableRow key={menu.menuId} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                      <TableCell sx={{ fontWeight: 600, color: '#334155' }}>
+                        <Typography variant="body2" component="span" sx={{ color: '#94A3B8', mr: 1, fontSize: '0.75rem' }}>
+                          {mod.module} /
+                        </Typography>
+                        {menu.name}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Checkbox 
+                          checked={menu.canRead} 
+                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canRead')} 
+                          sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Checkbox 
+                          checked={menu.canCreate} 
+                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canCreate')} 
+                          sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Checkbox 
+                          checked={menu.canUpdate} 
+                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canUpdate')} 
+                          sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Checkbox 
+                          checked={menu.canDelete} 
+                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canDelete')} 
+                          sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Checkbox 
+                          checked={allChecked} 
+                          onChange={() => handleSelectAllChange(moduleIndex, menuIndex)} 
+                          sx={{ color: '#94A3B8', '&.Mui-checked': { color: 'primary.main' } }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                });
               })}
             </TableBody>
           </Table>
@@ -304,6 +290,7 @@ export default function RolePrivilegesForm() {
         <Button
           variant="secondary"
           onClick={() => navigate(ROUTES.ADMIN_ROLES)}
+          disabled={saving}
         >
           Cancel
         </Button>
@@ -311,6 +298,7 @@ export default function RolePrivilegesForm() {
           variant="primary"
           isLoading={saving}
           onClick={handleSave}
+          disabled={loading || saving}
         >
           {isEdit ? 'Save Changes' : 'Add Role Privileges'}
         </Button>

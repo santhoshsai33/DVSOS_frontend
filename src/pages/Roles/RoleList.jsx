@@ -5,39 +5,41 @@ import { Box, Menu, MenuItem, IconButton, Typography, Select } from '@mui/materi
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import DataTable from '../../components/common/DataTable';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
+import { getRolesApi, updateRoleStatusApi } from '../../api/roleApi';
 
-const MOCK_ROLES_LIST = [
-  { id: 1, designation: 'Super Admin', roleCode: 'SUPER_ADMIN', accessLevel: 'Full Access', active: true },
-  { id: 2, designation: 'General Manager', roleCode: 'MANAGER', accessLevel: 'Custom Access', active: true },
-  { id: 3, designation: 'Floor Supervisor', roleCode: 'FLOOR_SUPERVISOR', accessLevel: 'Custom Access', active: true },
-  { id: 4, designation: 'Gate Security Executive', roleCode: 'GATE_SECURITY', accessLevel: 'Custom Access', active: true },
-  { id: 5, designation: 'CRM Officer', roleCode: 'CRM_TEAM', accessLevel: 'Custom Access', active: true },
-  { id: 6, designation: 'Body Shop Lead', roleCode: 'BODY_SHOP_SUPERVISOR', accessLevel: 'Custom Access', active: true },
-  { id: 7, designation: 'Water Wash Lead', roleCode: 'WATER_WASH_TEAM', accessLevel: 'Custom Access', active: true },
-  { id: 8, designation: 'Managing Director', roleCode: 'MD', accessLevel: 'Custom Access', active: true }
-];
+
 
 export default function RoleList() {
   const navigate = useNavigate();
   const [search, setSearch] = React.useState('');
-  const [roles, setRoles] = React.useState(() => {
-    try {
-      const saved = localStorage.getItem('dvsos_roles_list');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return MOCK_ROLES_LIST;
-  });
-
+  const [roles, setRoles] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [selectedRole, setSelectedRole] = React.useState(null);
   const [deleteItem, setDeleteItem] = React.useState(null);
+
+  const fetchRoles = async () => {
+    try {
+      setLoading(true);
+      const res = await getRolesApi();
+      if (res?.success) {
+        setRoles(res.data.roles || []);
+      }
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to fetch roles');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchRoles();
+  }, []);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -50,16 +52,16 @@ export default function RoleList() {
     setSelectedRole(null);
   };
 
-  const handleStatusChange = (id, newActive) => {
-    const updated = roles.map(roleItem => {
-      if (roleItem.id === id) {
-        return { ...roleItem, active: newActive };
+  const handleStatusChange = async (id, newActive) => {
+    try {
+      const res = await updateRoleStatusApi(id, { isActive: newActive });
+      if (res?.success) {
+        toastSuccess(res.message || 'Role status updated successfully!');
+        setRoles(prev => prev.map(r => r.id === id ? { ...r, isActive: newActive } : r));
       }
-      return roleItem;
-    });
-    setRoles(updated);
-    localStorage.setItem('dvsos_roles_list', JSON.stringify(updated));
-    toastSuccess('Role status updated successfully!');
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to update status');
+    }
   };
 
   const handleDelete = () => {
@@ -67,39 +69,45 @@ export default function RoleList() {
     handleMenuClose();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteItem) {
-      const updated = roles.filter(roleItem => roleItem.id !== deleteItem.id);
-      setRoles(updated);
-      localStorage.setItem('dvsos_roles_list', JSON.stringify(updated));
-      toastSuccess(`Role policy for "${deleteItem.designation}" removed successfully.`);
-      setDeleteItem(null);
+      try {
+        const res = await updateRoleStatusApi(deleteItem.id, { isActive: false });
+        if (res?.success) {
+          toastSuccess(`Role policy for "${deleteItem.name}" deactivated successfully.`);
+          setRoles(prev => prev.map(r => r.id === deleteItem.id ? { ...r, isActive: false } : r));
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to deactivate role');
+      } finally {
+        setDeleteItem(null);
+      }
     }
   };
 
   const filteredRoles = (roles || []).filter(role =>
-    role.designation.toLowerCase().includes(search.toLowerCase()) ||
-    role.roleCode.toLowerCase().includes(search.toLowerCase())
+    role.name.toLowerCase().includes(search.toLowerCase()) ||
+    role.slug.toLowerCase().includes(search.toLowerCase())
   );
 
   const columns = [
     {
       header: 'Designation Name',
-      accessor: 'designation',
+      accessor: 'name',
       render: (row) => (
-        <Typography variant="body2" fontWeight={600} color="text.primary">{row.designation}</Typography>
+        <Typography variant="body2" fontWeight={600} color="text.primary">{row.name}</Typography>
       )
     },
     {
       header: 'Role Code',
-      accessor: 'roleCode',
-      render: (row) => <Typography variant="body2" fontWeight={500} color="text.primary">{row.roleCode.replace(/_/g, ' ')}</Typography>
+      accessor: 'slug',
+      render: (row) => <Typography variant="body2" fontWeight={500} color="text.primary">{row.slug.replace(/-/g, ' ').toUpperCase()}</Typography>
     },
     {
       header: 'Status',
       render: (row) => (
         <RHFSwitch
-          value={row.active}
+          value={row.isActive}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
       )
@@ -140,14 +148,15 @@ export default function RoleList() {
         <DataTable
           columns={columns}
           data={filteredRoles}
+          loading={loading}
           emptyMessage="No role policies found"
         />
       </Box>
 
       <ConfirmDeleteDialog
         open={!!deleteItem}
-        title="Delete Role Policy"
-        message={`Are you sure you want to delete the privileges policy for role "${deleteItem?.designation}"?`}
+        title="Deactivate Role Policy"
+        message={`Are you sure you want to deactivate the privileges policy for role "${deleteItem?.name}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteItem(null)}
       />
@@ -166,7 +175,7 @@ export default function RoleList() {
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} style={{ marginRight: 12, color: 'inherit' }} />
-          Delete
+          Deactivate
         </MenuItem>
       </Menu>
     </Box>

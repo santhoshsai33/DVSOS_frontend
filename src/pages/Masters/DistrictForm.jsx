@@ -2,63 +2,97 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Box, Grid, Typography, Select } from '@mui/material';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import RHFTextField from '../../components/form/RHFTextField';
+import RHFSelect from '../../components/form/RHFSelect';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import useMasterDataStore from '../../store/useMasterDataStore';
+import { getStatesApi } from '../../api/adminStateApi';
+import { getDistrictDetailApi, createDistrictApi, updateDistrictApi } from '../../api/adminDistrictApi';
 
-
+const schema = z.object({
+  stateId: z.coerce.number().min(1, 'State is required'),
+  districtName: z.string()
+    .trim()
+    .min(1, 'District name is required')
+    .regex(/^[a-zA-Z\s]+$/, 'Special characters and numbers are not allowed')
+});
 
 export default function DistrictForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
-  const { masterStates, masterDistricts, addDistrict, updateDistrict } = useMasterDataStore();
+  
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
+  const [states, setStates] = useState([]);
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
-      name: '',
-      stateId: '',
-      status: 'ACTIVE'
+      districtName: '',
+      stateId: ''
     }
   });
 
-  const { handleSubmit, reset } = methods;
+  const { handleSubmit, reset, register } = methods;
 
   useEffect(() => {
-    if (isEdit && masterDistricts.length > 0) {
-      const districtToEdit = masterDistricts.find(d => d.id === id);
-      if (districtToEdit) {
-        reset({
-          name: districtToEdit.name,
-          stateId: districtToEdit.stateId,
-          status: districtToEdit.status || 'ACTIVE'
-        });
-      }
-    }
-  }, [isEdit, id, masterDistricts, reset]);
+    const loadData = async () => {
+      try {
+        const stateRes = await getStatesApi();
+        if (stateRes?.success) {
+          setStates(stateRes.data.states || []);
+        }
 
-  const onSubmit = (data) => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      if (isEdit) {
-        updateDistrict(id, data);
-        toastSuccess(`District "${data.name}" updated successfully.`);
-      } else {
-        addDistrict(data);
-        toastSuccess(`District "${data.name}" added successfully.`);
+        if (isEdit) {
+          setLoading(true);
+          const res = await getDistrictDetailApi(id);
+          if (res?.success) {
+            reset({
+              districtName: res.data.district.districtName,
+              stateId: res.data.district.stateId
+            });
+          }
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to load data');
+        if (isEdit) navigate(ROUTES.ADMIN_MASTER_DISTRICTS);
+      } finally {
+        setLoading(false);
       }
-      navigate(ROUTES.ADMIN_MASTER_DISTRICTS);
-    }, 800);
+    };
+    loadData();
+  }, [isEdit, id, reset, navigate]);
+
+  const onSubmit = async (data) => {
+    try {
+      setSaving(true);
+      if (isEdit) {
+        const res = await updateDistrictApi(id, data);
+        if (res?.success) {
+          toastSuccess(`District "${data.districtName}" updated successfully.`);
+          navigate(ROUTES.ADMIN_MASTER_DISTRICTS);
+        }
+      } else {
+        const res = await createDistrictApi(data);
+        if (res?.success) {
+          toastSuccess(`District "${data.districtName}" added successfully.`);
+          navigate(ROUTES.ADMIN_MASTER_DISTRICTS);
+        }
+      }
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to save district');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
-      {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit' : 'Add'} District
@@ -69,59 +103,52 @@ export default function DistrictForm() {
         />
       </Box>
 
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
+      {loading ? (
+        <Typography>Loading...</Typography>
+      ) : (
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFSelect
+                  name="stateId"
+                  label="State"
+                  placeholder="Select a State"
+                  options={states.map(s => ({ value: s.id, label: s.stateName }))}
+                  required
+                />
+              </Grid>
 
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
-                State <Box component="span" sx={{ color: 'error.main' }}>*</Box>
-              </Typography>
-              <Select
-                native
-                fullWidth
-                {...methods.register('stateId')}
-                sx={{ borderRadius: 2 }}
-                required
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="districtName"
+                  label="District Name"
+                  placeholder="e.g. Chennai"
+                  required
+                />
+              </Grid>
+            </Grid>
+
+            <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => navigate(ROUTES.ADMIN_MASTER_DISTRICTS)}
+                disabled={saving}
               >
-                <option value="" disabled>Select a State</option>
-                {masterStates.map(state => (
-                  <option key={state.id} value={state.id}>{state.name}</option>
-                ))}
-              </Select>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="name"
-                label="District Name"
-                placeholder="e.g. Chennai"
-                required
-              />
-            </Grid>
-          </Grid>
-
-
-
-          {/* Footer Actions */}
-          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => navigate(ROUTES.ADMIN_MASTER_DISTRICTS)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={saving}
-            >
-              {isEdit ? 'Save Changes' : 'Create District'}
-            </Button>
-          </Box>
-        </form>
-      </FormProvider>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                isLoading={saving}
+              >
+                {isEdit ? 'Save Changes' : 'Create District'}
+              </Button>
+            </Box>
+          </form>
+        </FormProvider>
+      )}
     </Box>
   );
 }

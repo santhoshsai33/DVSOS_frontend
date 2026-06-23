@@ -1,25 +1,51 @@
-import React, { useState } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Select, Typography, Chip } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
-import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
+import { getStatesApi, updateStateStatusApi } from '../../api/adminStateApi';
 
 export default function StateList() {
   const navigate = useNavigate();
-  const { masterStates, deleteState, updateState } = useMasterDataStore();
+  const [states, setStates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        setLoading(true);
+        const res = await getStatesApi({ page: page + 1, limit: rowsPerPage, search });
+        if (res?.success) {
+          setStates(res.data.states || []);
+          setTotalCount(res.meta?.total || 0);
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to fetch states');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    const timer = setTimeout(() => {
+      fetchStates();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, rowsPerPage, search]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -37,35 +63,54 @@ export default function StateList() {
     handleMenuClose();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteItem) {
-      deleteState(deleteItem.id);
-      toastSuccess(`State "${deleteItem.name}" deleted successfully.`);
-      setDeleteItem(null);
+      try {
+        const res = await updateStateStatusApi(deleteItem.id, { isActive: false });
+        if (res?.success) {
+          toastSuccess(`State "${deleteItem.stateName}" deactivated successfully.`);
+          setStates(prev => prev.map(s => s.id === deleteItem.id ? { ...s, isActive: false } : s));
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to deactivate state');
+      } finally {
+        setDeleteItem(null);
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    updateState(id, { status: newStatus });
-    toastSuccess('State status updated successfully!');
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await updateStateStatusApi(id, { isActive: newStatus });
+      if (res?.success) {
+        toastSuccess('State status updated successfully!');
+        setStates(prev => prev.map(s => s.id === id ? { ...s, isActive: newStatus } : s));
+      }
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to update status');
+    }
   };
 
-  const filteredStates = (masterStates || []).filter(state =>
-    state.name.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filtering is now handled by the backend API via the search parameter
+  const filteredStates = states;
 
   const columns = [
     {
       header: 'State Name',
-      accessor: 'name',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
+      accessor: 'stateName',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.stateName}</Typography>
+    },
+    {
+      header: 'State Code',
+      accessor: 'stateCode',
+      render: (row) => <Typography variant="body2" color="text.secondary">{row.stateCode}</Typography>
     },
     {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'isActive',
       render: (row) => (
         <RHFSwitch
-          value={row.status || 'ACTIVE'}
+          value={row.isActive !== undefined ? row.isActive : true}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
       )
@@ -97,7 +142,7 @@ export default function StateList() {
           <SearchBar
             placeholder="Search state..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
       </Box>
@@ -106,14 +151,21 @@ export default function StateList() {
         <DataTable
           columns={columns}
           data={filteredStates}
+          loading={loading}
           emptyMessage="No states found"
+          serverSide={true}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
 
       <ConfirmDeleteDialog
         open={!!deleteItem}
-        title="Delete State"
-        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
+        title="Deactivate State"
+        message={`Are you sure you want to deactivate "${deleteItem?.stateName}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteItem(null)}
       />
@@ -132,7 +184,7 @@ export default function StateList() {
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete
+          Deactivate
         </MenuItem>
       </Menu>
     </Box>

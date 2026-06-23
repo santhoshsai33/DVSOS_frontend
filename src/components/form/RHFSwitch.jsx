@@ -35,6 +35,7 @@ export default function RHFSwitch({ name, label, hint, disabled = false, classNa
             />
           }
           label={label || (checked ? 'Active' : 'Inactive')}
+          sx={{ '& .MuiFormControlLabel-label': { minWidth: '65px', display: 'inline-block' }, margin: 0 }}
         />
         {hint && <FormHelperText>{hint}</FormHelperText>}
       </FormControl>
