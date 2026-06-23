@@ -127,6 +127,10 @@ export default function ServiceCenterForm() {
                   label="Contact Number"
                   placeholder="e.g. 9876543210"
                   required
+                  inputProps={{ maxLength: 10, pattern: '[0-9]*' }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                  }}
                 />
               </Grid>
 

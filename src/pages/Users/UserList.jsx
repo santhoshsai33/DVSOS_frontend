@@ -3,7 +3,7 @@ import { Box, Card, IconButton, Menu, MenuItem, Typography, Select, Avatar } fro
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
-import { Plus, Edit, Trash2, Mail, MoreVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, Mail, MoreVertical, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
@@ -50,7 +50,7 @@ export default function UserList() {
         const params = { page: page + 1, limit: rowsPerPage };
         if (search) params.search = search;
         if (roleFilter) params.roleId = roleFilter;
-        
+
         const res = await getUsersApi(params);
         if (res?.success) {
           setUsers(res.data.users || []);
@@ -146,6 +146,15 @@ export default function UserList() {
       ),
     },
     {
+      header: 'Location',
+      accessor: 'locationName',
+      render: (row) => (
+        <Typography variant="body2" color="text.secondary">
+          {row.location?.locationName || row.locationName || '-'}
+        </Typography>
+      ),
+    },
+    {
       header: 'Status',
       accessor: 'isActive',
       render: (row) => (
@@ -199,9 +208,9 @@ export default function UserList() {
           displayEmpty
           value={roleFilter}
           onChange={(e) => { setRoleFilter(e.target.value); setPage(0); }}
-          sx={{ 
-            width: { xs: '100%', sm: 200 }, 
-            bgcolor: 'background.paper', 
+          sx={{
+            width: { xs: '100%', sm: 200 },
+            bgcolor: 'background.paper',
             borderRadius: '24px',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
             '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
@@ -244,9 +253,23 @@ export default function UserList() {
         onClose={handleMenuClose}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
+        PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_USER_EDIT.replace(':id', selectedUser?.id)); }}>
+        <MenuItem onClick={() => { 
+          if (selectedUser?.id) {
+            navigate(ROUTES.ADMIN_USER_VIEW.replace(':id', selectedUser.id)); 
+          }
+          handleMenuClose(); 
+        }}>
+          <Eye size={16} className="mr-3 text-info" style={{ color: '#0284C7' }} />
+          View
+        </MenuItem>
+        <MenuItem onClick={() => { 
+          if (selectedUser?.id) {
+            navigate(ROUTES.ADMIN_USER_EDIT.replace(':id', selectedUser.id)); 
+          }
+          handleMenuClose(); 
+        }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>

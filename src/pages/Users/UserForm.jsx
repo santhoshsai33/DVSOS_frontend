@@ -13,6 +13,7 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import { createUserApi, updateUserApi, getUserApi } from '../../api/userApi';
 import { getRolesApi } from '../../api/roleApi';
+import { getLocationsApi } from '../../api/adminLocationApi';
 
 const GENDER_OPTIONS = [
   { value: 'MALE', label: 'Male' },
@@ -25,6 +26,7 @@ const schema = z.object({
   email: z.string().trim().min(1, 'Email is required').email('Invalid email format'),
   mobile: z.string().trim().min(1, 'Mobile Number is required').regex(/^[0-9]{10,15}$/, 'Mobile Number must be between 10 and 15 digits'),
   roleId: z.number().min(1, 'Role is required'),
+  locationId: z.number().optional().or(z.literal('')),
   password: z.string().optional(),
   status: z.string().optional(),
   dob: z.string().trim().min(1, 'Date of Birth is required').refine((val) => {
@@ -45,6 +47,7 @@ export default function UserForm() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
   const [roles, setRoles] = useState([]);
+  const [locations, setLocations] = useState([]);
 
   const methods = useForm({
     resolver: zodResolver(schema),
@@ -53,6 +56,7 @@ export default function UserForm() {
       email: '',
       mobile: '',
       roleId: '',
+      locationId: '',
       password: '',
       status: 'ACTIVE',
       dob: '',
@@ -77,7 +81,19 @@ export default function UserForm() {
         toastError('Failed to fetch roles');
       }
     };
+    const fetchLocations = async () => {
+      try {
+        const res = await getLocationsApi({ limit: 100 });
+        if (res?.success) {
+          const fetchedLocations = res.data.locations || [];
+          setLocations(fetchedLocations.map(l => ({ value: l.id, label: l.locationName })));
+        }
+      } catch (error) {
+        toastError('Failed to fetch locations');
+      }
+    };
     fetchRoles();
+    fetchLocations();
   }, []);
 
   useEffect(() => {
@@ -92,6 +108,7 @@ export default function UserForm() {
               email: user.email || user.emailId || '',
               mobile: user.mobile || user.mobileNo || '',
               roleId: user.role?.id || user.roleId || '',
+              locationId: user.location?.id || user.locationId || '',
               status: user.isActive ? 'ACTIVE' : 'INACTIVE',
               dob: user.dob ? new Date(user.dob).toISOString().split('T')[0] : '',
               licenceNumber: user.licenceNumber || '',
@@ -118,6 +135,7 @@ export default function UserForm() {
         email: data.email,
         mobile: data.mobile || undefined,
         roleId: data.roleId,
+        locationId: data.locationId || undefined,
         password: isEdit ? undefined : (data.password || undefined),
         isActive: data.status === 'ACTIVE',
         dob: data.dob || undefined,
@@ -136,7 +154,7 @@ export default function UserForm() {
       }
       navigate(ROUTES.ADMIN_USERS);
     } catch (error) {
-      toastError(error?.response?.data?.message || 'Failed to save user');
+      toastError(error?.message || 'Failed to save user');
     } finally {
       setSaving(false);
     }
@@ -262,6 +280,12 @@ export default function UserForm() {
               </Grid>
             </Grid>
 
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFSelect name="locationId" label="Location (Optional)" options={locations} placeholder="Select location" />
+              </Grid>
+            </Grid>
+
             <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
               <Button
                 variant="secondary"
@@ -280,7 +304,7 @@ export default function UserForm() {
             </Box>
           </form>
         </FormProvider>
-      )}
+      )};
     </Box>
   );
 }

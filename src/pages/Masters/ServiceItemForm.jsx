@@ -2,81 +2,116 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Grid, Typography } from '@mui/material';
 import RHFTextField from '../../components/form/RHFTextField';
+import RHFTextarea from '../../components/form/RHFTextarea';
 import RHFSelect from '../../components/form/RHFSelect';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import useMasterDataStore from '../../store/useMasterDataStore';
+import { getServiceCategoriesApi } from '../../api/adminServiceCategoryApi';
+import { createServiceItemApi, updateServiceItemApi, getServiceItemApi } from '../../api/adminServiceItemApi';
+
+const schema = z.object({
+  categoryId: z.number({ required_error: 'Category Group is required', invalid_type_error: 'Category Group is required' }).min(1, 'Category Group is required'),
+  name: z.string().trim().min(1, 'Service Item Name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters are not allowed'),
+  description: z.string().trim().optional().or(z.literal('')),
+  defaultPrice: z.coerce.number({ required_error: 'Base Price is required' }).min(0, 'Price cannot be negative'),
+  estimatedMinutes: z.coerce.number().min(0, 'Minutes cannot be negative').optional().or(z.literal(''))
+});
 
 export default function ServiceItemForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
-  const { masterServices, serviceCategories, addService, updateService } = useMasterDataStore();
+
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
+  const [categories, setCategories] = useState([]);
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
+      categoryId: '',
       name: '',
-      category: '',
-      price: 0,
-      estimatedMinutes: 0
+      description: '',
+      defaultPrice: '',
+      estimatedMinutes: ''
     }
   });
 
-  const { handleSubmit, reset, setValue } = methods;
+  const { handleSubmit, reset } = methods;
 
   useEffect(() => {
-    if (serviceCategories.length > 0) {
-      setValue('category', serviceCategories[0].name);
-    }
-  }, [serviceCategories, setValue]);
-
-  useEffect(() => {
-    if (isEdit && masterServices.length > 0) {
-      const item = masterServices.find(s => s.id === id);
-      if (item) {
-        reset({
-          name: item.name,
-          category: item.category || '',
-          price: item.price || 0,
-          estimatedMinutes: item.estimatedMinutes || 0
-        });
+    const fetchCategories = async () => {
+      try {
+        const res = await getServiceCategoriesApi({ limit: 1000 });
+        if (res?.success) {
+          setCategories(res.data.serviceCategories || []);
+        }
+      } catch (error) {
+        toastError('Failed to load categories');
       }
-    }
-  }, [isEdit, id, masterServices, reset]);
+    };
+    fetchCategories();
+  }, []);
 
-  const onSubmit = (data) => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      const formattedData = {
-        ...data,
-        price: parseFloat(data.price) || 0,
-        estimatedMinutes: parseInt(data.estimatedMinutes, 10) || 0
+  useEffect(() => {
+    if (isEdit) {
+      const fetchDetail = async () => {
+        try {
+          const res = await getServiceItemApi(id);
+          if (res?.success) {
+            const item = res.data.serviceItem || res.data;
+            reset({
+              categoryId: item.categoryId || '',
+              name: item.name || '',
+              description: item.description || '',
+              defaultPrice: item.defaultPrice || '',
+              estimatedMinutes: item.estimatedMinutes || ''
+            });
+          }
+        } catch (error) {
+          toastError('Failed to fetch service item details');
+        } finally {
+          setLoading(false);
+        }
       };
+      fetchDetail();
+    }
+  }, [isEdit, id, reset]);
+
+  const onSubmit = async (data) => {
+    setSaving(true);
+    try {
+      const payload = {
+        categoryId: data.categoryId,
+        name: data.name,
+        description: data.description || undefined,
+        defaultPrice: data.defaultPrice,
+        estimatedMinutes: data.estimatedMinutes || undefined
+      };
+
       if (isEdit) {
-        updateService(id, formattedData);
+        await updateServiceItemApi(id, payload);
         toastSuccess(`Service Item "${data.name}" updated successfully.`);
       } else {
-        addService(formattedData);
+        await createServiceItemApi(payload);
         toastSuccess(`Service Item "${data.name}" created successfully.`);
       }
       navigate(ROUTES.ADMIN_MASTER_ITEMS);
-    }, 800);
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to save service item');
+    } finally {
+      setSaving(false);
+    }
   };
-
-  const categoryOptions = serviceCategories.map(cat => ({
-    value: cat.name,
-    label: cat.name
-  }));
 
   return (
     <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
-      {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit' : 'Add'} Service Item
@@ -87,69 +122,82 @@ export default function ServiceItemForm() {
         />
       </Box>
 
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
+      {loading ? (
+        <Typography>Loading...</Typography>
+      ) : (
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
 
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFSelect
-                name="category"
-                label="Category Group"
-                placeholder="Select Category Group"
-                options={categoryOptions}
-                required
-              />
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFSelect
+                  name="categoryId"
+                  label="Category Group"
+                  placeholder="Select Category Group"
+                  options={categories.map(c => ({ value: c.id, label: c.name }))}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="name"
+                  label="Service Item Name"
+                  placeholder="e.g. Wheel Alignment"
+                  required
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="name"
-                label="Service Item Name"
-                placeholder="e.g. Wheel Alignment"
-                required
-              />
-            </Grid>
-          </Grid>
 
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="price"
-                type="number"
-                label="Base Price (₹)"
-                placeholder="e.g. 1500"
-                required
-              />
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="defaultPrice"
+                  type="number"
+                  label="Base Price (₹)"
+                  placeholder="e.g. 1500"
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="estimatedMinutes"
+                  type="number"
+                  label="Estimated Duration (Mins)"
+                  placeholder="e.g. 45"
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="estimatedMinutes"
-                type="number"
-                label="Estimated Duration (Mins)"
-                placeholder="e.g. 45"
-                required
-              />
-            </Grid>
-          </Grid>
 
-          {/* Footer Actions */}
-          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => navigate(ROUTES.ADMIN_MASTER_ITEMS)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={saving}
-            >
-              {isEdit ? 'Save Changes' : 'Create Service Item'}
-            </Button>
-          </Box>
-        </form>
-      </FormProvider>
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12}>
+                <RHFTextarea
+                  name="description"
+                  label="Description"
+                  rows={3}
+                  placeholder="Enter service details..."
+                />
+              </Grid>
+            </Grid>
+
+            <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => navigate(ROUTES.ADMIN_MASTER_ITEMS)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                isLoading={saving}
+              >
+                {isEdit ? 'Save Changes' : 'Create Service Item'}
+              </Button>
+            </Box>
+          </form>
+        </FormProvider>
+      )}
     </Box>
   );
 }

@@ -2,23 +2,32 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Grid, Typography } from '@mui/material';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFTextarea from '../../components/form/RHFTextarea';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import useMasterDataStore from '../../store/useMasterDataStore';
+import { createServiceCategoryApi, updateServiceCategoryApi, getServiceCategoryApi } from '../../api/adminServiceCategoryApi';
+
+const schema = z.object({
+  name: z.string().trim().min(1, 'Category Name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters are not allowed'),
+  description: z.string().trim().optional().or(z.literal(''))
+});
 
 export default function ServiceCategoryForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
-  const { serviceCategories, addCategory, updateCategory } = useMasterDataStore();
+
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
       name: '',
       description: ''
@@ -28,35 +37,52 @@ export default function ServiceCategoryForm() {
   const { handleSubmit, reset } = methods;
 
   useEffect(() => {
-    if (isEdit && serviceCategories.length > 0) {
-      const category = serviceCategories.find(c => c.id === id);
-      if (category) {
-        reset({
-          name: category.name,
-          description: category.description || ''
-        });
-      }
+    if (isEdit) {
+      const fetchDetail = async () => {
+        try {
+          const res = await getServiceCategoryApi(id);
+          if (res?.success) {
+            const category = res.data.serviceCategory || res.data;
+            reset({
+              name: category.name || '',
+              description: category.description || ''
+            });
+          }
+        } catch (error) {
+          toastError('Failed to fetch service category details');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchDetail();
     }
-  }, [isEdit, id, serviceCategories, reset]);
+  }, [isEdit, id, reset]);
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      const payload = {
+        name: data.name,
+        description: data.description || undefined
+      };
+
       if (isEdit) {
-        updateCategory(id, data);
+        await updateServiceCategoryApi(id, payload);
         toastSuccess(`Category "${data.name}" updated successfully.`);
       } else {
-        addCategory(data);
+        await createServiceCategoryApi(payload);
         toastSuccess(`Category "${data.name}" added successfully.`);
       }
       navigate(ROUTES.ADMIN_MASTER_CATEGORIES);
-    }, 800);
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to save service category');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
-      {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit' : 'Add'} Service Category
@@ -67,50 +93,52 @@ export default function ServiceCategoryForm() {
         />
       </Box>
 
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="name"
-                label="Category Name"
-                placeholder="e.g. Mechanical, Body Shop"
-                required
-              />
+      {loading ? (
+        <Typography>Loading...</Typography>
+      ) : (
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="name"
+                  label="Category Name"
+                  placeholder="e.g. Mechanical, Body Shop"
+                  required
+                />
+              </Grid>
             </Grid>
-          </Grid>
 
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12}>
-              <RHFTextarea
-                name="description"
-                label="Description"
-                rows={4}
-                placeholder="Enter category details..."
-              />
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12}>
+                <RHFTextarea
+                  name="description"
+                  label="Description"
+                  rows={4}
+                  placeholder="Enter category details..."
+                />
+              </Grid>
             </Grid>
-          </Grid>
 
-          {/* Footer Actions */}
-          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => navigate(ROUTES.ADMIN_MASTER_CATEGORIES)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={saving}
-            >
-              {isEdit ? 'Save Changes' : 'Create Category'}
-            </Button>
-          </Box>
-        </form>
-      </FormProvider>
+            <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => navigate(ROUTES.ADMIN_MASTER_CATEGORIES)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                isLoading={saving}
+              >
+                {isEdit ? 'Save Changes' : 'Create Category'}
+              </Button>
+            </Box>
+          </form>
+        </FormProvider>
+      )}
     </Box>
   );
 }

@@ -59,7 +59,7 @@ export default function DistrictForm() {
           }
         }
       } catch (error) {
-        toastError(error?.response?.data?.message || 'Failed to load data');
+        toastError(error?.message || 'Failed to load data');
         if (isEdit) navigate(ROUTES.ADMIN_MASTER_DISTRICTS);
       } finally {
         setLoading(false);
@@ -85,7 +85,7 @@ export default function DistrictForm() {
         }
       }
     } catch (error) {
-      toastError(error?.response?.data?.message || 'Failed to save district');
+      toastError(error?.message || 'Failed to save district');
     } finally {
       setSaving(false);
     }

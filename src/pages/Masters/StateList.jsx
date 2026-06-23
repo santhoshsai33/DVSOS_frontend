@@ -35,7 +35,7 @@ export default function StateList() {
           setTotalCount(res.meta?.total || 0);
         }
       } catch (error) {
-        toastError(error?.response?.data?.message || 'Failed to fetch states');
+        toastError(error?.message || 'Failed to fetch states');
       } finally {
         setLoading(false);
       }
@@ -72,7 +72,7 @@ export default function StateList() {
           setStates(prev => prev.map(s => s.id === deleteItem.id ? { ...s, isActive: false } : s));
         }
       } catch (error) {
-        toastError(error?.response?.data?.message || 'Failed to deactivate state');
+        toastError(error?.message || 'Failed to deactivate state');
       } finally {
         setDeleteItem(null);
       }
@@ -87,7 +87,7 @@ export default function StateList() {
         setStates(prev => prev.map(s => s.id === id ? { ...s, isActive: newStatus } : s));
       }
     } catch (error) {
-      toastError(error?.response?.data?.message || 'Failed to update status');
+      toastError(error?.message || 'Failed to update status');
     }
   };
 

@@ -46,7 +46,7 @@ export default function StateForm() {
             });
           }
         } catch (error) {
-          toastError(error?.response?.data?.message || 'Failed to load state details');
+          toastError(error?.message || 'Failed to load state details');
           navigate(ROUTES.ADMIN_MASTER_STATES);
         } finally {
           setLoading(false);
@@ -73,7 +73,7 @@ export default function StateForm() {
         }
       }
     } catch (error) {
-      toastError(error?.response?.data?.message || 'Failed to save state');
+      toastError(error?.message || 'Failed to save state');
     } finally {
       setSaving(false);
     }

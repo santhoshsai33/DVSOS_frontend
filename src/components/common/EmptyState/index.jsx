@@ -12,10 +12,10 @@ export default function EmptyState({
 }) {
   return (
     <div className={styles.container}>
-      <div className={styles.iconWrapper}>
+      {/* <div className={styles.iconWrapper}>
         <Icon size={40} className={styles.icon} />
-      </div>
-      <h5 className={styles.title}>{title}</h5>
+      </div> */}
+      {/* <h5 className={styles.title}>{title}</h5> */}
       <p className={styles.message}>{message}</p>
       {actionLabel && onAction && (
         <Button variant="primary" size="sm" onClick={onAction}>
