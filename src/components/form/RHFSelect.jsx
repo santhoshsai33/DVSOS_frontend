@@ -1,5 +1,7 @@
+import { useState, useMemo } from 'react';
 import { useFormContext, Controller } from 'react-hook-form';
-import { TextField, MenuItem, Box, Typography } from '@mui/material';
+import { TextField, MenuItem, Box, Typography, InputAdornment } from '@mui/material';
+import { Search } from 'lucide-react';
 
 // eslint-disable-next-line react/prop-types
 export default function RHFSelect({
@@ -15,6 +17,14 @@ export default function RHFSelect({
   ...props
 }) {
   const { control } = useFormContext();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredOptions = useMemo(() => {
+    if (!searchTerm) return options;
+    return options.filter((opt) =>
+      (opt.label || '').toString().toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [options, searchTerm]);
 
   return (
     <Controller
@@ -43,18 +53,73 @@ export default function RHFSelect({
               }
             }}
             SelectProps={{
-              displayEmpty: true
+              displayEmpty: true,
+              onClose: () => setSearchTerm(''),
+              MenuProps: {
+                autoFocus: false,
+                PaperProps: {
+                  sx: {
+                    maxHeight: 320,
+                    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.08)',
+                    borderRadius: '8px',
+                    mt: 0.5
+                  }
+                }
+              }
             }}
             {...props}
           >
-            <MenuItem value="" disabled>
+            {/* Search Input inside the dropdown */}
+            <Box 
+              sx={{ 
+                px: 2, 
+                py: 1.5, 
+                position: 'sticky', 
+                top: 0, 
+                bgcolor: 'background.paper', 
+                zIndex: 2, 
+                borderBottom: '1px solid #f1f5f9',
+                mb: 1
+              }}
+              onKeyDown={(e) => e.stopPropagation()}
+              onClickCapture={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                autoFocus
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search size={18} color="#94A3B8" />
+                    </InputAdornment>
+                  ),
+                  sx: { borderRadius: '6px' }
+                }}
+              />
+            </Box>
+
+            <MenuItem value="" disabled sx={{ display: searchTerm ? 'none' : 'block' }}>
               <span style={{ color: '#94A3B8' }}>{placeholder}</span>
             </MenuItem>
-            {options.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
+
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled>
+                <span style={{ color: '#94A3B8' }}>No options found</span>
               </MenuItem>
-            ))}
+            )}
           </TextField>
         </Box>
       )}
