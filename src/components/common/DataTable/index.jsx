@@ -20,6 +20,7 @@ import EmptyState from '../EmptyState';
 export default function DataTable({
   columns = [],
   data = [],
+  loading = false,
   isLoading = false,
   emptyMessage = 'No records found',
   onRowClick,
@@ -38,8 +39,7 @@ export default function DataTable({
   const page = serverSide ? serverPage : localPage;
   const rowsPerPage = serverSide ? serverRowsPerPage : localRowsPerPage;
 
-  if (isLoading) return <Loader text="Loading data..." />;
-  if (!data.length) return <EmptyState message={emptyMessage} />;
+  // Handled inside TableBody to keep headers visible
 
   const totalPages = serverSide
     ? Math.ceil(totalCount / rowsPerPage)
@@ -127,48 +127,55 @@ export default function DataTable({
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedData.map((row, index) => (
-                <TableRow
-                  key={row.id || index}
-                  onClick={() => onRowClick && onRowClick(row)}
-                  sx={{
-                    bgcolor: index % 2 === 1 ? '#f0f4ff' : '#FFFFFF',
-                    cursor: onRowClick ? 'pointer' : 'default',
-                    transition: 'background-color 0.2s',
-                    '&:hover': {
-                      bgcolor: '#E0E8FF',
-                    },
-                    '& td': {
-                      borderBottom: index === paginatedData.length - 1 ? 'none' : '1px dashed #CBD5E1',
-                    }
-                  }}
-                >
-                  {columns.map((col, colIndex) => {
-                    const isActionColumn = String(col.header || '').toLowerCase().includes('action');
-
-                    return (
-                      <TableCell
-                        key={colIndex}
-                        sx={{
-                          py: 2.25,
-                          px: 3,
-                          color: '#334155',
-                          fontSize: '0.875rem',
-                          fontWeight: 500,
-                          whiteSpace: isActionColumn ? 'nowrap' : 'normal',
-                          width: isActionColumn ? '1%' : col.width || 'auto',
-                          '&:first-of-type': { pl: 4 },
-                          '&:last-of-type': { pr: 4 }
-                        }}
-                      >
-                        {col.render
-                          ? col.render(row)
-                          : (row[col.accessor] !== undefined && row[col.accessor] !== null ? row[col.accessor] : '—')}
-                      </TableCell>
-                    );
-                  })}
+              {(isLoading || loading) ? (
+                <TableRow>
+                  <TableCell colSpan={Math.max(1, columns.length)} align="center" sx={{ py: 10 }}>
+                    <Loader text="Loading data..." />
+                  </TableCell>
                 </TableRow>
-              ))}
+              ) : data.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={Math.max(1, columns.length)} align="center" sx={{ py: 1 }}>
+                    <EmptyState message={emptyMessage} />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedData.map((row, index) => (
+                  <TableRow
+                    key={row.id || index}
+                    onClick={() => onRowClick && onRowClick(row)}
+                    sx={{
+                      bgcolor: '#FFFFFF',
+                      cursor: onRowClick ? 'pointer' : 'default',
+                      transition: 'background-color 0.2s',
+                    }}
+                  >
+                    {columns.map((col, colIndex) => {
+                      const isActionColumn = String(col.header || '').toLowerCase().includes('action');
+
+                      return (
+                        <TableCell
+                          key={colIndex}
+                          sx={{
+                            py: 2.25,
+                            px: 3,
+                            color: '#334155',
+                            fontSize: '0.875rem',
+                            fontWeight: 500,
+                            whiteSpace: isActionColumn ? 'nowrap' : 'normal',
+                            width: isActionColumn ? '1%' : col.width || 'auto',
+                            '&:first-of-type': { pl: 4 },
+                            '&:last-of-type': { pr: 4 }
+                          }}
+                        >
+                          {col.render
+                            ? col.render(row)
+                            : (row[col.accessor] !== undefined && row[col.accessor] !== null ? row[col.accessor] : '—')}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                )))}
             </TableBody>
           </Table>
         </TableContainer>

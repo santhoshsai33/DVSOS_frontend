@@ -11,6 +11,7 @@ export const ENDPOINTS = {
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
     ME: '/auth/me',
+    UPDATE_PROFILE: '/auth/profile',
   },
 
   // Vehicles
