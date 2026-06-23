@@ -15,14 +15,12 @@ import { createLocationApi, updateLocationApi, getLocationApi } from '../../api/
 import { getStatesApi } from '../../api/adminStateApi';
 import { getDistrictsApi } from '../../api/adminDistrictApi';
 import { getServiceCentersApi } from '../../api/adminServiceCenterApi';
-import { getUsersApi } from '../../api/userApi';
 
 const schema = z.object({
   serviceCenterId: z.number({ required_error: 'Service Center is required', invalid_type_error: 'Service Center is required' }).min(1, 'Service Center is required'),
   stateId: z.number({ required_error: 'State is required', invalid_type_error: 'State is required' }).min(1, 'State is required'),
   districtId: z.number({ required_error: 'District is required', invalid_type_error: 'District is required' }).min(1, 'District is required'),
-  mdId: z.number({ required_error: 'Managing Director is required', invalid_type_error: 'Managing Director is required' }).min(1, 'Managing Director is required').optional().or(z.literal('')),
-  name: z.string().trim().min(1, 'Location Name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters are not allowed'),
+  name: z.string().trim().min(1, 'Location Name is required'),
   phoneNo: z.string().trim().regex(/^[0-9+\s-]+$/, 'Invalid contact number format').optional().or(z.literal('')),
   email: z.string().trim().email('Invalid email address').optional().or(z.literal('')),
   pincode: z.string().trim().optional().or(z.literal('')),
@@ -40,7 +38,6 @@ export default function LocationForm() {
   const [serviceCenters, setServiceCenters] = useState([]);
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
-  const [users, setUsers] = useState([]);
 
   const methods = useForm({
     resolver: zodResolver(schema),
@@ -48,7 +45,6 @@ export default function LocationForm() {
       serviceCenterId: '',
       stateId: '',
       districtId: '',
-      mdId: '',
       name: '',
       address: '',
       pincode: '',
@@ -64,21 +60,15 @@ export default function LocationForm() {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const [scRes, stRes, dsRes, usRes] = await Promise.all([
+        const [scRes, stRes, dsRes] = await Promise.all([
           getServiceCentersApi({ limit: 1000 }),
           getStatesApi({ limit: 1000 }),
-          getDistrictsApi({ limit: 1000 }),
-          getUsersApi({ limit: 1000 })
+          getDistrictsApi({ limit: 1000 })
         ]);
 
         if (scRes?.success) setServiceCenters(scRes.data.serviceCenters || []);
         if (stRes?.success) setStates(stRes.data.states || []);
         if (dsRes?.success) setDistricts(dsRes.data.districts || []);
-        
-        if (usRes?.success) {
-          const allUsers = usRes.data.users || [];
-          setUsers(allUsers.filter(u => u.role?.slug === 'md' || u.role?.slug === 'MD'));
-        }
       } catch (error) {
         toastError('Failed to load dropdown data');
       }
@@ -103,7 +93,6 @@ export default function LocationForm() {
               serviceCenterId: loc.serviceCenterId || '',
               stateId: loc.stateId || '',
               districtId: loc.districtId || '',
-              mdId: loc.locationHeadUserId || '',
               name: loc.locationName || '',
               address: loc.address || '',
               pincode: loc.pincode || '',
@@ -128,7 +117,6 @@ export default function LocationForm() {
         serviceCenterId: data.serviceCenterId,
         stateId: data.stateId,
         districtId: data.districtId,
-        locationHeadUserId: data.mdId || undefined,
         locationName: data.name,
         locationType: 'BRANCH',
         address: data.address || undefined,
@@ -160,9 +148,9 @@ export default function LocationForm() {
         <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit' : 'Add'} Location
         </Typography>
-        <BackButton 
-          to={ROUTES.ADMIN_LOCATIONS} 
-          label="Back to Locations" 
+        <BackButton
+          to={ROUTES.ADMIN_LOCATIONS}
+          label="Back to Locations"
         />
       </Box>
 
@@ -174,49 +162,38 @@ export default function LocationForm() {
 
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
-                <RHFSelect 
-                  name="serviceCenterId" 
-                  label="Service Center" 
-                  options={serviceCenters.map(sc => ({ value: sc.id, label: sc.serviceCenterName }))} 
-                  placeholder="Select a Service Center" 
-                  required 
+                <RHFSelect
+                  name="serviceCenterId"
+                  label="Service Center"
+                  options={serviceCenters.map(sc => ({ value: sc.id, label: sc.serviceCenterName }))}
+                  placeholder="Select a Service Center"
+                  required
                 />
               </Grid>
-
               <Grid item xs={12} md={6}>
-                <RHFSelect 
-                  name="mdId" 
-                  label="Managing Director" 
-                  options={users.map(u => ({ value: u.id, label: u.fullName }))} 
-                  placeholder="Select Managing Director" 
+                <RHFSelect
+                  name="stateId"
+                  label="State"
+                  options={states.map(s => ({ value: s.id, label: s.stateName }))}
+                  placeholder="Select a State"
+                  required
                 />
               </Grid>
             </Grid>
 
             <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={6}>
-                <RHFSelect 
-                  name="stateId" 
-                  label="State" 
-                  options={states.map(s => ({ value: s.id, label: s.stateName }))} 
-                  placeholder="Select a State" 
-                  required 
-                />
-              </Grid>
+
 
               <Grid item xs={12} md={6}>
-                <RHFSelect 
-                  name="districtId" 
-                  label="District" 
-                  options={availableDistricts.map(d => ({ value: d.id, label: d.districtName }))} 
-                  placeholder="Select a District" 
-                  required 
+                <RHFSelect
+                  name="districtId"
+                  label="District"
+                  options={availableDistricts.map(d => ({ value: d.id, label: d.districtName }))}
+                  placeholder="Select a District"
+                  required
                   disabled={!selectedStateId}
                 />
               </Grid>
-            </Grid>
-
-            <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
                 <RHFTextField
                   name="name"
@@ -225,6 +202,10 @@ export default function LocationForm() {
                   required
                 />
               </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+
 
               <Grid item xs={12} md={6}>
                 <RHFTextField
@@ -237,9 +218,6 @@ export default function LocationForm() {
                   }}
                 />
               </Grid>
-            </Grid>
-
-            <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
                 <RHFTextField
                   name="email"
@@ -248,6 +226,10 @@ export default function LocationForm() {
                   type="email"
                 />
               </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+
               <Grid item xs={12} md={6}>
                 <RHFTextField
                   name="pincode"
@@ -255,9 +237,6 @@ export default function LocationForm() {
                   placeholder="e.g. 600017"
                 />
               </Grid>
-            </Grid>
-
-            <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12}>
                 <RHFTextarea
                   name="address"

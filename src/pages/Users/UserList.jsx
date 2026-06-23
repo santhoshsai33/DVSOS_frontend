@@ -12,6 +12,7 @@ import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { getUsersApi, updateUserStatusApi } from '../../api/userApi';
 import { getRolesApi } from '../../api/roleApi';
+import { getLocationsApi } from '../../api/adminLocationApi';
 import { formatDateTime } from '../../utils/formatters';
 
 export default function UserList() {
@@ -21,6 +22,8 @@ export default function UserList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [locations, setLocations] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
@@ -30,17 +33,19 @@ export default function UserList() {
   const [deleteItem, setDeleteItem] = useState(null);
 
   useEffect(() => {
-    const fetchRoles = async () => {
+    const fetchDropdowns = async () => {
       try {
-        const res = await getRolesApi({ limit: 100 });
-        if (res?.success) {
-          setRoles(res.data.roles || []);
-        }
+        const [rolesRes, locationsRes] = await Promise.all([
+          getRolesApi({ limit: 1000 }),
+          getLocationsApi({ limit: 1000 })
+        ]);
+        if (rolesRes?.success) setRoles(rolesRes.data.roles || []);
+        if (locationsRes?.success) setLocations(locationsRes.data.locations || []);
       } catch (error) {
-        console.error('Failed to fetch roles');
+        console.error('Failed to fetch dropdowns');
       }
     };
-    fetchRoles();
+    fetchDropdowns();
   }, []);
 
   useEffect(() => {
@@ -50,6 +55,7 @@ export default function UserList() {
         const params = { page: page + 1, limit: rowsPerPage };
         if (search) params.search = search;
         if (roleFilter) params.roleId = roleFilter;
+        if (locationFilter) params.locationId = locationFilter;
 
         const res = await getUsersApi(params);
         if (res?.success) {
@@ -67,7 +73,7 @@ export default function UserList() {
       fetchUsers();
     }, 300);
     return () => clearTimeout(timer);
-  }, [page, rowsPerPage, search, roleFilter]);
+  }, [page, rowsPerPage, search, roleFilter, locationFilter]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -148,11 +154,15 @@ export default function UserList() {
     {
       header: 'Location',
       accessor: 'locationName',
-      render: (row) => (
-        <Typography variant="body2" color="text.secondary">
-          {row.location?.locationName || row.locationName || '-'}
-        </Typography>
-      ),
+      render: (row) => {
+        const foundLocation = locations.find(l => l.id === row.locationId);
+        const displayName = row.location?.locationName || row.location?.name || row.locationName || foundLocation?.locationName;
+        return (
+          <Typography variant="body2" color="text.secondary">
+            {displayName || '-'}
+          </Typography>
+        );
+      },
     },
     {
       header: 'Status',
@@ -209,7 +219,7 @@ export default function UserList() {
           value={roleFilter}
           onChange={(e) => { setRoleFilter(e.target.value); setPage(0); }}
           sx={{
-            width: { xs: '100%', sm: 200 },
+            width: { xs: '100%', sm: 180 },
             bgcolor: 'background.paper',
             borderRadius: '24px',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
@@ -220,6 +230,25 @@ export default function UserList() {
           <MenuItem value="">All Roles</MenuItem>
           {roles.map((role) => (
             <MenuItem key={role.id} value={role.id}>{role.name}</MenuItem>
+          ))}
+        </Select>
+        <Select
+          size="small"
+          displayEmpty
+          value={locationFilter}
+          onChange={(e) => { setLocationFilter(e.target.value); setPage(0); }}
+          sx={{
+            width: { xs: '100%', sm: 180 },
+            bgcolor: 'background.paper',
+            borderRadius: '24px',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+          }}
+        >
+          <MenuItem value="">All Locations</MenuItem>
+          {locations.map((loc) => (
+            <MenuItem key={loc.id} value={loc.id}>{loc.locationName}</MenuItem>
           ))}
         </Select>
       </Box>

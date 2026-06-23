@@ -6,12 +6,12 @@ import { ROUTES } from '../../config/routes';
 import { getLocationApi } from '../../api/adminLocationApi';
 import { toastError } from '../../notifications/toast';
 
-const DetailRow = ({ label, value }) => (
-  <Box sx={{ display: 'flex', py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+const DetailRow = ({ label, value, isLast = false }) => (
+  <Box sx={{ display: 'flex', py: 1.5, borderBottom: isLast ? 'none' : '1px solid', borderColor: 'divider' }}>
     <Typography variant="body2" fontWeight={600} sx={{ width: '40%', color: 'text.primary' }}>
       {label}
     </Typography>
-    <Typography variant="body2" sx={{ width: '60%', color: 'text.secondary' }}>
+    <Typography variant="body2" sx={{ width: '60%', color: 'text.secondary', wordBreak: 'break-word' }}>
       {value || '-'}
     </Typography>
   </Box>
@@ -70,6 +70,7 @@ export default function LocationView() {
               <DetailRow label="Location Code" value={location?.locationCode} />
               <DetailRow 
                 label="Status" 
+                isLast={true}
                 value={
                   <Typography variant="caption" fontWeight={700} color={location?.isActive ? 'success.main' : 'error.main'}>
                     {location?.isActive ? 'ACTIVE' : 'INACTIVE'}
@@ -89,7 +90,7 @@ export default function LocationView() {
             </Box>
             <Box sx={{ px: 2, pb: 1 }}>
               <DetailRow label="Created On" value={location?.createdAt ? new Date(location.createdAt).toLocaleDateString() : 'N/A'} />
-              <DetailRow label="Last Updated" value={location?.updatedAt ? new Date(location.updatedAt).toLocaleDateString() : 'N/A'} />
+              <DetailRow label="Last Updated" value={location?.updatedAt ? new Date(location.updatedAt).toLocaleDateString() : 'N/A'} isLast={true} />
             </Box>
           </Card>
         </Grid>

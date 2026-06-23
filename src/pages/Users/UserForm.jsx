@@ -20,7 +20,7 @@ const schema = z.object({
   email: z.string().trim().min(1, 'Email is required').email('Invalid email format'),
   mobile: z.string().trim().regex(/^\+?[0-9]{10,15}$/, 'Invalid mobile number format').optional().or(z.literal('')),
   roleId: z.number().min(1, 'Role is required'),
-  locationId: z.number().optional().or(z.literal('')),
+  locationId: z.number({ required_error: 'Location is required', invalid_type_error: 'Location is required' }).min(1, 'Location is required'),
   password: z.string().optional(),
   status: z.string().optional()
 });
@@ -111,7 +111,7 @@ export default function UserForm() {
         email: data.email,
         mobile: data.mobile || undefined,
         roleId: data.roleId,
-        locationId: data.locationId || undefined,
+        locationId: data.locationId,
         password: isEdit ? undefined : (data.password || undefined),
         isActive: data.status === 'ACTIVE'
       };
@@ -184,7 +184,7 @@ export default function UserForm() {
 
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
-                <RHFSelect name="locationId" label="Location (Optional)" options={locations} placeholder="Select location" />
+                <RHFSelect name="locationId" label="Location" options={locations} placeholder="Select location" required />
               </Grid>
             </Grid>
 

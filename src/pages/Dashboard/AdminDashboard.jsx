@@ -132,22 +132,20 @@ export default function AdminDashboard() {
                   height: '100%',
                   cursor: 'pointer',
                   transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                  }
+
                 }}
                 onClick={kpi.action}
               >
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: kpi.color, mb: 1 }}>
-                    {kpi.value}
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" fontWeight={600}>
-                    {kpi.label}
-                  </Typography>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <CardContent sx={{ p: 3, pb: '45px !important' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Box>
+                      <Typography variant="h3" fontWeight={800} sx={{ color: kpi.color, mb: 1 }}>
+                        {kpi.value}
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" fontWeight={600}>
+                        {kpi.label}
+                      </Typography>
+                    </Box>
                     <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Icon size={20} />
                     </Box>

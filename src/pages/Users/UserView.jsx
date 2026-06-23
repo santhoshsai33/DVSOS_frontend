@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Card, Typography, Grid, Skeleton, Divider } from '@mui/material';
+import { Box, Card, Typography, Grid, Skeleton } from '@mui/material';
 import BackButton from '../../components/common/BackButton';
 import { ROUTES } from '../../config/routes';
 import { getUserApi } from '../../api/userApi';
 import { toastError } from '../../notifications/toast';
 
-const DetailRow = ({ label, value }) => (
-  <Box sx={{ display: 'flex', py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+const DetailRow = ({ label, value, isLast = false }) => (
+  <Box sx={{ display: 'flex', py: 1.5, borderBottom: isLast ? 'none' : '1px solid', borderColor: 'divider' }}>
     <Typography variant="body2" fontWeight={600} sx={{ width: '40%', color: 'text.primary' }}>
       {label}
     </Typography>
-    <Typography variant="body2" sx={{ width: '60%', color: 'text.secondary' }}>
+    <Typography variant="body2" sx={{ width: '60%', color: 'text.secondary', wordBreak: 'break-word' }}>
       {value || '-'}
     </Typography>
   </Box>
@@ -73,6 +73,7 @@ export default function UserView() {
               <DetailRow label="Role" value={user?.role?.name} />
               <DetailRow 
                 label="Status" 
+                isLast={true}
                 value={
                   <Typography variant="caption" fontWeight={700} color={user?.isActive ? 'success.main' : 'error.main'}>
                     {user?.isActive ? 'ACTIVE' : 'INACTIVE'}
@@ -92,7 +93,7 @@ export default function UserView() {
             </Box>
             <Box sx={{ px: 2, pb: 1 }}>
               <DetailRow label="Created On" value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'} />
-              <DetailRow label="Last Updated" value={user?.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'N/A'} />
+              <DetailRow label="Last Updated" value={user?.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'N/A'} isLast={true} />
             </Box>
           </Card>
         </Grid>
