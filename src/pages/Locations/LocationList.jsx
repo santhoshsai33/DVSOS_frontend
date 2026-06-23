@@ -3,7 +3,7 @@ import { Box, Card, IconButton, Menu, MenuItem, Typography, Select, Tooltip } fr
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
-import { Plus, Edit, Trash2, MapPin, MoreVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, MapPin, MoreVertical, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
@@ -31,7 +31,7 @@ export default function LocationList() {
         setLoading(true);
         const params = { page: page + 1, limit: rowsPerPage };
         if (search) params.search = search;
-        
+
         const res = await getLocationsApi(params);
         if (res?.success) {
           setLocations(res.data.locations || []);
@@ -200,9 +200,23 @@ export default function LocationList() {
         onClose={handleMenuClose}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
+        PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_LOCATIONS_EDIT.replace(':id', selectedLocation?.id)); }}>
+        <MenuItem onClick={() => { 
+          if (selectedLocation?.id) {
+            navigate(ROUTES.ADMIN_LOCATIONS_VIEW.replace(':id', selectedLocation.id)); 
+          }
+          handleMenuClose(); 
+        }}>
+          <Eye size={16} className="mr-3 text-info" style={{ color: '#0284C7' }} />
+          View
+        </MenuItem>
+        <MenuItem onClick={() => { 
+          if (selectedLocation?.id) {
+            navigate(ROUTES.ADMIN_LOCATIONS_EDIT.replace(':id', selectedLocation.id)); 
+          }
+          handleMenuClose(); 
+        }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>

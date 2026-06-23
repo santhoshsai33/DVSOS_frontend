@@ -13,12 +13,14 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import { createUserApi, updateUserApi, getUserApi } from '../../api/userApi';
 import { getRolesApi } from '../../api/roleApi';
+import { getLocationsApi } from '../../api/adminLocationApi';
 
 const schema = z.object({
   fullName: z.string().trim().min(1, 'Full Name is required'),
   email: z.string().trim().min(1, 'Email is required').email('Invalid email format'),
   mobile: z.string().trim().regex(/^\+?[0-9]{10,15}$/, 'Invalid mobile number format').optional().or(z.literal('')),
   roleId: z.number().min(1, 'Role is required'),
+  locationId: z.number().optional().or(z.literal('')),
   password: z.string().optional(),
   status: z.string().optional()
 });
@@ -31,6 +33,7 @@ export default function UserForm() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
   const [roles, setRoles] = useState([]);
+  const [locations, setLocations] = useState([]);
 
   const methods = useForm({
     resolver: zodResolver(schema),
@@ -39,6 +42,7 @@ export default function UserForm() {
       email: '',
       mobile: '',
       roleId: '',
+      locationId: '',
       password: '',
       status: 'ACTIVE',
     },
@@ -58,7 +62,19 @@ export default function UserForm() {
         toastError('Failed to fetch roles');
       }
     };
+    const fetchLocations = async () => {
+      try {
+        const res = await getLocationsApi({ limit: 100 });
+        if (res?.success) {
+          const fetchedLocations = res.data.locations || [];
+          setLocations(fetchedLocations.map(l => ({ value: l.id, label: l.locationName })));
+        }
+      } catch (error) {
+        toastError('Failed to fetch locations');
+      }
+    };
     fetchRoles();
+    fetchLocations();
   }, []);
 
   useEffect(() => {
@@ -73,6 +89,7 @@ export default function UserForm() {
               email: user.email || user.emailId || '',
               mobile: user.mobile || user.mobileNo || '',
               roleId: user.role?.id || user.roleId || '',
+              locationId: user.location?.id || user.locationId || '',
               status: user.isActive ? 'ACTIVE' : 'INACTIVE',
             });
           }
@@ -94,6 +111,7 @@ export default function UserForm() {
         email: data.email,
         mobile: data.mobile || undefined,
         roleId: data.roleId,
+        locationId: data.locationId || undefined,
         password: isEdit ? undefined : (data.password || undefined),
         isActive: data.status === 'ACTIVE'
       };
@@ -107,7 +125,7 @@ export default function UserForm() {
       }
       navigate(ROUTES.ADMIN_USERS);
     } catch (error) {
-      toastError(error?.response?.data?.message || 'Failed to save user');
+      toastError(error?.message || 'Failed to save user');
     } finally {
       setSaving(false);
     }
@@ -161,6 +179,12 @@ export default function UserForm() {
               </Grid>
               <Grid item xs={12} md={6}>
                 <RHFSelect name="roleId" label="Role" options={roles} placeholder="Select role" required />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFSelect name="locationId" label="Location (Optional)" options={locations} placeholder="Select location" />
               </Grid>
             </Grid>
 

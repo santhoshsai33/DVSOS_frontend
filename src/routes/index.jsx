@@ -34,6 +34,8 @@ import SystemSettingsPage from '../pages/SuperAdmin/CompanySettings';
 import AuditLogsPage from '../pages/Admin/AuditLogs';
 import AuditLogDetailsPage from '../pages/Admin/AuditLogDetails';
 import UserForm from '../pages/Users/UserForm';
+import UserView from '../pages/Users/UserView';
+import LocationView from '../pages/Locations/LocationView';
 import GateDashboardPage from '../pages/GateEntry/GateDashboardPage';
 import GateEntryPage from '../pages/GateEntry/GateEntryPage';
 import PendingSyncPage from '../pages/GateEntry/PendingSyncPage';
@@ -157,6 +159,7 @@ export const router = createBrowserRouter([
               { path: 'locations', element: <LocationList /> },
               { path: 'locations/new', element: <LocationForm /> },
               { path: 'locations/:id/edit', element: <LocationForm /> },
+              { path: 'locations/:id', element: <LocationView /> },
               { path: 'system-settings', element: <SystemSettingsPage /> },
               { path: 'audit-logs', element: <AuditLogsPage /> },
               { path: 'audit-logs/:id', element: <AuditLogDetailsPage /> },
@@ -225,6 +228,7 @@ export const router = createBrowserRouter([
               { path: 'users', element: <UserManagementPage /> },
               { path: 'users/new', element: <UserForm /> },
               { path: 'users/:id/edit', element: <UserForm /> },
+              { path: 'users/:id', element: <UserView /> },
             ],
           },
           {
