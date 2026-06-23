@@ -164,7 +164,7 @@ export default function LocationList() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
-            placeholder="Search locations..."
+            placeholder="Search locations or service center..."
             value={search}
             onChange={(val) => { setSearch(val); setPage(0); }}
           />

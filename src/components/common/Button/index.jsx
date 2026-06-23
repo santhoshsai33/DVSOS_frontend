@@ -34,6 +34,11 @@ export default function Button({
           border: '1px solid',
           borderColor: 'primary.main',
           boxShadow: 'none',
+        },
+        '&.Mui-disabled': {
+          backgroundColor: isLoading ? 'primary.main' : '#E2E8F0',
+          opacity: isLoading ? 0.7 : 1,
+          color: isLoading ? '#ffffff' : '#94A3B8',
         }
       };
       break;
@@ -50,6 +55,12 @@ export default function Button({
           borderColor: 'transparent',
           color: '#0F172A',
           boxShadow: 'none',
+        },
+        '&.Mui-disabled': {
+          borderColor: '#E2E8F0',
+          backgroundColor: 'transparent',
+          color: '#94A3B8',
+          opacity: isLoading ? 0.7 : 1,
         }
       };
       break;

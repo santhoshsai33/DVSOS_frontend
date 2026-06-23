@@ -34,7 +34,12 @@ axiosInstance.interceptors.response.use(
       window.location.href = '/login';
     }
 
-    return Promise.reject({ status, message, data: error?.response?.data });
+    return Promise.reject({ 
+      status, 
+      message, 
+      data: error?.response?.data,
+      response: { data: { message } }
+    });
   }
 );
 

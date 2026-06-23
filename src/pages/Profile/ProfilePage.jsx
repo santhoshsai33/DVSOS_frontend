@@ -8,6 +8,7 @@ import useAuthStore from '../../store/useAuthStore';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROLE_LABELS } from '../../constants/roles';
 import { getInitials, avatarColor } from '../../utils/helpers';
+import { updateProfileApi } from '../../api/authApi';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -15,12 +16,9 @@ export default function ProfilePage() {
 
   const methods = useForm({
     defaultValues: {
-      name: user?.name || 'User',
-      email: user?.email || 'user@dvsos.com',
-      phone: user?.phone || '+91 98765 43210',
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
+      name: user?.fullName || user?.name || '',
+      email: user?.emailId || user?.email || '',
+      phone: user?.mobileNo || user?.phone || '',
     },
   });
 
@@ -28,39 +26,21 @@ export default function ProfilePage() {
 
   const onSubmit = async (data) => {
     try {
-      // Validate password if user is attempting to change it
-      if (data.currentPassword || data.newPassword || data.confirmPassword) {
-        if (!data.currentPassword) {
-          toastError('Please enter your current password to set a new one.');
-          return;
-        }
-        if (data.newPassword !== data.confirmPassword) {
-          toastError('New passwords do not match!');
-          return;
-        }
-        if (data.newPassword.length < 6) {
-          toastError('New password must be at least 6 characters.');
-          return;
-        }
-      }
-
-      await new Promise((r) => setTimeout(r, 800)); // Simulate API call
+      const response = await updateProfileApi({
+        fullName: data.name,
+        emailId: data.email,
+        mobileNo: data.phone
+      });
 
       // Update User details
-      setUser({ ...user, name: data.name, email: data.email, phone: data.phone });
-
-      let successMsg = 'Profile updated successfully!';
-      if (data.newPassword) {
-        successMsg = 'Profile and password updated successfully!';
-        // Reset only password fields after success
-        reset({ ...data, currentPassword: '', newPassword: '', confirmPassword: '' });
-      } else {
-        reset(data);
+      if (response?.success && response?.data?.user) {
+        setUser(response.data.user);
       }
 
-      toastSuccess(successMsg);
-    } catch {
-      toastError('Failed to update profile.');
+      reset(data);
+      toastSuccess('Profile updated successfully!');
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to update profile.');
     }
   };
 
@@ -82,14 +62,14 @@ export default function ProfilePage() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4 }}>
         <Avatar
           sx={{
-            width: 80, height: 80, bgcolor: avatarColor(user?.name),
+            width: 80, height: 80, bgcolor: avatarColor(user?.fullName || user?.name),
             fontSize: '24px', fontWeight: 'bold'
           }}
         >
-          {getInitials(user?.name || 'U')}
+          {getInitials(user?.fullName || user?.name || 'U')}
         </Avatar>
         <Box>
-          <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>{user?.name || 'User'}</Typography>
+          <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>{user?.fullName || user?.name || 'User'}</Typography>
           <Typography variant="body2" color="text.secondary">{ROLE_LABELS[role] || role}</Typography>
         </Box>
       </Box>

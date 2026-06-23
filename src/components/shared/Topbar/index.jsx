@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, User, Settings as SettingsIcon, Menu as MenuIcon, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { AppBar, Toolbar, IconButton, Typography, Box, Badge, Avatar, Menu, MenuItem, Divider, ListItemIcon, ListItemText } from '@mui/material';
@@ -7,6 +7,7 @@ import useUIStore from '../../../store/useUIStore';
 import { ROLE_LABELS } from '../../../constants/roles';
 import { ROUTES } from '../../../config/routes';
 import { getInitials, avatarColor } from '../../../utils/helpers';
+import { getMeApi } from '../../../api/authApi';
 
 const MOCK_NOTIFICATIONS = [
   { id: '1', text: 'New approval request from Rajan M.', time: '5 min ago', read: false },
@@ -15,13 +16,28 @@ const MOCK_NOTIFICATIONS = [
 ];
 
 export default function Topbar() {
-  const { user, role, logout } = useAuthStore();
+  const { user, role, logout, setUser } = useAuthStore();
   const { sidebarCollapsed, toggleSidebar, setSidebarMobileOpen } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [notifAnchorEl, setNotifAnchorEl] = useState(null);
   const [userAnchorEl, setUserAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const response = await getMeApi();
+        if (response?.success) {
+          const fetchedUser = response.data.user || response.data;
+          setUser(fetchedUser);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user details:', error);
+      }
+    };
+    fetchUserDetails();
+  }, [setUser]);
 
   const unread = notifications.filter((n) => !n.read).length;
 
@@ -123,15 +139,15 @@ export default function Topbar() {
               '&:hover': { bgcolor: 'action.hover' }
             }}
           >
-            <Avatar sx={{ bgcolor: avatarColor(user?.name), width: 32, height: 32, fontSize: '0.875rem', mr: 1 }}>
-              {getInitials(user?.name || 'U')}
+            <Avatar sx={{ bgcolor: avatarColor(user?.fullName || user?.name), width: 32, height: 32, fontSize: '0.875rem', mr: 1 }}>
+              {getInitials(user?.fullName || user?.name || 'U')}
             </Avatar>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="body2" fontWeight={600} lineHeight={1.2}>
-                {user?.name || 'User'}
+                {user?.fullName || user?.name || 'User'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {ROLE_LABELS[role] || role}
+                {user?.role?.name || ROLE_LABELS[role] || role}
               </Typography>
             </Box>
             <ChevronDown size={14} style={{ marginLeft: 8, color: '#64748b' }} />

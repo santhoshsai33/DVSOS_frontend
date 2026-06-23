@@ -147,7 +147,7 @@ export default function ServiceCenterList() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
-            placeholder="Search service center..."
+            placeholder="Search service center or email..."
             value={search}
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
