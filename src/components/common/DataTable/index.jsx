@@ -41,8 +41,8 @@ export default function DataTable({
   if (isLoading) return <Loader text="Loading data..." />;
   if (!data.length) return <EmptyState message={emptyMessage} />;
 
-  const totalPages = serverSide 
-    ? Math.ceil(totalCount / rowsPerPage) 
+  const totalPages = serverSide
+    ? Math.ceil(totalCount / rowsPerPage)
     : Math.ceil(data.length / rowsPerPage);
 
   const paginatedData = showPagination && !serverSide
@@ -195,8 +195,7 @@ export default function DataTable({
                   color: '#334155',
                   fontWeight: 600,
                   bgcolor: '#FFFFFF',
-                  fieldset: { borderColor: '#E2E8F0', borderRadius: 2 },
-                  '&:hover fieldset': { borderColor: '#CBD5E1 !important' },
+                  fieldset: { borderColor: '#E2E8F0', borderRadius: 0 },
                   height: 36
                 }}
               >

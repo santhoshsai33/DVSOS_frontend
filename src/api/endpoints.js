@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const API_BASE = BASE_URL;
 
@@ -134,6 +134,27 @@ export const ENDPOINTS = {
       CREATE: '/admin/service-centers/create',
       UPDATE: (id) => `/admin/service-centers/update/${id}`,
       STATUS: (id) => `/admin/service-centers/status/${id}`,
+    },
+    LOCATIONS: {
+      LIST: '/admin/locations/list',
+      DETAIL: (id) => `/admin/locations/detail/${id}`,
+      CREATE: '/admin/locations/create',
+      UPDATE: (id) => `/admin/locations/update/${id}`,
+      STATUS: (id) => `/admin/locations/status/${id}`,
+    },
+    SERVICE_CATEGORIES: {
+      LIST: '/admin/service-categories/list',
+      DETAIL: (id) => `/admin/service-categories/detail/${id}`,
+      CREATE: '/admin/service-categories/create',
+      UPDATE: (id) => `/admin/service-categories/update/${id}`,
+      STATUS: (id) => `/admin/service-categories/status/${id}`,
+    },
+    SERVICE_ITEMS: {
+      LIST: '/admin/service-items/list',
+      DETAIL: (id) => `/admin/service-items/detail/${id}`,
+      CREATE: '/admin/service-items/create',
+      UPDATE: (id) => `/admin/service-items/update/${id}`,
+      STATUS: (id) => `/admin/service-items/status/${id}`,
     }
   },
 

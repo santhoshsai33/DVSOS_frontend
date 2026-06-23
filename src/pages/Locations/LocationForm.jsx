@@ -1,94 +1,161 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider, useWatch } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Grid, Typography, Select } from '@mui/material';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFTextarea from '../../components/form/RHFTextarea';
+import RHFSelect from '../../components/form/RHFSelect';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import useMasterDataStore from '../../store/useMasterDataStore';
-import { useUsers } from '../../queries/useDataQueries';
+import { createLocationApi, updateLocationApi, getLocationApi } from '../../api/adminLocationApi';
+import { getStatesApi } from '../../api/adminStateApi';
+import { getDistrictsApi } from '../../api/adminDistrictApi';
+import { getServiceCentersApi } from '../../api/adminServiceCenterApi';
+import { getUsersApi } from '../../api/userApi';
+
+const schema = z.object({
+  serviceCenterId: z.number({ required_error: 'Service Center is required', invalid_type_error: 'Service Center is required' }).min(1, 'Service Center is required'),
+  stateId: z.number({ required_error: 'State is required', invalid_type_error: 'State is required' }).min(1, 'State is required'),
+  districtId: z.number({ required_error: 'District is required', invalid_type_error: 'District is required' }).min(1, 'District is required'),
+  mdId: z.number({ required_error: 'Managing Director is required', invalid_type_error: 'Managing Director is required' }).min(1, 'Managing Director is required').optional().or(z.literal('')),
+  name: z.string().trim().min(1, 'Location Name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters are not allowed'),
+  phoneNo: z.string().trim().regex(/^[0-9+\s-]+$/, 'Invalid contact number format').optional().or(z.literal('')),
+  email: z.string().trim().email('Invalid email address').optional().or(z.literal('')),
+  pincode: z.string().trim().optional().or(z.literal('')),
+  address: z.string().trim().optional().or(z.literal('')),
+});
 
 export default function LocationForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
-  
-  const { masterStates, masterDistricts, masterServiceCenters, locations, addLocation, updateLocation } = useMasterDataStore();
-  const { data: usersData } = useUsers();
-  const usersArray = Array.isArray(usersData?.data) ? usersData.data : (usersData?.data?.users || []);
-  const mdUsers = usersArray.filter(user => user.role === 'MD' || user.role?.slug === 'MD') || [];
 
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
+
+  const [serviceCenters, setServiceCenters] = useState([]);
+  const [states, setStates] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
       serviceCenterId: '',
       stateId: '',
-      district: '',
+      districtId: '',
       mdId: '',
       name: '',
       address: '',
       pincode: '',
       phoneNo: '',
       email: '',
-      status: 'ACTIVE'
     }
   });
 
-  const { handleSubmit, reset, control } = methods;
+  const { handleSubmit, reset, control, setValue } = methods;
 
-  // Watch state to filter districts
   const selectedStateId = useWatch({ control, name: 'stateId' });
-  const availableDistricts = masterDistricts.filter(d => d.stateId === selectedStateId);
 
-  // Clear district if state changes
+  useEffect(() => {
+    const fetchDropdowns = async () => {
+      try {
+        const [scRes, stRes, dsRes, usRes] = await Promise.all([
+          getServiceCentersApi({ limit: 1000 }),
+          getStatesApi({ limit: 1000 }),
+          getDistrictsApi({ limit: 1000 }),
+          getUsersApi({ limit: 1000 })
+        ]);
+
+        if (scRes?.success) setServiceCenters(scRes.data.serviceCenters || []);
+        if (stRes?.success) setStates(stRes.data.states || []);
+        if (dsRes?.success) setDistricts(dsRes.data.districts || []);
+        
+        if (usRes?.success) {
+          const allUsers = usRes.data.users || [];
+          setUsers(allUsers.filter(u => u.role?.slug === 'md' || u.role?.slug === 'MD'));
+        }
+      } catch (error) {
+        toastError('Failed to load dropdown data');
+      }
+    };
+    fetchDropdowns();
+  }, []);
+
   useEffect(() => {
     if (selectedStateId && !isEdit) {
-      methods.setValue('district', '');
+      setValue('districtId', '');
     }
-  }, [selectedStateId, methods, isEdit]);
+  }, [selectedStateId, setValue, isEdit]);
 
   useEffect(() => {
-    if (isEdit && locations.length > 0) {
-      const locationToEdit = locations.find(loc => loc.id === id);
-      if (locationToEdit) {
-        reset({
-          serviceCenterId: locationToEdit.serviceCenterId || '',
-          stateId: locationToEdit.stateId || '',
-          district: locationToEdit.district || '',
-          mdId: locationToEdit.mdId || '',
-          name: locationToEdit.name || '',
-          address: locationToEdit.address || '',
-          pincode: locationToEdit.pincode || '',
-          phoneNo: locationToEdit.phoneNo || '',
-          email: locationToEdit.email || '',
-          status: locationToEdit.status || 'ACTIVE'
-        });
-      }
+    if (isEdit) {
+      const fetchDetail = async () => {
+        try {
+          const res = await getLocationApi(id);
+          if (res?.success) {
+            const loc = res.data.location || res.data;
+            reset({
+              serviceCenterId: loc.serviceCenterId || '',
+              stateId: loc.stateId || '',
+              districtId: loc.districtId || '',
+              mdId: loc.locationHeadUserId || '',
+              name: loc.locationName || '',
+              address: loc.address || '',
+              pincode: loc.pincode || '',
+              phoneNo: loc.contactPhone || '',
+              email: loc.contactEmail || '',
+            });
+          }
+        } catch (error) {
+          toastError('Failed to fetch location details');
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchDetail();
     }
-  }, [isEdit, id, locations, reset]);
+  }, [isEdit, id, reset]);
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      const payload = {
+        serviceCenterId: data.serviceCenterId,
+        stateId: data.stateId,
+        districtId: data.districtId,
+        locationHeadUserId: data.mdId || undefined,
+        locationName: data.name,
+        locationType: 'BRANCH',
+        address: data.address || undefined,
+        pincode: data.pincode || undefined,
+        contactPhone: data.phoneNo || undefined,
+        contactEmail: data.email || undefined,
+      };
+
       if (isEdit) {
-        updateLocation(id, data);
+        await updateLocationApi(id, payload);
         toastSuccess(`Location "${data.name}" updated successfully.`);
       } else {
-        addLocation(data);
-        toastSuccess(`Location "${data.name}" added successfully.`);
+        await createLocationApi(payload);
+        toastSuccess(`Location "${data.name}" created successfully.`);
       }
       navigate(ROUTES.ADMIN_LOCATIONS);
-    }, 800);
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to save location');
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const availableDistricts = districts.filter(d => d.stateId === Number(selectedStateId));
 
   return (
     <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
-      {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit' : 'Add'} Location
@@ -99,158 +166,127 @@ export default function LocationForm() {
         />
       </Box>
 
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
+      {loading ? (
+        <Typography>Loading...</Typography>
+      ) : (
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
 
-          {/* First Row: Service Center & MD */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
-                Service Center <Box component="span" sx={{ color: 'error.main' }}>*</Box>
-              </Typography>
-              <Select
-                native
-                fullWidth
-                {...methods.register('serviceCenterId')}
-                sx={{ borderRadius: 2 }}
-                required
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFSelect 
+                  name="serviceCenterId" 
+                  label="Service Center" 
+                  options={serviceCenters.map(sc => ({ value: sc.id, label: sc.serviceCenterName }))} 
+                  placeholder="Select a Service Center" 
+                  required 
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <RHFSelect 
+                  name="mdId" 
+                  label="Managing Director" 
+                  options={users.map(u => ({ value: u.id, label: u.fullName }))} 
+                  placeholder="Select Managing Director" 
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFSelect 
+                  name="stateId" 
+                  label="State" 
+                  options={states.map(s => ({ value: s.id, label: s.stateName }))} 
+                  placeholder="Select a State" 
+                  required 
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <RHFSelect 
+                  name="districtId" 
+                  label="District" 
+                  options={availableDistricts.map(d => ({ value: d.id, label: d.districtName }))} 
+                  placeholder="Select a District" 
+                  required 
+                  disabled={!selectedStateId}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="name"
+                  label="Location Name"
+                  placeholder="e.g. T-Nagar Branch"
+                  required
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="phoneNo"
+                  label="Phone Number"
+                  placeholder="e.g. 9876543210"
+                  inputProps={{ maxLength: 10, pattern: '[0-9]*' }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="email"
+                  label="Email Address"
+                  placeholder="e.g. tnagar@dvsos.com"
+                  type="email"
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="pincode"
+                  label="Pincode"
+                  placeholder="e.g. 600017"
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12}>
+                <RHFTextarea
+                  name="address"
+                  label="Full Address"
+                  placeholder="Enter complete address..."
+                  rows={3}
+                />
+              </Grid>
+            </Grid>
+
+            <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => navigate(ROUTES.ADMIN_LOCATIONS)}
               >
-                <option value="" disabled>Select a Service Center</option>
-                {masterServiceCenters.map(sc => (
-                  <option key={sc.id} value={sc.id}>{sc.name}</option>
-                ))}
-              </Select>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
-                Managing Director <Box component="span" sx={{ color: 'error.main' }}>*</Box>
-              </Typography>
-              <Select
-                native
-                fullWidth
-                {...methods.register('mdId')}
-                sx={{ borderRadius: 2 }}
-                required
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                isLoading={saving}
               >
-                <option value="" disabled>Select Managing Director</option>
-                {mdUsers.map(md => (
-                  <option key={md.id} value={md.id}>{md.name || md.fullName || 'Unknown MD'}</option>
-                ))}
-              </Select>
-            </Grid>
-          </Grid>
-
-          {/* Second Row: State & District */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
-                State <Box component="span" sx={{ color: 'error.main' }}>*</Box>
-              </Typography>
-              <Select
-                native
-                fullWidth
-                {...methods.register('stateId')}
-                sx={{ borderRadius: 2 }}
-                required
-              >
-                <option value="" disabled>Select a State</option>
-                {masterStates.map(state => (
-                  <option key={state.id} value={state.id}>{state.name}</option>
-                ))}
-              </Select>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
-                District <Box component="span" sx={{ color: 'error.main' }}>*</Box>
-              </Typography>
-              <Select
-                native
-                fullWidth
-                {...methods.register('district')}
-                sx={{ borderRadius: 2 }}
-                required
-                disabled={!selectedStateId}
-              >
-                <option value="" disabled>Select a District</option>
-                {availableDistricts.map(district => (
-                  <option key={district.id} value={district.name}>{district.name}</option>
-                ))}
-              </Select>
-            </Grid>
-          </Grid>
-
-          {/* Third Row: Location Name & Phone */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="name"
-                label="Location Name"
-                placeholder="e.g. T-Nagar Branch"
-                required
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="phoneNo"
-                label="Phone Number"
-                placeholder="e.g. +91 9876543210"
-              />
-            </Grid>
-          </Grid>
-
-          {/* Fourth Row: Email & Pincode */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="email"
-                label="Email Address"
-                placeholder="e.g. tnagar@dvsos.com"
-                type="email"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="pincode"
-                label="Pincode"
-                placeholder="e.g. 600017"
-              />
-            </Grid>
-          </Grid>
-
-          {/* Fifth Row: Address */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12}>
-              <RHFTextarea
-                name="address"
-                label="Full Address"
-                placeholder="Enter complete address..."
-                rows={3}
-              />
-            </Grid>
-          </Grid>
-
-          {/* Footer Actions */}
-          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => navigate(ROUTES.ADMIN_LOCATIONS)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={saving}
-            >
-              {isEdit ? 'Save Changes' : 'Create Location'}
-            </Button>
-          </Box>
-        </form>
-      </FormProvider>
+                {isEdit ? 'Save Changes' : 'Create Location'}
+              </Button>
+            </Box>
+          </form>
+        </FormProvider>
+      )}
     </Box>
   );
 }

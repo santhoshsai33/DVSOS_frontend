@@ -35,7 +35,7 @@ export default function DistrictList() {
           setTotalCount(res.meta?.total || 0);
         }
       } catch (error) {
-        toastError(error?.response?.data?.message || 'Failed to fetch districts');
+        toastError(error?.message || 'Failed to fetch districts');
       } finally {
         setLoading(false);
       }
@@ -72,7 +72,7 @@ export default function DistrictList() {
           setDistricts(prev => prev.map(d => d.id === deleteItem.id ? { ...d, isActive: false } : d));
         }
       } catch (error) {
-        toastError(error?.response?.data?.message || 'Failed to deactivate district');
+        toastError(error?.message || 'Failed to deactivate district');
       } finally {
         setDeleteItem(null);
       }
@@ -87,7 +87,7 @@ export default function DistrictList() {
         setDistricts(prev => prev.map(d => d.id === id ? { ...d, isActive: newStatus } : d));
       }
     } catch (error) {
-      toastError(error?.response?.data?.message || 'Failed to update status');
+      toastError(error?.message || 'Failed to update status');
     }
   };
 

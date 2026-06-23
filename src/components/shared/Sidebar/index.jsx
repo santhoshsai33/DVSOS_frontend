@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Car, Menu } from 'lucide-react';
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Box, Typography, Divider, IconButton, useTheme, useMediaQuery } from '@mui/material';
@@ -96,8 +96,19 @@ export default function Sidebar() {
     return item.children.some((child) => isActive(child.path));
   };
 
+  // Reset expanded groups when pathname changes to auto-close inactive dropdowns
+  useEffect(() => {
+    setExpandedGroups({});
+  }, [pathname]);
+
   const toggleGroup = (label) => {
-    setExpandedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
+    setExpandedGroups((prev) => {
+      const isCurrentlyExpanded = prev[label] !== undefined ? prev[label] : isGroupActive({ children: menus.find(m => m.label === label)?.children || [] });
+      return {
+        // Close all others, toggle the clicked one
+        [label]: !isCurrentlyExpanded
+      };
+    });
   };
 
   const sidebarWidth = sidebarCollapsed && !isMobile ? 80 : 260;

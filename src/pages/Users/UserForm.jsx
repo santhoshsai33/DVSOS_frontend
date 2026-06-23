@@ -149,7 +149,15 @@ export default function UserForm() {
 
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
-                <RHFTextField name="mobile" label="Mobile Number" placeholder="Enter mobile number" />
+                <RHFTextField 
+                  name="mobile" 
+                  label="Mobile Number" 
+                  placeholder="Enter 10-digit mobile number" 
+                  inputProps={{ maxLength: 10, pattern: '[0-9]*' }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                  }}
+                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <RHFSelect name="roleId" label="Role" options={roles} placeholder="Select role" required />

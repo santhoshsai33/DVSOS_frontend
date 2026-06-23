@@ -1,26 +1,55 @@
-import React, { useState } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Select, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
-import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import { formatCurrency } from '../../utils/formatters';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
+import { getServiceItemsApi, updateServiceItemStatusApi } from '../../api/adminServiceItemApi';
 
 export default function ServiceItems() {
   const navigate = useNavigate();
-  const { masterServices, deleteService, updateService } = useMasterDataStore();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        setLoading(true);
+        const params = { page: page + 1, limit: rowsPerPage };
+        if (search) params.search = search;
+
+        const res = await getServiceItemsApi(params);
+        if (res?.success) {
+          setItems(res.data.serviceItems || []);
+          setTotalCount(res.meta?.total || 0);
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to fetch service items');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchItems();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, rowsPerPage, search]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -38,23 +67,33 @@ export default function ServiceItems() {
     handleMenuClose();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteItem) {
-      deleteService(deleteItem.id);
-      toastSuccess(`Service "${deleteItem.name}" deleted successfully.`);
-      setDeleteItem(null);
+      try {
+        const res = await updateServiceItemStatusApi(deleteItem.id, { isActive: false });
+        if (res?.success) {
+          toastSuccess(`Service Item "${deleteItem.name}" deactivated successfully.`);
+          setItems(prev => prev.map(s => s.id === deleteItem.id ? { ...s, isActive: false } : s));
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to deactivate service item');
+      } finally {
+        setDeleteItem(null);
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    updateService(id, { status: newStatus });
-    toastSuccess('Service status updated successfully!');
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await updateServiceItemStatusApi(id, { isActive: newStatus });
+      if (res?.success) {
+        toastSuccess('Service Item status updated successfully!');
+        setItems(prev => prev.map(s => s.id === id ? { ...s, isActive: newStatus } : s));
+      }
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to update status');
+    }
   };
-
-  const filteredServices = (masterServices || []).filter(service =>
-    service.name.toLowerCase().includes(search.toLowerCase()) ||
-    (service.category || '').toLowerCase().includes(search.toLowerCase())
-  );
 
   const columns = [
     {
@@ -62,11 +101,15 @@ export default function ServiceItems() {
       accessor: 'name',
       render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
     },
-    { header: 'Category Group', accessor: 'category' },
+    {
+      header: 'Category Group',
+      accessor: 'category',
+      render: (row) => row.category?.name || '-'
+    },
     {
       header: 'Base Price (₹)',
-      accessor: 'price',
-      render: (row) => <Typography variant="body2" fontWeight={600} color="success.main">{formatCurrency(row.price || 0)}</Typography>
+      accessor: 'defaultPrice',
+      render: (row) => <Typography variant="body2" fontWeight={600} color="success.main">{formatCurrency(row.defaultPrice || 0)}</Typography>
     },
     {
       header: 'Est. Duration',
@@ -75,10 +118,10 @@ export default function ServiceItems() {
     },
     {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'isActive',
       render: (row) => (
         <RHFSwitch
-          value={row.status || 'ACTIVE'}
+          value={row.isActive !== undefined ? row.isActive : true}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
       )
@@ -110,23 +153,30 @@ export default function ServiceItems() {
           <SearchBar
             placeholder="Search service item or category..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
       </Box>
 
-      <Card sx={{ boxShadow: 1, borderRadius: 0 }}>
+      <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={filteredServices}
+          data={items}
+          loading={loading}
           emptyMessage="No service items found"
+          serverSide={true}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
 
       <ConfirmDeleteDialog
         open={!!deleteItem}
-        title="Delete Service"
-        message={`Are you sure you want to delete service "${deleteItem?.name}"?`}
+        title="Deactivate Service Item"
+        message={`Are you sure you want to deactivate service item "${deleteItem?.name}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteItem(null)}
       />
@@ -145,7 +195,7 @@ export default function ServiceItems() {
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete
+          Deactivate
         </MenuItem>
       </Menu>
     </Box>

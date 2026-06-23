@@ -1,25 +1,54 @@
-import React, { useState } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Select, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
-import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
+import { getServiceCategoriesApi, updateServiceCategoryStatusApi } from '../../api/adminServiceCategoryApi';
 
 export default function ServiceCategories() {
   const navigate = useNavigate();
-  const { serviceCategories, deleteCategory, updateCategory } = useMasterDataStore();
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const params = { page: page + 1, limit: rowsPerPage };
+        if (search) params.search = search;
+        
+        const res = await getServiceCategoriesApi(params);
+        if (res?.success) {
+          setCategories(res.data.serviceCategories || []);
+          setTotalCount(res.meta?.total || 0);
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to fetch categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchCategories();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, rowsPerPage, search]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -37,23 +66,33 @@ export default function ServiceCategories() {
     handleMenuClose();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteItem) {
-      deleteCategory(deleteItem.id);
-      toastSuccess(`Category "${deleteItem.name}" deleted successfully.`);
-      setDeleteItem(null);
+      try {
+        const res = await updateServiceCategoryStatusApi(deleteItem.id, { isActive: false });
+        if (res?.success) {
+          toastSuccess(`Category "${deleteItem.name}" deactivated successfully.`);
+          setCategories(prev => prev.map(c => c.id === deleteItem.id ? { ...c, isActive: false } : c));
+        }
+      } catch (error) {
+        toastError(error?.response?.data?.message || 'Failed to deactivate category');
+      } finally {
+        setDeleteItem(null);
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    updateCategory(id, { status: newStatus });
-    toastSuccess('Category status updated successfully!');
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await updateServiceCategoryStatusApi(id, { isActive: newStatus });
+      if (res?.success) {
+        toastSuccess('Category status updated successfully!');
+        setCategories(prev => prev.map(c => c.id === id ? { ...c, isActive: newStatus } : c));
+      }
+    } catch (error) {
+      toastError(error?.response?.data?.message || 'Failed to update status');
+    }
   };
-
-  const filteredCategories = (serviceCategories || []).filter(cat =>
-    cat.name.toLowerCase().includes(search.toLowerCase()) ||
-    (cat.description || '').toLowerCase().includes(search.toLowerCase())
-  );
 
   const columns = [
     {
@@ -64,10 +103,10 @@ export default function ServiceCategories() {
     { header: 'Description', accessor: 'description' },
     {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'isActive',
       render: (row) => (
         <RHFSwitch
-          value={row.status || 'ACTIVE'}
+          value={row.isActive !== undefined ? row.isActive : true}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
       )
@@ -99,7 +138,7 @@ export default function ServiceCategories() {
           <SearchBar
             placeholder="Search category or description..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
       </Box>
@@ -107,15 +146,22 @@ export default function ServiceCategories() {
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={filteredCategories}
+          data={categories}
+          loading={loading}
           emptyMessage="No service categories found"
+          serverSide={true}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
 
       <ConfirmDeleteDialog
         open={!!deleteItem}
-        title="Delete Category"
-        message={`Are you sure you want to delete category "${deleteItem?.name}"?`}
+        title="Deactivate Category"
+        message={`Are you sure you want to deactivate category "${deleteItem?.name}"?`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteItem(null)}
       />
@@ -134,7 +180,7 @@ export default function ServiceCategories() {
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
-          Delete
+          Deactivate
         </MenuItem>
       </Menu>
     </Box>
