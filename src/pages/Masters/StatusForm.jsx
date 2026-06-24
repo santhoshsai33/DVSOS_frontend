@@ -1,68 +1,117 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, CircularProgress } from '@mui/material';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFSelect from '../../components/form/RHFSelect';
+import RHFSwitch from '../../components/form/RHFSwitch';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import useMasterDataStore from '../../store/useMasterDataStore';
+import { getStatusDetailApi, createStatusApi, updateStatusApi } from '../../api/adminStatusMasterApi';
+import { getModulesApi } from '../../api/adminModuleApi';
+
+const schema = z.object({
+  moduleId: z.union([z.string(), z.number()]).refine(val => !!val, { message: 'Please select a module' }),
+  statusName: z.string()
+    .trim()
+    .min(1, 'Status name is required')
+    .regex(/^[a-zA-Z\s]+$/, 'Special characters and numbers are not allowed'),
+  description: z.string().trim().optional()
+});
 
 export default function StatusForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
-  const { masterStatuses, masterModules, addStatus, updateStatus } = useMasterDataStore();
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
+  const [modules, setModules] = useState([]);
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
       moduleId: '',
-      name: '',
-      description: '',
-      status: 'ACTIVE'
+      statusName: '',
+      description: ''
     }
   });
 
   const { handleSubmit, reset } = methods;
 
   useEffect(() => {
-    if (isEdit && masterStatuses?.length > 0) {
-      const statusToEdit = masterStatuses.find(s => s.id === id);
-      if (statusToEdit) {
-        reset({
-          moduleId: statusToEdit.moduleId || '',
-          name: statusToEdit.name,
-          description: statusToEdit.description || '',
-          status: statusToEdit.status || 'ACTIVE'
-        });
+    const fetchModules = async () => {
+      try {
+        const res = await getModulesApi({ limit: 1000 });
+        if (res?.success) {
+          setModules(res.data.modules || []);
+        }
+      } catch (error) {
+        toastError('Failed to fetch modules');
       }
-    }
-  }, [isEdit, id, masterStatuses, reset]);
+    };
+    fetchModules();
+  }, []);
 
-  const onSubmit = (data) => {
-    if (!data.moduleId) {
-      toastError('Please select a module');
-      return;
+  useEffect(() => {
+    if (isEdit) {
+      const fetchStatusDetails = async () => {
+        try {
+          const res = await getStatusDetailApi(id);
+          if (res?.success) {
+            const statusToEdit = res.data.statusMaster;
+            reset({
+              moduleId: statusToEdit.moduleId || '',
+              statusName: statusToEdit.statusName || '',
+              description: statusToEdit.description || ''
+            });
+          }
+        } catch (error) {
+          toastError(error?.message || 'Failed to fetch status details');
+          navigate(ROUTES.ADMIN_MASTER_STATUSES);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchStatusDetails();
     }
+  }, [isEdit, id, reset, navigate]);
+
+  const onSubmit = async (data) => {
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    try {
       if (isEdit) {
-        updateStatus(id, data);
-        toastSuccess(`Status "${data.name}" updated successfully.`);
+        const res = await updateStatusApi(id, data);
+        if (res?.success) {
+          toastSuccess(`Status "${data.statusName}" updated successfully.`);
+          navigate(ROUTES.ADMIN_MASTER_STATUSES);
+        }
       } else {
-        addStatus(data);
-        toastSuccess(`Status "${data.name}" added successfully.`);
+        const res = await createStatusApi(data);
+        if (res?.success) {
+          toastSuccess(`Status "${data.statusName}" added successfully.`);
+          navigate(ROUTES.ADMIN_MASTER_STATUSES);
+        }
       }
-      navigate(ROUTES.ADMIN_MASTER_STATUSES);
-    }, 800);
+    } catch (error) {
+      toastError(error?.message || 'Failed to save status');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const activeModules = masterModules?.filter(m => m.status === 'ACTIVE') || [];
-  const moduleOptions = activeModules.map(m => ({ label: m.name, value: m.id }));
+  const moduleOptions = modules.map(m => ({ label: m.moduleName, value: m.id }));
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
@@ -90,7 +139,7 @@ export default function StatusForm() {
             </Grid>
             <Grid item xs={12} md={6}>
               <RHFTextField
-                name="name"
+                name="statusName"
                 label="Status Name"
                 placeholder="e.g. Pending"
                 required

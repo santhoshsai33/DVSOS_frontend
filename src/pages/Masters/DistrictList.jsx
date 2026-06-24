@@ -129,7 +129,7 @@ export default function DistrictList() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Districts Master"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Districts Master' }]}
+        // breadcrumbs={[{ label: 'Districts Master' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_DISTRICTS_NEW)}>
             Add District
