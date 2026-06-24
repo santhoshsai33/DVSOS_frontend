@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  Box, 
-  Card, 
-  Typography, 
-  Grid, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
+import {
+  Box,
+  Card,
+  Typography,
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
   TableRow,
   Checkbox,
   MenuItem,
@@ -21,12 +21,12 @@ import Input from '../../components/common/Input';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import { getMenusApi } from '../../api/menuApi';
-import { 
-  getRoleMenuPermissionsApi, 
-  createRoleApi, 
-  updateRoleApi, 
-  saveRoleMenuPermissionsApi, 
-  updateRoleMenuPermissionsApi 
+import {
+  getRoleMenuPermissionsApi,
+  createRoleApi,
+  updateRoleApi,
+  saveRoleMenuPermissionsApi,
+  updateRoleMenuPermissionsApi
 } from '../../api/roleApi';
 
 const flattenMenus = (menus) => {
@@ -69,7 +69,7 @@ export default function RolePrivilegesForm() {
   const [selectedModule, setSelectedModule] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   const [modulesList, setModulesList] = useState([]);
 
   useEffect(() => {
@@ -132,7 +132,7 @@ export default function RolePrivilegesForm() {
     const updated = [...modulesList];
     const menu = updated[moduleIndex].menus[menuIndex];
     const allChecked = menu.canRead && menu.canCreate && menu.canUpdate && menu.canDelete;
-    
+
     updated[moduleIndex].menus[menuIndex] = {
       ...menu,
       canRead: !allChecked,
@@ -150,7 +150,7 @@ export default function RolePrivilegesForm() {
       toastError(errorMsg);
       return;
     }
-    
+
     // Flatten payload
     const permissionsPayload = [];
     modulesList.forEach(mod => {
@@ -194,8 +194,8 @@ export default function RolePrivilegesForm() {
   };
 
   const availableModuleNames = modulesList.map(m => m.module);
-  const displayedModules = selectedModule 
-    ? modulesList.filter(m => m.module === selectedModule) 
+  const displayedModules = selectedModule
+    ? modulesList.filter(m => m.module === selectedModule)
     : modulesList;
 
   return (
@@ -236,6 +236,7 @@ export default function RolePrivilegesForm() {
                 fullWidth
                 size="small"
                 disabled={loading}
+                displayEmpty
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '8px',
@@ -274,7 +275,7 @@ export default function RolePrivilegesForm() {
               ) : displayedModules.map((mod) => {
                 // Find original index to update state correctly
                 const moduleIndex = modulesList.findIndex(m => m.module === mod.module);
-                
+
                 return mod.menus.map((menu, menuIndex) => {
                   const allChecked = menu.canRead && menu.canCreate && menu.canUpdate && menu.canDelete;
                   return (
@@ -286,37 +287,37 @@ export default function RolePrivilegesForm() {
                         {menu.name}
                       </TableCell>
                       <TableCell align="center">
-                        <Checkbox 
-                          checked={menu.canRead} 
-                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canRead')} 
+                        <Checkbox
+                          checked={menu.canRead}
+                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canRead')}
                           sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
                         />
                       </TableCell>
                       <TableCell align="center">
-                        <Checkbox 
-                          checked={menu.canCreate} 
-                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canCreate')} 
+                        <Checkbox
+                          checked={menu.canCreate}
+                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canCreate')}
                           sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
                         />
                       </TableCell>
                       <TableCell align="center">
-                        <Checkbox 
-                          checked={menu.canUpdate} 
-                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canUpdate')} 
+                        <Checkbox
+                          checked={menu.canUpdate}
+                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canUpdate')}
                           sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
                         />
                       </TableCell>
                       <TableCell align="center">
-                        <Checkbox 
-                          checked={menu.canDelete} 
-                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canDelete')} 
+                        <Checkbox
+                          checked={menu.canDelete}
+                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canDelete')}
                           sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
                         />
                       </TableCell>
                       <TableCell align="center">
-                        <Checkbox 
-                          checked={allChecked} 
-                          onChange={() => handleSelectAllChange(moduleIndex, menuIndex)} 
+                        <Checkbox
+                          checked={allChecked}
+                          onChange={() => handleSelectAllChange(moduleIndex, menuIndex)}
                           sx={{ color: '#94A3B8', '&.Mui-checked': { color: 'primary.main' } }}
                         />
                       </TableCell>

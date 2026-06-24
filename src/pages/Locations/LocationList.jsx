@@ -149,7 +149,7 @@ export default function LocationList() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Location Master"
-        breadcrumbs={[{ label: 'Masters' }, { label: 'Locations' }]}
+        // breadcrumbs={[{ label: 'Locations' }]}
         actions={
           <Button
             variant="primary"
@@ -202,28 +202,28 @@ export default function LocationList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { 
+        <MenuItem onClick={() => {
           if (selectedLocation?.id) {
-            navigate(ROUTES.ADMIN_LOCATIONS_VIEW.replace(':id', selectedLocation.id)); 
+            navigate(ROUTES.ADMIN_LOCATIONS_VIEW.replace(':id', selectedLocation.id));
           }
-          handleMenuClose(); 
+          handleMenuClose();
         }}>
           <Eye size={16} className="mr-3 text-info" style={{ color: '#0284C7' }} />
           View
         </MenuItem>
-        <MenuItem onClick={() => { 
+        <MenuItem onClick={() => {
           if (selectedLocation?.id) {
-            navigate(ROUTES.ADMIN_LOCATIONS_EDIT.replace(':id', selectedLocation.id)); 
+            navigate(ROUTES.ADMIN_LOCATIONS_EDIT.replace(':id', selectedLocation.id));
           }
-          handleMenuClose(); 
+          handleMenuClose();
         }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Deactivate
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );

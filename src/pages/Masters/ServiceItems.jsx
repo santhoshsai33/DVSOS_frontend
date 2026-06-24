@@ -145,7 +145,7 @@ export default function ServiceItems() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Service Items"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Service Items' }]}
+        // breadcrumbs={[{ label: 'Service Items' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_ITEMS_NEW)}>
             Add Service Item

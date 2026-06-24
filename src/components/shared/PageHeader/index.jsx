@@ -1,21 +1,30 @@
-import Breadcrumb from '../../common/Breadcrumb';
+import React from 'react';
 import styles from './PageHeader.module.css';
 
 // eslint-disable-next-line react/prop-types
-export default function PageHeader({ title, subtitle, breadcrumbs = [], actions }) {
+export default function PageHeader({ title, subtitle, actions }) {
   return (
     <div className={styles.header}>
-      {breadcrumbs.length > 0 && (
-        <div className={styles.breadcrumbWrapper}>
-          <Breadcrumb items={breadcrumbs} />
-        </div>
-      )}
       <div className={styles.row}>
-        <div>
-          <h1 className={styles.title}>{title}</h1>
-          {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+        <div className={styles.titleContainer}>
+          <div className={styles.accentBar} />
+          <div className={styles.titleBox}>
+            <h1 className={styles.title}>
+              {title}
+            </h1>
+            {subtitle && (
+              <p className={styles.subtitle}>
+                {subtitle}
+              </p>
+            )}
+          </div>
         </div>
-        {actions && <div className={styles.actions}>{actions}</div>}
+
+        {actions && (
+          <div className={styles.actions}>
+            {actions}
+          </div>
+        )}
       </div>
     </div>
   );

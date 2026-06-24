@@ -203,7 +203,7 @@ export default function UserList() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="User Management"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Users' }]}
+        // breadcrumbs={[{ label: 'Users' }]}
         actions={
           <Button
             variant="primary"
@@ -298,7 +298,7 @@ export default function UserList() {
           if (getUserIdentifier(selectedUser)) {
             navigate(getUserViewPath(selectedUser)); 
           }
-          handleMenuClose(); 
+          handleMenuClose();
         }}>
           <Eye size={16} className="mr-3 text-info" style={{ color: '#0284C7' }} />
           View
@@ -307,15 +307,15 @@ export default function UserList() {
           if (getUserIdentifier(selectedUser)) {
             navigate(getUserEditPath(selectedUser)); 
           }
-          handleMenuClose(); 
+          handleMenuClose();
         }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Deactivate
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );

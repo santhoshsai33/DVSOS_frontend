@@ -16,7 +16,7 @@ export default function AuditLogs() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
-  const filteredLogs = MOCK_LOGS.filter(log => 
+  const filteredLogs = MOCK_LOGS.filter(log =>
     log.user.toLowerCase().includes(search.toLowerCase()) ||
     log.action.toLowerCase().includes(search.toLowerCase()) ||
     log.entity.toLowerCase().includes(search.toLowerCase()) ||
@@ -32,8 +32,8 @@ export default function AuditLogs() {
     {
       header: 'Actions',
       render: (row) => (
-        <IconButton 
-          size="small" 
+        <IconButton
+          size="small"
           onClick={() => navigate(`/audit-logs/${row.id}`)}
           sx={{ color: 'primary.main', bgcolor: 'primary.50', '&:hover': { bgcolor: 'primary.100' }, width: 32, height: 32 }}
         >
@@ -47,7 +47,7 @@ export default function AuditLogs() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Audit Logs"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Audit Logs' }]}
+        breadcrumbs={[{ label: 'Audit Logs' }]}
       />
 
       <Box sx={{ mb: 3, width: { xs: '100%', md: 350 } }}>

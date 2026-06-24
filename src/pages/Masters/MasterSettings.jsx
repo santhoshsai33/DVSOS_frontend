@@ -160,7 +160,7 @@ export default function MasterSettings() {
       <PageHeader
         title="Master Settings"
         subtitle="Manage core application data and configurations"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Masters' }]}
+        breadcrumbs={[{ label: 'Masters' }]}
         actions={
           (activeTab === 'SERVICES' || activeTab === 'BRANDS') && (
             <Button variant="primary" leftIcon={Plus} onClick={handleOpenAdd}>

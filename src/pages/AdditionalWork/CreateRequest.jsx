@@ -200,7 +200,7 @@ export function AdditionalWorkRequestScreen({
         subtitle={subtitle}
         breadcrumbs={[{ label: domainLabel, path: listRoute }, { label: jobCard.id }]}
         actions={
-          <Button variant="secondary" leftIcon={ArrowLeft} onClick={() => navigate(backRoute)}>
+          <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(backRoute)}>
             Back to Job Cards
           </Button>
         }

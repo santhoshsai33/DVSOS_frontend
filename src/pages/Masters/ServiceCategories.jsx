@@ -130,7 +130,7 @@ export default function ServiceCategories() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Service Categories"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Categories' }]}
+        // breadcrumbs={[{ label: 'Categories' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_CATEGORIES_NEW)}>
             Add Category

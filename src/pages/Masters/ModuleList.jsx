@@ -39,7 +39,7 @@ export default function ModuleList() {
         setLoading(false);
       }
     };
-    
+
     const timer = setTimeout(() => {
       fetchModules();
     }, 300);
@@ -114,7 +114,7 @@ export default function ModuleList() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Modules Master"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Modules' }]}
+        // breadcrumbs={[{ label: 'Modules' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MODULES_NEW)}>
             Add Module

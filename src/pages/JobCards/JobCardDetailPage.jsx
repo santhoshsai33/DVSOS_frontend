@@ -61,7 +61,7 @@ export default function JobCardDetailPage() {
         breadcrumbs={[{ label: 'Job Cards', path: ROUTES.JOB_CARDS }, { label: 'View Details' }]}
         actions={
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="secondary" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.JOB_CARDS)}>
+            <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.JOB_CARDS)}>
               Back
             </Button>
           </Box>

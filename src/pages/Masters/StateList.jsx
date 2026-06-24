@@ -134,7 +134,7 @@ export default function StateList() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="State Master"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'States Master' }]}
+        // breadcrumbs={[{ label: 'States Master' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_STATES_NEW)}>
             Add State

@@ -1,5 +1,5 @@
 import { Box, Card, Grid, Typography } from '@mui/material';
-import { Calendar, Camera, CheckCircle2, FileText, IndianRupee, Wrench } from 'lucide-react';
+import { ArrowLeft, Calendar, Camera, CheckCircle2, FileText, IndianRupee, Wrench } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '../../components/shared/PageHeader';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -55,6 +55,13 @@ export default function VehicleHistory() {
         title="Service History"
         subtitle={id ? `Viewing history for vehicle ${id}` : 'Vehicle service records and previous job cards'}
         breadcrumbs={[{ label: 'Vehicles', path: ROUTES.VEHICLES }, { label: 'History' }]}
+        actions={
+          id && (
+            <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(`${ROUTES.VEHICLES}/${id}`)}>
+              Back to Vehicle Details
+            </Button>
+          )
+        }
       />
 
       <Box sx={{ display: 'grid', gap: 2 }}>

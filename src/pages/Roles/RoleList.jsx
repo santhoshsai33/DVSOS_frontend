@@ -131,7 +131,7 @@ export default function RoleList() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Role Management"
-        breadcrumbs={[{ label: 'Admin', path: ROUTES.ADMIN_DASHBOARD }, { label: 'Roles' }]}
+        // breadcrumbs={[{ label: 'Roles' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_ROLE_PRIVILEGES)}>
             Add Role Privileges
@@ -178,10 +178,10 @@ export default function RoleList() {
           <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} style={{ marginRight: 12, color: 'inherit' }} />
           Deactivate
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );

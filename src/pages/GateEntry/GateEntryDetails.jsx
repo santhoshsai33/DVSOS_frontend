@@ -9,7 +9,7 @@ export default function GateEntryDetails({ vehicle, onBack }) {
   if (!vehicle) return null;
 
   return (
-    <Box sx={{ bgcolor: 'background.paper', minHeight: '100%', p: { xs: 2, md: 4 } }}>
+    <Box sx={{ bgcolor: 'background.paper', minHeight: 'auto', p: { xs: 2, md: 4 }, m: '30px', borderRadius: 3, boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
       {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
