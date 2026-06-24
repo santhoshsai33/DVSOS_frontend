@@ -134,7 +134,7 @@ export default function ServiceItemForm() {
                   name="categoryId"
                   label="Category Group"
                   placeholder="Select Category Group"
-                  options={categories.map(c => ({ value: c.id, label: c.name }))}
+                  options={categories.filter(c => c.isActive !== false).map(c => ({ value: c.id, label: c.name }))}
                   required
                 />
               </Grid>

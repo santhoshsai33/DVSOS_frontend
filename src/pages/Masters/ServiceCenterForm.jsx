@@ -13,7 +13,7 @@ import { createServiceCenterApi, updateServiceCenterApi, getServiceCenterApi } f
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Service Center Name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters are not allowed'),
-  gstNumber: z.string().trim().optional().or(z.literal('')),
+  gstNumber: z.literal('').or(z.string().trim().toUpperCase().length(15, 'GST Number must be exactly 15 characters').regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i, 'Invalid GST Number format (e.g., 29ABCDE1234F1Z5)')).optional(),
   contactNumber: z.string().trim().min(1, 'Contact Number is required').regex(/^[0-9+\s-]+$/, 'Invalid contact number format'),
   email: z.string().trim().min(1, 'Email Address is required').email('Invalid email address'),
   logoUrl: z.string().trim().url('Invalid URL').optional().or(z.literal('')),
@@ -78,7 +78,6 @@ export default function ServiceCenterForm() {
         logoUrl: data.logoUrl || undefined,
         websiteUrl: data.websiteUrl || undefined,
       };
-
       if (isEdit) {
         await updateServiceCenterApi(id, payload);
         toastSuccess(`Service Center "${data.name}" updated successfully.`);

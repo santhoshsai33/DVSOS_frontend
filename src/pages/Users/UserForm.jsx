@@ -75,7 +75,7 @@ export default function UserForm() {
         const res = await getRolesApi({ limit: 100 });
         if (res?.success) {
           const fetchedRoles = res.data.roles || [];
-          setRoles(fetchedRoles.map(r => ({ value: r.id, label: r.name })));
+          setRoles(fetchedRoles.filter(r => r.isActive !== false).map(r => ({ value: r.id, label: r.name })));
         }
       } catch (error) {
         toastError('Failed to fetch roles');
@@ -86,7 +86,7 @@ export default function UserForm() {
         const res = await getLocationsApi({ limit: 100 });
         if (res?.success) {
           const fetchedLocations = res.data.locations || [];
-          setLocations(fetchedLocations.map(l => ({ value: l.id, label: l.locationName })));
+          setLocations(fetchedLocations.filter(l => l.isActive !== false).map(l => ({ value: l.id, label: l.locationName })));
         }
       } catch (error) {
         toastError('Failed to fetch locations');

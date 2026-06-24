@@ -114,7 +114,7 @@ export default function DistrictForm() {
                   name="stateId"
                   label="State"
                   placeholder="Select a State"
-                  options={states.map(s => ({ value: s.id, label: s.stateName }))}
+                  options={states.filter(s => s.isActive !== false).map(s => ({ value: s.id, label: s.stateName }))}
                   required
                 />
               </Grid>

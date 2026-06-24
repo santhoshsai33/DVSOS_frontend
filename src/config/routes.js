@@ -25,6 +25,7 @@ export const ROUTES = {
   ADMIN_SERVICE_CENTERS: '/service-centers',
   ADMIN_SERVICE_CENTERS_NEW: '/service-centers/new',
   ADMIN_SERVICE_CENTERS_EDIT: '/service-centers/:id/edit',
+  ADMIN_SERVICE_CENTERS_VIEW: '/service-centers/:id',
   ADMIN_LOCATIONS: '/locations',
   ADMIN_LOCATIONS_NEW: '/locations/new',
   ADMIN_LOCATIONS_EDIT: '/locations/:id/edit',

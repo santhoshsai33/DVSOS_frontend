@@ -103,7 +103,7 @@ export default function StatusForm() {
     }
   };
 
-  const moduleOptions = modules.map(m => ({ label: m.moduleName, value: m.id }));
+  const moduleOptions = modules.filter(m => m.isActive !== false).map(m => ({ label: m.moduleName, value: m.id }));
 
   if (loading) {
     return (

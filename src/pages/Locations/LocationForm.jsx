@@ -165,7 +165,7 @@ export default function LocationForm() {
                 <RHFSelect
                   name="serviceCenterId"
                   label="Service Center"
-                  options={serviceCenters.map(sc => ({ value: sc.id, label: sc.serviceCenterName }))}
+                  options={serviceCenters.filter(sc => sc.isActive !== false).map(sc => ({ value: sc.id, label: sc.serviceCenterName }))}
                   placeholder="Select a Service Center"
                   required
                 />
@@ -174,7 +174,7 @@ export default function LocationForm() {
                 <RHFSelect
                   name="stateId"
                   label="State"
-                  options={states.map(s => ({ value: s.id, label: s.stateName }))}
+                  options={states.filter(s => s.isActive !== false).map(s => ({ value: s.id, label: s.stateName }))}
                   placeholder="Select a State"
                   required
                 />
@@ -188,7 +188,7 @@ export default function LocationForm() {
                 <RHFSelect
                   name="districtId"
                   label="District"
-                  options={availableDistricts.map(d => ({ value: d.id, label: d.districtName }))}
+                  options={availableDistricts.filter(d => d.isActive !== false).map(d => ({ value: d.id, label: d.districtName }))}
                   placeholder="Select a District"
                   required
                   disabled={!selectedStateId}
