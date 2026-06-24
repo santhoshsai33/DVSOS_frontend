@@ -33,7 +33,7 @@ export default function StatusList() {
           setTotalCount(res.meta?.total || 0);
         }
       } catch (error) {
-        toastError(error?.message || 'Failed to fetch statuses');
+        toastError(error?.response?.data?.message || error?.message || 'Failed to fetch statuses');
       } finally {
         setLoading(false);
       }
@@ -56,6 +56,11 @@ export default function StatusList() {
     setSelectedStatus(null);
   };
 
+  const getEditPath = (status) => {
+    const identifier = status?.slug || status?.id;
+    return ROUTES.ADMIN_MASTER_STATUSES_EDIT.replace(':slug', identifier);
+  };
+
   const handleStatusChange = async (id, newStatus) => {
     const isActive = newStatus === 'ACTIVE' || newStatus === true;
     try {
@@ -65,7 +70,7 @@ export default function StatusList() {
         setStatuses(prev => prev.map(s => s.id === id ? { ...s, isActive: isActive } : s));
       }
     } catch (error) {
-      toastError(error?.message || 'Failed to update status');
+      toastError(error?.response?.data?.message || error?.message || 'Failed to update status');
     }
   };
 
@@ -150,7 +155,7 @@ export default function StatusList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 0, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_STATUSES_EDIT.replace(':id', selectedStatus?.id)); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedStatus)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit Status
         </MenuItem>

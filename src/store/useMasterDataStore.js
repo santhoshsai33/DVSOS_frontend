@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const generateSlug = (text) => String(text || '')
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9\s-]/g, '')
+  .replace(/\s+/g, '-')
+  .replace(/-+/g, '-')
+  .replace(/^-|-$/g, '');
+
 const INITIAL_SERVICES = [
   { id: 'S1', name: 'General Service', price: 2500, category: 'Mechanical', estimatedMinutes: 120 },
   { id: 'S2', name: 'Oil Change', price: 1200, category: 'Mechanical', estimatedMinutes: 30 },
@@ -112,13 +120,13 @@ const INITIAL_COMPANY = {
 };
 
 const INITIAL_MODULES = [
-  { id: 'M1', name: 'Sales', description: 'Sales module', status: 'ACTIVE' },
-  { id: 'M2', name: 'Service', description: 'Service module', status: 'ACTIVE' },
+  { id: 'M1', name: 'Sales', slug: 'sales', description: 'Sales module', status: 'ACTIVE' },
+  { id: 'M2', name: 'Service', slug: 'service', description: 'Service module', status: 'ACTIVE' },
 ];
 
 const INITIAL_STATUSES = [
-  { id: 'STT1', moduleId: 'M1', name: 'Lead', description: 'Initial lead', status: 'ACTIVE' },
-  { id: 'STT2', moduleId: 'M2', name: 'Pending', description: 'Service pending', status: 'ACTIVE' },
+  { id: 'STT1', moduleId: 'M1', name: 'Lead', slug: 'lead', description: 'Initial lead', status: 'ACTIVE' },
+  { id: 'STT2', moduleId: 'M2', name: 'Pending', slug: 'pending', description: 'Service pending', status: 'ACTIVE' },
 ];
 
 const useMasterDataStore = create(
@@ -263,14 +271,16 @@ const useMasterDataStore = create(
         set((state) => ({
           masterModules: [
             ...state.masterModules,
-            { ...newModule, id: `M${Date.now()}`, status: 'ACTIVE' },
+            { ...newModule, id: `M${Date.now()}`, slug: generateSlug(newModule.name), status: 'ACTIVE' },
           ],
         })),
 
       updateModule: (id, updatedModule) =>
         set((state) => ({
           masterModules: state.masterModules.map((m) =>
-            m.id === id ? { ...m, ...updatedModule } : m
+            m.id === id || m.slug === id
+              ? { ...m, ...updatedModule, slug: generateSlug(updatedModule.name || m.name) }
+              : m
           ),
         })),
 
@@ -283,14 +293,16 @@ const useMasterDataStore = create(
         set((state) => ({
           masterStatuses: [
             ...state.masterStatuses,
-            { ...newStatus, id: `STT${Date.now()}`, status: 'ACTIVE' },
+            { ...newStatus, id: `STT${Date.now()}`, slug: generateSlug(newStatus.name), status: 'ACTIVE' },
           ],
         })),
 
       updateStatus: (id, updatedStatus) =>
         set((state) => ({
           masterStatuses: state.masterStatuses.map((s) =>
-            s.id === id ? { ...s, ...updatedStatus } : s
+            s.id === id || s.slug === id
+              ? { ...s, ...updatedStatus, slug: generateSlug(updatedStatus.name || s.name) }
+              : s
           ),
         })),
 

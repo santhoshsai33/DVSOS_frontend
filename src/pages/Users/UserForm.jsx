@@ -41,8 +41,9 @@ const schema = z.object({
 
 export default function UserForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const userIdentifier = slug;
+  const isEdit = !!userIdentifier;
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
@@ -75,7 +76,7 @@ export default function UserForm() {
         const res = await getRolesApi({ limit: 100 });
         if (res?.success) {
           const fetchedRoles = res.data.roles || [];
-          setRoles(fetchedRoles.map(r => ({ value: r.id, label: r.name })));
+          setRoles(fetchedRoles.filter(r => r.isActive !== false).map(r => ({ value: r.id, label: r.name })));
         }
       } catch (error) {
         toastError('Failed to fetch roles');
@@ -86,7 +87,7 @@ export default function UserForm() {
         const res = await getLocationsApi({ limit: 100 });
         if (res?.success) {
           const fetchedLocations = res.data.locations || [];
-          setLocations(fetchedLocations.map(l => ({ value: l.id, label: l.locationName })));
+          setLocations(fetchedLocations.filter(l => l.isActive !== false).map(l => ({ value: l.id, label: l.locationName })));
         }
       } catch (error) {
         toastError('Failed to fetch locations');
@@ -100,7 +101,7 @@ export default function UserForm() {
     if (isEdit) {
       const fetchUser = async () => {
         try {
-          const res = await getUserApi(id);
+          const res = await getUserApi(userIdentifier);
           if (res?.success) {
             const user = res.data.user || res.data;
             reset({
@@ -116,6 +117,10 @@ export default function UserForm() {
               gender: user.gender || '',
               address: user.address || '',
             });
+
+            if (user.slug && user.slug !== userIdentifier) {
+              navigate(ROUTES.ADMIN_USER_EDIT.replace(':slug', user.slug), { replace: true });
+            }
           }
         } catch (error) {
           toastError('Failed to fetch user details');
@@ -125,7 +130,7 @@ export default function UserForm() {
       };
       fetchUser();
     }
-  }, [id, isEdit, reset]);
+  }, [userIdentifier, isEdit, reset, navigate]);
 
   const onSubmit = async (data) => {
     setSaving(true);
@@ -146,7 +151,7 @@ export default function UserForm() {
       };
 
       if (isEdit) {
-        await updateUserApi(id, payload);
+        await updateUserApi(userIdentifier, payload);
         toastSuccess(`User "${data.fullName}" updated!`);
       } else {
         await createUserApi(payload);
@@ -304,7 +309,7 @@ export default function UserForm() {
             </Box>
           </form>
         </FormProvider>
-      )};
+      )}
     </Box>
   );
 }

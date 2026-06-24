@@ -3,7 +3,7 @@ import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
-import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, MoreVertical, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
@@ -185,6 +185,10 @@ export default function ServiceCenterList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
+        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_SERVICE_CENTERS_VIEW.replace(':id', selectedCenter?.id)); }}>
+          <Eye size={16} className="mr-3 text-blue-500" />
+          View
+        </MenuItem>
         <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_SERVICE_CENTERS_EDIT.replace(':id', selectedCenter?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit

@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useParams } from 'react-router-dom';
 import AuthLayout from '../layouts/AuthLayout/AuthLayout';
 import DashboardLayout from '../layouts/DashboardLayout/DashboardLayout';
 import KioskLayout from '../layouts/KioskLayout/KioskLayout';
@@ -24,6 +24,7 @@ import DistrictList from '../pages/Masters/DistrictList';
 import DistrictForm from '../pages/Masters/DistrictForm';
 import ServiceCenterList from '../pages/Masters/ServiceCenterList';
 import ServiceCenterForm from '../pages/Masters/ServiceCenterForm';
+import ServiceCenterView from '../pages/Masters/ServiceCenterView';
 import ModuleList from '../pages/Masters/ModuleList';
 import ModuleForm from '../pages/Masters/ModuleForm';
 import StatusList from '../pages/Masters/StatusList';
@@ -104,6 +105,26 @@ function RootRedirect() {
   return <Navigate to={roleHome[role] || ROUTES.ADMIN_DASHBOARD} replace />;
 }
 
+function LegacyMasterEditRedirect({ basePath }) {
+  const { slug } = useParams();
+  return <Navigate to={`/${basePath}/edit/${slug}`} replace />;
+}
+
+function LegacyRolePrivilegesEditRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/roles/privileges/edit/${slug}`} replace />;
+}
+
+function LegacyUserEditRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/users/edit/${slug}`} replace />;
+}
+
+function LegacyLocationEditRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/locations/edit/${slug}`} replace />;
+}
+
 export const router = createBrowserRouter([
   {
     element: <AuthLayout />,
@@ -134,32 +155,42 @@ export const router = createBrowserRouter([
               { path: 'admin-dashboard', element: <AdminDashboardPage /> },
               { path: 'roles', element: <RoleManagementPage /> },
               { path: 'roles/privileges', element: <RolePrivilegesForm /> },
-              { path: 'roles/privileges/:id/edit', element: <RolePrivilegesForm /> },
+              { path: 'roles/privileges/edit/:slug', element: <RolePrivilegesForm /> },
+              { path: 'roles/privileges/:slug/edit', element: <LegacyRolePrivilegesEditRedirect /> },
               { path: 'master-categories', element: <ServiceCategories /> },
               { path: 'master-categories/new', element: <ServiceCategoryForm /> },
-              { path: 'master-categories/:id/edit', element: <ServiceCategoryForm /> },
+              { path: 'master-categories/edit/:slug', element: <ServiceCategoryForm /> },
+              { path: 'master-categories/:slug/edit', element: <LegacyMasterEditRedirect basePath="master-categories" /> },
               { path: 'master-items', element: <ServiceItems /> },
               { path: 'master-items/new', element: <ServiceItemForm /> },
-              { path: 'master-items/:id/edit', element: <ServiceItemForm /> },
+              { path: 'master-items/edit/:slug', element: <ServiceItemForm /> },
+              { path: 'master-items/:slug/edit', element: <LegacyMasterEditRedirect basePath="master-items" /> },
               { path: 'master-states', element: <StateList /> },
               { path: 'master-states/new', element: <StateForm /> },
-              { path: 'master-states/:id/edit', element: <StateForm /> },
+              { path: 'master-states/edit/:slug', element: <StateForm /> },
+              { path: 'master-states/:slug/edit', element: <LegacyMasterEditRedirect basePath="master-states" /> },
               { path: 'master-districts', element: <DistrictList /> },
               { path: 'master-districts/new', element: <DistrictForm /> },
-              { path: 'master-districts/:id/edit', element: <DistrictForm /> },
+              { path: 'master-districts/edit/:slug', element: <DistrictForm /> },
+              { path: 'master-districts/:slug/edit', element: <LegacyMasterEditRedirect basePath="master-districts" /> },
               { path: 'service-centers', element: <ServiceCenterList /> },
               { path: 'service-centers/new', element: <ServiceCenterForm /> },
               { path: 'service-centers/:id/edit', element: <ServiceCenterForm /> },
+              { path: 'service-centers/:id', element: <ServiceCenterView /> },
               { path: 'modules', element: <ModuleList /> },
               { path: 'modules/new', element: <ModuleForm /> },
-              { path: 'modules/:id/edit', element: <ModuleForm /> },
+              { path: 'modules/edit/:slug', element: <ModuleForm /> },
+              { path: 'modules/:slug/edit', element: <LegacyMasterEditRedirect basePath="modules" /> },
               { path: 'master-statuses', element: <StatusList /> },
               { path: 'master-statuses/new', element: <StatusForm /> },
-              { path: 'master-statuses/:id/edit', element: <StatusForm /> },
+              { path: 'master-statuses/edit/:slug', element: <StatusForm /> },
+              { path: 'master-statuses/:slug/edit', element: <LegacyMasterEditRedirect basePath="master-statuses" /> },
               { path: 'locations', element: <LocationList /> },
               { path: 'locations/new', element: <LocationForm /> },
-              { path: 'locations/:id/edit', element: <LocationForm /> },
-              { path: 'locations/:id', element: <LocationView /> },
+              { path: 'locations/edit/:slug', element: <LocationForm /> },
+              { path: 'locations/view/:slug', element: <LocationView /> },
+              { path: 'locations/:slug/edit', element: <LegacyLocationEditRedirect /> },
+              { path: 'locations/:slug', element: <LocationView /> },
               { path: 'system-settings', element: <SystemSettingsPage /> },
               { path: 'audit-logs', element: <AuditLogsPage /> },
               { path: 'audit-logs/:id', element: <AuditLogDetailsPage /> },
@@ -227,8 +258,10 @@ export const router = createBrowserRouter([
               { path: 'manager-job-cards/:id', element: <ManagerJobCardPrototypePage /> },
               { path: 'users', element: <UserManagementPage /> },
               { path: 'users/new', element: <UserForm /> },
-              { path: 'users/:id/edit', element: <UserForm /> },
-              { path: 'users/:id', element: <UserView /> },
+              { path: 'users/edit/:slug', element: <UserForm /> },
+              { path: 'users/view/:slug', element: <UserView /> },
+              { path: 'users/:slug/edit', element: <LegacyUserEditRedirect /> },
+              { path: 'users/:slug', element: <UserView /> },
             ],
           },
           {

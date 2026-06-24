@@ -65,6 +65,7 @@ export const ENDPOINTS = {
   // Dashboard
   DASHBOARD: {
     STATS: '/dashboard/stats',
+    ADMIN: '/dashboard/admin',
     MANAGER: '/dashboard/manager',
     MD: '/dashboard/md',
     SUPERVISOR: '/dashboard/supervisor',

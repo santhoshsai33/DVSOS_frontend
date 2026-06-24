@@ -94,6 +94,16 @@ export default function LocationList() {
     }
   };
 
+  const getLocationIdentifier = (location) => location?.slug || location?.id;
+
+  const getLocationViewPath = (location) => (
+    ROUTES.ADMIN_LOCATIONS_VIEW.replace(':slug', getLocationIdentifier(location))
+  );
+
+  const getLocationEditPath = (location) => (
+    ROUTES.ADMIN_LOCATIONS_EDIT.replace(':slug', getLocationIdentifier(location))
+  );
+
   const columns = [
     {
       header: 'Location ID',
@@ -203,8 +213,8 @@ export default function LocationList() {
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
         <MenuItem onClick={() => {
-          if (selectedLocation?.id) {
-            navigate(ROUTES.ADMIN_LOCATIONS_VIEW.replace(':id', selectedLocation.id));
+          if (getLocationIdentifier(selectedLocation)) {
+            navigate(getLocationViewPath(selectedLocation));
           }
           handleMenuClose();
         }}>
@@ -212,8 +222,8 @@ export default function LocationList() {
           View
         </MenuItem>
         <MenuItem onClick={() => {
-          if (selectedLocation?.id) {
-            navigate(ROUTES.ADMIN_LOCATIONS_EDIT.replace(':id', selectedLocation.id));
+          if (getLocationIdentifier(selectedLocation)) {
+            navigate(getLocationEditPath(selectedLocation));
           }
           handleMenuClose();
         }}>

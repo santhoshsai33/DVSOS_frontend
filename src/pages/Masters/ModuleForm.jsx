@@ -21,8 +21,9 @@ const schema = z.object({
 
 export default function ModuleForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const moduleIdentifier = slug;
+  const isEdit = !!moduleIdentifier;
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
 
@@ -41,12 +42,16 @@ export default function ModuleForm() {
       if (isEdit) {
         try {
           setLoading(true);
-          const res = await getModuleDetailApi(id);
+          const res = await getModuleDetailApi(moduleIdentifier);
           if (res?.success) {
+            const module = res.data.module;
             reset({
-              moduleName: res.data.module.moduleName,
-              description: res.data.module.description || ''
+              moduleName: module.moduleName,
+              description: module.description || ''
             });
+            if (module.slug && module.slug !== moduleIdentifier) {
+              navigate(ROUTES.ADMIN_MODULES_EDIT.replace(':slug', module.slug), { replace: true });
+            }
           }
         } catch (error) {
           toastError(error?.message || 'Failed to load module details');
@@ -57,13 +62,13 @@ export default function ModuleForm() {
       }
     };
     fetchModule();
-  }, [isEdit, id, reset, navigate]);
+  }, [isEdit, moduleIdentifier, reset, navigate]);
 
   const onSubmit = async (data) => {
     try {
       setSaving(true);
       if (isEdit) {
-        const res = await updateModuleApi(id, data);
+        const res = await updateModuleApi(moduleIdentifier, data);
         if (res?.success) {
           toastSuccess(`Module "${data.moduleName}" updated successfully.`);
           navigate(ROUTES.ADMIN_MODULES);

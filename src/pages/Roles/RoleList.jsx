@@ -69,6 +69,11 @@ export default function RoleList() {
     handleMenuClose();
   };
 
+  const getEditPath = (role) => {
+    const identifier = role?.slug || role?.id;
+    return ROUTES.ADMIN_ROLE_PRIVILEGES_EDIT.replace(':slug', identifier);
+  };
+
   const confirmDelete = async () => {
     if (deleteItem) {
       try {
@@ -169,7 +174,7 @@ export default function RoleList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_ROLE_PRIVILEGES_EDIT.replace(':id', selectedRole?.id)); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedRole)); }}>
           <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
           Edit
         </MenuItem>

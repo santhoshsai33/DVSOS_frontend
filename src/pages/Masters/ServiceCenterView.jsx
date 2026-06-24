@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Card, Typography, Grid, Skeleton } from '@mui/material';
-import { Building2, User, Tag, ToggleRight, ToggleLeft, Monitor, Calendar, Clock } from 'lucide-react';
+import { Building2, Tag, ToggleRight, ToggleLeft, Monitor, Calendar, Clock, Hash, Phone, Mail, Link, Globe } from 'lucide-react';
 import BackButton from '../../components/common/BackButton';
 import { ROUTES } from '../../config/routes';
-import { getLocationApi } from '../../api/adminLocationApi';
+import { getServiceCenterApi } from '../../api/adminServiceCenterApi';
 import { toastError } from '../../notifications/toast';
 
 const formatDate = (dateString) => {
@@ -20,7 +20,7 @@ const formatDate = (dateString) => {
   }
 };
 
-const DetailRow = ({ icon: Icon, label, value, isLast = false }) => (
+const DetailRow = ({ icon: Icon, label, value, isLast = false, isLink = false }) => (
   <Box
     sx={{
       display: 'flex',
@@ -51,40 +51,40 @@ const DetailRow = ({ icon: Icon, label, value, isLast = false }) => (
         {label}
       </Typography>
     </Box>
-    <Box sx={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>
-      {value}
+    <Box sx={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem', textAlign: 'right', wordBreak: 'break-all', maxWidth: '50%' }}>
+      {isLink && value && value !== '-' ? (
+        <a href={value} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', textDecoration: 'none' }}>
+          {value}
+        </a>
+      ) : (
+        value
+      )}
     </Box>
   </Box>
 );
 
-export default function LocationView() {
-  const { slug } = useParams();
-  const locationIdentifier = slug;
+export default function ServiceCenterView() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [location, setLocation] = useState(null);
+  const [serviceCenter, setServiceCenter] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchLocation = async () => {
+    const fetchServiceCenter = async () => {
       try {
-        const res = await getLocationApi(locationIdentifier);
+        const res = await getServiceCenterApi(id);
         if (res?.success) {
-          const fetchedLocation = res.data.location || res.data;
-          setLocation(fetchedLocation);
-
-          if (fetchedLocation.slug && fetchedLocation.slug !== locationIdentifier) {
-            navigate(ROUTES.ADMIN_LOCATIONS_VIEW.replace(':slug', fetchedLocation.slug), { replace: true });
-          }
+          setServiceCenter(res.data.serviceCenter || res.data);
         }
       } catch (error) {
-        toastError(error?.response?.data?.message || error?.message || 'Failed to fetch location details');
-        navigate(ROUTES.ADMIN_LOCATIONS);
+        toastError(error?.message || 'Failed to fetch service center details');
+        navigate(ROUTES.ADMIN_SERVICE_CENTERS);
       } finally {
         setLoading(false);
       }
     };
-    fetchLocation();
-  }, [locationIdentifier, navigate]);
+    fetchServiceCenter();
+  }, [id, navigate]);
 
   if (loading) {
     return (
@@ -99,8 +99,8 @@ export default function LocationView() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5" fontWeight={800}>Location Details</Typography>
-        <BackButton to={ROUTES.ADMIN_LOCATIONS} label="Back to Locations" />
+        <Typography variant="h5" fontWeight={800}>Service Center Details</Typography>
+        <BackButton to={ROUTES.ADMIN_SERVICE_CENTERS} label="Back to Service Centers" />
       </Box>
 
       <Card
@@ -113,7 +113,7 @@ export default function LocationView() {
         }}
       >
         <Grid container spacing={4}>
-          {/* Left Column: Location Information */}
+          {/* Left Column: General Information */}
           <Grid
             item
             xs={12}
@@ -126,36 +126,48 @@ export default function LocationView() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
               <Building2 size={22} color="#2563eb" />
               <Typography variant="subtitle1" fontWeight={700} color="#2563eb">
-                Location Information
+                General Information
               </Typography>
             </Box>
 
             <Box>
               <DetailRow
-                icon={User}
-                label="Location Name"
-                value={location?.locationName || '-'}
+                icon={Building2}
+                label="Service Center Name"
+                value={serviceCenter?.serviceCenterName || '-'}
               />
               <DetailRow
                 icon={Tag}
-                label="Location Code"
-                value={location?.locationCode || '-'}
+                label="Service Center Code"
+                value={serviceCenter?.serviceCenterCode || '-'}
               />
               <DetailRow
-                icon={location?.isActive ? ToggleRight : ToggleLeft}
-                label="Status"
+                icon={Hash}
+                label="GST Number"
+                value={serviceCenter?.gstNumber || '-'}
+              />
+              <DetailRow
+                icon={Phone}
+                label="Contact Number"
+                value={serviceCenter?.contactPhone || '-'}
+              />
+              <DetailRow
+                icon={Mail}
+                label="Email Address"
+                value={serviceCenter?.contactEmail || '-'}
+              />
+              <DetailRow
+                icon={Globe}
+                label="Website URL"
+                value={serviceCenter?.websiteUrl || '-'}
+                isLink={true}
+              />
+              <DetailRow
+                icon={Link}
+                label="Logo URL"
+                value={serviceCenter?.logoUrl || '-'}
+                isLink={true}
                 isLast={true}
-                value={
-                  <Box
-                    component="span"
-                    sx={{
-                      color: location?.isActive ? '#059669' : '#dc2626',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {location?.isActive ? 'Active' : 'Inactive'}
-                  </Box>
-                }
               />
             </Box>
           </Grid>
@@ -178,14 +190,29 @@ export default function LocationView() {
 
             <Box>
               <DetailRow
+                icon={serviceCenter?.isActive ? ToggleRight : ToggleLeft}
+                label="Status"
+                value={
+                  <Box
+                    component="span"
+                    sx={{
+                      color: serviceCenter?.isActive ? '#059669' : '#dc2626',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {serviceCenter?.isActive ? 'Active' : 'Inactive'}
+                  </Box>
+                }
+              />
+              <DetailRow
                 icon={Calendar}
                 label="Created On"
-                value={formatDate(location?.createdAt)}
+                value={formatDate(serviceCenter?.createdAt)}
               />
               <DetailRow
                 icon={Clock}
                 label="Last Updated"
-                value={formatDate(location?.updatedAt)}
+                value={formatDate(serviceCenter?.updatedAt)}
                 isLast={true}
               />
             </Box>

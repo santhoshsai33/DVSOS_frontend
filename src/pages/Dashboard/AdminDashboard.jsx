@@ -1,92 +1,106 @@
-import { Grid, Box, Typography, Card, CardContent, Select } from '@mui/material';
+import { Grid, Box, Typography, Card, CardContent, Chip } from '@mui/material';
 import {
-  Users, Crown, Building, MapPin, ShieldCheck
+  Users, Crown, ShieldCheck, Wrench, ClipboardList
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
-import useMasterDataStore from '../../store/useMasterDataStore';
-import { useUsers } from '../../queries/useDataQueries';
+import { useAdminDashboard } from '../../queries/useDashboardQueries';
 import DataTable from '../../components/common/DataTable';
-import { toastSuccess } from '../../notifications/toast';
+
+const formatDate = (dateValue) => {
+  if (!dateValue) {
+    return '-';
+  }
+
+  return new Intl.DateTimeFormat('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  }).format(new Date(dateValue));
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-
-  // Data sources
-  const { masterServiceCenters, locations, updateServiceCenter } = useMasterDataStore();
-  const { data: usersData } = useUsers();
-
-  const usersList = usersData?.data?.users || (Array.isArray(usersData?.data) ? usersData.data : []);
-
-  // Calculations
-  const totalServiceCenters = masterServiceCenters.length;
-  const totalLocations = locations.length;
-  const totalUsers = usersList.length;
-  const activeServiceCenters = masterServiceCenters;
-
-  // Get unique roles from users to simulate total roles
-  const uniqueRoles = new Set(usersList.map(u => u.role)).size;
-
-  const handleStatusChange = (id, newStatus) => {
-    updateServiceCenter(id, { status: newStatus });
-    toastSuccess('Service Center status updated successfully!');
-  };
+  const { data: dashboardData, isLoading } = useAdminDashboard();
+  const summary = dashboardData?.data?.summary || {};
+  const recentUsers = dashboardData?.data?.recentUsers || [];
 
   const columns = [
     {
-      header: 'Code',
-      accessor: 'id',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.serviceCenterCode || row.id}</Typography>
+      header: 'Employee Code',
+      accessor: 'employeeCode',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.employeeCode || '-'}</Typography>
     },
     {
-      header: 'Service Center Name',
-      accessor: 'name',
-      render: (row) => <Typography variant="body2" fontWeight={600} color="#1E293B">{row.serviceCenterName || row.name}</Typography>
+      header: 'User Name',
+      accessor: 'fullName',
+      render: (row) => <Typography variant="body2" fontWeight={600} color="#1E293B">{row.fullName}</Typography>
     },
     {
-      header: 'Contact Number',
-      accessor: 'contactNumber',
-      render: (row) => row.contactPhone || row.contactNumber || '-'
+      header: 'Role',
+      accessor: 'role',
+      render: (row) => row.role?.name || '-'
     },
     {
       header: 'Email',
-      accessor: 'email',
-      render: (row) => row.contactEmail || row.email || '-'
+      accessor: 'emailId'
+    },
+    {
+      header: 'Mobile',
+      accessor: 'mobileNo',
+      render: (row) => row.mobileNo || '-'
+    },
+    {
+      header: 'Status',
+      accessor: 'isActive',
+      render: (row) => (
+        <Chip
+          label={row.isActive ? 'Active' : 'Inactive'}
+          size="small"
+          color={row.isActive ? 'success' : 'default'}
+          variant="outlined"
+        />
+      )
+    },
+    {
+      header: 'Created Date',
+      accessor: 'createdAt',
+      render: (row) => formatDate(row.createdAt)
     }
   ];
 
   const kpis = [
     {
-      label: 'Service Centers',
-      value: totalServiceCenters,
-      icon: Building,
+      label: 'Total Users',
+      value: summary.totalUsers || 0,
+      icon: Users,
       color: '#1a434d',
       progressBarColor: '#2563eb',
-      action: () => navigate(ROUTES.ADMIN_SERVICE_CENTERS),
-    },
-    {
-      label: 'Locations',
-      value: totalLocations,
-      icon: MapPin,
-      color: '#2dd4bf',
-      progressBarColor: '#059669',
-      action: () => navigate(ROUTES.ADMIN_LOCATIONS),
-    },
-    {
-      label: 'Total Users',
-      value: totalUsers,
-      icon: Users,
-      color: '#13323a',
-      progressBarColor: '#dc2626',
       action: () => navigate(ROUTES.ADMIN_USERS),
     },
     {
-      label: 'System Roles',
-      value: uniqueRoles,
+      label: 'Active Roles',
+      value: summary.activeRoles || 0,
       icon: ShieldCheck,
+      color: '#2dd4bf',
+      progressBarColor: '#059669',
+      action: () => navigate(ROUTES.ADMIN_ROLES),
+    },
+    {
+      label: 'Service Items',
+      value: summary.serviceItems || 0,
+      icon: Wrench,
+      color: '#13323a',
+      progressBarColor: '#dc2626',
+      action: () => navigate(ROUTES.ADMIN_MASTER_ITEMS),
+    },
+    {
+      label: 'Service Categories',
+      value: summary.serviceCategories || 0,
+      icon: ClipboardList,
       color: '#0ea5e9',
       progressBarColor: '#d97706',
-      action: () => navigate(ROUTES.ADMIN_ROLES),
+      action: () => navigate(ROUTES.ADMIN_MASTER_CATEGORIES),
     },
   ];
 
@@ -112,7 +126,7 @@ export default function AdminDashboard() {
               Super Admin Dashboard
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Overview of Master Data, Service Centers, and Platform Users
+              Overview of platform users, roles, and service masters
             </Typography>
           </Box>
         </Box>
@@ -157,20 +171,19 @@ export default function AdminDashboard() {
         })}
       </Grid>
 
-      {/* Simplified Data Tables Row */}
       <Grid container spacing={3}>
-        {/* Recent Service Centers */}
         <Grid item xs={12} md={12}>
           <Card sx={{ borderRadius: 0, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
             <CardContent sx={{ p: 3, pb: '24px !important' }}>
               <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>
-                Service Centers
+                Recently Added Users
               </Typography>
               <Box sx={{ p: '20px' }}>
                 <DataTable
                   columns={columns}
-                  data={activeServiceCenters || []}
-                  emptyMessage="No active service centers found"
+                  data={recentUsers}
+                  loading={isLoading}
+                  emptyMessage="No users found"
                   showPagination={false}
                 />
               </Box>
