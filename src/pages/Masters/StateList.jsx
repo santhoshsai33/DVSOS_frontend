@@ -63,6 +63,11 @@ export default function StateList() {
     handleMenuClose();
   };
 
+  const getEditPath = (state) => {
+    const identifier = state?.slug || state?.id;
+    return ROUTES.ADMIN_MASTER_STATES_EDIT.replace(':slug', identifier);
+  };
+
   const confirmDelete = async () => {
     if (deleteItem) {
       try {
@@ -178,7 +183,7 @@ export default function StateList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_STATES_EDIT.replace(':id', selectedState?.id)); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedState)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>

@@ -119,6 +119,16 @@ export default function UserList() {
     }
   };
 
+  const getUserIdentifier = (user) => user?.slug || user?.id;
+
+  const getUserViewPath = (user) => (
+    ROUTES.ADMIN_USER_VIEW.replace(':slug', getUserIdentifier(user))
+  );
+
+  const getUserEditPath = (user) => (
+    ROUTES.ADMIN_USER_EDIT.replace(':slug', getUserIdentifier(user))
+  );
+
   const columns = [
     {
       header: 'Name',
@@ -285,8 +295,8 @@ export default function UserList() {
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
         <MenuItem onClick={() => { 
-          if (selectedUser?.id) {
-            navigate(ROUTES.ADMIN_USER_VIEW.replace(':id', selectedUser.id)); 
+          if (getUserIdentifier(selectedUser)) {
+            navigate(getUserViewPath(selectedUser)); 
           }
           handleMenuClose(); 
         }}>
@@ -294,8 +304,8 @@ export default function UserList() {
           View
         </MenuItem>
         <MenuItem onClick={() => { 
-          if (selectedUser?.id) {
-            navigate(ROUTES.ADMIN_USER_EDIT.replace(':id', selectedUser.id)); 
+          if (getUserIdentifier(selectedUser)) {
+            navigate(getUserEditPath(selectedUser)); 
           }
           handleMenuClose(); 
         }}>

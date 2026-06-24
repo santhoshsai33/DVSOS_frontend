@@ -23,8 +23,9 @@ const schema = z.object({
 
 export default function DistrictForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const districtIdentifier = slug;
+  const isEdit = !!districtIdentifier;
   
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
@@ -50,12 +51,16 @@ export default function DistrictForm() {
 
         if (isEdit) {
           setLoading(true);
-          const res = await getDistrictDetailApi(id);
+          const res = await getDistrictDetailApi(districtIdentifier);
           if (res?.success) {
+            const district = res.data.district;
             reset({
-              districtName: res.data.district.districtName,
-              stateId: res.data.district.stateId
+              districtName: district.districtName,
+              stateId: district.stateId
             });
+            if (district.slug && district.slug !== districtIdentifier) {
+              navigate(ROUTES.ADMIN_MASTER_DISTRICTS_EDIT.replace(':slug', district.slug), { replace: true });
+            }
           }
         }
       } catch (error) {
@@ -66,13 +71,13 @@ export default function DistrictForm() {
       }
     };
     loadData();
-  }, [isEdit, id, reset, navigate]);
+  }, [isEdit, districtIdentifier, reset, navigate]);
 
   const onSubmit = async (data) => {
     try {
       setSaving(true);
       if (isEdit) {
-        const res = await updateDistrictApi(id, data);
+        const res = await updateDistrictApi(districtIdentifier, data);
         if (res?.success) {
           toastSuccess(`District "${data.districtName}" updated successfully.`);
           navigate(ROUTES.ADMIN_MASTER_DISTRICTS);

@@ -18,7 +18,8 @@ const DetailRow = ({ label, value, isLast = false }) => (
 );
 
 export default function UserView() {
-  const { id } = useParams();
+  const { slug } = useParams();
+  const userIdentifier = slug;
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,9 +27,14 @@ export default function UserView() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await getUserApi(id);
+        const res = await getUserApi(userIdentifier);
         if (res?.success) {
-          setUser(res.data.user || res.data);
+          const fetchedUser = res.data.user || res.data;
+          setUser(fetchedUser);
+
+          if (fetchedUser.slug && fetchedUser.slug !== userIdentifier) {
+            navigate(ROUTES.ADMIN_USER_VIEW.replace(':slug', fetchedUser.slug), { replace: true });
+          }
         }
       } catch (error) {
         toastError(error?.message || 'Failed to fetch user details');
@@ -38,7 +44,7 @@ export default function UserView() {
       }
     };
     fetchUser();
-  }, [id, navigate]);
+  }, [userIdentifier, navigate]);
 
   if (loading) {
     return (

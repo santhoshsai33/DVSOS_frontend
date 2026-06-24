@@ -57,6 +57,11 @@ export default function ModuleList() {
     setSelectedModule(null);
   };
 
+  const getEditPath = (module) => {
+    const identifier = module?.slug || module?.id;
+    return ROUTES.ADMIN_MODULES_EDIT.replace(':slug', identifier);
+  };
+
   const handleStatusChange = async (id, newStatus) => {
     const isActive = newStatus === 'ACTIVE' || newStatus === true;
     try {
@@ -150,7 +155,7 @@ export default function ModuleList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MODULES_EDIT.replace(':id', selectedModule?.id)); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedModule)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit Module
         </MenuItem>

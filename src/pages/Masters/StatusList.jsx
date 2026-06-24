@@ -37,6 +37,11 @@ export default function StatusList() {
     handleMenuClose();
   };
 
+  const getEditPath = (status) => {
+    const identifier = status?.slug || status?.id;
+    return ROUTES.ADMIN_MASTER_STATUSES_EDIT.replace(':slug', identifier);
+  };
+
   const confirmDelete = () => {
     if (deleteItem) {
       deleteStatus(deleteItem.id);
@@ -141,7 +146,7 @@ export default function StatusList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 0, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_STATUSES_EDIT.replace(':id', selectedStatus?.id)); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedStatus)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit Status
         </MenuItem>

@@ -20,8 +20,9 @@ const schema = z.object({
 
 export default function StateForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const stateIdentifier = slug;
+  const isEdit = !!stateIdentifier;
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
 
@@ -39,11 +40,15 @@ export default function StateForm() {
       if (isEdit) {
         try {
           setLoading(true);
-          const res = await getStateDetailApi(id);
+          const res = await getStateDetailApi(stateIdentifier);
           if (res?.success) {
+            const state = res.data.state;
             reset({
-              stateName: res.data.state.stateName
+              stateName: state.stateName
             });
+            if (state.slug && state.slug !== stateIdentifier) {
+              navigate(ROUTES.ADMIN_MASTER_STATES_EDIT.replace(':slug', state.slug), { replace: true });
+            }
           }
         } catch (error) {
           toastError(error?.message || 'Failed to load state details');
@@ -54,13 +59,13 @@ export default function StateForm() {
       }
     };
     fetchState();
-  }, [isEdit, id, reset, navigate]);
+  }, [isEdit, stateIdentifier, reset, navigate]);
 
   const onSubmit = async (data) => {
     try {
       setSaving(true);
       if (isEdit) {
-        const res = await updateStateApi(id, data);
+        const res = await updateStateApi(stateIdentifier, data);
         if (res?.success) {
           toastSuccess(`State "${data.stateName}" updated successfully.`);
           navigate(ROUTES.ADMIN_MASTER_STATES);

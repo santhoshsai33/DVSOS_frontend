@@ -67,6 +67,11 @@ export default function ServiceItems() {
     handleMenuClose();
   };
 
+  const getEditPath = (item) => {
+    const identifier = item?.slug || item?.id;
+    return ROUTES.ADMIN_MASTER_ITEMS_EDIT.replace(':slug', identifier);
+  };
+
   const confirmDelete = async () => {
     if (deleteItem) {
       try {
@@ -189,7 +194,7 @@ export default function ServiceItems() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_ITEMS_EDIT.replace(':id', selectedItem?.id)); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedItem)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>

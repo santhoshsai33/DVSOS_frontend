@@ -20,8 +20,9 @@ const schema = z.object({
 
 export default function ServiceCategoryForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const categoryIdentifier = slug;
+  const isEdit = !!categoryIdentifier;
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
@@ -40,13 +41,16 @@ export default function ServiceCategoryForm() {
     if (isEdit) {
       const fetchDetail = async () => {
         try {
-          const res = await getServiceCategoryApi(id);
+          const res = await getServiceCategoryApi(categoryIdentifier);
           if (res?.success) {
             const category = res.data.serviceCategory || res.data;
             reset({
               name: category.name || '',
               description: category.description || ''
             });
+            if (category.slug && category.slug !== categoryIdentifier) {
+              navigate(ROUTES.ADMIN_MASTER_CATEGORIES_EDIT.replace(':slug', category.slug), { replace: true });
+            }
           }
         } catch (error) {
           toastError('Failed to fetch service category details');
@@ -56,7 +60,7 @@ export default function ServiceCategoryForm() {
       };
       fetchDetail();
     }
-  }, [isEdit, id, reset]);
+  }, [isEdit, categoryIdentifier, navigate, reset]);
 
   const onSubmit = async (data) => {
     setSaving(true);
@@ -67,7 +71,7 @@ export default function ServiceCategoryForm() {
       };
 
       if (isEdit) {
-        await updateServiceCategoryApi(id, payload);
+        await updateServiceCategoryApi(categoryIdentifier, payload);
         toastSuccess(`Category "${data.name}" updated successfully.`);
       } else {
         await createServiceCategoryApi(payload);

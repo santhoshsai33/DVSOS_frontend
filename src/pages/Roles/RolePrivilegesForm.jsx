@@ -60,8 +60,9 @@ const validateDesignation = (value) => {
 
 export default function RolePrivilegesForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const roleIdentifier = slug;
+  const isEdit = !!roleIdentifier;
 
   const [designation, setDesignation] = useState('');
   const [designationError, setDesignationError] = useState('');
@@ -76,12 +77,17 @@ export default function RolePrivilegesForm() {
       try {
         setLoading(true);
         if (isEdit) {
-          const res = await getRoleMenuPermissionsApi(id);
+          const res = await getRoleMenuPermissionsApi(roleIdentifier);
           if (res?.success) {
-            const roleName = res.data.role.name;
+            const role = res.data.role;
+            const roleName = role.name;
             setDesignation(roleName);
             const modules = res.data.modules || [];
             setModulesList(modules);
+
+            if (role.slug && role.slug !== roleIdentifier) {
+              navigate(ROUTES.ADMIN_ROLE_PRIVILEGES_EDIT.replace(':slug', role.slug), { replace: true });
+            }
 
             // Auto-select matching module based on role name
             if (roleName) {
@@ -114,7 +120,7 @@ export default function RolePrivilegesForm() {
       }
     };
     loadData();
-  }, [isEdit, id]);
+  }, [isEdit, roleIdentifier, navigate]);
 
   const handleCheckboxChange = (moduleIndex, menuIndex, type) => {
     const updated = [...modulesList];
@@ -166,10 +172,11 @@ export default function RolePrivilegesForm() {
 
     try {
       setSaving(true);
-      let roleId = id;
+      let roleId = roleIdentifier;
       
       if (isEdit) {
-        await updateRoleApi(roleId, { name: designation.trim() });
+        const roleRes = await updateRoleApi(roleId, { name: designation.trim() });
+        roleId = roleRes?.data?.role?.id || roleId;
         await updateRoleMenuPermissionsApi(roleId, permissionsPayload);
         toastSuccess(`Role privileges for "${designation}" updated successfully!`);
       } else {

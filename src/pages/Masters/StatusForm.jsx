@@ -12,8 +12,9 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 
 export default function StatusForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const statusIdentifier = slug;
+  const isEdit = !!statusIdentifier;
   const { masterStatuses, masterModules, addStatus, updateStatus } = useMasterDataStore();
   const [saving, setSaving] = useState(false);
 
@@ -30,7 +31,7 @@ export default function StatusForm() {
 
   useEffect(() => {
     if (isEdit && masterStatuses?.length > 0) {
-      const statusToEdit = masterStatuses.find(s => s.id === id);
+      const statusToEdit = masterStatuses.find(s => s.slug === statusIdentifier || s.id === statusIdentifier);
       if (statusToEdit) {
         reset({
           moduleId: statusToEdit.moduleId || '',
@@ -40,7 +41,7 @@ export default function StatusForm() {
         });
       }
     }
-  }, [isEdit, id, masterStatuses, reset]);
+  }, [isEdit, statusIdentifier, masterStatuses, reset]);
 
   const onSubmit = (data) => {
     if (!data.moduleId) {
@@ -51,7 +52,7 @@ export default function StatusForm() {
     setTimeout(() => {
       setSaving(false);
       if (isEdit) {
-        updateStatus(id, data);
+        updateStatus(statusIdentifier, data);
         toastSuccess(`Status "${data.name}" updated successfully.`);
       } else {
         addStatus(data);
