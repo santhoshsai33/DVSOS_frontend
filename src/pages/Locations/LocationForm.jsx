@@ -29,8 +29,9 @@ const schema = z.object({
 
 export default function LocationForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const locationIdentifier = slug;
+  const isEdit = !!locationIdentifier;
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
@@ -86,7 +87,7 @@ export default function LocationForm() {
     if (isEdit) {
       const fetchDetail = async () => {
         try {
-          const res = await getLocationApi(id);
+          const res = await getLocationApi(locationIdentifier);
           if (res?.success) {
             const loc = res.data.location || res.data;
             reset({
@@ -99,6 +100,10 @@ export default function LocationForm() {
               phoneNo: loc.contactPhone || '',
               email: loc.contactEmail || '',
             });
+
+            if (loc.slug && loc.slug !== locationIdentifier) {
+              navigate(ROUTES.ADMIN_LOCATIONS_EDIT.replace(':slug', loc.slug), { replace: true });
+            }
           }
         } catch (error) {
           toastError('Failed to fetch location details');
@@ -108,7 +113,7 @@ export default function LocationForm() {
       };
       fetchDetail();
     }
-  }, [isEdit, id, reset]);
+  }, [isEdit, locationIdentifier, reset, navigate]);
 
   const onSubmit = async (data) => {
     setSaving(true);
@@ -126,7 +131,7 @@ export default function LocationForm() {
       };
 
       if (isEdit) {
-        await updateLocationApi(id, payload);
+        await updateLocationApi(locationIdentifier, payload);
         toastSuccess(`Location "${data.name}" updated successfully.`);
       } else {
         await createLocationApi(payload);

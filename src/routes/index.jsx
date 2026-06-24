@@ -119,6 +119,11 @@ function LegacyUserEditRedirect() {
   return <Navigate to={`/users/edit/${slug}`} replace />;
 }
 
+function LegacyLocationEditRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/locations/edit/${slug}`} replace />;
+}
+
 export const router = createBrowserRouter([
   {
     element: <AuthLayout />,
@@ -180,8 +185,10 @@ export const router = createBrowserRouter([
               { path: 'master-statuses/:slug/edit', element: <LegacyMasterEditRedirect basePath="master-statuses" /> },
               { path: 'locations', element: <LocationList /> },
               { path: 'locations/new', element: <LocationForm /> },
-              { path: 'locations/:id/edit', element: <LocationForm /> },
-              { path: 'locations/:id', element: <LocationView /> },
+              { path: 'locations/edit/:slug', element: <LocationForm /> },
+              { path: 'locations/view/:slug', element: <LocationView /> },
+              { path: 'locations/:slug/edit', element: <LegacyLocationEditRedirect /> },
+              { path: 'locations/:slug', element: <LocationView /> },
               { path: 'system-settings', element: <SystemSettingsPage /> },
               { path: 'audit-logs', element: <AuditLogsPage /> },
               { path: 'audit-logs/:id', element: <AuditLogDetailsPage /> },

@@ -33,7 +33,7 @@ export default function StatusList() {
           setTotalCount(res.meta?.total || 0);
         }
       } catch (error) {
-        toastError(error?.message || 'Failed to fetch statuses');
+        toastError(error?.response?.data?.message || error?.message || 'Failed to fetch statuses');
       } finally {
         setLoading(false);
       }
@@ -56,25 +56,11 @@ export default function StatusList() {
     setSelectedStatus(null);
   };
 
-  const handleDelete = () => {
-    setDeleteItem(selectedStatus);
-    handleMenuClose();
-  };
-
   const getEditPath = (status) => {
     const identifier = status?.slug || status?.id;
     return ROUTES.ADMIN_MASTER_STATUSES_EDIT.replace(':slug', identifier);
   };
 
-  const confirmDelete = () => {
-    if (deleteItem) {
-      deleteStatus(deleteItem.id);
-      toastSuccess(`Status "${deleteItem.name}" deleted successfully.`);
-      setDeleteItem(null);
-    }
-  };
-
-  
   const handleStatusChange = async (id, newStatus) => {
     const isActive = newStatus === 'ACTIVE' || newStatus === true;
     try {
@@ -84,7 +70,7 @@ export default function StatusList() {
         setStatuses(prev => prev.map(s => s.id === id ? { ...s, isActive: isActive } : s));
       }
     } catch (error) {
-      toastError(error?.message || 'Failed to update status');
+      toastError(error?.response?.data?.message || error?.message || 'Failed to update status');
     }
   };
 
