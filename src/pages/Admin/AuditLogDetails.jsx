@@ -54,7 +54,7 @@ export default function AuditLogDetails() {
           { label: `Log #${detail.audit_log_id}` }
         ]}
         actions={
-          <Button variant="secondary" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.ADMIN_AUDIT_LOGS)}>
+          <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.ADMIN_AUDIT_LOGS)}>
             Back to Audit Logs
           </Button>
         }

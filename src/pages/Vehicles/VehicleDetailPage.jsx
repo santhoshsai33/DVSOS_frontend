@@ -23,7 +23,7 @@ export default function VehicleDetailPage() {
         <Card sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
           <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>Vehicle not found</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>The selected vehicle could not be located.</Typography>
-          <Button variant="secondary" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.VEHICLES)}>Back to Vehicles</Button>
+          <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.VEHICLES)}>Back to Vehicles</Button>
         </Card>
       </Box>
     );
@@ -36,11 +36,11 @@ export default function VehicleDetailPage() {
         breadcrumbs={[{ label: 'Vehicles', path: ROUTES.VEHICLES }, { label: 'Details' }]}
         actions={
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.VEHICLES)}>
+              Back
+            </Button>
             <Button variant="secondary" leftIcon={History} onClick={() => navigate(`${ROUTES.VEHICLES}/${id}/history`)}>
               Service History
-            </Button>
-            <Button variant="primary" leftIcon={Edit3} onClick={() => navigate(`${ROUTES.VEHICLES}/${id}/edit`)}>
-              Edit Vehicle
             </Button>
           </Box>
         }

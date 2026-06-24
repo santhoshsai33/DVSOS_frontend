@@ -56,7 +56,7 @@ export default function CustomerDetailPage() {
         title="Customer Profile"
         breadcrumbs={[{ label: 'Customers', path: ROUTES.CUSTOMERS }, { label: customer.name }]}
         actions={
-          <Button variant="secondary" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.CUSTOMERS)}>
+          <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.CUSTOMERS)}>
             Back to Directory
           </Button>
         }

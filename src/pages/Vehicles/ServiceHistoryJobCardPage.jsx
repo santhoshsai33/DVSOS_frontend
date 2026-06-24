@@ -36,7 +36,7 @@ export default function ServiceHistoryJobCardPage() {
           { label: job.id },
         ]}
         actions={
-          <Button variant="secondary" leftIcon={ArrowLeft} onClick={() => navigate(-1)}>
+          <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(-1)}>
             Back
           </Button>
         }

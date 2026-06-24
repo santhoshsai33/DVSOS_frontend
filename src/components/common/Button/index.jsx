@@ -64,6 +64,31 @@ export default function Button({
         }
       };
       break;
+    case 'back':
+    case 'outline-primary':
+      muiVariant = 'outlined';
+      color = 'primary';
+      baseSx = {
+        color: 'primary.main',
+        borderColor: 'primary.main',
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        borderRadius: '8px',
+        fontWeight: 600,
+        '&:hover': {
+          backgroundColor: 'primary.main',
+          borderColor: 'primary.main',
+          color: '#ffffff',
+          boxShadow: 'none',
+        },
+        '&.Mui-disabled': {
+          borderColor: '#E2E8F0',
+          backgroundColor: 'transparent',
+          color: '#94A3B8',
+          opacity: isLoading ? 0.7 : 1,
+        }
+      };
+      break;
     case 'success': muiVariant = 'contained'; color = 'success'; break;
     case 'danger': muiVariant = 'contained'; color = 'error'; break;
     case 'warning': muiVariant = 'contained'; color = 'warning'; break;
