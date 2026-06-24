@@ -139,16 +139,16 @@ export default function StatusList() {
         onClose={handleMenuClose}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
+        PaperProps={{ sx: { width: 180, borderRadius: 0, mt: 0.5 } }}
       >
         <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_STATUSES_EDIT.replace(':id', selectedStatus?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit Status
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Delete Status
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );

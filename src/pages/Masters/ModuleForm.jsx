@@ -2,56 +2,84 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Box, Grid, Typography } from '@mui/material';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import useMasterDataStore from '../../store/useMasterDataStore';
+import { getModuleDetailApi, createModuleApi, updateModuleApi } from '../../api/adminModuleApi';
+
+const schema = z.object({
+  moduleName: z.string()
+    .trim()
+    .min(1, 'Module name is required')
+    .regex(/^[a-zA-Z\s]+$/, 'Special characters and numbers are not allowed'),
+  description: z.string().trim().optional()
+});
 
 export default function ModuleForm() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
-  const { masterModules, addModule, updateModule } = useMasterDataStore();
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
-      name: '',
-      description: '',
-      status: 'ACTIVE'
+      moduleName: '',
+      description: ''
     }
   });
 
   const { handleSubmit, reset } = methods;
 
   useEffect(() => {
-    if (isEdit && masterModules?.length > 0) {
-      const moduleToEdit = masterModules.find(m => m.id === id);
-      if (moduleToEdit) {
-        reset({
-          name: moduleToEdit.name,
-          description: moduleToEdit.description || '',
-          status: moduleToEdit.status || 'ACTIVE'
-        });
-      }
-    }
-  }, [isEdit, id, masterModules, reset]);
-
-  const onSubmit = (data) => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    const fetchModule = async () => {
       if (isEdit) {
-        updateModule(id, data);
-        toastSuccess(`Module "${data.name}" updated successfully.`);
-      } else {
-        addModule(data);
-        toastSuccess(`Module "${data.name}" added successfully.`);
+        try {
+          setLoading(true);
+          const res = await getModuleDetailApi(id);
+          if (res?.success) {
+            reset({
+              moduleName: res.data.module.moduleName,
+              description: res.data.module.description || ''
+            });
+          }
+        } catch (error) {
+          toastError(error?.message || 'Failed to load module details');
+          navigate(ROUTES.ADMIN_MODULES);
+        } finally {
+          setLoading(false);
+        }
       }
-      navigate(ROUTES.ADMIN_MODULES);
-    }, 800);
+    };
+    fetchModule();
+  }, [isEdit, id, reset, navigate]);
+
+  const onSubmit = async (data) => {
+    try {
+      setSaving(true);
+      if (isEdit) {
+        const res = await updateModuleApi(id, data);
+        if (res?.success) {
+          toastSuccess(`Module "${data.moduleName}" updated successfully.`);
+          navigate(ROUTES.ADMIN_MODULES);
+        }
+      } else {
+        const res = await createModuleApi(data);
+        if (res?.success) {
+          toastSuccess(`Module "${data.moduleName}" added successfully.`);
+          navigate(ROUTES.ADMIN_MODULES);
+        }
+      }
+    } catch (error) {
+      toastError(error?.message || 'Failed to save module');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -66,44 +94,49 @@ export default function ModuleForm() {
         />
       </Box>
 
-      <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="name"
-                label="Module Name"
-                placeholder="e.g. Sales"
-                required
-              />
+      {loading ? (
+        <Typography>Loading...</Typography>
+      ) : (
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="moduleName"
+                  label="Module Name"
+                  placeholder="e.g. Sales"
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="description"
+                  label="Description"
+                  placeholder="Module description"
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <RHFTextField
-                name="description"
-                label="Description"
-                placeholder="Module description"
-              />
-            </Grid>
-          </Grid>
 
-          <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => navigate(ROUTES.ADMIN_MODULES)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={saving}
-            >
-              {isEdit ? 'Save Changes' : 'Create Module'}
-            </Button>
-          </Box>
-        </form>
-      </FormProvider>
+            <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => navigate(ROUTES.ADMIN_MODULES)}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                type="submit"
+                isLoading={saving}
+              >
+                {isEdit ? 'Save Changes' : 'Create Module'}
+              </Button>
+            </Box>
+          </form>
+        </FormProvider>
+      )}
     </Box>
   );
 }

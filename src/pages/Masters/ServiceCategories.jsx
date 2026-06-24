@@ -31,7 +31,7 @@ export default function ServiceCategories() {
         setLoading(true);
         const params = { page: page + 1, limit: rowsPerPage };
         if (search) params.search = search;
-        
+
         const res = await getServiceCategoriesApi(params);
         if (res?.success) {
           setCategories(res.data.serviceCategories || []);
@@ -178,10 +178,10 @@ export default function ServiceCategories() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Deactivate
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );

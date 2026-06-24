@@ -173,7 +173,7 @@ export default function Sidebar() {
               : 'inherit',
             '&:hover': {
               bgcolor: active
-                ? (depth > 0 ? 'rgba(26, 67, 77, 0.12)' : 'primary.dark')
+                ? (depth > 0 ? 'rgba(26, 67, 77, 0.08)' : 'primary.main')
                 : 'action.hover',
             },
           }}

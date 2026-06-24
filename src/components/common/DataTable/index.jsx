@@ -74,7 +74,7 @@ export default function DataTable({
         elevation={0}
         sx={{
           bgcolor: '#FFFFFF',
-          borderRadius: 1.5,
+          borderRadius: 0,
           border: '1px solid rgba(0, 0, 0, 0.12)',
           boxShadow: 'none',
           overflow: 'hidden'

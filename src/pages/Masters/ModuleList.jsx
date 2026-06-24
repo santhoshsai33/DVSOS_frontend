@@ -1,25 +1,50 @@
-import React, { useState } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Select, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
-import useMasterDataStore from '../../store/useMasterDataStore';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
+import { getModulesApi, updateModuleStatusApi } from '../../api/adminModuleApi';
 
 export default function ModuleList() {
   const navigate = useNavigate();
-  const { masterModules, deleteModule, updateModule } = useMasterDataStore();
+  const [modules, setModules] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
-  const [deleteItem, setDeleteItem] = useState(null);
+
+  useEffect(() => {
+    const fetchModules = async () => {
+      try {
+        setLoading(true);
+        const res = await getModulesApi({ page: page + 1, limit: rowsPerPage, search });
+        if (res?.success) {
+          setModules(res.data.modules || []);
+          setTotalCount(res.meta?.total || 0);
+        }
+      } catch (error) {
+        toastError(error?.message || 'Failed to fetch modules');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    const timer = setTimeout(() => {
+      fetchModules();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, rowsPerPage, search]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -32,34 +57,29 @@ export default function ModuleList() {
     setSelectedModule(null);
   };
 
-  const handleDelete = () => {
-    setDeleteItem(selectedModule);
-    handleMenuClose();
-  };
-
-  const confirmDelete = () => {
-    if (deleteItem) {
-      deleteModule(deleteItem.id);
-      toastSuccess(`Module "${deleteItem.name}" deleted successfully.`);
-      setDeleteItem(null);
+  const handleStatusChange = async (id, newStatus) => {
+    const isActive = newStatus === 'ACTIVE' || newStatus === true;
+    try {
+      const res = await updateModuleStatusApi(id, isActive);
+      if (res?.success) {
+        toastSuccess('Module status updated successfully!');
+        setModules(prev => prev.map(m => m.id === id ? { ...m, isActive: isActive } : m));
+      }
+    } catch (error) {
+      toastError(error?.message || 'Failed to update module status');
     }
   };
-
-  const handleStatusChange = (id, newStatus) => {
-    updateModule(id, { status: newStatus });
-    toastSuccess('Module status updated successfully!');
-  };
-
-  const filteredModules = (masterModules || []).filter(mod =>
-    mod.name.toLowerCase().includes(search.toLowerCase()) ||
-    (mod.description || '').toLowerCase().includes(search.toLowerCase())
-  );
 
   const columns = [
     {
       header: 'Module Name',
-      accessor: 'name',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
+      accessor: 'moduleName',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.moduleName}</Typography>
+    },
+    {
+      header: 'Module Code',
+      accessor: 'moduleCode',
+      render: (row) => <Typography variant="body2" color="text.secondary">{row.moduleCode}</Typography>
     },
     {
       header: 'Description',
@@ -67,10 +87,10 @@ export default function ModuleList() {
     },
     {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'isActive',
       render: (row) => (
         <RHFSwitch
-          value={row.status || 'ACTIVE'}
+          value={row.isActive !== undefined ? row.isActive : true}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
       )
@@ -102,7 +122,7 @@ export default function ModuleList() {
           <SearchBar
             placeholder="Search module or description..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
       </Box>
@@ -110,18 +130,17 @@ export default function ModuleList() {
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={filteredModules}
+          data={modules}
+          loading={loading}
           emptyMessage="No modules found"
+          serverSide={true}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
-
-      <ConfirmDeleteDialog
-        open={!!deleteItem}
-        title="Delete Module"
-        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteItem(null)}
-      />
 
       <Menu
         anchorEl={anchorEl}
@@ -134,10 +153,6 @@ export default function ModuleList() {
         <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MODULES_EDIT.replace(':id', selectedModule?.id)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit Module
-        </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <Trash2 size={16} className="mr-3" />
-          Delete Module
         </MenuItem>
       </Menu>
     </Box>
