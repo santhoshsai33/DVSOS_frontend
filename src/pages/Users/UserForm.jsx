@@ -14,6 +14,7 @@ import { ROUTES } from '../../config/routes';
 import { createUserApi, updateUserApi, getUserApi } from '../../api/userApi';
 import { getRolesApi } from '../../api/roleApi';
 import { getLocationsApi } from '../../api/adminLocationApi';
+import useAuthStore from '../../store/useAuthStore';
 
 const GENDER_OPTIONS = [
   { value: 'MALE', label: 'Male' },
@@ -21,19 +22,21 @@ const GENDER_OPTIONS = [
   { value: 'OTHER', label: 'Other' },
 ];
 
-const schema = z.object({
+const getValidationSchema = (isMD) => z.object({
   fullName: z.string().trim().min(1, 'Full Name is required').regex(/^[a-zA-Z\s]+$/, 'Full Name must contain letters and spaces only'),
   email: z.string().trim().min(1, 'Email is required').email('Invalid email format'),
-  mobile: z.string().trim().min(1, 'Mobile Number is required').regex(/^[0-9]{10,15}$/, 'Mobile Number must be between 10 and 15 digits'),
+  mobile: z.string().trim().min(1, 'Mobile Number is required').regex(/^[0-9]{10}$/, 'Mobile Number must be exactly 10 digits').refine(val => !/^0+$/.test(val), 'Mobile Number cannot be all zeros'),
   roleId: z.number().min(1, 'Role is required'),
-  locationId: z.number({ required_error: 'Location is required', invalid_type_error: 'Location is required' }).min(1, 'Location is required'),
+  locationId: isMD 
+    ? z.any().optional() 
+    : z.number({ required_error: 'Location is required', invalid_type_error: 'Location is required' }).min(1, 'Location is required'),
   password: z.string().optional(),
   status: z.string().optional(),
   dob: z.string().trim().min(1, 'Date of Birth is required').refine((val) => {
     const date = new Date(val);
     return date < new Date();
   }, 'Date of Birth must be in the past'),
-  licenceNumber: z.string().trim().min(1, 'Licence Number is required'),
+  licenceNumber: z.string().trim().toUpperCase().length(15, 'Licence Number must be exactly 15 characters').regex(/^[A-Z]{2}[0-9]{13}$/i, 'Invalid Licence Number format (e.g., MH1220100000000)'),
   emergencyContact: z.string().trim().optional().or(z.literal('')),
   gender: z.string().trim().min(1, 'Gender is required'),
   address: z.string().trim().optional().or(z.literal('')),
@@ -45,13 +48,16 @@ export default function UserForm() {
   const userIdentifier = slug;
   const isEdit = !!userIdentifier;
 
+  const { role, user: currentUser } = useAuthStore();
+  const isMD = role === 'MD';
+
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
   const [roles, setRoles] = useState([]);
   const [locations, setLocations] = useState([]);
 
   const methods = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(getValidationSchema(isMD)),
     defaultValues: {
       fullName: '',
       email: '',
@@ -83,6 +89,7 @@ export default function UserForm() {
       }
     };
     const fetchLocations = async () => {
+      if (isMD) return; // MD doesn't need to fetch locations
       try {
         const res = await getLocationsApi({ limit: 100 });
         if (res?.success) {
@@ -95,7 +102,7 @@ export default function UserForm() {
     };
     fetchRoles();
     fetchLocations();
-  }, []);
+  }, [isMD]);
 
   useEffect(() => {
     if (isEdit) {
@@ -140,7 +147,7 @@ export default function UserForm() {
         email: data.email,
         mobile: data.mobile || undefined,
         roleId: data.roleId,
-        locationId: data.locationId,
+        locationId: isMD ? (currentUser?.locationId || currentUser?.location?.id) : data.locationId,
         password: isEdit ? undefined : (data.password || undefined),
         isActive: data.status === 'ACTIVE',
         dob: data.dob || undefined,
@@ -215,6 +222,7 @@ export default function UserForm() {
                   label="Mobile Number"
                   placeholder="Enter mobile number"
                   required
+                  inputProps={{ maxLength: 10 }}
                   onChange={(e) => {
                     const cleanVal = e.target.value.replace(/[^0-9]/g, '');
                     methods.setValue('mobile', cleanVal, { shouldValidate: true });
@@ -285,11 +293,13 @@ export default function UserForm() {
               </Grid>
             </Grid>
 
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={6}>
-                <RHFSelect name="locationId" label="Location" options={locations} placeholder="Select location" required />
+            {!isMD && (
+              <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid item xs={12} md={6}>
+                  <RHFSelect name="locationId" label="Location" options={locations} placeholder="Select location" required />
+                </Grid>
               </Grid>
-            </Grid>
+            )}
 
             <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
               <Button
