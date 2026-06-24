@@ -211,19 +211,18 @@ export default function BodyShopQueue() {
 
                 }}
               >
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h3" fontWeight={800} sx={{ color: col.color, mb: 1 }}>
-                    {count}
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" fontWeight={600}>
-                    {col.label}
-                  </Typography>
-
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h3" fontWeight={800} sx={{ color: col.color, lineHeight: 1 }}>
+                      {count}
+                    </Typography>
                     <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${col.color}15`, color: col.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Icon size={20} />
                     </Box>
                   </Box>
+                  <Typography variant="body1" color="text.secondary" fontWeight={600}>
+                    {col.label}
+                  </Typography>
                 </CardContent>
               </Card>
             </Grid>
