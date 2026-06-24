@@ -115,13 +115,13 @@ export default function BodyShopWorkStatus() {
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F4F6F9', minHeight: '100%' }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F0F4FF', minHeight: '100%' }}>
       <PageHeader
         title="Work Status & Routing (Body Shop)"
         breadcrumbs={[{ label: 'Work Status' }]}
       />
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, mt: 3, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2, mt: 0, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
             placeholder="Search vehicle, owner, job ID..."
@@ -132,7 +132,7 @@ export default function BodyShopWorkStatus() {
       </Box>
 
       {/* Data Tables Row */}
-      <Grid container spacing={3} sx={{ mt: 1 }}>
+      <Grid container spacing={3} sx={{ mt: 0 }}>
         <Grid item xs={12}>
           <Card sx={{ borderRadius: 0, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
             <CardContent sx={{ p: 3, pb: '24px !important' }}>

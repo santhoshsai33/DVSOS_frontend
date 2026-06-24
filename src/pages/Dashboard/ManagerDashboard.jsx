@@ -200,7 +200,6 @@ export default function ManagerDashboard() {
             <Grid item xs={12} sm={6} md={3} key={kpi.label}>
               <Card
                 sx={{
-                  minHeight: 170,
                   borderRadius: 3,
                   border: '1px solid #E2E8F0',
                   borderTop: '6px solid',
@@ -211,28 +210,28 @@ export default function ManagerDashboard() {
                   bgcolor: '#FFFFFF',
                 }}
               >
-                <Box sx={{ p: 3, minHeight: 170, display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h3" sx={{ fontWeight: 900, color: kpi.color, lineHeight: 1, mb: 2 }}>
-                    {kpi.value}
-                  </Typography>
+                <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h3" sx={{ fontWeight: 900, color: kpi.color, lineHeight: 1 }}>
+                      {kpi.value}
+                    </Typography>
+                    <Box
+                      sx={{
+                        width: 46,
+                        height: 46,
+                        borderRadius: 3,
+                        bgcolor: kpi.iconBg,
+                        color: kpi.color,
+                        display: 'grid',
+                        placeItems: 'center',
+                      }}
+                    >
+                      <Icon size={21} />
+                    </Box>
+                  </Box>
                   <Typography variant="subtitle1" sx={{ color: '#334155', fontWeight: 800 }}>
                     {kpi.label}
                   </Typography>
-                  <Box sx={{ flex: 1 }} />
-                  <Box
-                    sx={{
-                      alignSelf: 'flex-end',
-                      width: 46,
-                      height: 46,
-                      borderRadius: 3,
-                      bgcolor: kpi.iconBg,
-                      color: kpi.color,
-                      display: 'grid',
-                      placeItems: 'center',
-                    }}
-                  >
-                    <Icon size={21} />
-                  </Box>
                 </Box>
               </Card>
             </Grid>
@@ -243,7 +242,7 @@ export default function ManagerDashboard() {
       <Card sx={{ borderRadius: 2, border: '1px solid #D8E2F3', mb: 2 }}>
         <Box sx={{ p: 2.25 }}>
           <Typography variant="caption" sx={{ color: '#8A9AB5', fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Live pipeline overview - click a stage to view that queue
+            Pipeline overview
           </Typography>
           <Box
             sx={{
@@ -259,7 +258,6 @@ export default function ManagerDashboard() {
             {pipeline.map((stage, index) => (
               <Box key={stage.label} sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: 'center', gap: { xs: 1.25, lg: 2 }, flex: 1, width: '100%' }}>
                 <Box
-                  onClick={() => navigate(stage.route)}
                   sx={{
                     width: '100%',
                     minHeight: 96,
@@ -268,7 +266,6 @@ export default function ManagerDashboard() {
                     borderColor: stage.color,
                     bgcolor: stage.bg,
                     p: 1.5,
-                    cursor: 'pointer',
                     '&:hover': { boxShadow: '0 10px 20px -18px rgba(15,23,42,0.9)' },
                   }}
                 >
