@@ -136,7 +136,7 @@ export default function ServiceCenterList() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Service Centers Master"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Service Centers Master' }]}
+        // breadcrumbs={[{ label: 'Service Centers Master' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_SERVICE_CENTERS_NEW)}>
             Add Service Center
@@ -189,10 +189,10 @@ export default function ServiceCenterList() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Deactivate
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );

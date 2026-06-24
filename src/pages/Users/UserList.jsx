@@ -193,7 +193,7 @@ export default function UserList() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="User Management"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Users' }]}
+        // breadcrumbs={[{ label: 'Users' }]}
         actions={
           <Button
             variant="primary"
@@ -284,28 +284,28 @@ export default function UserList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { 
+        <MenuItem onClick={() => {
           if (selectedUser?.id) {
-            navigate(ROUTES.ADMIN_USER_VIEW.replace(':id', selectedUser.id)); 
+            navigate(ROUTES.ADMIN_USER_VIEW.replace(':id', selectedUser.id));
           }
-          handleMenuClose(); 
+          handleMenuClose();
         }}>
           <Eye size={16} className="mr-3 text-info" style={{ color: '#0284C7' }} />
           View
         </MenuItem>
-        <MenuItem onClick={() => { 
+        <MenuItem onClick={() => {
           if (selectedUser?.id) {
-            navigate(ROUTES.ADMIN_USER_EDIT.replace(':id', selectedUser.id)); 
+            navigate(ROUTES.ADMIN_USER_EDIT.replace(':id', selectedUser.id));
           }
-          handleMenuClose(); 
+          handleMenuClose();
         }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Deactivate
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );

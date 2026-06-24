@@ -8,7 +8,6 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { useUsers } from '../../queries/useDataQueries';
 import DataTable from '../../components/common/DataTable';
 import { toastSuccess } from '../../notifications/toast';
-import RHFSwitch from '../../components/form/RHFSwitch';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -35,27 +34,24 @@ export default function AdminDashboard() {
 
   const columns = [
     {
+      header: 'Code',
+      accessor: 'id',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.serviceCenterCode || row.id}</Typography>
+    },
+    {
       header: 'Service Center Name',
       accessor: 'name',
-      render: (row) => <Typography variant="body2" fontWeight={600} color="#1E293B">{row.name}</Typography>
+      render: (row) => <Typography variant="body2" fontWeight={600} color="#1E293B">{row.serviceCenterName || row.name}</Typography>
     },
     {
       header: 'Contact Number',
-      accessor: 'contactNumber'
+      accessor: 'contactNumber',
+      render: (row) => row.contactPhone || row.contactNumber || '-'
     },
     {
       header: 'Email',
-      accessor: 'email'
-    },
-    {
-      header: 'Status',
-      accessor: 'status',
-      render: (row) => (
-        <RHFSwitch
-          value={row.status || 'ACTIVE'}
-          onChange={(newVal) => handleStatusChange(row.id, newVal)}
-        />
-      )
+      accessor: 'email',
+      render: (row) => row.contactEmail || row.email || '-'
     }
   ];
 
@@ -66,7 +62,6 @@ export default function AdminDashboard() {
       icon: Building,
       color: '#1a434d',
       progressBarColor: '#2563eb',
-      progress: 70,
       action: () => navigate(ROUTES.ADMIN_SERVICE_CENTERS),
     },
     {
@@ -75,7 +70,6 @@ export default function AdminDashboard() {
       icon: MapPin,
       color: '#2dd4bf',
       progressBarColor: '#059669',
-      progress: 50,
       action: () => navigate(ROUTES.ADMIN_LOCATIONS),
     },
     {
@@ -84,7 +78,6 @@ export default function AdminDashboard() {
       icon: Users,
       color: '#13323a',
       progressBarColor: '#dc2626',
-      progress: 35,
       action: () => navigate(ROUTES.ADMIN_USERS),
     },
     {
@@ -93,7 +86,6 @@ export default function AdminDashboard() {
       icon: ShieldCheck,
       color: '#0ea5e9',
       progressBarColor: '#d97706',
-      progress: 20,
       action: () => navigate(ROUTES.ADMIN_ROLES),
     },
   ];

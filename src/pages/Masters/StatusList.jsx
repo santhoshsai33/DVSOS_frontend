@@ -1,25 +1,49 @@
-import React, { useState } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Select, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
-import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
-import useMasterDataStore from '../../store/useMasterDataStore';
+import { Plus, Edit, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
-import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
+import { getStatusesApi, updateStatusActiveApi } from '../../api/adminStatusMasterApi';
 
 export default function StatusList() {
   const navigate = useNavigate();
-  const { masterStatuses, masterModules, deleteStatus, updateStatus } = useMasterDataStore();
+  const [statuses, setStatuses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
-  const [deleteItem, setDeleteItem] = useState(null);
+
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      try {
+        setLoading(true);
+        const res = await getStatusesApi({ page: page + 1, limit: rowsPerPage, search });
+        if (res?.success) {
+          setStatuses(res.data.statusMasters || []);
+          setTotalCount(res.meta?.total || 0);
+        }
+      } catch (error) {
+        toastError(error?.message || 'Failed to fetch statuses');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchStatuses();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, rowsPerPage, search]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -32,55 +56,41 @@ export default function StatusList() {
     setSelectedStatus(null);
   };
 
-  const handleDelete = () => {
-    setDeleteItem(selectedStatus);
-    handleMenuClose();
-  };
-
-  const confirmDelete = () => {
-    if (deleteItem) {
-      deleteStatus(deleteItem.id);
-      toastSuccess(`Status "${deleteItem.name}" deleted successfully.`);
-      setDeleteItem(null);
+  const handleStatusChange = async (id, newStatus) => {
+    const isActive = newStatus === 'ACTIVE' || newStatus === true;
+    try {
+      const res = await updateStatusActiveApi(id, isActive);
+      if (res?.success) {
+        toastSuccess('Status updated successfully!');
+        setStatuses(prev => prev.map(s => s.id === id ? { ...s, isActive: isActive } : s));
+      }
+    } catch (error) {
+      toastError(error?.message || 'Failed to update status');
     }
   };
-
-  const handleStatusChange = (id, newStatus) => {
-    updateStatus(id, { status: newStatus });
-    toastSuccess('Status updated successfully!');
-  };
-
-  const getModuleName = (moduleId) => {
-    const module = masterModules?.find(m => m.id === moduleId);
-    return module ? module.name : 'Unknown Module';
-  };
-
-  const filteredStatuses = (masterStatuses || []).filter(status =>
-    status.name.toLowerCase().includes(search.toLowerCase()) ||
-    getModuleName(status.moduleId).toLowerCase().includes(search.toLowerCase())
-  );
 
   const columns = [
     {
       header: 'Module',
       accessor: 'moduleId',
-      render: (row) => <Typography variant="body2">{getModuleName(row.moduleId)}</Typography>
+      render: (row) => <Typography variant="body2">{row.module?.moduleName || 'Unknown Module'}</Typography>
     },
     {
       header: 'Status Name',
-      accessor: 'name',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
+      accessor: 'statusName',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.statusName}</Typography>
     },
     {
       header: 'Description',
       accessor: 'description',
     },
+
     {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'isActive',
       render: (row) => (
         <RHFSwitch
-          value={row.status || 'ACTIVE'}
+          value={row.isActive !== undefined ? row.isActive : true}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
       )
@@ -99,7 +109,7 @@ export default function StatusList() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Status Master"
-        breadcrumbs={[{ label: 'Settings' }, { label: 'Statuses' }]}
+        // breadcrumbs={[{ label: 'Statuses' }]}
         actions={
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_STATUSES_NEW)}>
             Add Status
@@ -112,7 +122,7 @@ export default function StatusList() {
           <SearchBar
             placeholder="Search status or module..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
       </Box>
@@ -120,18 +130,17 @@ export default function StatusList() {
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={filteredStatuses}
+          data={statuses}
+          loading={loading}
           emptyMessage="No statuses found"
+          serverSide={true}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
-
-      <ConfirmDeleteDialog
-        open={!!deleteItem}
-        title="Delete Status"
-        message={`Are you sure you want to delete "${deleteItem?.name}"?`}
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteItem(null)}
-      />
 
       <Menu
         anchorEl={anchorEl}
@@ -145,10 +154,6 @@ export default function StatusList() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit Status
         </MenuItem>
-        {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <Trash2 size={16} className="mr-3" />
-          Delete Status
-        </MenuItem> */}
       </Menu>
     </Box>
   );
