@@ -58,7 +58,8 @@ const DetailRow = ({ icon: Icon, label, value, isLast = false }) => (
 );
 
 export default function LocationView() {
-  const { id } = useParams();
+  const { slug } = useParams();
+  const locationIdentifier = slug;
   const navigate = useNavigate();
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,19 +67,24 @@ export default function LocationView() {
   useEffect(() => {
     const fetchLocation = async () => {
       try {
-        const res = await getLocationApi(id);
+        const res = await getLocationApi(locationIdentifier);
         if (res?.success) {
-          setLocation(res.data.location || res.data);
+          const fetchedLocation = res.data.location || res.data;
+          setLocation(fetchedLocation);
+
+          if (fetchedLocation.slug && fetchedLocation.slug !== locationIdentifier) {
+            navigate(ROUTES.ADMIN_LOCATIONS_VIEW.replace(':slug', fetchedLocation.slug), { replace: true });
+          }
         }
       } catch (error) {
-        toastError(error?.message || 'Failed to fetch location details');
+        toastError(error?.response?.data?.message || error?.message || 'Failed to fetch location details');
         navigate(ROUTES.ADMIN_LOCATIONS);
       } finally {
         setLoading(false);
       }
     };
     fetchLocation();
-  }, [id, navigate]);
+  }, [locationIdentifier, navigate]);
 
   if (loading) {
     return (

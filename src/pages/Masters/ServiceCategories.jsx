@@ -66,6 +66,11 @@ export default function ServiceCategories() {
     handleMenuClose();
   };
 
+  const getEditPath = (category) => {
+    const identifier = category?.slug || category?.id;
+    return ROUTES.ADMIN_MASTER_CATEGORIES_EDIT.replace(':slug', identifier);
+  };
+
   const confirmDelete = async () => {
     if (deleteItem) {
       try {
@@ -174,7 +179,7 @@ export default function ServiceCategories() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_CATEGORIES_EDIT.replace(':id', selectedCategory?.id)); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedCategory)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>

@@ -1,5 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { getManagerDashboardApi, getMDDashboardApi, getSupervisorDashboardApi, getQueueSummaryApi } from '../api/dashboardApi';
+import {
+  getAdminDashboardApi,
+  getManagerDashboardApi,
+  getMDDashboardApi,
+  getSupervisorDashboardApi,
+  getQueueSummaryApi
+} from '../api/dashboardApi';
 
 // Mock data for offline development
 const MOCK_MANAGER_STATS = {
@@ -42,6 +48,17 @@ const MOCK_MANAGER_STATS = {
     { id: '5', vehicleNo: 'TN 09 LM 8899', customer: 'Deepa Menon', status: 'BODY_SHOP', stage: 'Body Shop', timeInStage: '3 hrs' },
     { id: '6', vehicleNo: 'AP 16 ZZ 7700', customer: 'Kiran Reddy', status: 'WATER_WASH', stage: 'Water Wash', timeInStage: '45 mins' },
   ],
+};
+
+export const useAdminDashboard = () => {
+  return useQuery({
+    queryKey: ['dashboard', 'admin'],
+    queryFn: async () => {
+      const response = await getAdminDashboardApi();
+      return response;
+    },
+    staleTime: 60000,
+  });
 };
 
 export const useManagerDashboard = () => {

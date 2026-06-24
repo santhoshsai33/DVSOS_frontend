@@ -6,7 +6,6 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFSelect from '../../components/form/RHFSelect';
-import RHFSwitch from '../../components/form/RHFSwitch';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
 import { toastSuccess, toastError } from '../../notifications/toast';
@@ -25,8 +24,9 @@ const schema = z.object({
 
 export default function StatusForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const statusIdentifier = slug;
+  const isEdit = !!statusIdentifier;
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
   const [modules, setModules] = useState([]);
@@ -45,14 +45,15 @@ export default function StatusForm() {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        const res = await getModulesApi({ limit: 1000 });
+        const res = await getModulesApi({ limit: 1000, isActive: true });
         if (res?.success) {
           setModules(res.data.modules || []);
         }
       } catch (error) {
-        toastError('Failed to fetch modules');
+        toastError(error?.response?.data?.message || error?.message || 'Failed to fetch modules');
       }
     };
+
     fetchModules();
   }, []);
 
@@ -60,7 +61,7 @@ export default function StatusForm() {
     if (isEdit) {
       const fetchStatusDetails = async () => {
         try {
-          const res = await getStatusDetailApi(id);
+          const res = await getStatusDetailApi(statusIdentifier);
           if (res?.success) {
             const statusToEdit = res.data.statusMaster;
             reset({
@@ -68,9 +69,13 @@ export default function StatusForm() {
               statusName: statusToEdit.statusName || '',
               description: statusToEdit.description || ''
             });
+
+            if (statusToEdit.slug && statusToEdit.slug !== statusIdentifier) {
+              navigate(ROUTES.ADMIN_MASTER_STATUSES_EDIT.replace(':slug', statusToEdit.slug), { replace: true });
+            }
           }
         } catch (error) {
-          toastError(error?.message || 'Failed to fetch status details');
+          toastError(error?.response?.data?.message || error?.message || 'Failed to fetch status details');
           navigate(ROUTES.ADMIN_MASTER_STATUSES);
         } finally {
           setLoading(false);
@@ -78,13 +83,13 @@ export default function StatusForm() {
       };
       fetchStatusDetails();
     }
-  }, [isEdit, id, reset, navigate]);
+  }, [isEdit, statusIdentifier, reset, navigate]);
 
   const onSubmit = async (data) => {
     setSaving(true);
     try {
       if (isEdit) {
-        const res = await updateStatusApi(id, data);
+        const res = await updateStatusApi(statusIdentifier, data);
         if (res?.success) {
           toastSuccess(`Status "${data.statusName}" updated successfully.`);
           navigate(ROUTES.ADMIN_MASTER_STATUSES);
@@ -97,7 +102,7 @@ export default function StatusForm() {
         }
       }
     } catch (error) {
-      toastError(error?.message || 'Failed to save status');
+      toastError(error?.response?.data?.message || error?.message || 'Failed to save status');
     } finally {
       setSaving(false);
     }

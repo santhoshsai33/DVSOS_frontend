@@ -25,8 +25,9 @@ const schema = z.object({
 
 export default function ServiceItemForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
+  const { slug } = useParams();
+  const itemIdentifier = slug;
+  const isEdit = !!itemIdentifier;
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
@@ -63,7 +64,7 @@ export default function ServiceItemForm() {
     if (isEdit) {
       const fetchDetail = async () => {
         try {
-          const res = await getServiceItemApi(id);
+          const res = await getServiceItemApi(itemIdentifier);
           if (res?.success) {
             const item = res.data.serviceItem || res.data;
             reset({
@@ -73,6 +74,9 @@ export default function ServiceItemForm() {
               defaultPrice: item.defaultPrice || '',
               estimatedMinutes: item.estimatedMinutes || ''
             });
+            if (item.slug && item.slug !== itemIdentifier) {
+              navigate(ROUTES.ADMIN_MASTER_ITEMS_EDIT.replace(':slug', item.slug), { replace: true });
+            }
           }
         } catch (error) {
           toastError('Failed to fetch service item details');
@@ -82,7 +86,7 @@ export default function ServiceItemForm() {
       };
       fetchDetail();
     }
-  }, [isEdit, id, reset]);
+  }, [isEdit, itemIdentifier, navigate, reset]);
 
   const onSubmit = async (data) => {
     setSaving(true);
@@ -96,7 +100,7 @@ export default function ServiceItemForm() {
       };
 
       if (isEdit) {
-        await updateServiceItemApi(id, payload);
+        await updateServiceItemApi(itemIdentifier, payload);
         toastSuccess(`Service Item "${data.name}" updated successfully.`);
       } else {
         await createServiceItemApi(payload);

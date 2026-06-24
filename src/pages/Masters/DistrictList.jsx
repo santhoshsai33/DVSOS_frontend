@@ -63,6 +63,11 @@ export default function DistrictList() {
     handleMenuClose();
   };
 
+  const getEditPath = (district) => {
+    const identifier = district?.slug || district?.id;
+    return ROUTES.ADMIN_MASTER_DISTRICTS_EDIT.replace(':slug', identifier);
+  };
+
   const confirmDelete = async () => {
     if (deleteItem) {
       try {
@@ -178,7 +183,7 @@ export default function DistrictList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(ROUTES.ADMIN_MASTER_DISTRICTS_EDIT.replace(':id', selectedDistrict?.id)); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedDistrict)); }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>
