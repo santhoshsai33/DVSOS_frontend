@@ -158,27 +158,6 @@ export default function AdminDashboard() {
                       <Icon size={20} />
                     </Box>
                   </Box>
-                  {/* Progress Bar */}
-                  <Box sx={{ width: '100%', mt: 3.5 }}>
-                    <Box
-                      sx={{
-                        height: 5,
-                        width: '100%',
-                        bgcolor: '#E2E8F0',
-                        borderRadius: 999,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          height: '100%',
-                          width: `${kpi.progress}%`,
-                          bgcolor: kpi.progressBarColor,
-                          borderRadius: 999,
-                        }}
-                      />
-                    </Box>
-                  </Box>
                 </CardContent>
               </Card>
             </Grid>
