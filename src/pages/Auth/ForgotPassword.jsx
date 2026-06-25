@@ -6,6 +6,7 @@ import { Mail, ArrowLeft } from 'lucide-react';
 import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
 import { toastSuccess, toastError } from '../../notifications/toast';
+import { forgotPasswordApi } from '../../api/authApi';
 import styles from './Auth.module.css';
 import { Box } from '@mui/material';
 
@@ -18,11 +19,12 @@ export default function ForgotPassword() {
 
   const onSubmit = async (data) => {
     try {
-      await new Promise((r) => setTimeout(r, 1000));
+      await forgotPasswordApi({ emailId: data.email });
       toastSuccess(`Reset link sent to ${data.email}`);
       methods.reset();
-    } catch {
-      toastError('Failed to send reset link. Try again.');
+    } catch (error) {
+      const errorMsg = error?.response?.data?.message || 'Failed to send reset link. Try again.';
+      toastError(errorMsg);
     }
   };
 
