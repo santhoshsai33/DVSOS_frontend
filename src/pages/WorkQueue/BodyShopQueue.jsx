@@ -192,7 +192,7 @@ export default function BodyShopQueue() {
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F4F6F9', minHeight: '100%' }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F0F4FF', minHeight: '100%' }}>
 
       {/* KPI Cards Row */}
       <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
