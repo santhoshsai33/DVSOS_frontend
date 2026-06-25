@@ -60,7 +60,7 @@ export const SIDEBAR_MENUS = {
   ],
 
   [ROLES.BODY_SHOP_SUPERVISOR]: [
-    { label: 'Body Shop Queue', path: ROUTES.BODY_SHOP_QUEUE, icon: Paintbrush },
+    { label: 'Dashboard', path: ROUTES.BODY_SHOP_QUEUE, icon: LayoutDashboard },
     { label: 'Assign Mechanic', path: ROUTES.BODY_SHOP_ASSIGN_MECHANIC, icon: User },
     { label: 'Additional Work', path: ROUTES.BODY_SHOP_ADDITIONAL_WORK, icon: AlertCircle },
     { label: 'Work Status', path: ROUTES.BODY_SHOP_WORK_STATUS, icon: CheckSquare },
