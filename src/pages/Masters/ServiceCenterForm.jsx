@@ -14,7 +14,7 @@ import { createServiceCenterApi, updateServiceCenterApi, getServiceCenterApi } f
 const schema = z.object({
   name: z.string().trim().min(1, 'Service Center Name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters are not allowed'),
   gstNumber: z.literal('').or(z.string().trim().toUpperCase().length(15, 'GST Number must be exactly 15 characters').regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i, 'Invalid GST Number format (e.g., 29ABCDE1234F1Z5)')).optional(),
-  contactNumber: z.string().trim().min(1, 'Contact Number is required').regex(/^[0-9+\s-]+$/, 'Invalid contact number format'),
+  contactNumber: z.string().trim().min(1, 'Contact Number is required').regex(/^[0-9]{10}$/, 'Contact Number must be exactly 10 digits').refine(val => !/^0+$/.test(val), 'Contact Number cannot be all zeros'),
   email: z.string().trim().min(1, 'Email Address is required').email('Invalid email address'),
   logoUrl: z.string().trim().url('Invalid URL').optional().or(z.literal('')),
   websiteUrl: z.string().trim().url('Invalid URL').optional().or(z.literal('')),

@@ -196,7 +196,7 @@ export default function RolePrivilegesForm() {
   const availableModuleNames = modulesList.map(m => m.module);
   const displayedModules = selectedModule
     ? modulesList.filter(m => m.module === selectedModule)
-    : modulesList;
+    : [];
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
@@ -244,7 +244,7 @@ export default function RolePrivilegesForm() {
                   }
                 }}
               >
-                <MenuItem value="">All Modules</MenuItem>
+                <MenuItem value="" disabled>Select Module</MenuItem>
                 {availableModuleNames.map(m => (
                   <MenuItem key={m} value={m}>{m}</MenuItem>
                 ))}
@@ -271,6 +271,10 @@ export default function RolePrivilegesForm() {
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 3 }}>Loading...</TableCell>
+                </TableRow>
+              ) : displayedModules.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 3, color: '#64748B' }}>Please select a module to view its permissions</TableCell>
                 </TableRow>
               ) : displayedModules.map((mod) => {
                 // Find original index to update state correctly

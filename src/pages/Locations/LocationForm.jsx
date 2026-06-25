@@ -21,7 +21,7 @@ const schema = z.object({
   stateId: z.number({ required_error: 'State is required', invalid_type_error: 'State is required' }).min(1, 'State is required'),
   districtId: z.number({ required_error: 'District is required', invalid_type_error: 'District is required' }).min(1, 'District is required'),
   name: z.string().trim().min(1, 'Location Name is required'),
-  phoneNo: z.string().trim().regex(/^[0-9+\s-]+$/, 'Invalid contact number format').optional().or(z.literal('')),
+  phoneNo: z.literal('').or(z.string().trim().regex(/^[0-9]{10}$/, 'Phone Number must be exactly 10 digits').refine(val => !/^0+$/.test(val), 'Phone Number cannot be all zeros')).optional(),
   email: z.string().trim().email('Invalid email address').optional().or(z.literal('')),
   pincode: z.string().trim().optional().or(z.literal('')),
   address: z.string().trim().optional().or(z.literal('')),
