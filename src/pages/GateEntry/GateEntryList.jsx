@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Box, Card, IconButton, Menu, MenuItem, Modal, Typography, TextField, Grid, Select } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import { Plus, LogIn, Eye, LogOut, MoreVertical } from 'lucide-react';
@@ -10,21 +10,19 @@ import PageHeader from '../../components/shared/PageHeader';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { useDebounce } from '../../hooks/useDebounce';
 import { toastSuccess } from '../../notifications/toast';
-
-const MOCK_ENTRIES = [
-  { id: '1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', mobile: '9876543210', makeModel: 'Hyundai i20', serviceType: 'General Service', status: 'IN_PROGRESS', entryTime: '2024-06-12T08:00:00Z', entryBy: 'Gate Guard A' },
-  { id: '2', vehicleNumber: 'KA 05 XY 9876', ownerName: 'Priya Singh', mobile: '9876543211', makeModel: 'Maruti Swift', serviceType: 'Oil Change', status: 'PENDING', entryTime: '2024-06-12T09:15:00Z', entryBy: 'Gate Guard A' },
-  { id: '3', vehicleNumber: 'MH 12 PQ 4567', ownerName: 'Arun Patel', mobile: '9876543212', makeModel: 'Honda City', serviceType: 'Body Repair', status: 'COMPLETED', entryTime: '2024-06-12T07:30:00Z', entryBy: 'Gate Guard B' },
-  { id: '4', vehicleNumber: 'DL 04 RS 3344', ownerName: 'Suresh Nair', mobile: '9876543213', makeModel: 'Toyota Fortuner', serviceType: 'Engine Repair', status: 'DELAYED', entryTime: '2024-06-11T10:00:00Z', entryBy: 'Gate Guard A' },
-  { id: '5', vehicleNumber: 'TN 09 LM 8899', ownerName: 'Deepa Menon', mobile: '9876543214', makeModel: 'Mahindra XUV500', serviceType: 'General Service', status: 'BODY_SHOP', entryTime: '2024-06-12T08:45:00Z', entryBy: 'Gate Guard B' },
-];
+import { gateEntryApi } from '../../api/gateEntryApi';
 
 export default function GateEntryList({ onAddClick, onViewClick, onEntryClick }) {
   const navigate = useNavigate();
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const debSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useState('');
   const [serviceTypeFilter, setServiceTypeFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const [showExitModal, setShowExitModal] = useState(false);
   const [exitVehicle, setExitVehicle] = useState(null);
@@ -53,23 +51,38 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
     setExitVehicle(null);
   };
 
-  const filtered = MOCK_ENTRIES.filter((e) => {
-    const matchesSearch = !debSearch ||
-      e.vehicleNumber.toLowerCase().includes(debSearch.toLowerCase()) ||
-      e.ownerName.toLowerCase().includes(debSearch.toLowerCase()) ||
-      e.mobile.includes(debSearch);
-    
-    const matchesStatus = !statusFilter || e.status === statusFilter;
-    const matchesServiceType = !serviceTypeFilter || e.serviceType === serviceTypeFilter;
+  const fetchEntries = async () => {
+    try {
+      setLoading(true);
+      const res = await gateEntryApi.list({
+        page,
+        limit,
+        search: debSearch,
+        status: statusFilter,
+        serviceType: serviceTypeFilter
+      });
+      setEntries(res.data || []);
+      setTotal(res.meta?.total || 0);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return matchesSearch && matchesStatus && matchesServiceType;
-  });
+  useEffect(() => {
+    fetchEntries();
+  }, [page, limit, debSearch, statusFilter, serviceTypeFilter]);
 
   const columns = [
     {
       header: 'Vehicle Number',
       sortable: false,
-      render: (row) => <VehicleNumberPlate vehicleNumber={row.vehicleNumber} />,
+      render: (row) => (
+        <Link to={`/gate-entry/view/${row.slug || row.id}`} style={{ textDecoration: 'none' }}>
+          <VehicleNumberPlate vehicleNumber={row.vehicleNumber} />
+        </Link>
+      ),
     },
     { header: 'Owner Name', accessor: 'ownerName', sortable: false },
     { header: 'Mobile', accessor: 'mobile', sortable: false },
@@ -113,9 +126,9 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
           displayEmpty
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          sx={{ 
-            width: { xs: '100%', sm: 180 }, 
-            bgcolor: 'background.paper', 
+          sx={{
+            width: { xs: '100%', sm: 180 },
+            bgcolor: 'background.paper',
             borderRadius: '24px',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
             '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
@@ -135,9 +148,9 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
           displayEmpty
           value={serviceTypeFilter}
           onChange={(e) => setServiceTypeFilter(e.target.value)}
-          sx={{ 
-            width: { xs: '100%', sm: 180 }, 
-            bgcolor: 'background.paper', 
+          sx={{
+            width: { xs: '100%', sm: 180 },
+            bgcolor: 'background.paper',
             borderRadius: '24px',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
             '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
@@ -155,10 +168,17 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
       <Card sx={{ borderRadius: 0, }}>
         <DataTable
           columns={columns}
-          data={filtered}
+          data={entries}
+          loading={loading}
           emptyMessage="No gate entries found"
           showPagination={true}
-          defaultItemsPerPage={5}
+          defaultItemsPerPage={limit}
+          totalItems={total}
+          onPageChange={(newPage) => setPage(newPage)}
+          onRowsPerPageChange={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
         />
       </Card>
 
@@ -170,11 +190,19 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); onViewClick && onViewClick(selectedEntry); }}>
+        <MenuItem onClick={() => { 
+          const idOrSlug = selectedEntry?.slug || selectedEntry?.id;
+          handleMenuClose(); 
+          if(idOrSlug) navigate(`/gate-entry/view/${idOrSlug}`); 
+        }}>
           <Eye size={16} className="mr-3 text-primary" />
           View
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); onEntryClick && onEntryClick(selectedEntry); }}>
+        <MenuItem onClick={() => { 
+          const entry = selectedEntry;
+          handleMenuClose(); 
+          if(onEntryClick) onEntryClick(entry); 
+        }}>
           <LogIn size={16} className="mr-3 text-warning" />
           Entry
         </MenuItem>

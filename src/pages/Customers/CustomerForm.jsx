@@ -7,81 +7,73 @@ import RHFTextField from '../../components/form/RHFTextField';
 import RHFTextarea from '../../components/form/RHFTextarea';
 import RHFSelect from '../../components/form/RHFSelect';
 import Button from '../../components/common/Button';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 
-const STATUS_OPTIONS = [
-  { value: 'ACTIVE', label: 'Active' },
-  { value: 'INACTIVE', label: 'Inactive' },
-];
+
+import { useCustomerDetails } from '../../queries/useDataQueries';
+import { useUpdateCustomer } from '../../mutations/useDataMutations';
 
 export default function CustomerForm() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEdit = !!id;
-  const [saving, setSaving] = useState(false);
+  const { id, slug } = useParams();
+  const identifier = slug || id;
+  const isEdit = !!identifier;
+
+  const { data: customerDetails, isLoading } = useCustomerDetails(identifier);
+  const updateMutation = useUpdateCustomer();
 
   const methods = useForm({
     defaultValues: {
-      name: '',
-      email: '',
-      mobile: '',
-      address: '',
-      status: 'ACTIVE'
+      fullName: '',
+      emailId: '',
+      mobileNo: '',
+      alternateMobileNo: '',
+      address: ''
     }
   });
 
   const { handleSubmit, reset } = methods;
 
   useEffect(() => {
-    if (isEdit) {
-      try {
-        const saved = JSON.parse(localStorage.getItem('dvsos_customers') || '[]');
-        const customer = saved.find(c => String(c.id) === String(id));
-        if (customer) {
-          reset({
-            name: customer.name,
-            email: customer.email,
-            mobile: customer.mobile,
-            address: customer.address || '',
-            status: customer.status || 'ACTIVE'
-          });
-        }
-      } catch (e) {
-        console.error(e);
-      }
+    if (isEdit && customerDetails?.data) {
+      const customer = customerDetails.data;
+      reset({
+        fullName: customer.fullName || '',
+        emailId: customer.emailId || '',
+        mobileNo: customer.mobileNo || '',
+        alternateMobileNo: customer.alternateMobileNo || '',
+        address: customer.address || ''
+      });
     }
-  }, [isEdit, id, reset]);
+  }, [isEdit, customerDetails, reset]);
 
-  const onSubmit = (data) => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      try {
-        const saved = JSON.parse(localStorage.getItem('dvsos_customers') || '[]');
-        if (isEdit) {
-          const updated = saved.map(c => String(c.id) === String(id) ? { ...c, ...data } : c);
-          localStorage.setItem('dvsos_customers', JSON.stringify(updated));
-          toastSuccess(`Customer "${data.name}" updated successfully.`);
-        } else {
-          const newCustomer = {
-            id: `CUST${Date.now()}`,
-            ...data,
-            visits: 0
-          };
-          saved.unshift(newCustomer);
-          localStorage.setItem('dvsos_customers', JSON.stringify(saved));
-          toastSuccess(`Customer "${data.name}" added successfully.`);
-        }
-      } catch (e) {
-        console.error(e);
+  const onSubmit = async (data) => {
+    try {
+      if (isEdit) {
+        await updateMutation.mutateAsync({
+          id: identifier,
+          data: {
+            fullName: data.fullName,
+            emailId: data.emailId,
+            mobileNo: data.mobileNo,
+            alternateMobileNo: data.alternateMobileNo,
+            address: data.address
+          }
+        });
+      } else {
+        toastSuccess('Customer creation is managed via Gate Entry and CRM.');
       }
-      navigate(ROUTES.CUSTOMERS);
-    }, 800);
+      navigate(ROUTES.CUSTOMERS || '/customers');
+    } catch (error) {
+      console.error(error);
+      const message = error?.response?.data?.message || error?.message || 'An error occurred while updating the customer';
+      toastError(message);
+    }
   };
 
   return (
-    <Box sx={{ bgcolor: 'background.paper', minHeight: '100%', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
+    <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
       {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
@@ -105,19 +97,62 @@ export default function CustomerForm() {
 
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="name" label="Customer Full Name" placeholder="Enter full name" required />
+              <RHFTextField name="fullName" label="Customer Full Name" placeholder="Enter full name" required />
             </Grid>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="email" label="Email Address" type="email" placeholder="Enter email address" required />
+              <RHFTextField 
+                name="emailId" 
+                label="Email Address" 
+                type="email" 
+                placeholder="Enter email address" 
+                required 
+                rules={{ 
+                  required: 'Email address is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email address'
+                  }
+                }}
+              />
             </Grid>
           </Grid>
 
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="mobile" label="Mobile Number" placeholder="Enter mobile number" required />
+              <RHFTextField 
+                name="mobileNo" 
+                label="Mobile Number" 
+                placeholder="Enter mobile number" 
+                required 
+                inputProps={{ maxLength: 10 }}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                }}
+                rules={{ 
+                  required: 'Mobile number is required',
+                  pattern: {
+                    value: /^(?!0{10})\d{10}$/,
+                    message: 'Mobile number must be exactly 10 digits and cannot be all zeros'
+                  }
+                }}
+              />
             </Grid>
             <Grid item xs={12} md={6}>
-              <RHFSelect name="status" label="Status" options={STATUS_OPTIONS} />
+              <RHFTextField 
+                name="alternateMobileNo" 
+                label="Alternative Mobile Number" 
+                placeholder="Enter alternative mobile number" 
+                inputProps={{ maxLength: 10 }}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                }}
+                rules={{
+                  pattern: {
+                    value: /^(?!0{10})\d{10}$/,
+                    message: 'Mobile number must be exactly 10 digits and cannot be all zeros'
+                  }
+                }}
+              />
             </Grid>
           </Grid>
 
@@ -139,7 +174,7 @@ export default function CustomerForm() {
             <Button
               variant="primary"
               type="submit"
-              isLoading={saving}
+              isLoading={updateMutation.isPending}
             >
               {isEdit ? 'Save Changes' : 'Submit'}
             </Button>

@@ -4,6 +4,7 @@ import { getJobCardsApi, getJobCardApi } from '../api/jobCardApi';
 import { getApprovalsApi } from '../api/approvalApi';
 import { getUsersApi } from '../api/userApi';
 import { getServicesApi, getBrandsApi, getModelsApi, getPricingApi } from '../api/masterApi';
+import { customerApi } from '../api/customerApi';
 
 // ─── MOCK DATA ────────────────────────────────────────────
 const MOCK_VEHICLES = {
@@ -140,6 +141,23 @@ export const useUsers = (params = {}) => {
       catch { return MOCK_USERS; }
     },
     staleTime: 60000,
+  });
+};
+
+// ─── CUSTOMER QUERIES ────────────────────────────────────
+export const useCustomers = (params = {}) => {
+  return useQuery({
+    queryKey: ['customers', params],
+    queryFn: () => customerApi.getCustomers(params),
+    staleTime: 60000,
+  });
+};
+
+export const useCustomerDetails = (id) => {
+  return useQuery({
+    queryKey: ['customers', id],
+    queryFn: () => customerApi.getCustomerDetail(id),
+    enabled: !!id,
   });
 };
 

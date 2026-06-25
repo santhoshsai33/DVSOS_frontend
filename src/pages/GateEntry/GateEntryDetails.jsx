@@ -1,11 +1,36 @@
-import { Box, Grid, Typography } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Box, Grid, Typography, CircularProgress } from '@mui/material';
 import { ArrowLeft, LogIn, LogOut, Clock } from 'lucide-react';
 import Button from '../../components/common/Button';
 import StatusBadge from '../../components/common/StatusBadge';
 import { formatDateTime } from '../../utils/formatters';
 import styles from './GateEntry.module.css';
+import { gateEntryApi } from '../../api/gateEntryApi';
 
-export default function GateEntryDetails({ vehicle, onBack }) {
+export default function GateEntryDetails() {
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const [vehicle, setVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await gateEntryApi.getBySlug(slug);
+        setVehicle(res.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (slug) fetchData();
+  }, [slug]);
+
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
+  if (!vehicle) return <Box sx={{ p: 4 }}><Typography>Gate entry not found.</Typography></Box>;
   if (!vehicle) return null;
 
   return (
@@ -17,7 +42,7 @@ export default function GateEntryDetails({ vehicle, onBack }) {
         </Typography>
         <Box
           component="button"
-          onClick={onBack}
+          onClick={() => navigate('/gate-entry')}
           className="back-btn"
         >
           <ArrowLeft size={16} /> Back to List
@@ -87,16 +112,16 @@ export default function GateEntryDetails({ vehicle, onBack }) {
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              {vehicle.status === 'COMPLETED' ? (
+              {vehicle.status === 'EXITED' || vehicle.status === 'CLOSED' || vehicle.exitTime ? (
                 <Box sx={{ p: 2, bgcolor: 'error.50', borderRadius: 2, border: '1.5px solid', borderColor: 'error.100' }}>
                   <Typography variant="subtitle2" fontWeight={700} color="error.main" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <LogOut size={16} /> Exit Logged
                   </Typography>
                   <Typography variant="body2" color="error.main">
-                    <strong>Time:</strong> {formatDateTime(new Date(new Date(vehicle.entryTime).getTime() + 2 * 60 * 60 * 1000).toISOString())}
+                    <strong>Time:</strong> {vehicle.exitTime ? formatDateTime(vehicle.exitTime) : '—'}
                   </Typography>
                   <Typography variant="body2" color="error.main" sx={{ mt: 0.5 }}>
-                    <strong>By:</strong> Gate Guard A
+                    <strong>By:</strong> System
                   </Typography>
                 </Box>
               ) : (

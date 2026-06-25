@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, MenuItem, IconButton, Select, Typography, Box, Card } from '@mui/material';
-import { Plus, Edit, Trash2, Mail, Search, MoreVertical, MapPin } from 'lucide-react';
+import { Plus, Edit, Trash2, Mail, Search, MoreVertical, MapPin, Eye } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
@@ -18,26 +18,19 @@ const INITIAL_CUSTOMERS = [
   { id: '4', name: 'Srinivasan R', email: 'srini@outlook.com', mobile: '9789012345', address: '303 Anna Nagar, Madurai', visits: 1, status: 'INACTIVE' }
 ];
 
+import { useCustomers } from '../../queries/useDataQueries';
+import { useUpdateCustomerStatus } from '../../mutations/useDataMutations';
+
 export default function CustomerListPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [customers, setCustomers] = useState(() => {
-    try {
-      const saved = localStorage.getItem('dvsos_customers');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_CUSTOMERS;
-  });
-
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [deleteItem, setDeleteItem] = useState(null);
 
-  useEffect(() => {
-    localStorage.setItem('dvsos_customers', JSON.stringify(customers));
-  }, [customers]);
+  const { data: customerData, isLoading } = useCustomers({ page, limit, search });
+  const statusMutation = useUpdateCustomerStatus();
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -50,59 +43,38 @@ export default function CustomerListPage() {
     setSelectedCustomer(null);
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    const updated = customers.map(c => {
-      if (c.id === id) {
-        return { ...c, status: newStatus };
-      }
-      return c;
-    });
-    setCustomers(updated);
-    toastSuccess('Customer status updated successfully!');
-  };
-
-  const handleDelete = () => {
-    setDeleteItem(selectedCustomer);
-    handleMenuClose();
-  };
-
-  const confirmDelete = () => {
-    if (deleteItem) {
-      const updated = customers.filter(c => c.id !== deleteItem.id);
-      setCustomers(updated);
-      toastSuccess(`Customer "${deleteItem.name}" deleted successfully.`);
-      setDeleteItem(null);
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await statusMutation.mutateAsync({ id, isActive: newStatus });
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const filteredCustomers = customers.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.mobile.includes(search) ||
-    c.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const customers = customerData?.data || [];
 
   const columns = [
     {
       header: 'Customer Name',
-      accessor: 'name',
+      accessor: 'fullName',
       render: (row) => (
-        <Link to={`/customers/${row.id}`} style={{ fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}>
-          {row.name}
+        <Link to={`/customers/view/${row.slug || row.id}`} style={{ fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}>
+          {row.fullName}
         </Link>
       )
     },
     {
       header: 'Email',
-      accessor: 'email',
+      accessor: 'emailId',
       render: (row) => (
-        <a href={`mailto:${row.email}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
-          <Mail size={12} /> {row.email}
+        <a href={`mailto:${row.emailId}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
+          <Mail size={12} /> {row.emailId}
         </a>
       )
     },
     {
       header: 'Mobile',
-      accessor: 'mobile',
+      accessor: 'mobileNo',
     },
     {
       header: 'Address',
@@ -122,8 +94,8 @@ export default function CustomerListPage() {
       header: 'Status',
       render: (row) => (
         <RHFSwitch
-          value={row.status || 'ACTIVE'}
-          onChange={(newVal) => handleStatusChange(row.id, newVal)}
+          value={row.isActive ? 'ACTIVE' : 'INACTIVE'}
+          onChange={(newVal) => handleStatusChange(row.id, newVal === 'ACTIVE')}
         />
       )
     },
@@ -149,7 +121,10 @@ export default function CustomerListPage() {
           <SearchBar
             placeholder="Search by name, email, or mobile..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => {
+              setSearch(val);
+              setPage(1);
+            }}
           />
         </Box>
       </Box>
@@ -157,18 +132,22 @@ export default function CustomerListPage() {
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={filteredCustomers}
+          data={customers}
           emptyMessage="No customers found"
+          isLoading={isLoading}
+          serverSide={true}
+          totalCount={customerData?.meta?.total || 0}
+          page={page - 1}
+          rowsPerPage={limit}
+          onPageChange={(newPage) => setPage(newPage + 1)}
+          onRowsPerPageChange={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
         />
       </Card>
 
-      <ConfirmDeleteDialog
-        open={!!deleteItem}
-        title="Delete Customer"
-        message={`Are you sure you want to delete customer "${deleteItem?.name}"?\nThis action cannot be undone.`}
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteItem(null)}
-      />
+
 
       <Menu
         anchorEl={anchorEl}
@@ -178,14 +157,15 @@ export default function CustomerListPage() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/customers/${selectedCustomer?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`/customers/view/${selectedCustomer?.slug || selectedCustomer?.id}`); }}>
+          <Eye size={16} style={{ marginRight: 12, color: '#0ea5e9' }} />
+          View Customer
+        </MenuItem>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`/customers/edit/${selectedCustomer?.slug || selectedCustomer?.id}`); }}>
           <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
           Edit Customer
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <Trash2 size={16} style={{ marginRight: 12, color: 'inherit' }} />
-          Delete Customer
-        </MenuItem>
+
       </Menu>
     </Box>
   );

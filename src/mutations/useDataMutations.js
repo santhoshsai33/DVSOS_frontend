@@ -3,6 +3,7 @@ import { createJobCardApi, updateJobCardApi, deleteJobCardApi } from '../api/job
 import { approveRequestApi, rejectRequestApi } from '../api/approvalApi';
 import { createUserApi, updateUserApi, deleteUserApi } from '../api/userApi';
 import { createServiceApi, updateServiceApi, deleteServiceApi, createBrandApi, updateBrandApi, createModelApi, updateModelApi, createPricingApi, updatePricingApi } from '../api/masterApi';
+import { customerApi } from '../api/customerApi';
 import { toastSuccess, toastError } from '../notifications/toast';
 
 // ─── JOB CARD MUTATIONS ──────────────────────────────────
@@ -101,6 +102,32 @@ export const useDeleteUser = () => {
       toastSuccess('User deleted');
     },
     onError: (err) => toastError(err?.message || 'Failed to delete user'),
+  });
+};
+
+// ─── CUSTOMER MUTATIONS ──────────────────────────────────
+export const useUpdateCustomer = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => customerApi.updateCustomer(id, data),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      qc.invalidateQueries({ queryKey: ['customers', variables.id] });
+      toastSuccess('Customer updated successfully');
+    },
+    onError: (err) => toastError(err?.message || 'Failed to update customer'),
+  });
+};
+
+export const useUpdateCustomerStatus = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isActive }) => customerApi.updateCustomerStatus(id, isActive),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customers'] });
+      toastSuccess('Customer status updated successfully');
+    },
+    onError: (err) => toastError(err?.message || 'Failed to update status'),
   });
 };
 

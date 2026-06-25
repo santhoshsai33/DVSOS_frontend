@@ -92,6 +92,14 @@ export const ENDPOINTS = {
     CHANGE_PASSWORD: '/users/change-password',
   },
 
+  // Customers
+  CUSTOMERS: {
+    LIST: '/customers/list',
+    DETAIL: (id) => `/customers/detail/${id}`,
+    UPDATE: (id) => `/customers/update/${id}`,
+    STATUS: (id) => `/customers/status/${id}`,
+  },
+
   // Roles
   ROLES: {
     LIST: '/roles/list',

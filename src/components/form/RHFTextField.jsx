@@ -15,6 +15,7 @@ export default function RHFTextField({
   readOnly = false,
   className = '',
   sx = {},
+  rules = {},
   ...props
 }) {
   const { control } = useFormContext();
@@ -25,6 +26,7 @@ export default function RHFTextField({
     <Controller
       name={name}
       control={control}
+      rules={rules}
       render={({ field, fieldState: { error } }) => (
         <Box sx={{ mb: 2 }}>
           {label && (

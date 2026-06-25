@@ -39,6 +39,7 @@ import UserView from '../pages/Users/UserView';
 import LocationView from '../pages/Locations/LocationView';
 import GateDashboardPage from '../pages/GateEntry/GateDashboardPage';
 import GateEntryPage from '../pages/GateEntry/GateEntryPage';
+import GateEntryDetails from '../pages/GateEntry/GateEntryDetails';
 import PendingSyncPage from '../pages/GateEntry/PendingSyncPage';
 import CrmDashboardPage from '../pages/Dashboard/CrmDashboard';
 import CreateJobCardPage from '../pages/JobCards/JobCardCreate';
@@ -125,6 +126,12 @@ function LegacyLocationEditRedirect() {
   return <Navigate to={`/locations/edit/${slug}`} replace />;
 }
 
+function LegacyCustomerEditRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/customers/edit/${slug}`} replace />;
+}
+
+
 export const router = createBrowserRouter([
   {
     element: <AuthLayout />,
@@ -201,6 +208,7 @@ export const router = createBrowserRouter([
             children: [
               { path: 'gate-dashboard', element: <GateDashboardPage /> },
               { path: 'gate-entry', element: <GateEntryPage /> },
+              { path: 'gate-entry/view/:slug', element: <GateEntryDetails /> },
               { path: 'pending-sync', element: <PendingSyncPage /> },
             ],
           },
@@ -277,8 +285,11 @@ export const router = createBrowserRouter([
             element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_COMMON} />,
             children: [
               { path: 'customers', element: <CustomerListPage title="Customers" /> },
-              { path: 'customers/:id', element: <CustomerDetailPage title="Customer Detail" /> },
-              { path: 'customers/:id/edit', element: <CustomerForm /> },
+              { path: 'customers/new', element: <CustomerForm /> },
+              { path: 'customers/edit/:slug', element: <CustomerForm /> },
+              { path: 'customers/view/:slug', element: <CustomerDetailPage title="Customer Detail" /> },
+              { path: 'customers/:slug/edit', element: <LegacyCustomerEditRedirect /> },
+              { path: 'customers/:slug', element: <CustomerDetailPage title="Customer Detail" /> },
               { path: 'vehicles', element: <VehicleListPage /> },
               { path: 'vehicles/:id', element: <VehicleDetailPage /> },
               { path: 'vehicles/:id/edit', element: <VehicleEditPage /> },

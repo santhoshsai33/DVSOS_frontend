@@ -6,7 +6,6 @@ import GateEntryUpdate from './GateEntryUpdate';
 
 export default function GateEntryPage() {
   const [isAdding, setIsAdding] = useState(false);
-  const [viewingVehicle, setViewingVehicle] = useState(null);
   const [updatingVehicle, setUpdatingVehicle] = useState(null);
 
   if (isAdding) {
@@ -14,15 +13,6 @@ export default function GateEntryPage() {
       <GateEntryForm 
         onCancel={() => setIsAdding(false)} 
         onSuccess={() => setIsAdding(false)} 
-      />
-    );
-  }
-
-  if (viewingVehicle) {
-    return (
-      <GateEntryDetails 
-        vehicle={viewingVehicle} 
-        onBack={() => setViewingVehicle(null)} 
       />
     );
   }
@@ -39,7 +29,6 @@ export default function GateEntryPage() {
   return (
     <GateEntryList 
       onAddClick={() => setIsAdding(true)} 
-      onViewClick={(vehicle) => setViewingVehicle(vehicle)}
       onEntryClick={(vehicle) => setUpdatingVehicle(vehicle)}
     />
   );

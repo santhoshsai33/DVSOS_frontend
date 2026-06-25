@@ -13,6 +13,7 @@ import NotFound from '../pages/NotFound/NotFound';
 import KioskDisplay from '../pages/Kiosk/KioskDisplay';
 import GateEntryList from '../pages/GateEntry/GateEntryList';
 import GateEntryForm from '../pages/GateEntry/GateEntryForm';
+import GateEntryDetails from '../pages/GateEntry/GateEntryDetails';
 import JobCardCreate from '../pages/JobCards/JobCardCreate';
 import JobCardList from '../pages/JobCards/JobCardList';
 import MechanicalQueue from '../pages/WorkQueue/MechanicalQueue';
@@ -49,6 +50,7 @@ export default function AppRoutes() {
         <Route path="/" element={<ManagerDashboard />} />
         <Route path="/gate-entry" element={<GateEntryList />} />
         <Route path="/gate-entry/new" element={<GateEntryForm />} />
+        <Route path="/gate-entry/view/:slug" element={<GateEntryDetails />} />
 
         {/* CRM Routes */}
         <Route path="/crm/dashboard" element={<Navigate to="/job-cards" replace />} />
