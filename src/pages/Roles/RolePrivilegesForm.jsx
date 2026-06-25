@@ -153,7 +153,11 @@ export default function RolePrivilegesForm() {
 
     // Flatten payload
     const permissionsPayload = [];
-    modulesList.forEach(mod => {
+    const modulesToSave = selectedModule 
+      ? modulesList.filter(m => m.module === selectedModule) 
+      : modulesList;
+
+    modulesToSave.forEach(mod => {
       mod.menus.forEach(menu => {
         permissionsPayload.push({
           menuId: menu.menuId,

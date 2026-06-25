@@ -49,7 +49,7 @@ export default function ServiceItemForm() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await getServiceCategoriesApi({ limit: 1000 });
+        const res = await getServiceCategoriesApi();
         if (res?.success) {
           setCategories(res.data.serviceCategories || []);
         }

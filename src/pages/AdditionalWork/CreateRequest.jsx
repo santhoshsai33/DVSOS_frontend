@@ -280,14 +280,7 @@ export function AdditionalWorkRequestScreen({
               <Grid container spacing={2.5} sx={{ mb: 4 }}>
                 <Grid item xs={12} md={4}>
                   <FieldLabel required>Primary Category</FieldLabel>
-                  <TextField
-                    select
-                    fullWidth
-                    value={selectedCategory}
-                    onChange={(event) => {
-                      setSelectedCategory(event.target.value);
-                      setSelectedAdditionalServices([]);
-                    }}
+                  <TextField select fullWidth value={selectedCategory} onChange={(event) => { setSelectedCategory(event.target.value); setSelectedAdditionalServices([]); }}
                     required
                     sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
                   >
@@ -298,13 +291,7 @@ export function AdditionalWorkRequestScreen({
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <FieldLabel>Priority</FieldLabel>
-                  <TextField
-                    select
-                    fullWidth
-                    value={priority}
-                    onChange={(event) => setPriority(event.target.value)}
-                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
-                  >
+                  <TextField select fullWidth value={priority} onChange={(event) => setPriority(event.target.value)} sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} >
                     <MenuItem value="LOW">Low</MenuItem>
                     <MenuItem value="NORMAL">Normal</MenuItem>
                     <MenuItem value="HIGH">High</MenuItem>
@@ -313,24 +300,11 @@ export function AdditionalWorkRequestScreen({
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <FieldLabel required>Expected Delivery</FieldLabel>
-                  <TextField
-                    fullWidth
-                    type="datetime-local"
-                    value={expectedDelivery}
-                    onChange={(event) => setExpectedDelivery(event.target.value)}
-                    required
-                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
-                  />
+                  <TextField fullWidth type="datetime-local" value={expectedDelivery} onChange={(event) => setExpectedDelivery(event.target.value)} required sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <FieldLabel>Request Source</FieldLabel>
-                  <TextField
-                    select
-                    fullWidth
-                    value={requestSource}
-                    onChange={(event) => setRequestSource(event.target.value)}
-                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
-                  >
+                  <TextField select fullWidth value={requestSource} onChange={(event) => setRequestSource(event.target.value)} sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} >
                     {requestSources.map((source) => (
                       <MenuItem key={source.value} value={source.value}>{source.label}</MenuItem>
                     ))}
@@ -338,13 +312,7 @@ export function AdditionalWorkRequestScreen({
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <FieldLabel>Internal Supervisor Notes</FieldLabel>
-                  <TextField
-                    fullWidth
-                    placeholder="Add notes for internal tracking"
-                    value={notes}
-                    onChange={(event) => setNotes(event.target.value)}
-                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
-                  />
+                  <TextField fullWidth placeholder="Add notes for internal tracking" value={notes} onChange={(event) => setNotes(event.target.value)} sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} />
                 </Grid>
               </Grid>
 
@@ -359,40 +327,19 @@ export function AdditionalWorkRequestScreen({
                     <Box
                       key={service.id}
                       onClick={() => toggleAdditionalService(service)}
-                      sx={{
-                        p: 2,
-                        minHeight: 66,
-                        borderRadius: 2,
-                        border: '1px solid',
-                        borderColor: isSelected ? '#0F766E' : '#E2E8F0',
-                        bgcolor: isSelected ? '#ECFDF5' : '#FFFFFF',
-                        cursor: 'pointer',
-                        transition: 'border-color 0.2s, background-color 0.2s',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: 2,
-                      }}
+                      sx={{ p: 2, minHeight: 66, borderRadius: 2, border: '1px solid', borderColor: isSelected ? '#0F766E' : '#E2E8F0', bgcolor: isSelected ? '#ECFDF5' : '#FFFFFF', cursor: 'pointer', transition: 'border-color 0.2s, background-color 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, }}
                     >
                       <FormControlLabel
                         onClick={(event) => event.stopPropagation()}
                         control={
-                          <Checkbox
-                            checked={isSelected}
-                            onChange={() => toggleAdditionalService(service)}
-                            sx={{ color: '#0F172A', '&.Mui-checked': { color: '#0F766E' } }}
-                          />
+                          <Checkbox checked={isSelected} onChange={() => toggleAdditionalService(service)} sx={{ color: '#0F172A', '&.Mui-checked': { color: '#0F766E' } }} />
                         }
                         label={
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                             <Typography variant="body2" fontWeight={800} sx={{ color: '#0F172A' }}>
                               {service.name}
                             </Typography>
-                            <Chip
-                              label={service.category}
-                              size="small"
-                              sx={{ height: 22, fontSize: '0.68rem', bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 700 }}
-                            />
+                            <Chip label={service.category} size="small" sx={{ height: 22, fontSize: '0.68rem', bgcolor: '#F1F5F9', color: '#0F172A', fontWeight: 700 }} />
                           </Box>
                         }
                         sx={{ m: 0, flex: 1 }}
@@ -417,21 +364,7 @@ export function AdditionalWorkRequestScreen({
               </Box>
 
               <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.25,
-                  maxHeight: { xs: 420, lg: 'calc(100vh - 300px)' },
-                  minHeight: 180,
-                  overflowY: 'auto',
-                  pr: 1,
-                  mr: -1,
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#CBD5E1 transparent',
-                  '&::-webkit-scrollbar': { width: 6 },
-                  '&::-webkit-scrollbar-thumb': { bgcolor: '#CBD5E1', borderRadius: 8 },
-                  '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
-                }}
+                sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, maxHeight: { xs: 420, lg: 'calc(100vh - 300px)' }, minHeight: 180, overflowY: 'auto', pr: 1, mr: -1, scrollbarWidth: 'thin', scrollbarColor: '#CBD5E1 transparent', '&::-webkit-scrollbar': { width: 6 }, '&::-webkit-scrollbar-thumb': { bgcolor: '#CBD5E1', borderRadius: 8 }, '&::-webkit-scrollbar-track': { bgcolor: 'transparent' }, }}
               >
                 <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 900, textTransform: 'uppercase' }}>
                   Previous Job Card Bill

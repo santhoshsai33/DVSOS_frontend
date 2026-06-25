@@ -18,7 +18,6 @@ export default function ForgotPassword() {
 
   const onSubmit = async (data) => {
     try {
-      // Mock API call
       await new Promise((r) => setTimeout(r, 1000));
       toastSuccess(`Reset link sent to ${data.email}`);
       methods.reset();
@@ -41,32 +40,13 @@ export default function ForgotPassword() {
 
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)}>
-          <RHFTextField
-            name="email"
-            label="Email Address"
-            placeholder="Enter your registered email"
-            type="email"
-            required
-          />
-          <Button
-            type="submit"
-            variant="primary"
-            fullWidth
-            isLoading={methods.formState.isSubmitting}
-          >
-            Send Reset Link
-          </Button>
+          <RHFTextField name="email" label="Email Address" placeholder="Enter your registered email" type="email" required />
+          <Button type="submit" variant="primary" fullWidth isLoading={methods.formState.isSubmitting} > Send Reset Link </Button>
         </form>
       </FormProvider>
 
       <div className="mt-4 text-center">
-        <Box
-          component={Link}
-          to="/login"
-          className="back-btn"
-        >
-          <ArrowLeft size={14} /> Back to Sign In
-        </Box>
+        <Box component={Link} to="/login" className="back-btn" > <ArrowLeft size={14} /> Back to Sign In </Box>
       </div>
     </div>
   );

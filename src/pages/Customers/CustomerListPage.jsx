@@ -111,21 +111,11 @@ export default function CustomerListPage() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
-      <PageHeader
-        title="Customer Directory"
-        breadcrumbs={[{ label: 'Customers' }]}
-      />
+      <PageHeader title="Customer Directory" breadcrumbs={[{ label: 'Customers' }]} />
 
       <Box sx={{ display: 'flex', mb: 3, gap: 2 }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
-          <SearchBar
-            placeholder="Search by name, email, or mobile..."
-            value={search}
-            onChange={(val) => {
-              setSearch(val);
-              setPage(1);
-            }}
-          />
+          <SearchBar placeholder="Search by name, email, or mobile..." value={search} onChange={(val) => { setSearch(val); setPage(1); }} />
         </Box>
       </Box>
 
@@ -146,9 +136,6 @@ export default function CustomerListPage() {
           }}
         />
       </Card>
-
-
-
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}

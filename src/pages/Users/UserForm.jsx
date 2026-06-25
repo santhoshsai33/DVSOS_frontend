@@ -15,6 +15,7 @@ import { createUserApi, updateUserApi, getUserApi } from '../../api/userApi';
 import { getRolesApi } from '../../api/roleApi';
 import { getLocationsApi } from '../../api/adminLocationApi';
 import useAuthStore from '../../store/useAuthStore';
+import BackButton from '../../components/common/BackButton';
 
 const GENDER_OPTIONS = [
   { value: 'MALE', label: 'Male' },
@@ -27,8 +28,8 @@ const getValidationSchema = (isMD) => z.object({
   email: z.string().trim().min(1, 'Email is required').email('Invalid email format'),
   mobile: z.string().trim().min(1, 'Mobile Number is required').regex(/^[0-9]{10}$/, 'Mobile Number must be exactly 10 digits').refine(val => !/^0+$/.test(val), 'Mobile Number cannot be all zeros'),
   roleId: z.number().min(1, 'Role is required'),
-  locationId: isMD 
-    ? z.any().optional() 
+  locationId: isMD
+    ? z.any().optional()
     : z.number({ required_error: 'Location is required', invalid_type_error: 'Location is required' }).min(1, 'Location is required'),
   password: z.string().optional(),
   status: z.string().optional(),
@@ -178,14 +179,15 @@ export default function UserForm() {
         <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit User' : 'Add New User'}
         </Typography>
-        <Box
+        {/* <Box
           component="button"
           onClick={() => navigate(ROUTES.ADMIN_USERS)}
           className="back-btn"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, background: 'none', border: 'none', cursor: 'pointer', color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, background: 'none', cursor: 'pointer', color: 'text.secondary', '&:hover': { color: 'text.primary' } }}
         >
           <ArrowLeft size={16} /> Back to List
-        </Box>
+        </Box> */}
+        <BackButton to={ROUTES.ADMIN_USERS} label="Back to User List" />
       </Box>
 
       {loading ? (

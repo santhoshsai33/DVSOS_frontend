@@ -22,13 +22,20 @@ export default function RoleList() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [selectedRole, setSelectedRole] = React.useState(null);
   const [deleteItem, setDeleteItem] = React.useState(null);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [totalCount, setTotalCount] = React.useState(0);
 
   const fetchRoles = async () => {
     try {
       setLoading(true);
-      const res = await getRolesApi();
+      const params = { page: page + 1, limit: rowsPerPage };
+      if (search) params.search = search;
+      
+      const res = await getRolesApi(params);
       if (res?.success) {
         setRoles(res.data.roles || []);
+        setTotalCount(res.meta?.total || 0);
       }
     } catch (error) {
       toastError(error?.response?.data?.message || 'Failed to fetch roles');
@@ -38,8 +45,12 @@ export default function RoleList() {
   };
 
   React.useEffect(() => {
-    fetchRoles();
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      fetchRoles();
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search, page, rowsPerPage]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -90,10 +101,6 @@ export default function RoleList() {
     }
   };
 
-  const filteredRoles = (roles || []).filter(role =>
-    role.name.toLowerCase().includes(search.toLowerCase()) ||
-    role.slug.toLowerCase().includes(search.toLowerCase())
-  );
 
   const columns = [
     {
@@ -144,7 +151,7 @@ export default function RoleList() {
           <SearchBar
             placeholder="Search role designation or code..."
             value={search}
-            onChange={setSearch}
+            onChange={(v) => { setSearch(v); setPage(0); }}
           />
         </Box>
       </Box>
@@ -152,8 +159,15 @@ export default function RoleList() {
       <Box sx={{ bgcolor: 'background.paper', borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={filteredRoles}
+          data={roles}
           loading={loading}
+          pagination
+          serverSide={true}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          totalCount={totalCount}
+          onPageChange={setPage}
+          onRowsPerPageChange={(v) => { setRowsPerPage(v); setPage(0); }}
           emptyMessage="No role policies found"
         />
       </Box>

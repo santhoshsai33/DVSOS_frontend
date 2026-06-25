@@ -88,6 +88,7 @@ import NotificationsPage from '../pages/Notifications/NotificationsPage';
 import ProfilePage from '../pages/Profile/ProfilePage';
 import SettingsPage from '../pages/Settings/SettingsPage';
 import DeliveredVehicles from '../pages/Delivery/DeliveredVehicles';
+import NotFound from '../pages/NotFound/NotFound';
 
 const roleHome = {
   [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
@@ -321,5 +322,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '*', element: <Navigate to="/" replace /> },
+  { path: '*', element: <NotFound /> },
 ]);

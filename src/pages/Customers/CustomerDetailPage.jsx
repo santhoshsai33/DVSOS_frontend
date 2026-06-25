@@ -23,9 +23,6 @@ export default function CustomerDetailPage() {
   const identifier = slug || id;
   const { data: response, isLoading } = useCustomerDetails(identifier);
   const customer = response?.data;
-
-  // We are waiting for backend integration of service history.
-  // We can show the job cards array from customer relation if available.
   const history = customer?.jobCards || [];
 
   if (isLoading) {

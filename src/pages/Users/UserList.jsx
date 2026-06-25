@@ -36,8 +36,8 @@ export default function UserList() {
     const fetchDropdowns = async () => {
       try {
         const [rolesRes, locationsRes] = await Promise.all([
-          getRolesApi({ limit: 1000 }),
-          getLocationsApi({ limit: 1000 })
+          getRolesApi(),
+          getLocationsApi()
         ]);
         if (rolesRes?.success) setRoles(rolesRes.data.roles || []);
         if (locationsRes?.success) setLocations(locationsRes.data.locations || []);

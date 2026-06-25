@@ -74,7 +74,6 @@ export default function CustomerForm() {
 
   return (
     <Box sx={{ bgcolor: 'background.paper', p: { xs: 2, md: 4 }, borderRadius: 3, m: { xs: 2, md: 4 } }}>
-      {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h5" fontWeight={700}>
           {isEdit ? 'Edit Customer' : 'Add New Customer'}
@@ -90,7 +89,6 @@ export default function CustomerForm() {
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Section: Customer Information */}
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
             Customer Information
           </Typography>
@@ -100,13 +98,13 @@ export default function CustomerForm() {
               <RHFTextField name="fullName" label="Customer Full Name" placeholder="Enter full name" required />
             </Grid>
             <Grid item xs={12} md={6}>
-              <RHFTextField 
-                name="emailId" 
-                label="Email Address" 
-                type="email" 
-                placeholder="Enter email address" 
-                required 
-                rules={{ 
+              <RHFTextField
+                name="emailId"
+                label="Email Address"
+                type="email"
+                placeholder="Enter email address"
+                required
+                rules={{
                   required: 'Email address is required',
                   pattern: {
                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -119,16 +117,16 @@ export default function CustomerForm() {
 
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} md={6}>
-              <RHFTextField 
-                name="mobileNo" 
-                label="Mobile Number" 
-                placeholder="Enter mobile number" 
-                required 
+              <RHFTextField
+                name="mobileNo"
+                label="Mobile Number"
+                placeholder="Enter mobile number"
+                required
                 inputProps={{ maxLength: 10 }}
                 onInput={(e) => {
                   e.target.value = e.target.value.replace(/[^0-9]/g, '');
                 }}
-                rules={{ 
+                rules={{
                   required: 'Mobile number is required',
                   pattern: {
                     value: /^(?!0{10})\d{10}$/,
@@ -138,10 +136,10 @@ export default function CustomerForm() {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <RHFTextField 
-                name="alternateMobileNo" 
-                label="Alternative Mobile Number" 
-                placeholder="Enter alternative mobile number" 
+              <RHFTextField
+                name="alternateMobileNo"
+                label="Alternative Mobile Number"
+                placeholder="Enter alternative mobile number"
                 inputProps={{ maxLength: 10 }}
                 onInput={(e) => {
                   e.target.value = e.target.value.replace(/[^0-9]/g, '');
@@ -161,23 +159,9 @@ export default function CustomerForm() {
               <RHFTextarea name="address" label="Billing Address" placeholder="Enter address details" rows={3} />
             </Grid>
           </Grid>
-
-          {/* Footer Actions */}
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={() => navigate(ROUTES.CUSTOMERS)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={updateMutation.isPending}
-            >
-              {isEdit ? 'Save Changes' : 'Submit'}
-            </Button>
+            <Button variant="secondary" type="button" onClick={() => navigate(ROUTES.CUSTOMERS)} > Cancel </Button>
+            <Button variant="primary" type="submit" isLoading={updateMutation.isPending} > {isEdit ? 'Save Changes' : 'Submit'} </Button>
           </Box>
         </form>
       </FormProvider>

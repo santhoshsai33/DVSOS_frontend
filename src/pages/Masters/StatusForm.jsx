@@ -45,7 +45,7 @@ export default function StatusForm() {
   useEffect(() => {
     const fetchModules = async () => {
       try {
-        const res = await getModulesApi({ limit: 1000, isActive: true });
+        const res = await getModulesApi({ isActive: true });
         if (res?.success) {
           setModules(res.data.modules || []);
         }

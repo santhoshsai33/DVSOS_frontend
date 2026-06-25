@@ -106,17 +106,7 @@ export default function AdminDashboard() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f0f4ff', minHeight: '100%' }}>
-
-      {/* Top Banner */}
-      <Box sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        gap: { xs: 2, sm: 0 },
-        justifyContent: 'space-between',
-        alignItems: { xs: 'flex-start', sm: 'center' }, mb: 4,
-        bgcolor: '#FFFFFF', p: 3, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
-        border: '1px solid #E5E7EB'
-      }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 4, bgcolor: '#FFFFFF', p: 3, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'rgba(45, 212, 191, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1a434d' }}>
             <Crown size={24} />
@@ -139,15 +129,7 @@ export default function AdminDashboard() {
           return (
             <Grid item xs={12} sm={6} md={3} key={i}>
               <Card
-                sx={{
-                  borderRadius: 3,
-                  boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
-                  borderTop: `4px solid ${kpi.color}`,
-                  height: '100%',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-
-                }}
+                sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', borderTop: `4px solid ${kpi.color}`, height: '100%', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', }}
                 onClick={kpi.action}
               >
                 <CardContent sx={{ p: 3, pb: '24px !important' }}>
@@ -179,13 +161,7 @@ export default function AdminDashboard() {
                 Recently Added Users
               </Typography>
               <Box sx={{ p: '20px' }}>
-                <DataTable
-                  columns={columns}
-                  data={recentUsers}
-                  loading={isLoading}
-                  emptyMessage="No users found"
-                  showPagination={false}
-                />
+                <DataTable columns={columns} data={recentUsers} loading={isLoading} emptyMessage="No users found" showPagination={false} />
               </Box>
             </CardContent>
           </Card>

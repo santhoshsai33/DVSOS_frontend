@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
-import { Box, Typography, Divider, Select, MenuItem, Stack, IconButton, InputAdornment } from '@mui/material';
+import { Box, Typography, Stack, IconButton, InputAdornment } from '@mui/material';
 import useAuthStore from '../../store/useAuthStore';
 import { authSchema } from '../../validations/authSchema';
 import RHFTextField from '../../components/form/RHFTextField';
@@ -65,9 +65,12 @@ export default function Login() {
 
       if (response?.success) {
         const { token, user, redirectPath } = response.data;
-
-        // Map backend role slug to frontend ROLES constant
         const role = mapSlugToRole(user?.role?.slug);
+
+        if (role === ROLES.GATE_SECURITY || role === ROLES.CRM_TEAM) {
+          toastError('Web access denied. Please use the mobile application.');
+          return;
+        }
 
         login(user, role, token);
         toastSuccess(response.message || `Welcome back, ${user.fullName || 'User'}!`);
@@ -100,13 +103,7 @@ export default function Login() {
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)}>
           <Stack spacing={2.5}>
-            <RHFTextField
-              name="email"
-              label="Email Address"
-              placeholder="Enter your email"
-              type="email"
-              required
-            />
+            <RHFTextField name="email" label="Email Address" placeholder="Enter your email" type="email" required />
             <RHFTextField
               name="password"
               label="Password"
@@ -115,44 +112,21 @@ export default function Login() {
               required
               InputProps={{
                 endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      edge="end"
-                      onClick={() => setShowPassword((current) => !current)}
-                      onMouseDown={(event) => event.preventDefault()}
-                    >
-                      {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
-                    </IconButton>
+                  <InputAdornment position="end"> <IconButton aria-label={showPassword ? 'Hide password' : 'Show password'} edge="end" onClick={() => setShowPassword((current) => !current)} onMouseDown={(event) => event.preventDefault()} >
+                    {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                  </IconButton>
                   </InputAdornment>
                 ),
               }}
             />
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: -1 }}>
-              <Typography
-                component={Link}
-                to="/forgot-password"
-                variant="body2"
-                sx={{
-                  color: 'primary.main',
-                  fontWeight: 500,
-                  textDecoration: 'none',
-                  '&:hover': { textDecoration: 'underline' },
-                }}
-              >
+              <Typography component={Link} to="/forgot-password" variant="body2" sx={{ color: 'primary.main', fontWeight: 500, textDecoration: 'none', '&:hover': { textDecoration: 'underline' }, }} >
                 Forgot password?
               </Typography>
             </Box>
 
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              isLoading={methods.formState.isSubmitting}
-              rightIcon={ArrowRight}
-              size="lg"
-            >
+            <Button type="submit" variant="primary" fullWidth isLoading={methods.formState.isSubmitting} rightIcon={ArrowRight} size="lg" >
               Sign In
             </Button>
           </Stack>

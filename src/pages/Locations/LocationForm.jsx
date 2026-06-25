@@ -62,9 +62,9 @@ export default function LocationForm() {
     const fetchDropdowns = async () => {
       try {
         const [scRes, stRes, dsRes] = await Promise.all([
-          getServiceCentersApi({ limit: 1000 }),
-          getStatesApi({ limit: 1000 }),
-          getDistrictsApi({ limit: 1000 })
+          getServiceCentersApi(),
+          getStatesApi(),
+          getDistrictsApi()
         ]);
 
         if (scRes?.success) setServiceCenters(scRes.data.serviceCenters || []);

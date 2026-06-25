@@ -119,20 +119,7 @@ function StagePill({ tone, children }) {
   return (
     <Box
       component="span"
-      sx={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        border: '1px solid',
-        borderColor: style.border,
-        bgcolor: style.bg,
-        color: style.color,
-        borderRadius: '999px',
-        px: 1,
-        py: 0.35,
-        fontSize: 11,
-        fontWeight: 800,
-        whiteSpace: 'nowrap',
-      }}
+      sx={{ display: 'inline-flex', alignItems: 'center', border: '1px solid', borderColor: style.border, bgcolor: style.bg, color: style.color, borderRadius: '999px', px: 1, py: 0.35, fontSize: 11, fontWeight: 800, whiteSpace: 'nowrap', }}
     >
       {children}
     </Box>
@@ -199,33 +186,14 @@ export default function ManagerDashboard() {
           return (
             <Grid item xs={12} sm={6} md={3} key={kpi.label}>
               <Card
-                sx={{
-                  borderRadius: 3,
-                  border: '1px solid #E2E8F0',
-                  borderTop: '6px solid',
-                  borderTopColor: kpi.color,
-                  boxShadow: '0 12px 24px -22px rgba(15, 23, 42, 0.7)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  bgcolor: '#FFFFFF',
-                }}
+                sx={{ borderRadius: 3, border: '1px solid #E2E8F0', borderTop: '6px solid', borderTopColor: kpi.color, boxShadow: '0 12px 24px -22px rgba(15, 23, 42, 0.7)', position: 'relative', overflow: 'hidden', bgcolor: '#FFFFFF', }}
               >
                 <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="h3" sx={{ fontWeight: 900, color: kpi.color, lineHeight: 1 }}>
                       {kpi.value}
                     </Typography>
-                    <Box
-                      sx={{
-                        width: 46,
-                        height: 46,
-                        borderRadius: 3,
-                        bgcolor: kpi.iconBg,
-                        color: kpi.color,
-                        display: 'grid',
-                        placeItems: 'center',
-                      }}
-                    >
+                    <Box sx={{ width: 46, height: 46, borderRadius: 3, bgcolor: kpi.iconBg, color: kpi.color, display: 'grid', placeItems: 'center', }}>
                       <Icon size={21} />
                     </Box>
                   </Box>
@@ -245,30 +213,11 @@ export default function ManagerDashboard() {
             Pipeline overview
           </Typography>
           <Box
-            sx={{
-              borderTop: '1px solid #D8E2F3',
-              mt: 1.25,
-              pt: 2,
-              display: 'flex',
-              flexDirection: { xs: 'column', lg: 'row' },
-              gap: { xs: 2, lg: 3 },
-              pb: 0.5,
-            }}
+            sx={{ borderTop: '1px solid #D8E2F3', mt: 1.25, pt: 2, display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: { xs: 2, lg: 3 }, pb: 0.5, }}
           >
             {pipeline.map((stage, index) => (
               <Box key={stage.label} sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: 'center', gap: { xs: 1.25, lg: 2 }, flex: 1, width: '100%' }}>
-                <Box
-                  sx={{
-                    width: '100%',
-                    minHeight: 96,
-                    borderRadius: 1.5,
-                    border: '1px solid',
-                    borderColor: stage.color,
-                    bgcolor: stage.bg,
-                    p: 1.5,
-                    '&:hover': { boxShadow: '0 10px 20px -18px rgba(15,23,42,0.9)' },
-                  }}
-                >
+                <Box sx={{ width: '100%', minHeight: 96, borderRadius: 1.5, border: '1px solid', borderColor: stage.color, bgcolor: stage.bg, p: 1.5, '&:hover': { boxShadow: '0 10px 20px -18px rgba(15,23,42,0.9)' }, }}>
                   <Typography variant="caption" sx={{ display: 'block', color: stage.color, fontWeight: 900, textTransform: 'uppercase', fontSize: 10 }}>
                     {stage.label}
                   </Typography>
