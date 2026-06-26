@@ -2,7 +2,7 @@ import { Grid, Box, Card, CardContent, Typography, Table, TableBody, TableCell, 
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
-import { TrendingUp, TrendingDown, Briefcase, Users, ShieldCheck } from 'lucide-react';
+import { TrendingUp, Briefcase, Users, Car, ClipboardList, IndianRupee } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
@@ -79,56 +79,65 @@ export default function MDDashboard() {
 
       {/* KPI Cards Row */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        {/* Card 1 */}
-        <Grid item xs={12} sm={6} md={4}>
+        {/* Card 1: Total Vehicles */}
+        <Grid item xs={12} sm={6} md={3}>
           <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', borderTop: '4px solid #2563EB', height: '100%' }}>
             <CardContent sx={{ p: 2.5 }}>
-              <Typography variant="h4" fontWeight={800} color="#1E3A8A">23</Typography>
-              <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 1, mt: 0.5 }}>Total Vehicles Today</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="h4" fontWeight={800} color="#1E3A8A">23</Typography>
+                  <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 1, mt: 0.5 }}>Total Vehicles</Typography>
+                </Box>
+                <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(30, 58, 138, 0.08)', color: '#1E3A8A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Car size={20} />
+                </Box>
+              </Box>
               <Typography variant="caption" fontWeight={700} color="#10B981" sx={{ display: 'flex', alignItems: 'center' }}>
                 <TrendingUp size={14} className="mr-1" /> +3 vs yesterday
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        {/* Card 2 */}
-        <Grid item xs={12} sm={6} md={4}>
+        {/* Card 2: Total Job Cards */}
+        <Grid item xs={12} sm={6} md={3}>
           <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', borderTop: '4px solid #10B981', height: '100%' }}>
             <CardContent sx={{ p: 2.5 }}>
-              <Typography variant="h4" fontWeight={800} color="#065F46">9</Typography>
-              <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 1, mt: 0.5 }}>Completed</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="h4" fontWeight={800} color="#065F46">45</Typography>
+                  <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 1, mt: 0.5 }}>Total Job Cards</Typography>
+                </Box>
+                <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(6, 95, 70, 0.08)', color: '#065F46', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ClipboardList size={20} />
+                </Box>
+              </Box>
               <Typography variant="caption" fontWeight={600} color="text.secondary">
-                53% completion rate
+                Active in system
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        {/* Card 3 */}
-        <Grid item xs={12} sm={6} md={4}>
+        {/* Card 3: Total Revenue */}
+        <Grid item xs={12} sm={6} md={3}>
           <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', borderTop: '4px solid #DB2777', height: '100%' }}>
             <CardContent sx={{ p: 2.5 }}>
-              <Typography variant="h4" fontWeight={800} color="#BE185D">₹1.4L</Typography>
-              <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 1, mt: 0.5 }}>Revenue Today</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="h4" fontWeight={800} color="#BE185D">₹1.4L</Typography>
+                  <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 1, mt: 0.5 }}>Total Revenue</Typography>
+                </Box>
+                <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(190, 24, 93, 0.08)', color: '#BE185D', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IndianRupee size={20} />
+                </Box>
+              </Box>
               <Typography variant="caption" fontWeight={700} color="#10B981" sx={{ display: 'flex', alignItems: 'center' }}>
                 <TrendingUp size={14} className="mr-1" /> +12% vs avg
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        {/* Card 4 */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', borderTop: '4px solid #EF4444', height: '100%' }}>
-            <CardContent sx={{ p: 2.5 }}>
-              <Typography variant="h4" fontWeight={800} color="#991B1B">3</Typography>
-              <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 1, mt: 0.5 }}>Delayed Jobs</Typography>
-              <Typography variant="caption" fontWeight={700} color="#10B981" sx={{ display: 'flex', alignItems: 'center' }}>
-                <TrendingDown size={14} className="mr-1" /> -1 vs yesterday
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        {/* Card 5 */}
-        <Grid item xs={12} sm={6} md={4}>
+        {/* Card 4: Total Users */}
+        <Grid item xs={12} sm={6} md={3}>
           <Card
             sx={{
               borderRadius: 3,
@@ -136,11 +145,6 @@ export default function MDDashboard() {
               borderTop: '4px solid #13323a',
               height: '100%',
               cursor: 'pointer',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              }
             }}
             onClick={() => navigate(ROUTES.ADMIN_USERS)}
           >
@@ -156,39 +160,6 @@ export default function MDDashboard() {
               </Box>
               <Typography variant="caption" fontWeight={600} color="text.secondary">
                 Manage platform users
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        {/* Card 6 */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
-              borderTop: '4px solid #0ea5e9',
-              height: '100%',
-              cursor: 'pointer',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              }
-            }}
-            onClick={() => navigate(ROUTES.ADMIN_ROLES)}
-          >
-            <CardContent sx={{ p: 2.5 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <Box>
-                  <Typography variant="h4" fontWeight={800} color="#0ea5e9">{uniqueRoles}</Typography>
-                  <Typography variant="body2" color="text.secondary" fontWeight={500} sx={{ mb: 1, mt: 0.5 }}>System Roles</Typography>
-                </Box>
-                <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ShieldCheck size={20} />
-                </Box>
-              </Box>
-              <Typography variant="caption" fontWeight={600} color="text.secondary">
-                Configure roles & permissions
               </Typography>
             </CardContent>
           </Card>

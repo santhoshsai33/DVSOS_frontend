@@ -27,10 +27,17 @@ export default function JobCardList() {
   const { role } = useAuthStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const debouncedSearch = useDebounce(search, 300);
   const canCreateJobCard = ![ROLES.BODY_SHOP_SUPERVISOR, ROLES.WATER_WASH_TEAM].includes(role);
 
-  const { data, isLoading } = useJobCards({ search: debouncedSearch, status: statusFilter });
+  const { data, isLoading } = useJobCards({ 
+    search: debouncedSearch, 
+    status: statusFilter,
+    page: page + 1,
+    limit: rowsPerPage
+  });
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -49,21 +56,21 @@ export default function JobCardList() {
   const columns = [
     {
       header: 'Job Card #',
-      accessor: 'id',
+      accessor: 'jobCardNo',
       render: (row) => (
         <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
-          #{row.id}
+          #{row.jobCardNo}
         </Typography>
       ),
     },
     {
       header: 'Vehicle',
       render: (row) => (
-        <VehicleNumberPlate vehicleNumber={row.vehicleNumber} />
+        <VehicleNumberPlate vehicleNumber={row.vehicle?.registrationNo} />
       ),
     },
-    { header: 'Owner', accessor: 'ownerName' },
-    { header: 'Mobile Number', render: (row) => row.ownerMobile || row.mobile || <Typography color="text.secondary">-</Typography> },
+    { header: 'Owner', render: (row) => row.customer?.fullName || 'N/A' },
+    { header: 'Mobile Number', render: (row) => row.customer?.mobileNo || '-' },
     {
       header: 'Priority',
       render: (row) => (
@@ -78,7 +85,7 @@ export default function JobCardList() {
         </Typography>
       ),
     },
-    { header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+    { header: 'Status', render: (row) => <StatusBadge status={row.currentStatus?.statusCode || 'PENDING'} /> },
     {
       header: 'MECHANIC',
       accessor: 'technician',
@@ -99,7 +106,7 @@ export default function JobCardList() {
         );
       }
     },
-    { header: 'Est. Cost', render: (row) => <Typography variant="body2" fontWeight={600}>{formatCurrency(row.estimatedCost)}</Typography> },
+    { header: 'Est. Cost', render: (row) => <Typography variant="body2" fontWeight={600}>{formatCurrency(row.totalEstimate)}</Typography> },
     { header: 'Created', render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography> },
     {
       header: 'Actions',
@@ -112,7 +119,7 @@ export default function JobCardList() {
   ];
 
   const tableData = (data?.data || []).filter(job => 
-    role === ROLES.BODY_SHOP_SUPERVISOR ? job.status === 'BODY_SHOP' : true
+    role === ROLES.BODY_SHOP_SUPERVISOR ? job.currentStatus?.statusCode === 'BODY_SHOP' : true
   );
 
   return (
@@ -132,14 +139,14 @@ export default function JobCardList() {
           <SearchBar
             placeholder="Search vehicle, owner, job ID..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
         <Select
           size="small"
           displayEmpty
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
           sx={{ 
             width: { xs: '100%', sm: 200 }, 
             bgcolor: 'background.paper', 
@@ -159,9 +166,15 @@ export default function JobCardList() {
         <DataTable
           columns={columns}
           data={tableData}
-          isLoading={isLoading}
+          loading={isLoading}
           onRowClick={(row) => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
           emptyMessage="No job cards found"
+          serverSide={true}
+          totalCount={data?.meta?.total || 0}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
 

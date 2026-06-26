@@ -16,9 +16,16 @@ export default function VehicleList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data, isLoading } = useVehicles({ search: debouncedSearch, status: statusFilter });
+  const { data, isLoading } = useVehicles({ 
+    search: debouncedSearch, 
+    status: statusFilter,
+    page: page + 1,
+    limit: rowsPerPage
+  });
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
@@ -37,24 +44,24 @@ export default function VehicleList() {
   const columns = [
     {
       header: 'Vehicle Number',
-      accessor: 'vehicleNumber',
+      accessor: 'registrationNo',
       render: (row) => (
-        <VehicleNumberPlate vehicleNumber={row.vehicleNumber} />
+        <VehicleNumberPlate vehicleNumber={row.registrationNo} />
       ),
     },
-    { header: 'Owner Name', accessor: 'ownerName' },
-    { header: 'Mobile', accessor: 'mobile' },
-    { header: 'Make & Model', accessor: 'makeModel' },
-    { header: 'Type', accessor: 'type' },
+    { header: 'Owner Name', render: (row) => row.customer?.fullName || 'N/A' },
+    { header: 'Mobile', render: (row) => row.customer?.mobileNo || 'N/A' },
+    { header: 'Make & Model', render: (row) => `${row.brand?.name || ''} ${row.model || ''}`.trim() || 'N/A' },
+    { header: 'Type', render: (row) => row.variant || 'N/A' },
     { header: 'Fuel', accessor: 'fuelType' },
     {
       header: 'Status',
-      render: (row) => <StatusBadge status={row.status} />,
+      render: (row) => <StatusBadge status={row.isActive ? 'ACTIVE' : 'INACTIVE'} />,
     },
     {
-      header: 'Entry Time',
-      accessor: 'entryTime',
-      render: (row) => <Typography variant="body2">{formatDateTime(row.entryTime)}</Typography>,
+      header: 'Created At',
+      accessor: 'createdAt',
+      render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography>,
     },
     {
       header: 'Actions',
@@ -81,14 +88,14 @@ export default function VehicleList() {
           <SearchBar
             placeholder="Search vehicle number, owner, mobile..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
         <Select
           size="small"
           displayEmpty
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
           sx={{
             width: { xs: '100%', sm: 180 },
             bgcolor: 'background.paper',
@@ -108,9 +115,15 @@ export default function VehicleList() {
         <DataTable
           columns={columns}
           data={tableData}
-          isLoading={isLoading}
+          loading={isLoading}
           onRowClick={(row) => navigate(`${ROUTES.VEHICLES}/${row.id}`)}
           emptyMessage="No vehicles found"
+          serverSide={true}
+          totalCount={data?.meta?.total || 0}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
 
