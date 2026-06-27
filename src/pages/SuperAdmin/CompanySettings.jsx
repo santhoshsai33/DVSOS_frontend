@@ -88,56 +88,6 @@ export default function CompanySettings() {
               <RHFTextField name="defaultTaxRate" label="Default Tax Rate (%)" type="number" required />
             </Grid>
           </Grid>
-
-          <Divider sx={{ my: 4 }} />
-
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" fontWeight={600}>
-              Stage Alert Intervals
-            </Typography>
-          </Box>
-
-          {fields.map((field, index) => {
-            const isLast = index === fields.length - 1;
-            return (
-              <Grid container spacing={3} sx={{ mb: 3, alignItems: 'center' }} key={field.id}>
-                <Grid item xs={12} md={5}>
-                  <RHFTextField
-                    name={`intervals.${index}.type`}
-                    placeholder="Interval Type (e.g. Break, Service)"
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} md={5}>
-                  <RHFTextField
-                    name={`intervals.${index}.time`}
-                    type="number"
-                    placeholder="Time in Mins (e.g. 15)"
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} md={2} sx={{ display: 'flex', gap: 1, pt: '2px !important' }}>
-                  {isLast && (
-                    <IconButton
-                      onClick={() => append({ type: '', time: '' })}
-                      sx={{ bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' }, width: 38, height: 38, borderRadius: '4px' }}
-                    >
-                      <Plus size={18} strokeWidth={3} />
-                    </IconButton>
-                  )}
-                  <IconButton
-                    onClick={() => remove(index)}
-                    disabled={fields.length === 1}
-                    sx={{ border: '1px solid', borderColor: 'error.main', color: 'error.main', width: 38, height: 38, borderRadius: '4px' }}
-                  >
-                    <Trash2 size={18} />
-                  </IconButton>
-                </Grid>
-              </Grid>
-            );
-          })}
-
-          {/* Footer Actions */}
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
             <Button
               variant="secondary"

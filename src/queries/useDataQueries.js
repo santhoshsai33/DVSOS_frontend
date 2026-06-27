@@ -72,8 +72,11 @@ export const useVehicle = (id) => {
   return useQuery({
     queryKey: ['vehicles', id],
     queryFn: async () => {
-      try { return await getVehicleApi(id); }
-      catch { return MOCK_VEHICLES.data.find((v) => v.id === id) || null; }
+      try { 
+        const res = await getVehicleApi(id); 
+        return res?.data || res;
+      }
+      catch { return MOCK_VEHICLES.data.find((v) => String(v.id) === String(id)) || null; }
     },
     enabled: !!id,
   });
@@ -112,8 +115,11 @@ export const useJobCard = (id) => {
   return useQuery({
     queryKey: ['job-cards', id],
     queryFn: async () => {
-      try { return await getJobCardApi(id); }
-      catch { return MOCK_JOB_CARDS.data.find((j) => j.id === id) || null; }
+      try { 
+        const res = await getJobCardApi(id); 
+        return res?.data || res;
+      }
+      catch { return MOCK_JOB_CARDS.data.find((j) => String(j.id) === String(id)) || null; }
     },
     enabled: !!id,
   });

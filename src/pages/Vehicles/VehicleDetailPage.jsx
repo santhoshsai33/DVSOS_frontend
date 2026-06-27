@@ -29,6 +29,17 @@ export default function VehicleDetailPage() {
     );
   }
 
+  const displayVehicle = {
+    ...vehicle,
+    vehicleNumber: vehicle.registrationNo || vehicle.vehicleNumber || 'Unknown',
+    makeModel: (vehicle.brand?.name ? `${vehicle.brand.name} ${vehicle.model || ''}` : vehicle.makeModel) || 'Unknown Make/Model',
+    ownerName: vehicle.customer?.fullName || vehicle.ownerName || 'Unknown Owner',
+    mobile: vehicle.customer?.mobileNo || vehicle.mobile || 'Unknown Mobile',
+    entryTime: vehicle.createdAt || vehicle.entryTime,
+    type: vehicle.variant || vehicle.type || 'Unknown Type',
+    fuelType: vehicle.fuelType || 'Unknown Fuel'
+  };
+
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
@@ -66,7 +77,7 @@ export default function VehicleDetailPage() {
                 }}>
                   Registration
                 </Box>
-                <StatusBadge status={vehicle.status} />
+                <StatusBadge status={displayVehicle.status} />
               </Box>
 
               <Typography variant="h3" sx={{
@@ -77,7 +88,7 @@ export default function VehicleDetailPage() {
                 mb: 2,
                 fontSize: { xs: '1.75rem', sm: '2.25rem' }
               }}>
-                {vehicle.vehicleNumber}
+                {displayVehicle.vehicleNumber}
               </Typography>
 
               <Typography variant="h5" sx={{
@@ -86,7 +97,7 @@ export default function VehicleDetailPage() {
                 fontFamily: "'Inter', sans-serif', sans-serif",
                 mb: 0.5
               }}>
-                {vehicle.makeModel}
+                {displayVehicle.makeModel}
               </Typography>
 
               <Typography variant="body2" sx={{
@@ -96,7 +107,7 @@ export default function VehicleDetailPage() {
                 textTransform: 'uppercase',
                 mb: 4
               }}>
-                {vehicle.type} • {vehicle.fuelType}
+                {displayVehicle.type} • {displayVehicle.fuelType}
               </Typography>
             </Box>
 
@@ -108,7 +119,7 @@ export default function VehicleDetailPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', fontSize: '0.65rem' }}>Owner Name</Typography>
-                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{vehicle.ownerName}</Typography>
+                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{displayVehicle.ownerName}</Typography>
                 </Box>
               </Box>
               {/* Item 2 */}
@@ -118,7 +129,7 @@ export default function VehicleDetailPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', fontSize: '0.65rem' }}>Mobile</Typography>
-                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{vehicle.mobile}</Typography>
+                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{displayVehicle.mobile}</Typography>
                 </Box>
               </Box>
               {/* Item 3 */}
@@ -128,7 +139,7 @@ export default function VehicleDetailPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', fontSize: '0.65rem' }}>Make & Model</Typography>
-                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{vehicle.makeModel}</Typography>
+                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{displayVehicle.makeModel}</Typography>
                 </Box>
               </Box>
               {/* Item 4 */}
@@ -138,7 +149,7 @@ export default function VehicleDetailPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', fontSize: '0.65rem' }}>Fuel Type</Typography>
-                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{vehicle.fuelType}</Typography>
+                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{displayVehicle.fuelType}</Typography>
                 </Box>
               </Box>
               {/* Item 5 */}
@@ -148,7 +159,7 @@ export default function VehicleDetailPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', fontSize: '0.65rem' }}>Vehicle Type</Typography>
-                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{vehicle.type}</Typography>
+                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{displayVehicle.type}</Typography>
                 </Box>
               </Box>
               {/* Item 6 */}
@@ -158,7 +169,7 @@ export default function VehicleDetailPage() {
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', fontSize: '0.65rem' }}>Last Entry Time</Typography>
-                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{formatDateTime(vehicle.entryTime)}</Typography>
+                  <Typography variant="body2" sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.875rem' }}>{formatDateTime(displayVehicle.entryTime)}</Typography>
                 </Box>
               </Box>
             </Box>
@@ -202,7 +213,7 @@ export default function VehicleDetailPage() {
               zIndex: 1
             }} />
 
-            <VehicleImageSlider />
+            <VehicleImageSlider images={displayVehicle.images || []} />
           </Grid>
         </Grid>
       </Card>

@@ -11,18 +11,22 @@ const MOCK_SLIDES = [
   { id: 3, src: cp2, alt: 'Front Angle View' }
 ];
 
-export default function VehicleImageSlider() {
+export default function VehicleImageSlider({ images = [] }) {
+  const slides = images && images.length > 0 
+    ? images.map((img, idx) => ({ id: img.id, src: img.fileUrl, alt: `Image ${idx + 1}` }))
+    : MOCK_SLIDES;
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   const handleNext = (e) => {
     e?.stopPropagation();
-    setActiveIndex((prev) => (prev + 1) % MOCK_SLIDES.length);
+    setActiveIndex((prev) => (prev + 1) % slides.length);
   };
 
   const handlePrev = (e) => {
     e?.stopPropagation();
-    setActiveIndex((prev) => (prev - 1 + MOCK_SLIDES.length) % MOCK_SLIDES.length);
+    setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   const handleThumbnailClick = (index, e) => {
@@ -58,8 +62,8 @@ export default function VehicleImageSlider() {
       >
         <Box
           component="img"
-          src={MOCK_SLIDES[activeIndex].src}
-          alt={MOCK_SLIDES[activeIndex].alt}
+          src={slides[activeIndex]?.src}
+          alt={slides[activeIndex]?.alt}
           sx={{
             maxWidth: '100%',
             maxHeight: '100%',
@@ -124,7 +128,7 @@ export default function VehicleImageSlider() {
         justifyContent: 'center', 
         zIndex: 4 
       }}>
-        {MOCK_SLIDES.map((slide, index) => (
+        {slides.map((slide, index) => (
           <Box
             key={slide.id}
             onClick={(e) => handleThumbnailClick(index, e)}
@@ -191,8 +195,8 @@ export default function VehicleImageSlider() {
 
           <Box
             component="img"
-            src={MOCK_SLIDES[activeIndex].src}
-            alt={MOCK_SLIDES[activeIndex].alt}
+            src={slides[activeIndex]?.src}
+            alt={slides[activeIndex]?.alt}
             sx={{
               maxWidth: '90%',
               maxHeight: '90%',
@@ -211,7 +215,7 @@ export default function VehicleImageSlider() {
 
           {/* Thumbnail strip inside popup */}
           <Box sx={{ position: 'absolute', bottom: 20, display: 'flex', gap: 1.5, zIndex: 10 }}>
-            {MOCK_SLIDES.map((slide, index) => (
+            {slides.map((slide, index) => (
               <Box
                 key={slide.id}
                 onClick={(e) => handleThumbnailClick(index, e)}

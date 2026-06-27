@@ -85,6 +85,7 @@ export const SIDEBAR_MENUS = {
 
   [ROLES.MD]: [
     { label: 'MD Dashboard', path: ROUTES.MD_DASHBOARD, icon: LayoutDashboard },
+    { label: 'Stage Schedules', path: ROUTES.MD_STAGE_SCHEDULES, icon: Clock },
 
     // { label: 'Executive Overview', path: ROUTES.MD_EXECUTIVE_OVERVIEW, icon: BarChart2 },
     // { label: 'Performance Report', path: ROUTES.MD_PERFORMANCE_REPORT, icon: FileText },

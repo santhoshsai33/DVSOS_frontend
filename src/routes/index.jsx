@@ -74,6 +74,8 @@ import MdDashboardPage from '../pages/Dashboard/MDDashboard';
 import ExecutiveOverviewPage from '../pages/Dashboard/ExecutiveOverview';
 import PerformanceReportPage from '../pages/Reports/ReportsPage';
 import ServiceKpiPage from '../pages/Dashboard/KPIDashboard';
+import MdStageSchedules from '../pages/Schedules/StageSchedules';
+import MdStageScheduleForm from '../pages/Schedules/StageScheduleForm';
 import TvKioskPage from '../pages/Kiosk/KioskDisplay';
 import CustomerListPage from '../pages/Customers/CustomerListPage';
 import CustomerDetailPage from '../pages/Customers/CustomerDetailPage';
@@ -282,6 +284,9 @@ export const router = createBrowserRouter([
               { path: 'executive-overview', element: <ExecutiveOverviewPage /> },
               { path: 'performance-report', element: <PerformanceReportPage /> },
               { path: 'service-kpi', element: <ServiceKpiPage /> },
+              { path: 'md-stage-schedules', element: <MdStageSchedules /> },
+              { path: 'md-stage-schedules/new', element: <MdStageScheduleForm /> },
+              { path: 'md-stage-schedules/:id/edit', element: <MdStageScheduleForm /> },
             ],
           },
           {

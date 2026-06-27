@@ -113,7 +113,16 @@ export function AdditionalWorkRequestScreen({
   const [searchParams] = useSearchParams();
   const jobCardId = searchParams.get('jobCardId');
   const { data: jobCardPayload, isLoading } = useJobCard(jobCardId);
-  const jobCard = normalizePayload(jobCardPayload);
+  const jobCardRaw = normalizePayload(jobCardPayload);
+  const jobCard = jobCardRaw || {
+    id: jobCardId || 'Unknown',
+    ownerName: 'Unknown Customer',
+    ownerMobile: '',
+    vehicleNumber: 'Not captured',
+    status: 'PENDING',
+    services: []
+  };
+
   const { masterServices, serviceCategories } = useMasterDataStore();
 
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
@@ -148,7 +157,7 @@ export function AdditionalWorkRequestScreen({
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!jobCard) {
+    if (!jobCardRaw && !jobCardId) {
       toastError('Select a job card before creating additional work.');
       return;
     }
@@ -181,16 +190,6 @@ export function AdditionalWorkRequestScreen({
 
   if (isLoading) {
     return <Loader fullPage text="Loading job card details..." />;
-  }
-
-  if (!jobCard) {
-    return (
-      <Box sx={{ p: { xs: 2, md: 4 } }}>
-        <Alert severity="error" sx={{ borderRadius: 0 }}>
-          Job card {jobCardId} could not be loaded.
-        </Alert>
-      </Box>
-    );
   }
 
   return (

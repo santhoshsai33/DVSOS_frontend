@@ -32,8 +32,8 @@ export default function JobCardList() {
   const debouncedSearch = useDebounce(search, 300);
   const canCreateJobCard = ![ROLES.BODY_SHOP_SUPERVISOR, ROLES.WATER_WASH_TEAM].includes(role);
 
-  const { data, isLoading } = useJobCards({ 
-    search: debouncedSearch, 
+  const { data, isLoading } = useJobCards({
+    search: debouncedSearch,
     status: statusFilter,
     page: page + 1,
     limit: rowsPerPage
@@ -118,7 +118,7 @@ export default function JobCardList() {
     },
   ];
 
-  const tableData = (data?.data || []).filter(job => 
+  const tableData = (data?.data || []).filter(job =>
     role === ROLES.BODY_SHOP_SUPERVISOR ? job.currentStatus?.statusCode === 'BODY_SHOP' : true
   );
 
@@ -147,9 +147,9 @@ export default function JobCardList() {
           displayEmpty
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
-          sx={{ 
-            width: { xs: '100%', sm: 200 }, 
-            bgcolor: 'background.paper', 
+          sx={{
+            width: { xs: '100%', sm: 200 },
+            bgcolor: 'background.paper',
             borderRadius: '24px',
             '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
             '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
@@ -201,7 +201,7 @@ export default function JobCardList() {
           } else if (role === ROLES.BODY_SHOP_SUPERVISOR) {
             navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
           } else {
-            const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK;
+            const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK_NEW;
             navigate(`${targetRoute}?jobCardId=${selectedJob?.id}`);
           }
         }}>

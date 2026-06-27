@@ -85,6 +85,9 @@ export const ROUTES = {
   MD_EXECUTIVE_OVERVIEW: '/executive-overview',
   MD_PERFORMANCE_REPORT: '/performance-report',
   MD_SERVICE_KPI: '/service-kpi',
+  MD_STAGE_SCHEDULES: '/md-stage-schedules',
+  MD_STAGE_SCHEDULES_NEW: '/md-stage-schedules/new',
+  MD_STAGE_SCHEDULES_EDIT: '/md-stage-schedules/:id/edit',
 
   KIOSK_TV: '/kiosk/tv',
 

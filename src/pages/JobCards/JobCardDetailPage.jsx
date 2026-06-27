@@ -34,15 +34,36 @@ export default function JobCardDetailPage() {
     );
   }
 
-  // Calculate dummy invoice summary values
-  const defaultServices = jobCard.services || [];
-  const taxRate = 18; // Default mock tax
-  const subtotal = jobCard.estimatedCost / (1 + taxRate / 100);
+  // Map API fields to UI fields
+  const displayJobCard = {
+    ...jobCard,
+    id: jobCard.jobCardNo || jobCard.id,
+    createdAt: jobCard.createdAt,
+    ownerName: jobCard.customer?.fullName || jobCard.ownerName || 'Unknown',
+    ownerMobile: jobCard.customer?.mobileNo || jobCard.ownerMobile || jobCard.mobile || '—',
+    vehicleNumber: jobCard.vehicle?.registrationNo || jobCard.vehicleNumber || '—',
+    serviceType: jobCard.gateEntry?.entryType || jobCard.serviceType || '—',
+    estimatedCost: jobCard.totalEstimate || jobCard.estimatedCost || 0,
+    notes: jobCard.customerComplaint || jobCard.additionalNotes || jobCard.notes,
+    status: jobCard.currentStatus?.statusCode || jobCard.status || 'PENDING',
+    services: Array.isArray(jobCard.services) && typeof jobCard.services[0] === 'string'
+      ? jobCard.services.map(s => ({ name: s, price: 0, quantity: 1, status: 'PENDING', isAdditional: false }))
+      : (jobCard.services?.map(s => ({
+          name: s.serviceName || s.serviceItem?.name || 'Unknown Service',
+          price: Number(s.price || 0),
+          quantity: Number(s.quantity || 1),
+          status: s.serviceStatus?.statusCode || 'PENDING',
+          isAdditional: !!s.isAdditional
+        })) || [])
+  };
 
-  const additionalServices = jobCard.additionalServices || [
-    { name: 'Wheel Alignment & Balancing', price: 1200, status: 'APPROVED', date: jobCard.createdAt },
-    { name: 'Rear Bumper Touch-up', price: 2500, status: 'PENDING', date: jobCard.createdAt }
-  ];
+  // Split services into default and additional
+  const allServices = displayJobCard.services || [];
+  const defaultServices = allServices.filter(s => !s.isAdditional);
+  const additionalServices = allServices.filter(s => s.isAdditional);
+
+  const taxRate = 18; // Default mock tax
+  const subtotal = displayJobCard.estimatedCost / (1 + taxRate / 100);
 
   const approvedAdditionalTotal = additionalServices
     .filter(s => s.status === 'APPROVED')
@@ -56,8 +77,8 @@ export default function JobCardDetailPage() {
     <Box sx={{ minHeight: '100%', p: { xs: 2, md: 4 } }}>
       {/* Page Header */}
       <PageHeader
-        title={`Job Card: #${jobCard.id}`}
-        subtitle={`Created on ${formatDateTime(jobCard.createdAt)}`}
+        title={`Job Card: #${displayJobCard.id}`}
+        subtitle={`Created on ${formatDateTime(displayJobCard.createdAt)}`}
         breadcrumbs={[{ label: 'Job Cards', path: ROUTES.JOB_CARDS }, { label: 'View Details' }]}
         actions={
           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -85,25 +106,25 @@ export default function JobCardDetailPage() {
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Owner Name</Typography>
                     <Typography variant="body2" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <User size={15} color="#6b7280" />
-                      {jobCard.ownerName}
+                      {displayJobCard.ownerName}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Mobile Number</Typography>
                     <Typography variant="body2" fontWeight={600}>
-                      {jobCard.ownerMobile || jobCard.mobile || '—'}
+                      {displayJobCard.ownerMobile}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6} sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2, mt: 2 }}>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Registration Number</Typography>
                     <Typography variant="body2" fontWeight={700} color="primary.main">
-                      {jobCard.vehicleNumber}
+                      {displayJobCard.vehicleNumber}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6} sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2, mt: 2 }}>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Service Category</Typography>
                     <Typography variant="body2" fontWeight={600}>
-                      {jobCard.serviceType?.replace('_', ' ') || '—'}
+                      {displayJobCard.serviceType?.replace('_', ' ') || '—'}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -133,12 +154,12 @@ export default function JobCardDetailPage() {
                         </Box>
                       </Box>
                     ) : (
-                      defaultServices.map((serviceName, index) => (
+                      defaultServices.map((service, index) => (
                         <Box component="tr" key={index} sx={{ borderBottom: index < defaultServices.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
-                          <Box component="td" sx={{ p: 2, fontWeight: 500 }}>{serviceName}</Box>
-                          <Box component="td" sx={{ p: 2, textAlign: 'right', color: 'text.secondary' }}>x1</Box>
+                          <Box component="td" sx={{ p: 2, fontWeight: 500 }}>{service.name}</Box>
+                          <Box component="td" sx={{ p: 2, textAlign: 'right', color: 'text.secondary' }}>x{service.quantity || 1}</Box>
                           <Box component="td" sx={{ p: 2, textAlign: 'right', fontWeight: 600 }}>
-                            {formatCurrency(index === 0 ? subtotal * 0.6 : subtotal * 0.4 / (defaultServices.length - 1 || 1))}
+                            {formatCurrency(service.price > 0 ? service.price : (index === 0 ? subtotal * 0.6 : subtotal * 0.4 / (defaultServices.length - 1 || 1)))}
                           </Box>
                         </Box>
                       ))
@@ -195,8 +216,8 @@ export default function JobCardDetailPage() {
                 <Typography variant="subtitle1" fontWeight={700}>Additional Notes & Complaints</Typography>
               </Box>
               <Box sx={{ p: 3 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: jobCard.notes ? 'normal' : 'italic' }}>
-                  {jobCard.notes || 'No notes or special instructions provided by the customer.'}
+                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: displayJobCard.notes ? 'normal' : 'italic' }}>
+                  {displayJobCard.notes || 'No notes or special instructions provided by the customer.'}
                 </Typography>
               </Box>
             </Card>
@@ -212,7 +233,7 @@ export default function JobCardDetailPage() {
             <Card sx={{ borderRadius: 0 }}>
               <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="subtitle1" fontWeight={700}>Estimate Summary</Typography>
-                <StatusBadge status={jobCard.status} />
+                <StatusBadge status={displayJobCard.status} />
               </Box>
               <Box sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

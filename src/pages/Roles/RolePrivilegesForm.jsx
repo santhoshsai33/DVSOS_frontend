@@ -89,6 +89,19 @@ export default function RolePrivilegesForm() {
               navigate(ROUTES.ADMIN_ROLE_PRIVILEGES_EDIT.replace(':slug', role.slug), { replace: true });
             }
 
+            // Inject Stage Schedules for managing-director if not present
+            const mdModule = modules.find(m => m.module === 'managing-director' || m.module === 'MD Analytics');
+            if (mdModule && !mdModule.menus.find(m => m.name === 'Stage Schedules')) {
+              mdModule.menus.splice(1, 0, {
+                menuId: 'mock-stage-schedules-id',
+                name: 'Stage Schedules',
+                canRead: true,
+                canCreate: true,
+                canUpdate: true,
+                canDelete: true
+              });
+            }
+
             // Auto-select matching module based on role name
             if (roleName) {
               const roleWords = roleName.toLowerCase().split(/[\s_-]+/);
@@ -110,6 +123,20 @@ export default function RolePrivilegesForm() {
               module: mod.module,
               menus: flattenMenus(mod.menus)
             }));
+
+            // Inject Stage Schedules for managing-director if not present
+            const mdModule = mapped.find(m => m.module === 'managing-director' || m.module === 'MD Analytics');
+            if (mdModule && !mdModule.menus.find(m => m.name === 'Stage Schedules')) {
+              mdModule.menus.splice(1, 0, {
+                menuId: 'mock-stage-schedules-id',
+                name: 'Stage Schedules',
+                canRead: false,
+                canCreate: false,
+                canUpdate: false,
+                canDelete: false
+              });
+            }
+
             setModulesList(mapped);
           }
         }

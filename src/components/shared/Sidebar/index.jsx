@@ -31,6 +31,7 @@ const PERMISSION_ROWS = [
   { module: 'MD Analytics', subModule: 'Executive Overview' },
   { module: 'MD Analytics', subModule: 'Performance Report' },
   { module: 'MD Analytics', subModule: 'Service KPI' },
+  { module: 'MD Analytics', subModule: 'Stage Schedules' },
   { module: 'Common Pages', subModule: 'Customers' },
   { module: 'Common Pages', subModule: 'Vehicles' },
   { module: 'Common Pages', subModule: 'Job Cards' },
