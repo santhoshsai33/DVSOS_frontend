@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Printer, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
 import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Card } from '@mui/material';
@@ -12,6 +12,10 @@ import { toastSuccess, toastInfo } from '../../notifications/toast';
 import { formatDateTime } from '../../utils/formatters';
 import styles from './WorkQueue.module.css';
 import { ROUTES } from '../../config/routes';
+import { useQuery } from '@tanstack/react-query';
+import useAuthStore from '../../store/useAuthStore';
+import { ROLES } from '../../constants/roles';
+import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi } from '../../api/queueApi';
 
 const PENDING_JOBS = [
   { id: 'Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'General Service', priority: 'HIGH', waitTime: '1 hr 20 min', deliveryDate: new Date(Date.now() + 2 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
@@ -24,15 +28,45 @@ const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', UR
 
 export default function AssignMechanicList() {
   const navigate = useNavigate();
-  const [jobs, setJobs] = useState(PENDING_JOBS);
+  const { role, user } = useAuthStore();
+  const locationId = user?.locationId || user?.location_id || user?.branchId || '';
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [search, setSearch] = useState('');
+
+  const { data: jobsResponse, isLoading } = useQuery({
+    queryKey: ['assign-mechanic-queue', role, locationId, page, rowsPerPage, search],
+    queryFn: async () => {
+      const params = { locationId, page: page + 1, limit: rowsPerPage, search };
+      if (role === ROLES.BODY_SHOP_SUPERVISOR) {
+        return getBodyShopQueueApi(params);
+      } else if (role === ROLES.WATER_WASH_TEAM) {
+        return getWaterWashQueueApi(params);
+      } else {
+        return getMechanicalQueueApi(params);
+      }
+    },
+    enabled: !!role
+  });
+
+  const apiJobs = jobsResponse?.data?.data || jobsResponse?.data || PENDING_JOBS;
+
+  const [localJobs, setLocalJobs] = useState([]);
+
+  useEffect(() => {
+    if (apiJobs) {
+      setLocalJobs(apiJobs);
+    }
+  }, [apiJobs]);
+
   const [assignModal, setAssignModal] = useState({ isOpen: false, item: null });
   const [selectedMechanic, setSelectedMechanic] = useState('');
 
-  const filteredJobs = jobs.filter(job => 
-    job.vehicleNumber.toLowerCase().includes(search.toLowerCase()) ||
-    job.ownerName.toLowerCase().includes(search.toLowerCase()) ||
-    job.id.toLowerCase().includes(search.toLowerCase())
+  const filteredJobs = localJobs.filter(job => 
+    (job?.vehicleNo || job?.vehicleNumber || '')?.toLowerCase().includes(search.toLowerCase()) ||
+    (job?.customerName || job?.ownerName || '')?.toLowerCase().includes(search.toLowerCase()) ||
+    (job?.jobCardNo || job?.id || '')?.toString().toLowerCase().includes(search.toLowerCase())
   );
 
   const handleAssignClick = (item) => {
@@ -45,7 +79,7 @@ export default function AssignMechanicList() {
       header: 'VEHICLE NO.',
       render: (row) => (
         <Typography sx={{ color: '#3b82f6', fontFamily: 'monospace', fontWeight: 600, fontSize: '0.875rem' }}>
-          {row.vehicleNumber}
+          {row.vehicleNo || row.vehicleNumber || '—'}
         </Typography>
       ),
     },
@@ -53,15 +87,17 @@ export default function AssignMechanicList() {
       header: 'CUSTOMER',
       render: (row) => (
         <Box>
-          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.ownerName}</Typography>
-          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.makeModel}</Typography>
+          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.customerName || row.ownerName || '—'}</Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.vehicleModel || row.makeModel || '—'}</Typography>
         </Box>
       ),
     },
     {
       header: 'SERVICES',
       render: (row) => (
-        <Typography sx={{ fontSize: '0.875rem', color: '#374151' }}>{row.serviceType}</Typography>
+        <Typography sx={{ fontSize: '0.875rem', color: '#374151' }}>
+          {row.serviceNames?.length ? row.serviceNames.join(', ') : (row.serviceType || '—')}
+        </Typography>
       ),
     },
     {
@@ -83,7 +119,9 @@ export default function AssignMechanicList() {
       render: (row) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Clock size={14} color="#6b7280" />
-          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>{row.waitTime}</Typography>
+          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>
+            {row.waitMinutes !== undefined ? `${row.waitMinutes} min` : (row.waitTime || '—')}
+          </Typography>
         </Box>
       ),
     },
@@ -92,7 +130,9 @@ export default function AssignMechanicList() {
       render: (row) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <AlertTriangle size={14} color="#f59e0b" />
-          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>{formatDateTime(row.deliveryDate)}</Typography>
+          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>
+            {row.expectedDeliveryAt ? formatDateTime(row.expectedDeliveryAt) : (row.deliveryDate ? formatDateTime(row.deliveryDate) : '—')}
+          </Typography>
         </Box>
       ),
     },
@@ -124,7 +164,7 @@ export default function AssignMechanicList() {
       return;
     }
 
-    setJobs(jobs.filter(j => j.id !== assignModal.item.id));
+    setLocalJobs(localJobs.filter(j => j.id !== assignModal.item.id));
     setAssignModal({ isOpen: false, item: null });
 
     toastSuccess(`Assigned to ${selectedMechanic}. Job Card sent to printer!`);
@@ -146,7 +186,7 @@ export default function AssignMechanicList() {
           <SearchBar
             placeholder="Search vehicle, owner, job ID..."
             value={search}
-            onChange={setSearch}
+            onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
       </Box>
@@ -166,7 +206,16 @@ export default function AssignMechanicList() {
               columns={columns}
               data={filteredJobs}
               emptyMessage="No jobs pending allocation."
-              showPagination={true}
+              loading={isLoading}
+              serverSide={true}
+              totalCount={jobsResponse?.data?.total || jobsResponse?.total || filteredJobs.length}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              onPageChange={(newPage) => setPage(newPage)}
+              onRowsPerPageChange={(newLimit) => {
+                setRowsPerPage(newLimit);
+                setPage(0);
+              }}
             />
           </Box>
         </Card>
