@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Grid, Card, Typography, Divider } from '@mui/material';
+import { Box, Grid, Card, Typography, Divider, Chip } from '@mui/material';
 import { ArrowLeft, Car, User, Shield, FileText, AlertTriangle, PlusCircle } from 'lucide-react';
 import { useJobCard } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -11,9 +11,47 @@ import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { ROUTES } from '../../config/routes';
 
 export default function JobCardDetailPage() {
-  const { id } = useParams();
+  const { id, slug } = useParams();
+  const jobCardIdentifier = slug || id;
   const navigate = useNavigate();
-  const { data: jobCard, isLoading } = useJobCard(id);
+  const { data: jobCard, isLoading } = useJobCard(jobCardIdentifier);
+
+  const normalizeText = (value) => String(value || '').trim().toLowerCase().replace(/[_\s]+/g, '-');
+  const isMechanicalAssignment = (assignment) => {
+    const category = assignment?.jobCardService?.serviceItem?.category || assignment?.service?.category;
+    const normalizedCategory = normalizeText(category?.slug || category?.name);
+    return ['mechanical', 'mechanic', 'mechnanic', 'floor'].includes(normalizedCategory);
+  };
+
+  const assignmentDetails = useMemo(() => {
+    const assignments = jobCard?.workAssignments || [];
+    return assignments.filter(isMechanicalAssignment);
+  }, [jobCard]);
+
+  const getAssignmentStatusCode = (assignment) => {
+    return String(assignment?.status?.statusCode || assignment?.status?.code || '').toUpperCase();
+  };
+
+  const getAssignmentStatusValue = (assignment) => {
+    const statusCode = getAssignmentStatusCode(assignment);
+    if (statusCode.includes('COMPLETED')) return 'COMPLETED';
+    if (statusCode.includes('IN_PROGRESS')) return 'IN_PROGRESS';
+    return 'ASSIGNED';
+  };
+
+  const getAssignmentStatusLabel = (assignment) => {
+    const statusValue = getAssignmentStatusValue(assignment);
+    if (statusValue === 'COMPLETED') return 'Completed';
+    if (statusValue === 'IN_PROGRESS') return 'In Progress';
+    return 'Assigned';
+  };
+
+  const getAssignmentStatusColor = (assignment) => {
+    const statusValue = getAssignmentStatusValue(assignment);
+    if (statusValue === 'COMPLETED') return 'success';
+    if (statusValue === 'IN_PROGRESS') return 'info';
+    return 'warning';
+  };
 
   if (isLoading) {
     return <Loader fullPage text="Loading job card details..." />;
@@ -25,7 +63,7 @@ export default function JobCardDetailPage() {
         <AlertTriangle size={48} color="#ef4444" style={{ marginBottom: 16 }} />
         <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>Job Card Not Found</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          The job card with ID "{id}" could not be located in our records.
+          The job card "{jobCardIdentifier}" could not be located in our records.
         </Typography>
         <Button variant="primary" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.JOB_CARDS)}>
           Back to List
@@ -257,6 +295,94 @@ export default function JobCardDetailPage() {
                     <Typography variant="subtitle1" fontWeight={800}>{formatCurrency(totalGrandTotal)}</Typography>
                   </Box>
                 </Box>
+              </Box>
+            </Card>
+
+            <Card sx={{ borderRadius: 0 }}>
+              <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+                <Typography variant="subtitle1" fontWeight={700}>Assigned Mechanical Work</Typography>
+                <Chip
+                  label={`${assignmentDetails.length} Assignment${assignmentDetails.length === 1 ? '' : 's'}`}
+                  size="small"
+                  sx={{ fontWeight: 700 }}
+                />
+              </Box>
+              <Box sx={{ p: 2 }}>
+                {assignmentDetails.length === 0 ? (
+                  <Box sx={{ border: '1px dashed', borderColor: 'divider', borderRadius: 1, p: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No mechanical assignment added for this job card yet.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {assignmentDetails.map((assignment) => {
+                      const assignedUser = assignment.assignedUser || {};
+                      const serviceName = assignment.jobCardService?.serviceName || assignment.service?.serviceName || 'Assigned Service';
+
+                      return (
+                        <Box
+                          key={assignment.id}
+                          sx={{
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 1,
+                            p: 2,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 1.5
+                          }}
+                        >
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                              Assigned User
+                            </Typography>
+                            <Typography variant="body2" fontWeight={700}>
+                              {assignedUser.fullName || 'Unassigned'}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {serviceName}
+                              {assignedUser.employeeCode ? ` - ${assignedUser.employeeCode}` : ''}
+                            </Typography>
+                          </Box>
+
+                          <Divider />
+
+                          <Grid container spacing={1.5}>
+                            <Grid item xs={6}>
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                Start Time
+                              </Typography>
+                              <Typography variant="body2" fontWeight={600}>
+                                {assignment.startedAt ? formatDateTime(assignment.startedAt) : '-'}
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                End Time
+                              </Typography>
+                              <Typography variant="body2" fontWeight={600}>
+                                {assignment.completedAt ? formatDateTime(assignment.completedAt) : '-'}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                              Status
+                            </Typography>
+                            <Chip
+                              label={getAssignmentStatusLabel(assignment)}
+                              color={getAssignmentStatusColor(assignment)}
+                              size="small"
+                              sx={{ fontWeight: 700 }}
+                            />
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                )}
               </Box>
             </Card>
 

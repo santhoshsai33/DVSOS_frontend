@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { User, Printer, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
 import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Card } from '@mui/material';
 import Button from '../../components/common/Button';
-import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import Modal from '../../components/common/Modal';
 import PageHeader from '../../components/shared/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess, toastInfo } from '../../notifications/toast';
+import { toastSuccess, toastInfo, toastError } from '../../notifications/toast';
 import { formatDateTime } from '../../utils/formatters';
-import styles from './WorkQueue.module.css';
-import { ROUTES } from '../../config/routes';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '../../store/useAuthStore';
 import { ROLES } from '../../constants/roles';
-import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi } from '../../api/queueApi';
+import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi, assignQueueWorkApi } from '../../api/queueApi';
+import { getMechanicsDropdownApi } from '../../api/userApi';
 
 const PENDING_JOBS = [
   { id: 'Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'General Service', priority: 'HIGH', waitTime: '1 hr 20 min', deliveryDate: new Date(Date.now() + 2 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
@@ -23,13 +20,17 @@ const PENDING_JOBS = [
   { id: 'Q3', vehicleNumber: 'AP 16 ZZ 7700', ownerName: 'Kiran Reddy', makeModel: 'Tata Nexon', serviceType: 'Brake Service', priority: 'URGENT', waitTime: '10 min', deliveryDate: new Date(Date.now() + 1 * 3600000).toISOString(), requiredServices: ['Body Shop'] },
 ];
 
-const MECHANICS = ['Rajan M.', 'Vikram S.', 'Anand P.', 'Suresh K.'];
 const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', URGENT: '#EF4444' };
 
 export default function AssignMechanicList() {
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { role, user } = useAuthStore();
   const locationId = user?.locationId || user?.location_id || user?.branchId || '';
+  const isBodyShop = role === ROLES.BODY_SHOP_SUPERVISOR;
+  const isWaterWash = role === ROLES.WATER_WASH_TEAM;
+  const queueCategory = isBodyShop ? 'body-shop' : isWaterWash ? 'water-wash' : 'mechanical';
+  const assigneeLabel = isBodyShop ? 'Technician' : isWaterWash ? 'Member' : 'Mechanic';
+  const pageTitle = isBodyShop ? 'Assign Technician (Body Shop)' : isWaterWash ? 'Assign Water Wash Member' : 'Assign Mechanic';
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -50,7 +51,15 @@ export default function AssignMechanicList() {
     enabled: !!role
   });
 
+  const { data: mechanicsResponse, isLoading: isMechanicsLoading } = useQuery({
+    queryKey: ['mechanics-dropdown', role, locationId],
+    queryFn: () => getMechanicsDropdownApi({ locationId, category: queueCategory }),
+    enabled: !!role,
+    staleTime: 60000
+  });
+
   const apiJobs = jobsResponse?.data?.data || jobsResponse?.data || PENDING_JOBS;
+  const mechanics = mechanicsResponse?.data?.users || mechanicsResponse?.users || [];
 
   const [localJobs, setLocalJobs] = useState([]);
 
@@ -62,6 +71,29 @@ export default function AssignMechanicList() {
 
   const [assignModal, setAssignModal] = useState({ isOpen: false, item: null });
   const [selectedMechanic, setSelectedMechanic] = useState('');
+  const selectedMechanicUser = mechanics.find((mechanic) => String(mechanic.id) === String(selectedMechanic));
+
+  const assignMutation = useMutation({
+    mutationFn: ({ jobCardId, payload }) => assignQueueWorkApi(jobCardId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['assign-mechanic-queue'] });
+      setLocalJobs((currentJobs) => currentJobs.filter((job) => {
+        const currentJobCardId = job.jobCardId || job.id;
+        const assignedJobCardId = assignModal.item?.jobCardId || assignModal.item?.id;
+        return String(currentJobCardId) !== String(assignedJobCardId);
+      }));
+      setAssignModal({ isOpen: false, item: null });
+
+      toastSuccess(`Assigned to ${selectedMechanicUser?.fullName || assigneeLabel.toLowerCase()}. Job Card sent to printer!`);
+
+      setTimeout(() => {
+        toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
+      }, 1500);
+    },
+    onError: (error) => {
+      toastError(error?.message || `Failed to assign ${assigneeLabel.toLowerCase()}`);
+    }
+  });
 
   const filteredJobs = localJobs.filter(job => 
     (job?.vehicleNo || job?.vehicleNumber || '')?.toLowerCase().includes(search.toLowerCase()) ||
@@ -160,25 +192,31 @@ export default function AssignMechanicList() {
 
   const handleConfirmAssign = () => {
     if (!selectedMechanic) {
-      toastInfo('Please select a mechanic');
+      toastInfo(`Please select a ${assigneeLabel.toLowerCase()}`);
       return;
     }
 
-    setLocalJobs(localJobs.filter(j => j.id !== assignModal.item.id));
-    setAssignModal({ isOpen: false, item: null });
+    const jobCardId = assignModal.item?.jobCardId || assignModal.item?.id;
 
-    toastSuccess(`Assigned to ${selectedMechanic}. Job Card sent to printer!`);
+    if (!jobCardId) {
+      toastError('Valid job card is required');
+      return;
+    }
 
-    setTimeout(() => {
-      toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
-    }, 1500);
+    assignMutation.mutate({
+      jobCardId,
+      payload: {
+        assignedUserId: Number(selectedMechanic),
+        category: assignModal.item?.category || queueCategory
+      }
+    });
   };
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
-        title="Assign Mechanic"
-        breadcrumbs={[{ label: 'Assign Mechanic' }]}
+        title={pageTitle}
+        breadcrumbs={[{ label: pageTitle }]}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, mt: 3, flexWrap: 'wrap' }}>
@@ -208,7 +246,7 @@ export default function AssignMechanicList() {
               emptyMessage="No jobs pending allocation."
               loading={isLoading}
               serverSide={true}
-              totalCount={jobsResponse?.data?.total || jobsResponse?.total || filteredJobs.length}
+              totalCount={jobsResponse?.meta?.total || jobsResponse?.data?.total || jobsResponse?.total || filteredJobs.length}
               page={page}
               rowsPerPage={rowsPerPage}
               onPageChange={(newPage) => setPage(newPage)}
@@ -224,35 +262,48 @@ export default function AssignMechanicList() {
       <Modal
         show={assignModal.isOpen}
         onHide={() => setAssignModal({ isOpen: false, item: null })}
-        title="Assign Mechanic & Print Card"
+        title={`Assign ${assigneeLabel} & Print Card`}
         confirmLabel="Assign & Print"
         onConfirm={handleConfirmAssign}
+        isConfirming={assignMutation.isPending}
         confirmIcon={Printer}
       >
         {assignModal.item && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
             <Typography variant="body2" color="text.secondary">
-              Please assign a mechanic for job <strong>#{assignModal.item.id}</strong>.
+              Please assign a {assigneeLabel.toLowerCase()} for job <strong>{assignModal.item.jobCardNo || assignModal.item.id}</strong>.
             </Typography>
 
             <FormControl fullWidth size="small">
-              <InputLabel>Select Mechanic</InputLabel>
+              <InputLabel>{`Select ${assigneeLabel}`}</InputLabel>
               <Select
                 value={selectedMechanic}
-                label="Select Mechanic"
+                label={`Select ${assigneeLabel}`}
                 onChange={(e) => setSelectedMechanic(e.target.value)}
                 sx={{ borderRadius: 2 }}
               >
-                {MECHANICS.map(m => (
-                  <MenuItem key={m} value={m}>{m}</MenuItem>
+                {isMechanicsLoading && (
+                  <MenuItem disabled value="">
+                    Loading {assigneeLabel.toLowerCase()}s...
+                  </MenuItem>
+                )}
+                {!isMechanicsLoading && mechanics.length === 0 && (
+                  <MenuItem disabled value="">
+                    No active {assigneeLabel.toLowerCase()}s found
+                  </MenuItem>
+                )}
+                {mechanics.map((mechanic) => (
+                  <MenuItem key={mechanic.id} value={mechanic.id}>
+                    {mechanic.fullName}{mechanic.employeeCode ? ` (${mechanic.employeeCode})` : ''}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
-
+{/* 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#6b7280', fontSize: '0.875rem', mt: 1 }}>
               <Printer size={14} />
               <span>Assigning will automatically print a hard copy of the job card.</span>
-            </Box>
+            </Box> */}
           </Box>
         )}
       </Modal>

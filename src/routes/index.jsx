@@ -57,13 +57,13 @@ import CreateRequest from '../pages/AdditionalWork/CreateRequest';
 import BodyShopDashboardPage from '../pages/WorkQueue/BodyShopQueue';
 import BodyShopQueuePage from '../pages/WorkQueue/BodyShopQueue';
 import BodyShopJobDetailPage from '../pages/WorkQueue/BodyShopQueue';
-import BodyShopAssignMechanicPage from '../pages/WorkQueue/BodyShopAssignMechanic';
+import BodyShopAssignMechanicPage from '../pages/WorkQueue/AssignMechanicList';
 import BodyShopAdditionalWorkPage from '../pages/AdditionalWork/BodyShopAdditionalWorkList';
 import BodyShopCreateRequestPage from '../pages/AdditionalWork/BodyShopCreateRequest';
 import BodyShopWorkStatusPage from '../pages/WorkQueue/BodyShopWorkStatus';
 import WaterWashDashboardPage from '../pages/WorkQueue/WaterWashQueue';
 import WaterWashQueuePage from '../pages/WorkQueue/WaterWashQueue';
-import WaterWashAssignMemberPage from '../pages/WorkQueue/WaterWashAssignMember';
+import WaterWashAssignMemberPage from '../pages/WorkQueue/AssignMechanicList';
 import WashJobDetailPage from '../pages/WorkQueue/WaterWashQueue';
 import ManagerDashboardPage from '../pages/Dashboard/ManagerDashboard';
 import ManagerJobCardPrototypePage from '../pages/JobCards/ManagerJobCardPrototype';
@@ -107,7 +107,7 @@ const roleHome = {
 function RootRedirect() {
   const { isAuthenticated, role } = useAuthStore();
   if (!isAuthenticated) return <Navigate to={ROUTES.LOGIN} replace />;
-  return <Navigate to={roleHome[role] || ROUTES.ADMIN_DASHBOARD} replace />;
+  return <Navigate to={roleHome[role] || ROUTES.PROFILE} replace />;
 }
 
 function LegacyMasterEditRedirect({ basePath }) {
@@ -133,6 +133,16 @@ function LegacyLocationEditRedirect() {
 function LegacyCustomerEditRedirect() {
   const { slug } = useParams();
   return <Navigate to={`/customers/edit/${slug}`} replace />;
+}
+
+function LegacyJobCardEditRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/job-cards/edit/${id}`} replace />;
+}
+
+function LegacyJobCardViewRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/job-cards/view/${id}`} replace />;
 }
 
 
@@ -304,8 +314,10 @@ export const router = createBrowserRouter([
               { path: 'vehicles/:id/history', element: <ServiceHistoryPage /> },
               { path: 'job-cards', element: <JobCardListPage /> },
               { path: 'job-cards/create', element: <CreateJobCardPage /> },
-              { path: 'job-cards/:id', element: <JobCardDetailPage title="Job Card Detail" /> },
-              { path: 'job-cards/:id/edit', element: <CreateJobCardPage /> },
+              { path: 'job-cards/edit/:slug', element: <CreateJobCardPage /> },
+              { path: 'job-cards/view/:slug', element: <JobCardDetailPage title="Job Card Detail" /> },
+              { path: 'job-cards/:id', element: <LegacyJobCardViewRedirect /> },
+              { path: 'job-cards/:id/edit', element: <LegacyJobCardEditRedirect /> },
               { path: 'service-history', element: <ServiceHistoryPage /> },
               { path: 'service-history/job-cards/:jobCardId', element: <ServiceHistoryJobCardPage /> },
               { path: 'notifications', element: <NotificationsPage title="Notifications" /> },

@@ -67,6 +67,11 @@ export default function Login() {
         const { token, user, redirectPath } = response.data;
         const role = mapSlugToRole(user?.role?.slug);
 
+        if (!role) {
+          toastError('Your role is not configured for web access. Please contact admin.');
+          return;
+        }
+
         if (role === ROLES.GATE_SECURITY || role === ROLES.CRM_TEAM) {
           toastError('Web access denied. Please use the mobile application.');
           return;

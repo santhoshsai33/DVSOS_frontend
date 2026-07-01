@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Grid, Box, Typography, Card, CardContent, Chip } from '@mui/material';
 import { Clock, CheckCircle2, User, AlertTriangle, ArrowRight, Paintbrush } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
@@ -6,6 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import { ROUTES } from '../../config/routes';
+import { useQuery } from '@tanstack/react-query';
+import useAuthStore from '../../store/useAuthStore';
+import { getBodyShopQueueApi } from '../../api/queueApi';
+import { formatDateTime } from '../../utils/formatters';
 
 // mock data for body shop
 const QUEUE_DATA = [
@@ -80,7 +84,38 @@ const COLS = [
 
 export default function BodyShopQueue() {
   const navigate = useNavigate();
-  const [queue, setQueue] = useState(QUEUE_DATA);
+  const { user } = useAuthStore();
+  const locationId = user?.locationId || user?.location_id || user?.branchId || '';
+  const [page] = useState(0);
+  const [rowsPerPage] = useState(10);
+
+  const { data: jobsResponse, isLoading } = useQuery({
+    queryKey: ['body-shop-queue-dashboard', locationId, page, rowsPerPage],
+    queryFn: () => getBodyShopQueueApi({ locationId, page: page + 1, limit: rowsPerPage }),
+    staleTime: 30000
+  });
+
+  const queue = useMemo(() => {
+    const apiJobs = jobsResponse?.data || [];
+
+    if (!jobsResponse) {
+      return QUEUE_DATA;
+    }
+
+    return apiJobs.map((job) => ({
+      id: job.jobCardId,
+      jobCardNo: job.jobCardNo,
+      vehicleNumber: job.vehicleNo || '-',
+      customerName: job.customerName || '-',
+      phone: job.customerMobileNo || '-',
+      vehicleInfo: job.vehicleModel || '-',
+      vehicleSpec: 'Body Shop',
+      services: job.serviceNames?.length ? job.serviceNames.join(', ') : '-',
+      mechanic: 'Unassigned',
+      status: 'In Queue',
+      delivery: job.expectedDeliveryAt ? formatDateTime(job.expectedDeliveryAt) : '-',
+    }));
+  }, [jobsResponse]);
 
   // Derive counts from QUEUE_DATA
   const summaryCounts = {
@@ -245,6 +280,7 @@ export default function BodyShopQueue() {
               <DataTable
                 columns={columns}
                 data={queue}
+                loading={isLoading}
                 emptyMessage="No jobs in queue"
                 showPagination={false}
               />

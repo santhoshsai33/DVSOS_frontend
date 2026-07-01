@@ -25,18 +25,31 @@ export const ALL_ROLES = Object.values(ROLES);
 export const MANAGEMENT_ROLES = [ROLES.MANAGER, ROLES.MD, ROLES.SUPER_ADMIN];
 
 export const mapSlugToRole = (slug) => {
-  if (!slug) return ROLES.SUPER_ADMIN;
+  if (!slug) return null;
+
   const normalized = slug.toLowerCase().replace(/[-_]/g, '');
+
   if (normalized === 'managingdirector' || normalized === 'md') {
     return ROLES.MD;
   }
+
   if (normalized === 'admin' || normalized === 'superadmin') {
     return ROLES.SUPER_ADMIN;
   }
+
+  if (normalized === 'mechanical' || normalized === 'mechanic' || normalized === 'floor') {
+    return ROLES.FLOOR_SUPERVISOR;
+  }
+
+  if (normalized === 'waterwashsupervisor' || normalized === 'waterwash' || normalized === 'wash') {
+    return ROLES.WATER_WASH_TEAM;
+  }
+
   const matchedRole = Object.values(ROLES).find(r => {
     const rNorm = r.toLowerCase().replace(/[-_]/g, '');
     // Allow fuzzy match, so "bodyshop" matches "bodyshopsupervisor"
     return rNorm === normalized || rNorm.includes(normalized) || normalized.includes(rNorm);
   });
-  return matchedRole || ROLES.SUPER_ADMIN;
+
+  return matchedRole || null;
 };

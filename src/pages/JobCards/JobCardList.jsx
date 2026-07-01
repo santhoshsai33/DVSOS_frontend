@@ -31,10 +31,16 @@ export default function JobCardList() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const debouncedSearch = useDebounce(search, 300);
   const canCreateJobCard = ![ROLES.BODY_SHOP_SUPERVISOR, ROLES.WATER_WASH_TEAM].includes(role);
+  const departmentFilter = role === ROLES.BODY_SHOP_SUPERVISOR
+    ? 'body-shop'
+    : role === ROLES.WATER_WASH_TEAM
+      ? 'water-wash'
+      : undefined;
 
   const { data, isLoading } = useJobCards({
     search: debouncedSearch,
     status: statusFilter,
+    department: departmentFilter,
     page: page + 1,
     limit: rowsPerPage
   });
@@ -118,9 +124,7 @@ export default function JobCardList() {
     },
   ];
 
-  const tableData = (data?.data || []).filter(job =>
-    role === ROLES.BODY_SHOP_SUPERVISOR ? job.currentStatus?.statusCode === 'BODY_SHOP' : true
-  );
+  const tableData = data?.data || [];
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
@@ -167,7 +171,7 @@ export default function JobCardList() {
           columns={columns}
           data={tableData}
           loading={isLoading}
-          onRowClick={(row) => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
+          onRowClick={(row) => navigate(`${ROUTES.JOB_CARDS}/view/${row.slug || row.id}`)}
           emptyMessage="No job cards found"
           serverSide={true}
           totalCount={data?.meta?.total || 0}
@@ -186,11 +190,11 @@ export default function JobCardList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 220, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/${selectedJob?.id}`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/view/${selectedJob?.slug || selectedJob?.id}`); }}>
           <Eye size={16} className="mr-3 text-primary" />
           View
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/${selectedJob?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/edit/${selectedJob?.slug || selectedJob?.id}`); }}>
           <Edit size={16} className="mr-3 text-warning" />
           Edit
         </MenuItem>
