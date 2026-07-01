@@ -73,7 +73,7 @@ export default function Login() {
         }
 
         login(user, role, token);
-        toastSuccess(response.message || `Welcome back, ${user.fullName || 'User'}!`);
+        // toastSuccess(response.message || `Welcome back, ${user.fullName || 'User'}!`);
         navigate(ROLE_REDIRECTS[role] || redirectPath || ROUTES.MANAGER_DASHBOARD);
       } else {
         toastError(response?.message || 'Login failed. Please try again.');

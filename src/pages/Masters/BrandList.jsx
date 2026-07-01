@@ -8,90 +8,82 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess, toastError } from '../../notifications/toast';
-import { getStatusesApi, updateStatusActiveApi } from '../../api/adminStatusMasterApi';
+import { toastSuccess } from '../../notifications/toast';
 import StatusFilter from '../../components/common/StatusFilter';
 
-export default function StatusList() {
+const DEFAULT_BRANDS = [
+  { id: 'b-1', name: 'Hyundai', country: 'South Korea', slug: 'hyundai', isActive: true },
+  { id: 'b-2', name: 'Maruti Suzuki', country: 'India', slug: 'maruti-suzuki', isActive: true },
+  { id: 'b-3', name: 'Honda', country: 'Japan', slug: 'honda', isActive: true },
+  { id: 'b-4', name: 'Toyota', country: 'Japan', slug: 'toyota', isActive: true },
+  { id: 'b-5', name: 'Mahindra', country: 'India', slug: 'mahindra', isActive: true },
+  { id: 'b-6', name: 'Tata', country: 'India', slug: 'tata', isActive: true },
+];
+
+export default function BrandList() {
   const navigate = useNavigate();
-  const [statuses, setStatuses] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
   const [statusFilter, setStatusFilter] = useState('');
 
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(null);
 
+  // Initialize and load brands from localStorage or fallback to defaults
   useEffect(() => {
-    const fetchStatuses = async () => {
-      try {
-        setLoading(true);
-        const res = await getStatusesApi({ page: page + 1, limit: rowsPerPage, search });
-        if (res?.success) {
-          setStatuses(res.data.statusMasters || []);
-          setTotalCount(res.meta?.total || 0);
-        }
-      } catch (error) {
-        toastError(error?.response?.data?.message || error?.message || 'Failed to fetch statuses');
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    const stored = localStorage.getItem('mock_brands');
+    if (stored) {
+      setBrands(JSON.parse(stored));
+    } else {
+      localStorage.setItem('mock_brands', JSON.stringify(DEFAULT_BRANDS));
+      setBrands(DEFAULT_BRANDS);
+    }
+    setLoading(false);
+  }, []);
 
-    const timer = setTimeout(() => {
-      fetchStatuses();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [page, rowsPerPage, search]);
+  const saveBrandsToStorage = (updatedBrands) => {
+    localStorage.setItem('mock_brands', JSON.stringify(updatedBrands));
+    setBrands(updatedBrands);
+  };
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
-    setSelectedStatus(row);
+    setSelectedBrand(row);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setSelectedStatus(null);
+    setSelectedBrand(null);
   };
 
-  const getEditPath = (status) => {
-    const identifier = status?.slug || status?.id;
-    return ROUTES.ADMIN_MASTER_STATUSES_EDIT.replace(':slug', identifier);
+  const getEditPath = (brand) => {
+    const identifier = brand?.slug || brand?.id;
+    return ROUTES.ADMIN_MASTER_BRANDS_EDIT.replace(':slug', identifier);
   };
 
-  const handleStatusChange = async (id, newStatus) => {
-    const isActive = newStatus === 'ACTIVE' || newStatus === true;
-    try {
-      const res = await updateStatusActiveApi(id, isActive);
-      if (res?.success) {
-        toastSuccess('Status updated successfully!');
-        setStatuses(prev => prev.map(s => s.id === id ? { ...s, isActive: isActive } : s));
-      }
-    } catch (error) {
-      toastError(error?.response?.data?.message || error?.message || 'Failed to update status');
-    }
+  const handleStatusChange = (id, newStatus) => {
+    const updated = brands.map(b => b.id === id ? { ...b, isActive: newStatus } : b);
+    saveBrandsToStorage(updated);
+    toastSuccess('Brand status updated successfully!');
   };
+
+  // Perform client-side filtering based on search query
+  const filteredBrands = brands.filter(brand => {
+    const query = search.toLowerCase();
+    return brand.name.toLowerCase().includes(query);
+  });
 
   const columns = [
     {
-      header: 'Module',
-      accessor: 'moduleId',
-      render: (row) => <Typography variant="body2">{row.module?.moduleName || 'Unknown Module'}</Typography>
+      header: 'Brand Name',
+      accessor: 'name',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
     },
-    {
-      header: 'Status Name',
-      accessor: 'statusName',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.statusName}</Typography>
-    },
-    {
-      header: 'Description',
-      accessor: 'description',
-    },
-
     {
       header: 'Status',
       accessor: 'isActive',
@@ -115,11 +107,10 @@ export default function StatusList() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
-        title="Status Master"
-        // breadcrumbs={[{ label: 'Statuses' }]}
+        title="Brand Master"
         actions={
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_STATUSES_NEW)}>
-            Add Status
+          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_BRANDS_NEW)}>
+            Add Brand
           </Button>
         }
       />
@@ -127,7 +118,7 @@ export default function StatusList() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
-            placeholder="Search status or module..."
+            placeholder="Search brand..."
             value={search}
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
@@ -141,11 +132,11 @@ export default function StatusList() {
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={statuses}
+          data={filteredBrands.slice(page * rowsPerPage, (page + 1) * rowsPerPage)}
           loading={loading}
-          emptyMessage="No statuses found"
-          serverSide={true}
-          totalCount={totalCount}
+          emptyMessage="No brands found"
+          serverSide={false}
+          totalCount={filteredBrands.length}
           page={page}
           rowsPerPage={rowsPerPage}
           onPageChange={setPage}
@@ -159,11 +150,11 @@ export default function StatusList() {
         onClose={handleMenuClose}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{ sx: { width: 180, borderRadius: 0, mt: 0.5 } }}
+        PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedStatus)); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedBrand)); }}>
           <Edit size={16} className="mr-3 text-primary" />
-          Edit Status
+          Edit
         </MenuItem>
       </Menu>
     </Box>

@@ -14,6 +14,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { ROUTES } from '../../config/routes';
 import useAuthStore from '../../store/useAuthStore';
 import { ROLES } from '../../constants/roles';
+import DateFilter from '../../components/common/DateFilter';
 
 const PRIORITY_COLORS = {
   LOW: '#10B981',
@@ -29,6 +30,8 @@ export default function JobCardList() {
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const debouncedSearch = useDebounce(search, 300);
   const canCreateJobCard = ![ROLES.BODY_SHOP_SUPERVISOR, ROLES.WATER_WASH_TEAM].includes(role);
 
@@ -142,6 +145,15 @@ export default function JobCardList() {
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
+        <DateFilter
+          fromDate={fromDate}
+          toDate={toDate}
+          onChange={(type, val) => {
+            if (type === 'from') setFromDate(val);
+            if (type === 'to') setToDate(val);
+            setPage(0);
+          }}
+        />
         <Select
           size="small"
           displayEmpty

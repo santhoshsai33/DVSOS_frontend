@@ -11,6 +11,7 @@ import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { getModulesApi, updateModuleStatusApi } from '../../api/adminModuleApi';
+import StatusFilter from '../../components/common/StatusFilter';
 
 export default function ModuleList() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function ModuleList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedModule, setSelectedModule] = useState(null);
@@ -125,11 +127,15 @@ export default function ModuleList() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
-            placeholder="Search module or description..."
+            placeholder="Search module..."
             value={search}
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
+        <StatusFilter
+          value={statusFilter}
+          onChange={(val) => { setStatusFilter(val); setPage(0); }}
+        />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>

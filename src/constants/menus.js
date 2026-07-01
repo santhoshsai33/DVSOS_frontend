@@ -23,6 +23,7 @@ import {
   MapPin,
   Building,
   Monitor,
+  Tag,
 } from 'lucide-react';
 import { ROUTES } from '../config/routes';
 import { ROLES } from './roles';
@@ -118,6 +119,7 @@ export const SIDEBAR_MENUS = {
         { label: 'Service Items', path: ROUTES.ADMIN_MASTER_ITEMS, icon: Wrench },
         { label: 'Modules', path: ROUTES.ADMIN_MODULES, icon: Package },
         { label: 'Statuses', path: ROUTES.ADMIN_MASTER_STATUSES, icon: CheckSquare },
+        { label: 'Brands', path: ROUTES.ADMIN_MASTER_BRANDS, icon: Tag },
       ]
     },
     { label: 'Service Centers', path: ROUTES.ADMIN_SERVICE_CENTERS, icon: Building },

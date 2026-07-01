@@ -23,20 +23,31 @@ export default function RHFSwitch({ name, label, hint, disabled = false, classNa
 
     return (
       <FormControl component="fieldset" className={className} sx={{ ...sx }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={checked}
-              onChange={handleChange}
-              disabled={disabled}
-              color="primary"
-              size="small"
-              {...props}
-            />
-          }
-          label={label || (checked ? 'Active' : 'Inactive')}
-          sx={{ '& .MuiFormControlLabel-label': { minWidth: '65px', display: 'inline-block' }, margin: 0 }}
-        />
+        {label ? (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={checked}
+                onChange={handleChange}
+                disabled={disabled}
+                color="primary"
+                size="small"
+                {...props}
+              />
+            }
+            label={label}
+            sx={{ '& .MuiFormControlLabel-label': { minWidth: '65px', display: 'inline-block' }, margin: 0 }}
+          />
+        ) : (
+          <Switch
+            checked={checked}
+            onChange={handleChange}
+            disabled={disabled}
+            color="primary"
+            size="small"
+            {...props}
+          />
+        )}
         {hint && <FormHelperText>{hint}</FormHelperText>}
       </FormControl>
     );

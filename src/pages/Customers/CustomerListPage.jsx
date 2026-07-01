@@ -8,8 +8,8 @@ import DataTable from '../../components/common/DataTable';
 import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
+import StatusFilter from '../../components/common/StatusFilter';
 
 const INITIAL_CUSTOMERS = [
   { id: '1', name: 'Ramesh Patel', email: 'ramesh@gmail.com', mobile: '9876543210', address: '45 Green Park, Madurai', visits: 4, status: 'ACTIVE' },
@@ -28,6 +28,7 @@ export default function CustomerListPage() {
   const [limit, setLimit] = useState(10);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('');
 
   const { data: customerData, isLoading } = useCustomers({ page, limit, search });
   const statusMutation = useUpdateCustomerStatus();
@@ -113,10 +114,14 @@ export default function CustomerListPage() {
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader title="Customer Directory" breadcrumbs={[{ label: 'Customers' }]} />
 
-      <Box sx={{ display: 'flex', mb: 3, gap: 2 }}>
+      <Box sx={{ display: 'flex', mb: 3, gap: 2, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar placeholder="Search by name, email, or mobile..." value={search} onChange={(val) => { setSearch(val); setPage(1); }} />
         </Box>
+        <StatusFilter
+          value={statusFilter}
+          onChange={(val) => { setStatusFilter(val); setPage(1); }}
+        />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>
