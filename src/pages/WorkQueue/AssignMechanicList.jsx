@@ -10,9 +10,9 @@ import { toastSuccess, toastInfo, toastError } from '../../notifications/toast';
 import { formatDateTime } from '../../utils/formatters';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '../../store/useAuthStore';
-import { ROLES } from '../../constants/roles';
 import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi, assignQueueWorkApi } from '../../api/queueApi';
 import { getMechanicsDropdownApi } from '../../api/userApi';
+import { getDepartmentFromModules } from '../../utils/authAccess';
 
 const PENDING_JOBS = [
   { id: 'Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'General Service', priority: 'HIGH', waitTime: '1 hr 20 min', deliveryDate: new Date(Date.now() + 2 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
@@ -24,11 +24,11 @@ const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', UR
 
 export default function AssignMechanicList() {
   const queryClient = useQueryClient();
-  const { role, user } = useAuthStore();
+  const { role, user, menus } = useAuthStore();
   const locationId = user?.locationId || user?.location_id || user?.branchId || '';
-  const isBodyShop = role === ROLES.BODY_SHOP_SUPERVISOR;
-  const isWaterWash = role === ROLES.WATER_WASH_TEAM;
-  const queueCategory = isBodyShop ? 'body-shop' : isWaterWash ? 'water-wash' : 'mechanical';
+  const queueCategory = getDepartmentFromModules(menus) || 'mechanical';
+  const isBodyShop = queueCategory === 'body-shop';
+  const isWaterWash = queueCategory === 'water-wash';
   const assigneeLabel = isBodyShop ? 'Technician' : isWaterWash ? 'Member' : 'Mechanic';
   const pageTitle = isBodyShop ? 'Assign Technician (Body Shop)' : isWaterWash ? 'Assign Water Wash Member' : 'Assign Mechanic';
 
@@ -40,9 +40,9 @@ export default function AssignMechanicList() {
     queryKey: ['assign-mechanic-queue', role, locationId, page, rowsPerPage, search],
     queryFn: async () => {
       const params = { locationId, page: page + 1, limit: rowsPerPage, search };
-      if (role === ROLES.BODY_SHOP_SUPERVISOR) {
+      if (queueCategory === 'body-shop') {
         return getBodyShopQueueApi(params);
-      } else if (role === ROLES.WATER_WASH_TEAM) {
+      } else if (queueCategory === 'water-wash') {
         return getWaterWashQueueApi(params);
       } else {
         return getMechanicalQueueApi(params);
@@ -86,9 +86,9 @@ export default function AssignMechanicList() {
 
       toastSuccess(`Assigned to ${selectedMechanicUser?.fullName || assigneeLabel.toLowerCase()}. Job Card sent to printer!`);
 
-      setTimeout(() => {
-        toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
-      }, 1500);
+      // setTimeout(() => {
+      //   toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
+      // }, 1500);
     },
     onError: (error) => {
       toastError(error?.message || `Failed to assign ${assigneeLabel.toLowerCase()}`);

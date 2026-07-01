@@ -13,7 +13,7 @@ import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROUTES } from '../../config/routes';
 import useAuthStore from '../../store/useAuthStore';
-import { ROLES } from '../../constants/roles';
+import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAccess';
 import DateFilter from '../../components/common/DateFilter';
 
 const PRIORITY_COLORS = {
@@ -25,7 +25,7 @@ const PRIORITY_COLORS = {
 
 export default function JobCardList() {
   const navigate = useNavigate();
-  const { role } = useAuthStore();
+  const { menus } = useAuthStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(0);
@@ -33,12 +33,9 @@ export default function JobCardList() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const debouncedSearch = useDebounce(search, 300);
-  const canCreateJobCard = ![ROLES.BODY_SHOP_SUPERVISOR, ROLES.WATER_WASH_TEAM].includes(role);
-  const departmentFilter = role === ROLES.BODY_SHOP_SUPERVISOR
-    ? 'body-shop'
-    : role === ROLES.WATER_WASH_TEAM
-      ? 'water-wash'
-      : undefined;
+  const department = getDepartmentFromModules(menus);
+  const canCreateJobCard = !['body-shop', 'water-wash'].includes(department);
+  const departmentFilter = ['body-shop', 'water-wash'].includes(department) ? department : undefined;
 
   const { data, isLoading } = useJobCards({
     search: debouncedSearch,
@@ -212,12 +209,12 @@ export default function JobCardList() {
         </MenuItem>
         <MenuItem onClick={() => {
           handleMenuClose();
-          if (role === ROLES.FLOOR_SUPERVISOR) {
+          if (department === 'mechanical') {
             navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
-          } else if (role === ROLES.BODY_SHOP_SUPERVISOR) {
+          } else if (department === 'body-shop') {
             navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
           } else {
-            const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK_NEW;
+            const targetRoute = hasReadableModule(menus, 'crm-team') ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK_NEW;
             navigate(`${targetRoute}?jobCardId=${selectedJob?.id}`);
           }
         }}>

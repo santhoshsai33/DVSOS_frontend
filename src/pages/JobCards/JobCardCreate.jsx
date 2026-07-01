@@ -14,8 +14,8 @@ import { useState, useMemo, useEffect } from 'react';
 import useMasterDataStore from '../../store/useMasterDataStore';
 import { useJobCard } from '../../queries/useDataQueries';
 import useAuthStore from '../../store/useAuthStore';
-import { ROLES } from '../../constants/roles';
 import { getJobCardServiceStatusesApi, updateJobCardApi } from '../../api/jobCardApi';
+import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAccess';
 
 import Loader from '../../components/common/Loader';
 
@@ -39,13 +39,14 @@ export default function JobCardCreate() {
   const [serviceStatusOptions, setServiceStatusOptions] = useState([]);
   const [serviceStatusValues, setServiceStatusValues] = useState({});
 
-  const { role } = useAuthStore();
+  const { menus } = useAuthStore();
+  const moduleDepartment = getDepartmentFromModules(menus);
   const roleCategoryMap = {
-    [ROLES.FLOOR_SUPERVISOR]: 'Mechanical',
-    [ROLES.BODY_SHOP_SUPERVISOR]: 'Body Shop',
-    [ROLES.WATER_WASH_TEAM]: 'Water Wash',
+    mechanical: 'Mechanical',
+    'body-shop': 'Body Shop',
+    'water-wash': 'Water Wash',
   };
-  const restrictedCategory = roleCategoryMap[role];
+  const restrictedCategory = roleCategoryMap[moduleDepartment];
 
   const methods = useForm({
     defaultValues: {
@@ -235,10 +236,8 @@ export default function JobCardCreate() {
   };
 
   const getRoleDepartment = () => {
-    if ([ROLES.SUPER_ADMIN, ROLES.MANAGER, ROLES.MD].includes(role)) return 'all';
-    if (role === ROLES.FLOOR_SUPERVISOR) return 'mechanical';
-    if (role === ROLES.BODY_SHOP_SUPERVISOR) return 'body-shop';
-    if (role === ROLES.WATER_WASH_TEAM) return 'water-wash';
+    if (hasReadableModule(menus, ['admin', 'manager', 'managing-director'])) return 'all';
+    if (moduleDepartment) return moduleDepartment;
     return '';
   };
 

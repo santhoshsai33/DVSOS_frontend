@@ -128,9 +128,9 @@ export default function BodyShopAssignMechanic() {
 
     toastSuccess(`Assigned to ${selectedMechanic}. Job Card sent to printer!`);
 
-    setTimeout(() => {
-      toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
-    }, 1500);
+    // setTimeout(() => {
+    //   toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
+    // }, 1500);
   };
 
   return (
