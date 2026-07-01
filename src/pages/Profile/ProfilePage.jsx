@@ -87,13 +87,42 @@ export default function ProfilePage() {
               <RHFTextField name="name" label="Full Name" placeholder="Enter full name" required />
             </Grid>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="email" label="Email Address" type="email" placeholder="Enter email address" required />
+              <RHFTextField
+                name="email"
+                label="Email Address"
+                type="email"
+                placeholder="Enter email address"
+                rules={{
+                  required: "Email address is required",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Please enter a valid email address"
+                  }
+                }}
+              />
             </Grid>
           </Grid>
 
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} md={6}>
-              <RHFTextField name="phone" label="Phone Number" placeholder="Enter phone number" required />
+              <RHFTextField
+                name="phone"
+                label="Phone Number"
+                placeholder="Enter phone number"
+                required
+                inputProps={{ maxLength: 10 }}
+                onInput={(e) => {
+                  // Allow only digits and remove leading zero
+                  e.target.value = e.target.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
+                }}
+                rules={{
+                  required: "Phone number is required",
+                  pattern: {
+                    value: /^[1-9][0-9]{9}$/,
+                    message: "Phone number must be exactly 10 digits and cannot start with 0"
+                  }
+                }}
+              />
             </Grid>
           </Grid>
 
