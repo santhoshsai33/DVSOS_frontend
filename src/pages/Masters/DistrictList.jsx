@@ -11,6 +11,7 @@ import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { getDistrictsApi, updateDistrictStatusApi } from '../../api/adminDistrictApi';
+import StatusFilter from '../../components/common/StatusFilter';
 
 export default function DistrictList() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function DistrictList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
@@ -150,6 +152,10 @@ export default function DistrictList() {
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
+        <StatusFilter
+          value={statusFilter}
+          onChange={(val) => { setStatusFilter(val); setPage(0); }}
+        />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>

@@ -11,6 +11,7 @@ import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { getServiceCentersApi, updateServiceCenterStatusApi } from '../../api/adminServiceCenterApi';
+import StatusFilter from '../../components/common/StatusFilter';
 
 export default function ServiceCenterList() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function ServiceCenterList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCenter, setSelectedCenter] = useState(null);
@@ -147,11 +149,15 @@ export default function ServiceCenterList() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
-            placeholder="Search service center or email..."
+            placeholder="Search service center..."
             value={search}
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
+        <StatusFilter
+          value={statusFilter}
+          onChange={(val) => { setStatusFilter(val); setPage(0); }}
+        />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>

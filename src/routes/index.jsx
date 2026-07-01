@@ -20,6 +20,8 @@ import ServiceItems from '../pages/Masters/ServiceItems';
 import ServiceItemForm from '../pages/Masters/ServiceItemForm';
 import StateList from '../pages/Masters/StateList';
 import StateForm from '../pages/Masters/StateForm';
+import BrandList from '../pages/Masters/BrandList';
+import BrandForm from '../pages/Masters/BrandForm';
 import DistrictList from '../pages/Masters/DistrictList';
 import DistrictForm from '../pages/Masters/DistrictForm';
 import ServiceCenterList from '../pages/Masters/ServiceCenterList';
@@ -179,6 +181,10 @@ export const router = createBrowserRouter([
               { path: 'master-states/new', element: <StateForm /> },
               { path: 'master-states/edit/:slug', element: <StateForm /> },
               { path: 'master-states/:slug/edit', element: <LegacyMasterEditRedirect basePath="master-states" /> },
+              { path: 'master-brands', element: <BrandList /> },
+              { path: 'master-brands/new', element: <BrandForm /> },
+              { path: 'master-brands/edit/:slug', element: <BrandForm /> },
+              { path: 'master-brands/:slug/edit', element: <LegacyMasterEditRedirect basePath="master-brands" /> },
               { path: 'master-districts', element: <DistrictList /> },
               { path: 'master-districts/new', element: <DistrictForm /> },
               { path: 'master-districts/edit/:slug', element: <DistrictForm /> },

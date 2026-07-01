@@ -12,6 +12,7 @@ import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { getServiceItemsApi, updateServiceItemStatusApi } from '../../api/adminServiceItemApi';
+import StatusFilter from '../../components/common/StatusFilter';
 
 export default function ServiceItems() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function ServiceItems() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -156,11 +158,15 @@ export default function ServiceItems() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
-            placeholder="Search service item or category..."
+            placeholder="Search items..."
             value={search}
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
+        <StatusFilter
+          value={statusFilter}
+          onChange={(val) => { setStatusFilter(val); setPage(0); }}
+        />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>

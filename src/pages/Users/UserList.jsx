@@ -14,6 +14,8 @@ import { getUsersApi, updateUserStatusApi } from '../../api/userApi';
 import { getRolesApi } from '../../api/roleApi';
 import { getLocationsApi } from '../../api/adminLocationApi';
 import { formatDateTime } from '../../utils/formatters';
+import DateFilter from '../../components/common/DateFilter';
+import StatusFilter from '../../components/common/StatusFilter';
 
 export default function UserList() {
   const navigate = useNavigate();
@@ -27,6 +29,9 @@ export default function UserList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -223,6 +228,19 @@ export default function UserList() {
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
+        <StatusFilter
+          value={statusFilter}
+          onChange={(val) => { setStatusFilter(val); setPage(0); }}
+        />
+        <DateFilter
+          fromDate={fromDate}
+          toDate={toDate}
+          onChange={(type, val) => {
+            if (type === 'from') setFromDate(val);
+            if (type === 'to') setToDate(val);
+            setPage(0);
+          }}
+        />
         <Select
           size="small"
           displayEmpty

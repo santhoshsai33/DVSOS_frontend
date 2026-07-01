@@ -50,7 +50,7 @@ export default function Login() {
         }
 
         login(user, role, token, menus);
-        toastSuccess(response.message || `Welcome back, ${user.fullName || 'User'}!`);
+        // toastSuccess(response.message || `Welcome back, ${user.fullName || 'User'}!`);
         navigate(getFirstReadablePath(menus, redirectPath || ROUTES.PROFILE));
       } else {
         toastError(response?.message || 'Login failed. Please try again.');

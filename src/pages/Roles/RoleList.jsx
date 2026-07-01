@@ -11,6 +11,7 @@ import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
 import { getRolesApi, updateRoleStatusApi } from '../../api/roleApi';
+import StatusFilter from '../../components/common/StatusFilter';
 
 
 
@@ -25,6 +26,7 @@ export default function RoleList() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [totalCount, setTotalCount] = React.useState(0);
+  const [statusFilter, setStatusFilter] = React.useState('');
 
   const fetchRoles = async () => {
     try {
@@ -154,6 +156,10 @@ export default function RoleList() {
             onChange={(v) => { setSearch(v); setPage(0); }}
           />
         </Box>
+        <StatusFilter
+          value={statusFilter}
+          onChange={(val) => { setStatusFilter(val); setPage(0); }}
+        />
       </Box>
 
       <Box sx={{ bgcolor: 'background.paper', borderRadius: 0 }}>

@@ -63,10 +63,14 @@ const ICON_MAP = {
 export default function Sidebar() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+  const isDesktopFlyout = useMediaQuery('(min-width: 1201px)');
   const { pathname } = useLocation();
   const { menus: allowedMenus } = useAuthStore();
   const { sidebarCollapsed, sidebarMobileOpen, setSidebarMobileOpen } = useUIStore();
   const [expandedGroups, setExpandedGroups] = useState({});
+  const [hoveredGroup, setHoveredGroup] = useState(null);
+  const [flyoutTopOffset, setFlyoutTopOffset] = useState(0);
+  const [flyoutHeight, setFlyoutHeight] = useState(375);
 
   const menus = buildSidebarMenus(allowedMenus, ICON_MAP);
 
@@ -100,17 +104,43 @@ export default function Sidebar() {
 
   const sidebarWidth = sidebarCollapsed && !isMobile ? 80 : 260;
 
-  const renderMenuItem = (item, depth = 0) => {
+  const renderMenuItem = (item, depth = 0, forceExpanded = false) => {
     const hasChildren = item.children && item.children.length > 0;
     const groupActive = isGroupActive(item);
     const isExpanded = expandedGroups[item.label] !== undefined ? expandedGroups[item.label] : groupActive;
     const Icon = item.icon;
     const active = isActive(item.path);
-    const isCollapsedState = sidebarCollapsed && !isMobile;
+    const isCollapsedState = !forceExpanded && sidebarCollapsed && !isMobile;
 
     if (hasChildren) {
+      const isHovered = hoveredGroup === item.label;
       return (
-        <Box key={item.label}>
+        <Box
+          key={item.label}
+          onMouseEnter={(e) => {
+            if (isDesktopFlyout) {
+              setHoveredGroup(item.label);
+              const rect = e.currentTarget.getBoundingClientRect();
+              const viewportHeight = window.innerHeight;
+              const itemHeight = 40;
+              const padding = 16;
+              const calculatedHeight = Math.max(375, Math.min(viewportHeight - 80, (item.children.length * itemHeight) + padding));
+              setFlyoutHeight(calculatedHeight);
+              let desiredViewportTop = rect.top;
+              if (desiredViewportTop + calculatedHeight > viewportHeight - 40) {
+                desiredViewportTop = viewportHeight - 40 - calculatedHeight;
+              }
+              if (desiredViewportTop < 40) {
+                desiredViewportTop = 40;
+              }
+              setFlyoutTopOffset(desiredViewportTop - rect.top);
+            }
+          }}
+          onMouseLeave={() => isDesktopFlyout && setHoveredGroup(null)}
+          sx={{
+            position: 'relative',
+          }}
+        >
           <ListItemButton
             onClick={() => toggleGroup(item.label)}
             sx={{
@@ -131,13 +161,62 @@ export default function Sidebar() {
               </ListItemIcon>
             )}
             {!isCollapsedState && <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: groupActive ? 600 : 500 }} />}
-            {!isCollapsedState && (isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />)}
+            {!isCollapsedState && (
+              isDesktopFlyout ? (
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    transform: (isHovered || isExpanded) ? 'rotate(90deg)' : 'rotate(0deg)',
+                    transition: 'transform 200ms ease-in-out',
+                  }}
+                >
+                  <ChevronRight size={16} />
+                </Box>
+              ) : (
+                isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+              )
+            )}
           </ListItemButton>
-          <Collapse in={isExpanded && !isCollapsedState} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {item.children.map((child) => renderMenuItem(child, depth + 1))}
-            </List>
-          </Collapse>
+
+          {/* Mobile/Tablet view: collapse dropdown */}
+          {!isDesktopFlyout ? (
+            <Collapse in={isExpanded && !isCollapsedState} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                {item.children.map((child) => renderMenuItem(child, depth + 1))}
+              </List>
+            </Collapse>
+          ) : (
+            /* Desktop view: right-side hover flyout */
+            <Box
+              sx={{
+                position: 'absolute',
+                left: '100%',
+                top: flyoutTopOffset,
+                zIndex: theme.zIndex.drawer + 1,
+                minWidth: 220,
+                height: flyoutHeight,
+                maxHeight: 'calc(100vh - 80px)',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                scrollBehavior: 'smooth',
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                borderRadius: '4px',
+                py: 1,
+                opacity: isHovered ? 1 : 0,
+                visibility: isHovered ? 'visible' : 'hidden',
+                transform: isHovered ? 'translateX(4px)' : 'translateX(0px)',
+                transition: 'opacity 250ms ease-in-out, transform 250ms ease-in-out, visibility 250ms ease-in-out, top 250ms ease-in-out',
+                pointerEvents: isHovered ? 'auto' : 'none',
+              }}
+            >
+              <List component="div" disablePadding>
+                {item.children.map((child) => renderMenuItem(child, depth + 1, true))}
+              </List>
+            </Box>
+          )}
         </Box>
       );
     }
@@ -150,7 +229,7 @@ export default function Sidebar() {
           onClick={() => isMobile && setSidebarMobileOpen(false)}
           sx={{
             borderRadius: 0,
-            pl: isCollapsedState ? 'auto' : (depth > 0 ? 4 : 2),
+            pl: isCollapsedState ? 'auto' : (isDesktopFlyout && depth > 0 ? 2 : (depth > 0 ? 4 : 2)),
             justifyContent: isCollapsedState ? 'center' : 'flex-start',
             bgcolor: active
               ? (depth > 0 ? 'rgba(26, 67, 77, 0.08)' : 'primary.main')
@@ -177,7 +256,7 @@ export default function Sidebar() {
   };
 
   const drawerContent = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRight: '1px solid', borderColor: 'divider' }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', borderRight: '1px solid', borderColor: 'divider', overflow: { xs: 'auto', lg: 'visible' } }}>
       {/* Brand */}
       <Box sx={{ height: 64, display: 'flex', alignItems: 'center', px: sidebarCollapsed && !isMobile ? 0 : 3, justifyContent: sidebarCollapsed && !isMobile ? 'center' : 'flex-start' }}>
         <Box sx={{ width: 32, height: 32, borderRadius: 0, bgcolor: 'primary.main', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: sidebarCollapsed && !isMobile ? 0 : 1.5 }}>
@@ -193,7 +272,7 @@ export default function Sidebar() {
       <Divider />
 
       {/* Nav */}
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', py: 2 }}>
+      <Box sx={{ flexGrow: 1, overflowY: { xs: 'auto', lg: 'visible' }, py: 2 }}>
         <List>
           {menus.map((item) => renderMenuItem(item))}
         </List>
@@ -222,7 +301,13 @@ export default function Sidebar() {
         variant="permanent"
         sx={{
           display: { xs: 'none', lg: 'block' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: sidebarWidth, height: '100vh', transition: theme.transitions.create('width', { easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen }) },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: sidebarWidth,
+            height: '100vh',
+            transition: theme.transitions.create('width', { easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen }),
+            overflow: 'visible'
+          },
         }}
         open
       >
