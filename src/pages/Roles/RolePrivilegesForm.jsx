@@ -102,8 +102,13 @@ export default function RolePrivilegesForm() {
               });
             }
 
-            // Auto-select matching module based on role name
-            if (roleName) {
+            // Prefer the module that already has saved permissions, then role-name match.
+            if (modules.length > 0) {
+              const moduleWithPermissions = modules.find(m =>
+                (m.menus || []).some(menu =>
+                  menu.canRead || menu.canCreate || menu.canUpdate || menu.canDelete
+                )
+              );
               const roleWords = roleName.toLowerCase().split(/[\s_-]+/);
               const matchingModule = modules.find(m => {
                 const moduleWords = m.module.toLowerCase().split(/[\s_-]+/);
@@ -111,9 +116,7 @@ export default function RolePrivilegesForm() {
                   moduleWords.some(mWord => mWord.includes(rWord) || rWord.includes(mWord))
                 );
               });
-              if (matchingModule) {
-                setSelectedModule(matchingModule.module);
-              }
+              setSelectedModule((moduleWithPermissions || matchingModule || modules[0]).module);
             }
           }
         } else {

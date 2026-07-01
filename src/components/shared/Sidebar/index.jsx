@@ -86,7 +86,7 @@ export default function Sidebar() {
       .filter(Boolean);
   };
 
-  const menus = filterMenu(SIDEBAR_MENUS[role] || SIDEBAR_MENUS['MANAGER'] || []);
+  const menus = filterMenu(SIDEBAR_MENUS[role] || []);
 
   const isActive = (path) => {
     if (!path) return false;

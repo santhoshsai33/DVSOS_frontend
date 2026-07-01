@@ -39,6 +39,8 @@ export const ENDPOINTS = {
     LIST: '/job-cards/list',
     CREATE: '/job-cards/create',
     DETAIL: (id) => `/job-cards/detail/${id}`,
+    STATUSES: '/job-cards/statuses/list',
+    SERVICE_STATUSES: '/job-cards/service-statuses/list',
     UPDATE: (id) => `/job-cards/update/${id}`,
     DELETE: (id) => `/job-cards/delete/${id}`,
     PENDING: '/job-cards/list?status=PENDING',
@@ -85,6 +87,7 @@ export const ENDPOINTS = {
   // Users
   USERS: {
     LIST: '/users/list',
+    MECHANICS_DROPDOWN: '/users/mechanics/dropdown',
     CREATE: '/users/create',
     DETAIL: (id) => `/users/detail/${id}`,
     UPDATE: (id) => `/users/update/${id}`,

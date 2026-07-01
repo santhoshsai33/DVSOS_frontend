@@ -19,7 +19,12 @@ function AuthInitializer({ children }) {
           if (response?.success) {
             const { user } = response.data;
             const role = mapSlugToRole(user?.role?.slug);
-            login(user, role, token);
+
+            if (role) {
+              login(user, role, token);
+            } else {
+              logout();
+            }
           } else {
             logout();
           }
