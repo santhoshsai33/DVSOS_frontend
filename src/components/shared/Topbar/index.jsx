@@ -4,7 +4,6 @@ import { Bell, ChevronDown, LogOut, User, Settings as SettingsIcon, Menu as Menu
 import { AppBar, Toolbar, IconButton, Typography, Box, Badge, Avatar, Menu, MenuItem, Divider, ListItemIcon, ListItemText } from '@mui/material';
 import useAuthStore from '../../../store/useAuthStore';
 import useUIStore from '../../../store/useUIStore';
-import { ROLE_LABELS } from '../../../constants/roles';
 import { ROUTES } from '../../../config/routes';
 import { getInitials, avatarColor } from '../../../utils/helpers';
 import { getMeApi } from '../../../api/authApi';
@@ -16,7 +15,7 @@ const MOCK_NOTIFICATIONS = [
 ];
 
 export default function Topbar() {
-  const { user, role, logout, setUser } = useAuthStore();
+  const { user, role, logout, setUser, setMenus } = useAuthStore();
   const { sidebarCollapsed, toggleSidebar, setSidebarMobileOpen } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,13 +30,14 @@ export default function Topbar() {
         if (response?.success) {
           const fetchedUser = response.data.user || response.data;
           setUser(fetchedUser);
+          setMenus(response.data.menus || []);
         }
       } catch (error) {
         console.error('Failed to fetch user details:', error);
       }
     };
     fetchUserDetails();
-  }, [setUser]);
+  }, [setUser, setMenus]);
 
   const unread = notifications.filter((n) => !n.read).length;
 
@@ -147,7 +147,7 @@ export default function Topbar() {
                 {user?.fullName || user?.name || 'User'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {user?.role?.name || ROLE_LABELS[role] || role}
+                {user?.role?.name || role}
               </Typography>
             </Box>
             <ChevronDown size={14} style={{ marginLeft: 8, color: '#64748b' }} />

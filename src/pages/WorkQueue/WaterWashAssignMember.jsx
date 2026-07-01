@@ -72,9 +72,9 @@ export default function WaterWashAssignMember() {
     setAssignModal({ isOpen: false, item: null });
     toastSuccess(`Assigned to ${selectedMember}. Wash job card sent to printer!`);
 
-    setTimeout(() => {
-      toastInfo('Wash job card printed successfully. Please attach it to the vehicle.');
-    }, 1500);
+    // setTimeout(() => {
+    //   toastInfo('Wash job card printed successfully. Please attach it to the vehicle.');
+    // }, 1500);
   };
 
   const columns = [

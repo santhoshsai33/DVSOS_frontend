@@ -8,45 +8,21 @@ import useAuthStore from '../../store/useAuthStore';
 import { authSchema } from '../../validations/authSchema';
 import RHFTextField from '../../components/form/RHFTextField';
 import Button from '../../components/common/Button';
-import { ROLES, mapSlugToRole } from '../../constants/roles';
 import { ROUTES } from '../../config/routes';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { loginApi } from '../../api/authApi';
-
-
-
-const ROLE_EMAIL_MAP = {
-  // 'gate@dvsos.com': ROLES.GATE_SECURITY,
-  // 'crm@dvsos.com': ROLES.CRM_TEAM,
-  'floor@dvsos.com': ROLES.FLOOR_SUPERVISOR,
-  'body@dvsos.com': ROLES.BODY_SHOP_SUPERVISOR,
-  'wash@dvsos.com': ROLES.WATER_WASH_TEAM,
-  'manager@dvsos.com': ROLES.MANAGER,
-  'md@dvsos.com': ROLES.MD,
-  'admin@dvsos.com': ROLES.SUPER_ADMIN,
-};
-
-const ROLE_REDIRECTS = {
-  // [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
-  // [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
-  [ROLES.FLOOR_SUPERVISOR]: ROUTES.FLOOR_DASHBOARD,
-  [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_QUEUE,
-  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_DASHBOARD,
-  [ROLES.MANAGER]: ROUTES.MANAGER_DASHBOARD,
-  [ROLES.MD]: ROUTES.MD_DASHBOARD,
-  [ROLES.SUPER_ADMIN]: ROUTES.ADMIN_DASHBOARD,
-};
+import { getFirstReadablePath, hasAnyReadableMenu } from '../../utils/authAccess';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, role } = useAuthStore();
+  const { login, isAuthenticated, menus } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(ROLE_REDIRECTS[role]);
+      navigate(getFirstReadablePath(menus, ROUTES.PROFILE));
     }
-  }, [isAuthenticated, role, navigate]);
+  }, [isAuthenticated, menus, navigate]);
 
   const methods = useForm({
     resolver: zodResolver(authSchema),
@@ -65,21 +41,17 @@ export default function Login() {
 
       if (response?.success) {
         const { token, user, redirectPath } = response.data;
-        const role = mapSlugToRole(user?.role?.slug);
+        const menus = response.data.menus || [];
+        const role = user?.role?.slug || null;
 
-        if (!role) {
+        if (!hasAnyReadableMenu(menus)) {
           toastError('Your role is not configured for web access. Please contact admin.');
           return;
         }
 
-        if (role === ROLES.GATE_SECURITY || role === ROLES.CRM_TEAM) {
-          toastError('Web access denied. Please use the mobile application.');
-          return;
-        }
-
-        login(user, role, token);
+        login(user, role, token, menus);
         toastSuccess(response.message || `Welcome back, ${user.fullName || 'User'}!`);
-        navigate(ROLE_REDIRECTS[role] || redirectPath || ROUTES.MANAGER_DASHBOARD);
+        navigate(getFirstReadablePath(menus, redirectPath || ROUTES.PROFILE));
       } else {
         toastError(response?.message || 'Login failed. Please try again.');
       }

@@ -13,7 +13,7 @@ import { useState, useMemo, useEffect } from 'react';
 import useMasterDataStore from '../../store/useMasterDataStore';
 import { useJobCard } from '../../queries/useDataQueries';
 import useAuthStore from '../../store/useAuthStore';
-import { ROLES } from '../../constants/roles';
+import { getDepartmentFromModules } from '../../utils/authAccess';
 import Loader from '../../components/common/Loader';
 
 const PRIORITY_OPTIONS = [
@@ -32,13 +32,13 @@ export default function CrmAdditionalWork() {
   const [selectedServices, setSelectedServices] = useState([]);
   const [customService, setCustomService] = useState({ name: '', price: '' });
 
-  const { role } = useAuthStore();
+  const { menus } = useAuthStore();
   const roleCategoryMap = {
-    [ROLES.FLOOR_SUPERVISOR]: 'Mechanical',
-    [ROLES.BODY_SHOP_SUPERVISOR]: 'Body Shop',
-    [ROLES.WATER_WASH_TEAM]: 'Water Wash',
+    mechanical: 'Mechanical',
+    'body-shop': 'Body Shop',
+    'water-wash': 'Water Wash',
   };
-  const restrictedCategory = roleCategoryMap[role];
+  const restrictedCategory = roleCategoryMap[getDepartmentFromModules(menus)];
 
   const methods = useForm({
     defaultValues: {

@@ -1,33 +1,25 @@
 import useAuthStore from '../store/useAuthStore';
-import { MANAGEMENT_ROLES } from '../constants/roles';
+import { hasReadableModule, hasReadablePath } from '../utils/authAccess';
 
-/**
- * usePermissions — role-based permission checks
- */
 export const usePermissions = () => {
-  const { role } = useAuthStore();
+  const { role, menus } = useAuthStore();
 
-  const hasRole = (allowedRoles) => {
-    if (!role) return false;
-    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-    return roles.includes(role);
-  };
+  const hasRole = () => false;
+  const hasModule = (moduleNames) => hasReadableModule(menus, moduleNames);
+  const hasPath = (path) => hasReadablePath(menus, path);
 
-  const isManagement = () => hasRole(MANAGEMENT_ROLES);
-
-  const canApprove = () => hasRole(['MANAGER', 'MD', 'SUPER_ADMIN', 'CRM_TEAM']);
-
-  const canManageUsers = () => hasRole(['MANAGER', 'MD', 'SUPER_ADMIN']);
-
-  const canViewReports = () => hasRole(['MANAGER', 'MD', 'SUPER_ADMIN']);
-
-  const canAccessMasters = () => hasRole(['SUPER_ADMIN']);
-
-  const canAssignWork = () => hasRole(['FLOOR_SUPERVISOR', 'BODY_SHOP_SUPERVISOR', 'MANAGER', 'SUPER_ADMIN']);
+  const isManagement = () => hasModule(['manager', 'managing-director', 'admin']);
+  const canApprove = () => hasModule(['manager', 'managing-director', 'admin', 'crm-team']);
+  const canManageUsers = () => hasPath('/users');
+  const canViewReports = () => hasPath('/reports');
+  const canAccessMasters = () => hasModule('admin');
+  const canAssignWork = () => hasPath('/assign-mechanic') || hasPath('/body-shop-assign-mechanic') || hasPath('/water-wash-assign-member');
 
   return {
     role,
     hasRole,
+    hasModule,
+    hasPath,
     isManagement,
     canApprove,
     canManageUsers,

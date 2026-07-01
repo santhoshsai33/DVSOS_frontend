@@ -50,7 +50,7 @@ export default function UserForm() {
   const isEdit = !!userIdentifier;
 
   const { role, user: currentUser } = useAuthStore();
-  const isMD = role === 'MD';
+  const isMD = ['MD', 'managing-director', 'managing_director'].includes(role);
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
