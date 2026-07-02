@@ -104,13 +104,13 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
       <PageHeader
         title="Vehicle Entry"
         breadcrumbs={[{ label: 'Vehicle Entry' }]}
-        actions={
-          onAddClick && (
-            <Button variant="primary" leftIcon={Plus} onClick={onAddClick}>
-              New Entry
-            </Button>
-          )
-        }
+        // actions={
+        //   onAddClick && (
+        //     <Button variant="primary" leftIcon={Plus} onClick={onAddClick}>
+        //       New Entry
+        //     </Button>
+        //   )
+        // }
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
