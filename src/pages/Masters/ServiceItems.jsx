@@ -34,6 +34,8 @@ export default function ServiceItems() {
         setLoading(true);
         const params = { page: page + 1, limit: rowsPerPage };
         if (search) params.search = search;
+        if (statusFilter === 'ACTIVE') params.isActive = true;
+        if (statusFilter === 'INACTIVE') params.isActive = false;
 
         const res = await getServiceItemsApi(params);
         if (res?.success) {
@@ -51,7 +53,7 @@ export default function ServiceItems() {
       fetchItems();
     }, 300);
     return () => clearTimeout(timer);
-  }, [page, rowsPerPage, search]);
+  }, [page, rowsPerPage, search, statusFilter]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();

@@ -31,7 +31,12 @@ export default function ServiceCenterList() {
     const fetchServiceCenters = async () => {
       try {
         setLoading(true);
-        const res = await getServiceCentersApi({ page: page + 1, limit: rowsPerPage, search });
+        const params = { page: page + 1, limit: rowsPerPage };
+        if (search) params.search = search;
+        if (statusFilter === 'ACTIVE') params.isActive = true;
+        if (statusFilter === 'INACTIVE') params.isActive = false;
+
+        const res = await getServiceCentersApi(params);
         if (res?.success) {
           setServiceCenters(res.data.serviceCenters || []);
           setTotalCount(res.meta?.total || 0);
@@ -47,7 +52,7 @@ export default function ServiceCenterList() {
       fetchServiceCenters();
     }, 300);
     return () => clearTimeout(timer);
-  }, [page, rowsPerPage, search]);
+  }, [page, rowsPerPage, search, statusFilter]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();

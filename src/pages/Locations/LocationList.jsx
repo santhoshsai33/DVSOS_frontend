@@ -33,6 +33,8 @@ export default function LocationList() {
         setLoading(true);
         const params = { page: page + 1, limit: rowsPerPage };
         if (search) params.search = search;
+        if (statusFilter === 'ACTIVE') params.isActive = true;
+        if (statusFilter === 'INACTIVE') params.isActive = false;
 
         const res = await getLocationsApi(params);
         if (res?.success) {
@@ -50,7 +52,7 @@ export default function LocationList() {
       fetchLocations();
     }, 300);
     return () => clearTimeout(timer);
-  }, [page, rowsPerPage, search]);
+  }, [page, rowsPerPage, search, statusFilter]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();

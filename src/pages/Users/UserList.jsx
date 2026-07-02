@@ -61,6 +61,8 @@ export default function UserList() {
         if (search) params.search = search;
         if (roleFilter) params.roleId = roleFilter;
         if (locationFilter) params.locationId = locationFilter;
+        if (statusFilter === 'ACTIVE') params.isActive = true;
+        if (statusFilter === 'INACTIVE') params.isActive = false;
 
         const res = await getUsersApi(params);
         if (res?.success) {
@@ -78,7 +80,7 @@ export default function UserList() {
       fetchUsers();
     }, 300);
     return () => clearTimeout(timer);
-  }, [page, rowsPerPage, search, roleFilter, locationFilter]);
+  }, [page, rowsPerPage, search, roleFilter, locationFilter, statusFilter]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
