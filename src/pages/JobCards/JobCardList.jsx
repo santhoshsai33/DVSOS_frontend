@@ -42,7 +42,9 @@ export default function JobCardList() {
     status: statusFilter,
     department: departmentFilter,
     page: page + 1,
-    limit: rowsPerPage
+    limit: rowsPerPage,
+    fromDate,
+    toDate
   });
 
   const [anchorEl, setAnchorEl] = useState(null);

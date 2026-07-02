@@ -30,7 +30,12 @@ export default function CustomerListPage() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
 
-  const { data: customerData, isLoading } = useCustomers({ page, limit, search });
+  const { data: customerData, isLoading } = useCustomers({ 
+    page, 
+    limit, 
+    search, 
+    status: statusFilter ? statusFilter.toLowerCase() : undefined 
+  });
   const statusMutation = useUpdateCustomerStatus();
 
   const handleMenuClick = (event, row) => {

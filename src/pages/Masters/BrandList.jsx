@@ -72,10 +72,13 @@ export default function BrandList() {
     toastSuccess('Brand status updated successfully!');
   };
 
-  // Perform client-side filtering based on search query
   const filteredBrands = brands.filter(brand => {
     const query = search.toLowerCase();
-    return brand.name.toLowerCase().includes(query);
+    const matchSearch = brand.name.toLowerCase().includes(query);
+    let matchStatus = true;
+    if (statusFilter === 'ACTIVE') matchStatus = brand.isActive !== false; // assuming default true
+    if (statusFilter === 'INACTIVE') matchStatus = brand.isActive === false;
+    return matchSearch && matchStatus;
   });
 
   const columns = [
