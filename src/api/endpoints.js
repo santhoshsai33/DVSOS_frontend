@@ -73,6 +73,8 @@ export const ENDPOINTS = {
     MANAGER: '/dashboard/manager',
     MD: '/dashboard/md',
     SUPERVISOR: '/dashboard/supervisor',
+    BODY_SHOP: '/dashboard/body-shop',
+    WATER_WASH: '/dashboard/water-wash',
     RECENT_JOBS: '/dashboard/recent-jobs',
     QUEUE_SUMMARY: '/dashboard/queue-summary',
   },
@@ -174,6 +176,12 @@ export const ENDPOINTS = {
     AUDIT_LOGS: {
       LIST: '/audit-logs/list',
       DETAIL: (id) => `/audit-logs/detail/${id}`
+    },
+    BRANDS: {
+      LIST: '/admin/brands/list',
+      CREATE: '/admin/brands/create',
+      UPDATE: (id) => `/admin/brands/update/${id}`,
+      STATUS: (id) => `/admin/brands/status/${id}`,
     }
   },
 
