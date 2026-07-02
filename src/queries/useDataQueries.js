@@ -5,6 +5,7 @@ import { getApprovalsApi } from '../api/approvalApi';
 import { getUsersApi } from '../api/userApi';
 import { getServicesApi, getBrandsApi, getModelsApi, getPricingApi } from '../api/masterApi';
 import { customerApi } from '../api/customerApi';
+import { getMDDashboardApi } from '../api/dashboardApi';
 
 // ─── MOCK DATA ────────────────────────────────────────────
 const MOCK_VEHICLES = {
@@ -242,5 +243,16 @@ export const usePricing = () => {
       }
     },
     staleTime: 300000,
+  });
+};
+
+export const useMdDashboard = (params) => {
+  return useQuery({
+    queryKey: ['dashboard', 'md', params],
+    queryFn: async () => {
+      const res = await getMDDashboardApi(params);
+      return res?.data || res;
+    },
+    staleTime: 30000,
   });
 };

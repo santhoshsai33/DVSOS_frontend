@@ -8,17 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
-import { toastSuccess } from '../../notifications/toast';
+import { toastSuccess, toastError } from '../../notifications/toast';
 import StatusFilter from '../../components/common/StatusFilter';
-
-const DEFAULT_BRANDS = [
-  { id: 'b-1', name: 'Hyundai', country: 'South Korea', slug: 'hyundai', isActive: true },
-  { id: 'b-2', name: 'Maruti Suzuki', country: 'India', slug: 'maruti-suzuki', isActive: true },
-  { id: 'b-3', name: 'Honda', country: 'Japan', slug: 'honda', isActive: true },
-  { id: 'b-4', name: 'Toyota', country: 'Japan', slug: 'toyota', isActive: true },
-  { id: 'b-5', name: 'Mahindra', country: 'India', slug: 'mahindra', isActive: true },
-  { id: 'b-6', name: 'Tata', country: 'India', slug: 'tata', isActive: true },
-];
+import { adminBrandApi } from '../../api/adminBrandApi';
 
 export default function BrandList() {
   const navigate = useNavigate();
@@ -28,27 +20,35 @@ export default function BrandList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [statusFilter, setStatusFilter] = useState('');
+  const [totalCount, setTotalCount] = useState(0);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
 
-  // Initialize and load brands from localStorage or fallback to defaults
-  useEffect(() => {
-    setLoading(true);
-    const stored = localStorage.getItem('mock_brands');
-    if (stored) {
-      setBrands(JSON.parse(stored));
-    } else {
-      localStorage.setItem('mock_brands', JSON.stringify(DEFAULT_BRANDS));
-      setBrands(DEFAULT_BRANDS);
+  const fetchBrands = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: page + 1,
+        limit: rowsPerPage,
+        search: search || undefined,
+        isActive: statusFilter === 'ACTIVE' ? true : statusFilter === 'INACTIVE' ? false : undefined
+      };
+      const response = await adminBrandApi.getBrands(params);
+      setBrands(response.data?.brands || []);
+      setTotalCount(response.meta?.total || 0);
+    } catch (error) {
+      toastError('Failed to fetch brands');
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, []);
-
-  const saveBrandsToStorage = (updatedBrands) => {
-    localStorage.setItem('mock_brands', JSON.stringify(updatedBrands));
-    setBrands(updatedBrands);
   };
+
+  useEffect(() => {
+    fetchBrands();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, rowsPerPage, search, statusFilter]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -66,20 +66,16 @@ export default function BrandList() {
     return ROUTES.ADMIN_MASTER_BRANDS_EDIT.replace(':slug', identifier);
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    const updated = brands.map(b => b.id === id ? { ...b, isActive: newStatus } : b);
-    saveBrandsToStorage(updated);
-    toastSuccess('Brand status updated successfully!');
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await adminBrandApi.updateBrandStatus(id, newStatus);
+      setBrands(prev => prev.map(b => b.id === id ? { ...b, isActive: newStatus } : b));
+      toastSuccess('Brand status updated successfully!');
+    } catch (error) {
+      toastError(error.response?.data?.message || 'Failed to update status');
+      fetchBrands(); // Refresh to original state
+    }
   };
-
-  const filteredBrands = brands.filter(brand => {
-    const query = search.toLowerCase();
-    const matchSearch = brand.name.toLowerCase().includes(query);
-    let matchStatus = true;
-    if (statusFilter === 'ACTIVE') matchStatus = brand.isActive !== false; // assuming default true
-    if (statusFilter === 'INACTIVE') matchStatus = brand.isActive === false;
-    return matchSearch && matchStatus;
-  });
 
   const columns = [
     {
@@ -135,11 +131,11 @@ export default function BrandList() {
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={filteredBrands.slice(page * rowsPerPage, (page + 1) * rowsPerPage)}
+          data={brands}
           loading={loading}
           emptyMessage="No brands found"
-          serverSide={false}
-          totalCount={filteredBrands.length}
+          serverSide={true}
+          totalCount={totalCount}
           page={page}
           rowsPerPage={rowsPerPage}
           onPageChange={setPage}
@@ -155,7 +151,10 @@ export default function BrandList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedBrand)); }}>
+        <MenuItem onClick={() => { 
+          handleMenuClose(); 
+          navigate(getEditPath(selectedBrand), { state: { brand: selectedBrand } }); 
+        }}>
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>

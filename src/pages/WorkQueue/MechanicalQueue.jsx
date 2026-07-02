@@ -1,75 +1,12 @@
-import { useState } from 'react';
-import { Grid, Box, Typography, Card, CardContent, Chip } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Grid, Box, Typography, Card, CardContent, Chip, CircularProgress } from '@mui/material';
 import { Clock, Wrench, CheckCircle2, User, AlertTriangle, ArrowRight } from 'lucide-react';
-import PageHeader from '../../components/shared/PageHeader';
 import { useNavigate } from 'react-router-dom';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import { ROUTES } from '../../config/routes';
-
-// mock data matching the image
-const QUEUE_DATA = [
-  {
-    id: 'JC001',
-    vehicleNumber: 'TN 09 AB 1234',
-    customerName: 'Rajesh Kumar',
-    phone: '+91 98765 43210',
-    vehicleInfo: 'Maruti Swift 2019',
-    vehicleSpec: 'White - Petrol',
-    services: 'Oil Change, Brake Pad, Air Filter',
-    mechanic: 'Unassigned',
-    status: 'In Queue',
-    delivery: '5:00 PM',
-  },
-  {
-    id: 'JC002',
-    vehicleNumber: 'KA 01 MX 5678',
-    customerName: 'Priya Sharma',
-    phone: '+91 87654 32109',
-    vehicleInfo: 'Honda City 2021',
-    vehicleSpec: 'Silver - Petrol',
-    services: 'Engine Checkup, Coolant',
-    mechanic: 'Ravi Kumar',
-    status: 'Approval',
-    delivery: '3:00 PM',
-  },
-  {
-    id: 'JC003',
-    vehicleNumber: 'MH 02 XY 9012',
-    customerName: 'Arun Pillai',
-    phone: '+91 76543 21098',
-    vehicleInfo: 'Hyundai i20 2022',
-    vehicleSpec: 'Red - Diesel',
-    services: 'Full Service Package',
-    mechanic: 'Suresh M.',
-    status: 'In Progress',
-    delivery: 'Tomorrow 10 AM',
-  },
-  {
-    id: 'JC004',
-    vehicleNumber: 'DL 01 BC 3344',
-    customerName: 'Meena S.',
-    phone: '+91 65432 10987',
-    vehicleInfo: 'Tata Nexon 2020',
-    vehicleSpec: 'Blue - Diesel',
-    services: 'Tyre Rotation, Battery Check',
-    mechanic: 'Unassigned',
-    status: 'In Queue',
-    delivery: '4:00 PM',
-  },
-  {
-    id: 'JC005',
-    vehicleNumber: 'TN 33 PQ 7788',
-    customerName: 'Vikram Rajan',
-    phone: '+91 54321 09876',
-    vehicleInfo: 'Maruti Baleno 2023',
-    vehicleSpec: 'Grey - Petrol',
-    services: 'AC Service, Oil Change',
-    mechanic: 'Manoj T.',
-    status: 'Done',
-    delivery: '12:00 PM ✓',
-  }
-];
+import { getSupervisorDashboardApi } from '../../api/dashboardApi';
+import useAuthStore from '../../store/useAuthStore';
 
 const COLS = [
   { key: 'PENDING', label: 'Pending', icon: Clock, color: '#F59E0B' },
@@ -80,14 +17,35 @@ const COLS = [
 
 export default function MechanicalQueue() {
   const navigate = useNavigate();
-  const [queue, setQueue] = useState(QUEUE_DATA);
+  const { user } = useAuthStore();
+  const [queue, setQueue] = useState([]);
+  const [kpis, setKpis] = useState({ pending: 0, assigned: 0, inProgress: 0, completed: 0 });
+  const [loading, setLoading] = useState(true);
 
-  // Derive counts from QUEUE_DATA
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await getSupervisorDashboardApi();
+      if (response.success) {
+        setQueue(response.data?.queue || []);
+        setKpis(response.data?.kpis || { pending: 0, assigned: 0, inProgress: 0, completed: 0 });
+      }
+    } catch (error) {
+      console.error('Failed to fetch floor supervisor dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const summaryCounts = {
-    PENDING: queue.filter(q => q.status === 'In Queue').length,
-    ASSIGNED: queue.filter(q => q.mechanic !== 'Unassigned' && q.status !== 'In Queue' && q.status !== 'Done').length,
-    IN_PROGRESS: queue.filter(q => q.status === 'In Progress' || q.status === 'Approval').length,
-    COMPLETED: queue.filter(q => q.status === 'Done').length,
+    PENDING: kpis.pending,
+    ASSIGNED: kpis.assigned,
+    IN_PROGRESS: kpis.inProgress,
+    COMPLETED: kpis.completed,
   };
 
   const columns = [
@@ -95,7 +53,7 @@ export default function MechanicalQueue() {
       header: 'VEHICLE NO.',
       render: (row) => (
         <Typography sx={{ color: '#3b82f6', fontFamily: 'monospace', fontWeight: 600, fontSize: '0.875rem' }}>
-          {row.vehicleNumber}
+          {row.vehicleNo || row.vehicleNumber}
         </Typography>
       ),
     },
@@ -103,8 +61,8 @@ export default function MechanicalQueue() {
       header: 'CUSTOMER',
       render: (row) => (
         <Box>
-          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.customerName}</Typography>
-          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.phone}</Typography>
+          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.customer?.name || row.customerName}</Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.customer?.phone || row.phone}</Typography>
         </Box>
       ),
     },
@@ -112,8 +70,8 @@ export default function MechanicalQueue() {
       header: 'VEHICLE',
       render: (row) => (
         <Box>
-          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.vehicleInfo}</Typography>
-          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.vehicleSpec}</Typography>
+          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.vehicleDetails?.model || row.vehicleInfo}</Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.vehicleDetails?.variant || row.vehicleSpec}</Typography>
         </Box>
       ),
     },
@@ -195,7 +153,13 @@ export default function MechanicalQueue() {
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F0F4FF', minHeight: '100%' }}>
 
       {/* KPI Cards Row */}
-      <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
         {COLS.map((col, i) => {
           const Icon = col.icon;
           const count = summaryCounts[col.key] || 0;
@@ -252,6 +216,8 @@ export default function MechanicalQueue() {
           </Card>
         </Grid>
       </Grid>
+        </>
+      )}
     </Box>
   );
 }

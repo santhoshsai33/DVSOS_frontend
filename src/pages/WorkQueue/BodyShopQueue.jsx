@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Grid, Box, Typography, Card, CardContent, Chip } from '@mui/material';
 import { Clock, CheckCircle2, User, AlertTriangle, ArrowRight, Paintbrush } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
@@ -8,8 +8,7 @@ import Button from '../../components/common/Button';
 import { ROUTES } from '../../config/routes';
 import { useQuery } from '@tanstack/react-query';
 import useAuthStore from '../../store/useAuthStore';
-import { getBodyShopQueueApi } from '../../api/queueApi';
-import { formatDateTime } from '../../utils/formatters';
+import { getBodyShopDashboardApi } from '../../api/dashboardApi';
 
 // mock data for body shop
 const QUEUE_DATA = [
@@ -76,54 +75,36 @@ const QUEUE_DATA = [
 ];
 
 const COLS = [
-  { key: 'PENDING', label: 'Pending', icon: Clock, color: '#F59E0B' },
-  { key: 'ASSIGNED', label: 'Assigned', icon: User, color: '#3B82F6' },
-  { key: 'IN_PROGRESS', label: 'In Progress', icon: Paintbrush, color: '#8B5CF6' },
-  { key: 'COMPLETED', label: 'Completed', icon: CheckCircle2, color: '#10B981' },
+  { key: 'pending', label: 'Pending', icon: Clock, color: '#F59E0B' },
+  { key: 'assigned', label: 'Assigned', icon: User, color: '#3B82F6' },
+  { key: 'inProgress', label: 'In Progress', icon: Paintbrush, color: '#8B5CF6' },
+  { key: 'completed', label: 'Completed', icon: CheckCircle2, color: '#10B981' },
 ];
 
 export default function BodyShopQueue() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const locationId = user?.locationId || user?.location_id || user?.branchId || '';
-  const [page] = useState(0);
-  const [rowsPerPage] = useState(10);
+  const [loading, setLoading] = useState(true);
+  const [queue, setQueue] = useState([]);
+  const [kpis, setKpis] = useState({ pending: 0, assigned: 0, inProgress: 0, completed: 0 });
 
-  const { data: jobsResponse, isLoading } = useQuery({
-    queryKey: ['body-shop-queue-dashboard', locationId, page, rowsPerPage],
-    queryFn: () => getBodyShopQueueApi({ locationId, page: page + 1, limit: rowsPerPage }),
-    staleTime: 30000
-  });
-
-  const queue = useMemo(() => {
-    const apiJobs = jobsResponse?.data || [];
-
-    if (!jobsResponse) {
-      return QUEUE_DATA;
-    }
-
-    return apiJobs.map((job) => ({
-      id: job.jobCardId,
-      jobCardNo: job.jobCardNo,
-      vehicleNumber: job.vehicleNo || '-',
-      customerName: job.customerName || '-',
-      phone: job.customerMobileNo || '-',
-      vehicleInfo: job.vehicleModel || '-',
-      vehicleSpec: 'Body Shop',
-      services: job.serviceNames?.length ? job.serviceNames.join(', ') : '-',
-      mechanic: 'Unassigned',
-      status: 'In Queue',
-      delivery: job.expectedDeliveryAt ? formatDateTime(job.expectedDeliveryAt) : '-',
-    }));
-  }, [jobsResponse]);
-
-  // Derive counts from QUEUE_DATA
-  const summaryCounts = {
-    PENDING: queue.filter(q => q.status === 'In Queue').length,
-    ASSIGNED: queue.filter(q => q.mechanic !== 'Unassigned' && q.status !== 'In Queue' && q.status !== 'Done').length,
-    IN_PROGRESS: queue.filter(q => q.status === 'In Progress' || q.status === 'Approval').length,
-    COMPLETED: queue.filter(q => q.status === 'Done').length,
-  };
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const response = await getBodyShopDashboardApi();
+        if (response.success) {
+          setQueue(response.data?.queue || []);
+          setKpis(response.data?.kpis || { pending: 0, assigned: 0, inProgress: 0, completed: 0 });
+        }
+      } catch (error) {
+        console.error('Failed to fetch body shop dashboard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
 
   const columns = [
     {
@@ -233,7 +214,7 @@ export default function BodyShopQueue() {
       <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
         {COLS.map((col, i) => {
           const Icon = col.icon;
-          const count = summaryCounts[col.key] || 0;
+          const count = kpis[col.key] || 0;
           return (
             <Grid item xs={12} sm={6} md={3} key={i}>
               <Card
@@ -280,7 +261,7 @@ export default function BodyShopQueue() {
               <DataTable
                 columns={columns}
                 data={queue}
-                loading={isLoading}
+                loading={loading}
                 emptyMessage="No jobs in queue"
                 showPagination={false}
               />
