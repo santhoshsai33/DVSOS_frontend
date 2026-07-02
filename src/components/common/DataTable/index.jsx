@@ -230,12 +230,12 @@ export default function DataTable({
                   }
                 },
                 '& .Mui-selected': {
-                  bgcolor: '#FFFFFF !important',
-                  color: '#0F766E', // Brand teal
-                  border: '1px solid #E2E8F0',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  bgcolor: '#2563eb!important',
+                  color: '#FFFFFF !important',
+                  border: 'none',
+                  boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)',
                   '&:hover': {
-                    bgcolor: '#F8FAFC !important',
+                    bgcolor: '#2563eb !important',
                   }
                 }
               }}

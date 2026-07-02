@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import DataTable from '../../components/common/DataTable';
-import { ShieldCheck, Eye } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
-import { Box, Card, IconButton } from '@mui/material';
+import { Box, Card, IconButton, CircularProgress, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '../../utils/formatters';
 import SearchBar from '../../components/common/SearchBar';
+import DateFilter from '../../components/common/DateFilter';
+import { useAuditLogs } from '../../queries/useAuditLogQueries';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const DARK_COLORS = [
   '#1E40AF', // dark blue
@@ -22,6 +25,7 @@ const DARK_COLORS = [
 ];
 
 function getHashColor(str) {
+  if (!str) return DARK_COLORS[0];
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -29,50 +33,34 @@ function getHashColor(str) {
   return DARK_COLORS[Math.abs(hash) % DARK_COLORS.length];
 }
 
-const MOCK_LOGS = [
-  { id: 1, user: 'Admin User', action: 'Created User', entity: 'User', details: 'Added new floor supervisor: Rajan M.', timestamp: '2024-06-12T10:05:00Z' },
-  { id: 2, user: 'System', action: 'Auto-Assign', entity: 'JobCard', details: 'Assigned JC-1033 to Mechanic Team A', timestamp: '2024-06-12T09:30:00Z' },
-];
-
 export default function AuditLogs() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 500);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
-  const filteredLogs = MOCK_LOGS.filter(log =>
-    log.user.toLowerCase().includes(search.toLowerCase()) ||
-    log.action.toLowerCase().includes(search.toLowerCase()) ||
-    log.entity.toLowerCase().includes(search.toLowerCase()) ||
-    log.details.toLowerCase().includes(search.toLowerCase())
-  );
+  const { data, isLoading, isError, error } = useAuditLogs({
+    page,
+    limit,
+    search: debouncedSearch,
+    fromDate,
+    toDate
+  });
+
+  const auditLogsData = data?.data?.auditLogs || [];
+  const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
+
+
 
   const columns = [
-    { 
-      header: 'Timestamp', 
+    {
+      header: 'User',
       render: (row) => {
-        const formatted = formatDateTime(row.timestamp);
-        const color = getHashColor(formatted);
-        return (
-          <Box
-            component="span"
-            sx={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 800,
-              fontSize: '0.8rem',
-              color: color,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {formatted}
-          </Box>
-        );
-      }
-    },
-    { 
-      header: 'User', 
-      render: (row) => {
-        const color = getHashColor(row.user);
+        const userName = row.performedBy?.fullName || 'System';
+        const color = getHashColor(userName);
         return (
           <Box
             component="span"
@@ -92,14 +80,41 @@ export default function AuditLogs() {
             }}
           >
             <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: color, mr: 1, flexShrink: 0 }} />
-            {row.user}
+            {userName}
           </Box>
         );
       }
     },
-    { header: 'Action', accessor: 'action' },
-    { header: 'Entity', accessor: 'entity' },
-    { header: 'Details', accessor: 'details' },
+    { header: 'Action', accessor: 'actionType' },
+    {
+      header: 'Table Name',
+      render: (row) => row.tableName
+    },
+    { header: 'Record', accessor: 'recordName' },
+    { header: 'Comments', accessor: 'comments' },
+    {
+      header: 'Timestamp',
+      render: (row) => {
+        const formatted = formatDateTime(row.performedAt);
+        const color = getHashColor(formatted);
+        return (
+          <Box
+            component="span"
+            sx={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 800,
+              fontSize: '0.8rem',
+              color: color,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {formatted}
+          </Box>
+        );
+      }
+    },
     {
       header: 'Actions',
       render: (row) => (
@@ -121,20 +136,50 @@ export default function AuditLogs() {
         breadcrumbs={[{ label: 'Audit Logs' }]}
       />
 
-      <Box sx={{ mb: 3, width: { xs: '100%', md: 350 } }}>
-        <SearchBar
-          placeholder="Search audit logs..."
-          value={search}
-          onChange={setSearch}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
+          <SearchBar
+            placeholder="Search audit logs..."
+            value={search}
+            onChange={(val) => { setSearch(val); setPage(1); }}
+          />
+        </Box>
+        <DateFilter
+          fromDate={fromDate}
+          toDate={toDate}
+          onChange={(type, val) => {
+            if (type === 'from') setFromDate(val);
+            if (type === 'to') setToDate(val);
+            setPage(1);
+          }}
         />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>
-        <DataTable
-          columns={columns}
-          data={filteredLogs}
-          emptyMessage="No audit logs found"
-        />
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+            <CircularProgress />
+          </Box>
+        ) : isError ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+            <Typography color="error">Error loading audit logs: {error?.message}</Typography>
+          </Box>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={auditLogsData}
+            serverSide={true}
+            totalCount={meta.total}
+            page={page - 1}
+            rowsPerPage={limit}
+            onPageChange={(newPage) => setPage(newPage + 1)}
+            onRowsPerPageChange={(newLimit) => {
+              setLimit(newLimit);
+              setPage(1);
+            }}
+            emptyMessage="No audit logs found"
+          />
+        )}
       </Card>
     </Box>
   );
