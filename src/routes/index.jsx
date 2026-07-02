@@ -246,7 +246,7 @@ export const router = createBrowserRouter([
           {
             element: <ProtectedRoute enforcePath />,
             children: [
-              { path: 'body-shop-dashboard', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
+              { path: 'body-shop-dashboard', element: <BodyShopDashboardPage /> },
               { path: 'body-shop-queue', element: <BodyShopQueuePage /> },
               { path: 'body-shop-jobs/:id', element: <BodyShopJobDetailPage /> },
               { path: 'body-shop-assign-mechanic', element: <BodyShopAssignMechanicPage /> },
@@ -322,8 +322,8 @@ export const router = createBrowserRouter([
 
           { path: 'dashboard', element: <Navigate to={ROUTES.MANAGER_DASHBOARD} replace /> },
           { path: 'work-queue/mechanical', element: <Navigate to={ROUTES.FLOOR_MECHANICAL_QUEUE} replace /> },
-          { path: 'work-queue/body-shop', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
-          { path: 'body-shop/dashboard', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
+          { path: 'work-queue/body-shop', element: <Navigate to={ROUTES.BODY_SHOP_DASHBOARD} replace /> },
+          { path: 'body-shop/dashboard', element: <Navigate to={ROUTES.BODY_SHOP_DASHBOARD} replace /> },
           { path: 'work-queue/water-wash', element: <Navigate to={ROUTES.WATER_WASH_QUEUE} replace /> },
           { path: 'water-wash/dashboard', element: <Navigate to={ROUTES.WATER_WASH_DASHBOARD} replace /> },
           { path: 'approvals', element: <Navigate to={ROUTES.MANAGER_PENDING_APPROVALS} replace /> },
