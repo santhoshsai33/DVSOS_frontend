@@ -3,16 +3,14 @@ import useAuthStore from '../../store/useAuthStore';
 import { ROUTES } from '../../config/routes';
 import { getFirstReadablePath, hasReadableModule, hasReadablePath } from '../../utils/authAccess';
 
-// eslint-disable-next-line react/prop-types
+const AUTHENTICATED_ONLY_PATHS = new Set([ ROUTES.PROFILE, ROUTES.SETTINGS ]);
+
+
 export default function ProtectedRoute({ allowedModules = [], requiredPath, enforcePath = false }) {
   const { isAuthenticated, menus } = useAuthStore();
   const location = useLocation();
 
   if (!isAuthenticated) {
-    // Redirect them to the /login page, but save the current location they were
-    // trying to go to when they were redirected. This allows us to send them
-    // along to that page after they login, which is a nicer user experience
-    // than dropping them off on the home page.
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
@@ -21,6 +19,10 @@ export default function ProtectedRoute({ allowedModules = [], requiredPath, enfo
   }
 
   const pathToCheck = requiredPath || (enforcePath ? location.pathname : null);
+
+  if (pathToCheck && AUTHENTICATED_ONLY_PATHS.has(pathToCheck)) {
+    return <Outlet />;
+  }
 
   if (pathToCheck && !hasReadablePath(menus, pathToCheck)) {
     return <Navigate to={getFirstReadablePath(menus, ROUTES.PROFILE)} replace />;

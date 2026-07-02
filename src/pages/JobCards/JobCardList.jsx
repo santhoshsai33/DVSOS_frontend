@@ -131,11 +131,11 @@ export default function JobCardList() {
       <PageHeader
         title="Job Cards"
         breadcrumbs={[{ label: 'Job Cards' }]}
-        actions={canCreateJobCard ? (
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
-            Create Job Card
-          </Button>
-        ) : null}
+        // actions={canCreateJobCard ? (
+        //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
+        //     Create Job Card
+        //   </Button>
+        // ) : null}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
