@@ -41,6 +41,8 @@ export const ENDPOINTS = {
     DETAIL: (id) => `/job-cards/detail/${id}`,
     STATUSES: '/job-cards/statuses/list',
     SERVICE_STATUSES: '/job-cards/service-statuses/list',
+    ADDITIONAL_WORK_CONTEXT: (id) => `/job-cards/${id}/additional-work/context`,
+    ADDITIONAL_WORK_REQUEST: (id) => `/job-cards/${id}/additional-work/request`,
     UPDATE: (id) => `/job-cards/update/${id}`,
     DELETE: (id) => `/job-cards/delete/${id}`,
     PENDING: '/job-cards/list?status=PENDING',

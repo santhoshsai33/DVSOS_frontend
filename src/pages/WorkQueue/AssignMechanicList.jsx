@@ -262,8 +262,8 @@ export default function AssignMechanicList() {
       <Modal
         show={assignModal.isOpen}
         onHide={() => setAssignModal({ isOpen: false, item: null })}
-        title={`Assign ${assigneeLabel} & Print Card`}
-        confirmLabel="Assign & Print"
+        title={`Assign ${assigneeLabel}`}
+        confirmLabel="Assign"
         onConfirm={handleConfirmAssign}
         isConfirming={assignMutation.isPending}
         confirmIcon={Printer}
