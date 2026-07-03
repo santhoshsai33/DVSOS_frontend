@@ -143,26 +143,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
           <MenuItem value="BODY_SHOP">Body Shop</MenuItem>
         </Select>
 
-        <Select
-          size="small"
-          displayEmpty
-          value={serviceTypeFilter}
-          onChange={(e) => setServiceTypeFilter(e.target.value)}
-          sx={{
-            width: { xs: '100%', sm: 180 },
-            bgcolor: 'background.paper',
-            borderRadius: '24px',
-            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
-          }}
-        >
-          <MenuItem value="">All Service Types</MenuItem>
-          <MenuItem value="General Service">General Service</MenuItem>
-          <MenuItem value="Oil Change">Oil Change</MenuItem>
-          <MenuItem value="Body Repair">Body Repair</MenuItem>
-          <MenuItem value="Engine Repair">Engine Repair</MenuItem>
-        </Select>
+
       </Box>
 
       <Card sx={{ borderRadius: 0, }}>

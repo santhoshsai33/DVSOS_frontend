@@ -15,6 +15,7 @@ import { ROUTES } from '../../config/routes';
 import useAuthStore from '../../store/useAuthStore';
 import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAccess';
 import DateFilter from '../../components/common/DateFilter';
+import ResetFiltersButton from '../../components/common/ResetFiltersButton';
 
 const PRIORITY_COLORS = {
   LOW: '#10B981',
@@ -61,6 +62,14 @@ export default function JobCardList() {
     setSelectedJob(null);
   };
 
+  const handleResetFilters = () => {
+    setSearch('');
+    setStatusFilter('');
+    setFromDate('');
+    setToDate('');
+    setPage(0);
+  };
+
   const columns = [
     {
       header: 'Job Card #',
@@ -79,20 +88,7 @@ export default function JobCardList() {
     },
     { header: 'Owner', render: (row) => row.customer?.fullName || 'N/A' },
     { header: 'Mobile Number', render: (row) => row.customer?.mobileNo || '-' },
-    {
-      header: 'Priority',
-      render: (row) => (
-        <Typography variant="caption" sx={{
-          bgcolor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}15`,
-          color: PRIORITY_COLORS[row.priority || 'NORMAL'],
-          px: 1.5, py: 0.5, borderRadius: 8, fontWeight: 700,
-          border: '1px solid', borderColor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}40`,
-          textTransform: 'uppercase', letterSpacing: '0.5px'
-        }}>
-          {row.priority || 'NORMAL'}
-        </Typography>
-      ),
-    },
+
     { header: 'Status', render: (row) => <StatusBadge status={row.currentStatus?.statusCode || 'PENDING'} /> },
     {
       header: 'MECHANIC',
@@ -154,6 +150,7 @@ export default function JobCardList() {
           onChange={(type, val) => {
             if (type === 'from') setFromDate(val);
             if (type === 'to') setToDate(val);
+            if (type === 'clear') { setFromDate(''); setToDate(''); }
             setPage(0);
           }}
         />
@@ -175,6 +172,7 @@ export default function JobCardList() {
             <MenuItem key={s} value={s}>{s || 'All Statuses'}</MenuItem>
           ))}
         </Select>
+        <ResetFiltersButton onReset={handleResetFilters} />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>

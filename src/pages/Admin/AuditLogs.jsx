@@ -9,6 +9,7 @@ import SearchBar from '../../components/common/SearchBar';
 import DateFilter from '../../components/common/DateFilter';
 import { useAuditLogs } from '../../queries/useAuditLogQueries';
 import { useDebounce } from '../../hooks/useDebounce';
+import ResetFiltersButton from '../../components/common/ResetFiltersButton';
 
 const DARK_COLORS = [
   '#1E40AF', // dark blue
@@ -53,7 +54,12 @@ export default function AuditLogs() {
   const auditLogsData = data?.data?.auditLogs || [];
   const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
 
-
+  const handleResetFilters = () => {
+    setSearch('');
+    setFromDate('');
+    setToDate('');
+    setPage(1);
+  };
 
   const columns = [
     {
@@ -150,9 +156,11 @@ export default function AuditLogs() {
           onChange={(type, val) => {
             if (type === 'from') setFromDate(val);
             if (type === 'to') setToDate(val);
+            if (type === 'clear') { setFromDate(''); setToDate(''); }
             setPage(1);
           }}
         />
+        <ResetFiltersButton onReset={handleResetFilters} />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>

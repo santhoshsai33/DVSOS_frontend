@@ -29,6 +29,8 @@ export const STATUS_LABELS = {
   MECHANICAL_ASSIGNED: 'Mechanical Assigned',
   READY_FOR_DELIVERY: 'Ready for Delivery',
   JOB_CARD_CREATED: 'Job Card Created',
+  ENTRY_CREATED: 'Entry Created',
+  EXITED: 'Exited',
 };
 
 export const STATUS_VARIANTS = {
@@ -47,6 +49,8 @@ export const STATUS_VARIANTS = {
   MECHANICAL_ASSIGNED: 'info',
   READY_FOR_DELIVERY: 'primary',
   JOB_CARD_CREATED: 'success',
+  ENTRY_CREATED: 'success',
+  EXITED: 'danger',
 };
 
 export const SERVICE_TYPES = [

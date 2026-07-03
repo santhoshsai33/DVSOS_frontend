@@ -452,13 +452,10 @@ export default function JobCardCreate() {
                 </Typography>
 
                 <Grid container spacing={3} sx={{ mb: 4 }}>
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} md={6}>
                     <RHFSelect name="serviceType" label="Primary Category" options={CATEGORY_OPTS} placeholder="Select category" required disabled={isEditMode} />
                   </Grid>
-                  <Grid item xs={12} md={4}>
-                    <RHFSelect name="priority" label="Priority" options={PRIORITY_OPTIONS} disabled={isEditMode} />
-                  </Grid>
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} md={6}>
                     <RHFTextField name="deliveryDate" label="Expected Delivery" type="datetime-local" required readOnly={isEditMode} />
                   </Grid>
                 </Grid>
