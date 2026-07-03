@@ -13,11 +13,12 @@ import { createServiceCenterApi, updateServiceCenterApi, getServiceCenterApi } f
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Service Center Name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters are not allowed'),
-  gstNumber: z.literal('').or(z.string().trim().toUpperCase().length(15, 'GST Number must be exactly 15 characters').regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i, 'Invalid GST Number format (e.g., 29ABCDE1234F1Z5)')).optional(),
+  gstNumber: z.string().trim().toUpperCase().length(15, 'GST Number must be exactly 15 characters').regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i, 'Invalid GST Number format (e.g., 29ABCDE1234F1Z5)'),
   contactNumber: z.string().trim().min(1, 'Contact Number is required').regex(/^[0-9]{10}$/, 'Contact Number must be exactly 10 digits').refine(val => !/^0+$/.test(val), 'Contact Number cannot be all zeros'),
   email: z.string().trim().min(1, 'Email Address is required').email('Invalid email address'),
   logoUrl: z.string().trim().url('Invalid URL').optional().or(z.literal('')),
   websiteUrl: z.string().trim().url('Invalid URL').optional().or(z.literal('')),
+  tax: z.string().trim().min(1, 'Tax is required').regex(/^[0-9]+(\.[0-9]+)?$/, 'Tax must be a valid number'),
 });
 
 export default function ServiceCenterForm() {
@@ -36,6 +37,7 @@ export default function ServiceCenterForm() {
       email: '',
       logoUrl: '',
       websiteUrl: '',
+      tax: '',
     }
   });
 
@@ -55,6 +57,7 @@ export default function ServiceCenterForm() {
               email: sc.contactEmail || '',
               logoUrl: sc.logoUrl || '',
               websiteUrl: sc.websiteUrl || '',
+              tax: sc.tax || '',
             });
           }
         } catch (error) {
@@ -77,6 +80,7 @@ export default function ServiceCenterForm() {
         contactEmail: data.email,
         logoUrl: data.logoUrl || undefined,
         websiteUrl: data.websiteUrl || undefined,
+        tax: data.tax,
       };
       if (isEdit) {
         await updateServiceCenterApi(id, payload);
@@ -148,6 +152,7 @@ export default function ServiceCenterForm() {
                   name="gstNumber"
                   label="GST Number"
                   placeholder="e.g. 29ABCDE1234F1Z5"
+                  required
                 />
               </Grid>
 
@@ -164,6 +169,19 @@ export default function ServiceCenterForm() {
                   name="websiteUrl"
                   label="Website URL"
                   placeholder="e.g. https://www.dvsos.com"
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="tax"
+                  label="Tax"
+                  placeholder="e.g. 18"
+                  required
+                  inputProps={{ pattern: '[0-9]*' }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+                  }}
                 />
               </Grid>
             </Grid>
