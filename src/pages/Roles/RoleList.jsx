@@ -176,7 +176,7 @@ export default function RoleList() {
           totalCount={totalCount}
           onPageChange={setPage}
           onRowsPerPageChange={(v) => { setRowsPerPage(v); setPage(0); }}
-          emptyMessage="No role policies found"
+          emptyMessage="No role found"
         />
       </Box>
 

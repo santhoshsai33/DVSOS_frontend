@@ -223,14 +223,14 @@ export default function JobCardList() {
           <PlusCircle size={16} className="mr-3 text-body-shop" />
           Add Additional Work
         </MenuItem>
-        <MenuItem onClick={() => {
+        {/* <MenuItem onClick={() => {
           handleMenuClose();
           const message = `Hello ${selectedJob?.ownerName || 'Customer'}, your vehicle service card #${selectedJob?.id} estimate is ready. Please reply YES to approve work.`;
           window.open(`https://wa.me/91${selectedJob?.ownerMobile || selectedJob?.mobile || ''}?text=${encodeURIComponent(message)}`, '_blank');
         }} sx={{ color: '#10B981' }}>
           <MessageCircle size={16} className="mr-3 text-success" />
           WhatsApp Resend
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );
