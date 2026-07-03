@@ -1,18 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, IconButton, Dialog, DialogContent } from '@mui/material';
 import { ChevronLeft, ChevronRight, X, Play, Pause, ZoomIn } from 'lucide-react';
-import carImg from '../../assets/img/car-img.png';
-import cp1 from '../../assets/img/cp1.jpg';
-import cp2 from '../../assets/img/cp2.jpg';
+import noImage from '../../assets/img/no-image.jpg';
 
 const MOCK_SLIDES = [
-  { id: 1, src: carImg, alt: 'Front Side View' },
-  { id: 2, src: cp1, alt: 'Side View' },
-  { id: 3, src: cp2, alt: 'Front Angle View' }
+  { id: 1, src: noImage, alt: 'No Image Available' }
 ];
 
 export default function VehicleImageSlider({ images = [] }) {
-  const slides = images && images.length > 0 
+  const slides = images && images.length > 0
     ? images.map((img, idx) => ({ id: img.id, src: img.fileUrl, alt: `Image ${idx + 1}` }))
     : MOCK_SLIDES;
 
@@ -45,7 +41,7 @@ export default function VehicleImageSlider({ images = [] }) {
   return (
     <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', zIndex: 2, position: 'relative' }}>
       {/* Main Image Container */}
-      <Box 
+      <Box
         onClick={handleOpenGallery}
         sx={{
           width: '100%',
@@ -57,7 +53,8 @@ export default function VehicleImageSlider({ images = [] }) {
           cursor: 'zoom-in',
           p: 4,
           pb: 12, // Leave space for absolute thumbnails row
-          '&:hover .hover-controls': { opacity: 1 }
+          '&:hover .hover-controls': { opacity: 1 },
+          minHeight: 0
         }}
       >
         <Box
@@ -73,7 +70,7 @@ export default function VehicleImageSlider({ images = [] }) {
         />
 
         {/* Hover Controls Overlay */}
-        <Box 
+        <Box
           className="hover-controls"
           sx={{
             position: 'absolute',
@@ -88,18 +85,20 @@ export default function VehicleImageSlider({ images = [] }) {
             zIndex: 3
           }}
         >
-          <IconButton 
-            onClick={handlePrev} 
-            sx={{ bgcolor: 'rgba(255,255,255,0.9)', '&:hover': { bgcolor: '#ffffff' }, color: '#0F172A' }}
-            size="small"
-          >
-            <ChevronLeft size={18} />
-          </IconButton>
+          {slides.length > 1 ? (
+            <IconButton
+              onClick={handlePrev}
+              sx={{ bgcolor: 'rgba(255,255,255,0.9)', '&:hover': { bgcolor: '#ffffff' }, color: '#0F172A' }}
+              size="small"
+            >
+              <ChevronLeft size={18} />
+            </IconButton>
+          ) : <Box sx={{ width: 26 }} />}
 
           {/* Action Row */}
           <Box sx={{ display: 'flex', gap: 1, position: 'absolute', top: 16, right: 16 }}>
-            <IconButton 
-              onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }} 
+            <IconButton
+              onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }}
               sx={{ bgcolor: 'rgba(255,255,255,0.9)', '&:hover': { bgcolor: '#ffffff' }, color: '#0F172A' }}
               size="small"
             >
@@ -107,59 +106,63 @@ export default function VehicleImageSlider({ images = [] }) {
             </IconButton>
           </Box>
 
-          <IconButton 
-            onClick={handleNext} 
-            sx={{ bgcolor: 'rgba(255,255,255,0.9)', '&:hover': { bgcolor: '#ffffff' }, color: '#0F172A' }}
-            size="small"
-          >
-            <ChevronRight size={18} />
-          </IconButton>
+          {slides.length > 1 ? (
+            <IconButton
+              onClick={handleNext}
+              sx={{ bgcolor: 'rgba(255,255,255,0.9)', '&:hover': { bgcolor: '#ffffff' }, color: '#0F172A' }}
+              size="small"
+            >
+              <ChevronRight size={18} />
+            </IconButton>
+          ) : <Box sx={{ width: 26 }} />}
         </Box>
       </Box>
 
       {/* Thumbnails Row overlay at the bottom */}
-      <Box sx={{ 
-        position: 'absolute', 
-        bottom: 24, 
-        left: 0,
-        right: 0,
-        display: 'flex', 
-        gap: 1, 
-        justifyContent: 'center', 
-        zIndex: 4 
-      }}>
-        {slides.map((slide, index) => (
-          <Box
-            key={slide.id}
-            onClick={(e) => handleThumbnailClick(index, e)}
-            sx={{
-              width: '64px',
-              height: '44px',
-              borderRadius: 1.5,
-              overflow: 'hidden',
-              cursor: 'pointer',
-              border: '2px solid',
-              borderColor: activeIndex === index ? '#2563EB' : 'rgba(255,255,255,0.7)',
-              bgcolor: '#FFFFFF',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              transition: 'all 0.2s ease',
-              opacity: activeIndex === index ? 1 : 0.6,
-              '&:hover': { opacity: 1, borderColor: '#2563EB' }
-            }}
-          >
+      {slides.length > 1 && (
+        <Box sx={{
+          position: 'absolute',
+          bottom: 24,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          gap: 1,
+          justifyContent: 'center',
+          zIndex: 4
+        }}>
+          {slides.map((slide, index) => (
             <Box
-              component="img"
-              src={slide.src}
-              alt={`Thumb ${index + 1}`}
+              key={slide.id}
+              onClick={(e) => handleThumbnailClick(index, e)}
               sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
+                width: '64px',
+                height: '44px',
+                borderRadius: 1.5,
+                overflow: 'hidden',
+                cursor: 'pointer',
+                border: '2px solid',
+                borderColor: activeIndex === index ? '#2563EB' : 'rgba(255,255,255,0.7)',
+                bgcolor: '#FFFFFF',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                transition: 'all 0.2s ease',
+                opacity: activeIndex === index ? 1 : 0.6,
+                '&:hover': { opacity: 1, borderColor: '#2563EB' }
               }}
-            />
-          </Box>
-        ))}
-      </Box>
+            >
+              <Box
+                component="img"
+                src={slide.src}
+                alt={`Thumb ${index + 1}`}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+            </Box>
+          ))}
+        </Box>
+      )}
 
       {/* Lightbox / Gallery Dialog */}
       <Dialog
@@ -186,12 +189,14 @@ export default function VehicleImageSlider({ images = [] }) {
           </IconButton>
 
           {/* Navigation */}
-          <IconButton
-            onClick={handlePrev}
-            sx={{ position: 'absolute', left: 16, color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }, zIndex: 10 }}
-          >
-            <ChevronLeft size={28} />
-          </IconButton>
+          {slides.length > 1 && (
+            <IconButton
+              onClick={handlePrev}
+              sx={{ position: 'absolute', left: 16, color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }, zIndex: 10 }}
+            >
+              <ChevronLeft size={28} />
+            </IconButton>
+          )}
 
           <Box
             component="img"
@@ -206,36 +211,40 @@ export default function VehicleImageSlider({ images = [] }) {
             }}
           />
 
-          <IconButton
-            onClick={handleNext}
-            sx={{ position: 'absolute', right: 16, color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }, zIndex: 10 }}
-          >
-            <ChevronRight size={28} />
-          </IconButton>
+          {slides.length > 1 && (
+            <IconButton
+              onClick={handleNext}
+              sx={{ position: 'absolute', right: 16, color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.1)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }, zIndex: 10 }}
+            >
+              <ChevronRight size={28} />
+            </IconButton>
+          )}
 
           {/* Thumbnail strip inside popup */}
-          <Box sx={{ position: 'absolute', bottom: 20, display: 'flex', gap: 1.5, zIndex: 10 }}>
-            {slides.map((slide, index) => (
-              <Box
-                key={slide.id}
-                onClick={(e) => handleThumbnailClick(index, e)}
-                sx={{
-                  width: '54px',
-                  height: '36px',
-                  borderRadius: 1,
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  border: '2px solid',
-                  borderColor: activeIndex === index ? '#FFFFFF' : 'rgba(255,255,255,0.3)',
-                  opacity: activeIndex === index ? 1 : 0.5,
-                  transition: 'all 0.2s ease',
-                  '&:hover': { opacity: 0.8 }
-                }}
-              >
-                <img src={slide.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </Box>
-            ))}
-          </Box>
+          {slides.length > 1 && (
+            <Box sx={{ position: 'absolute', bottom: 20, display: 'flex', gap: 1.5, zIndex: 10 }}>
+              {slides.map((slide, index) => (
+                <Box
+                  key={slide.id}
+                  onClick={(e) => handleThumbnailClick(index, e)}
+                  sx={{
+                    width: '54px',
+                    height: '36px',
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    border: '2px solid',
+                    borderColor: activeIndex === index ? '#FFFFFF' : 'rgba(255,255,255,0.3)',
+                    opacity: activeIndex === index ? 1 : 0.5,
+                    transition: 'all 0.2s ease',
+                    '&:hover': { opacity: 0.8 }
+                  }}
+                >
+                  <img src={slide.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </Box>
+              ))}
+            </Box>
+          )}
         </DialogContent>
       </Dialog>
     </Box>

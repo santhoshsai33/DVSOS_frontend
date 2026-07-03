@@ -9,20 +9,26 @@ import RHFTextField from '../../components/form/RHFTextField';
 import RHFSelect from '../../components/form/RHFSelect';
 import Loader from '../../components/common/Loader';
 import { toastSuccess } from '../../notifications/toast';
-import { useVehicle } from '../../queries/useDataQueries';
-import { FUEL_TYPES, VEHICLE_TYPES } from '../../constants/statuses';
+import { useVehicle, useBrandDropdown } from '../../queries/useDataQueries';
+import { useUpdateVehicle } from '../../mutations/useDataMutations';
 import { ROUTES } from '../../config/routes';
-
 export default function VehicleEditPage() {
-  const { id } = useParams();
+  const { slug, id } = useParams();
+  const identifier = slug || id;
   const navigate = useNavigate();
-  const { data: vehicle, isLoading } = useVehicle(id);
+  const { data: vehicle, isLoading } = useVehicle(identifier);
+  const { data: brandsResponse, isLoading: isBrandsLoading } = useBrandDropdown();
+
+  const brandOptions = brandsResponse?.brands?.map(b => ({ value: b.id, label: b.name })) || [];
+
   const methods = useForm({
     defaultValues: {
       vehicleNumber: '',
       ownerName: '',
       mobile: '',
+      brand: '',
       makeModel: '',
+      status: '',
       type: '',
       fuelType: '',
     },
@@ -33,22 +39,28 @@ export default function VehicleEditPage() {
   useEffect(() => {
     if (vehicle) {
       reset({
-        vehicleNumber: vehicle.vehicleNumber || '',
-        ownerName: vehicle.ownerName || '',
-        mobile: vehicle.mobile || '',
-        makeModel: vehicle.makeModel || '',
-        type: vehicle.type || '',
+        vehicleNumber: vehicle.registrationNo || vehicle.vehicleNumber || '',
+        ownerName: vehicle.customer?.fullName || vehicle.ownerName || '',
+        mobile: vehicle.customer?.mobileNo || vehicle.mobile || '',
+        brand: vehicle.brandId || '',
+        makeModel: vehicle.model || vehicle.makeModel || '',
+        status: vehicle.status || 'ACTIVE',
+        type: vehicle.variant || vehicle.type || '',
         fuelType: vehicle.fuelType || '',
       });
     }
   }, [reset, vehicle]);
 
+  const updateVehicleMutation = useUpdateVehicle(identifier);
+
   if (isLoading) return <Loader fullPage text="Loading vehicle..." />;
 
-  const onSubmit = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    toastSuccess('Vehicle details updated successfully.');
-    navigate(`${ROUTES.VEHICLES}/${id}`);
+  const onSubmit = (data) => {
+    updateVehicleMutation.mutate(data, {
+      onSuccess: () => {
+        navigate(ROUTES.VEHICLES);
+      }
+    });
   };
 
   return (
@@ -67,13 +79,22 @@ export default function VehicleEditPage() {
                 <RHFTextField name="vehicleNumber" label="Registration Number" required />
               </Grid>
               <Grid item xs={12} md={6}>
-                <RHFTextField name="makeModel" label="Make & Model" required />
+                <RHFSelect name="brand" label="Brand" options={brandOptions} required />
               </Grid>
               <Grid item xs={12} md={6}>
-                <RHFSelect name="type" label="Vehicle Type" options={VEHICLE_TYPES} placeholder="Select type" />
+                <RHFTextField name="makeModel" label="Model" required />
               </Grid>
               <Grid item xs={12} md={6}>
-                <RHFSelect name="fuelType" label="Fuel Type" options={FUEL_TYPES} placeholder="Select fuel" />
+                <RHFTextField name="type" label="Vehicle Type" placeholder="Enter vehicle type" />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <RHFTextField name="fuelType" label="Fuel Type" placeholder="Enter fuel type" />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <RHFSelect name="status" label="Status" options={[
+                  { value: 'ACTIVE', label: 'Active' },
+                  { value: 'INACTIVE', label: 'Inactive' }
+                ]} required />
               </Grid>
             </Grid>
 
@@ -88,8 +109,8 @@ export default function VehicleEditPage() {
             </Grid>
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 4 }}>
-              <Button variant="secondary" onClick={() => navigate(`${ROUTES.VEHICLES}/${id}`)}>Cancel</Button>
-              <Button variant="primary" leftIcon={Save} type="submit" isLoading={isSubmitting}>Save Changes</Button>
+              <Button variant="secondary" onClick={() => navigate(ROUTES.VEHICLES)}>Cancel</Button>
+              <Button variant="primary" leftIcon={Save} type="submit" isLoading={isSubmitting || updateVehicleMutation.isPending}>Save Changes</Button>
             </Box>
           </form>
         </FormProvider>

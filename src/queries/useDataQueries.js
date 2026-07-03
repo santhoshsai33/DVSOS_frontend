@@ -3,7 +3,7 @@ import { getVehiclesApi, getVehicleApi, getVehicleHistoryApi, searchVehiclesApi 
 import { getJobCardsApi, getJobCardApi } from '../api/jobCardApi';
 import { getApprovalsApi } from '../api/approvalApi';
 import { getUsersApi } from '../api/userApi';
-import { getServicesApi, getBrandsApi, getModelsApi, getPricingApi } from '../api/masterApi';
+import { getServicesApi, getBrandsApi, getModelsApi, getPricingApi, getBrandDropdownApi } from '../api/masterApi';
 import { customerApi } from '../api/customerApi';
 import { getMDDashboardApi } from '../api/dashboardApi';
 
@@ -73,8 +73,8 @@ export const useVehicle = (id) => {
   return useQuery({
     queryKey: ['vehicles', id],
     queryFn: async () => {
-      try { 
-        const res = await getVehicleApi(id); 
+      try {
+        const res = await getVehicleApi(id);
         return res?.data || res;
       }
       catch { return MOCK_VEHICLES.data.find((v) => String(v.id) === String(id)) || null; }
@@ -87,13 +87,13 @@ export const useVehicleHistory = (id) => {
   return useQuery({
     queryKey: ['vehicles', id, 'history'],
     queryFn: async () => {
-      try { return await getVehicleHistoryApi(id); }
-      catch {
-        return [
-          { id: 'H1', date: '2024-05-10', serviceType: 'General Service', cost: 3200, technician: 'Rajan M.' },
-          { id: 'H2', date: '2024-03-22', serviceType: 'Oil Change', cost: 900, technician: 'Vikram S.' },
-          { id: 'H3', date: '2024-01-15', serviceType: 'Brake Service', cost: 2500, technician: 'Anand P.' },
-        ];
+      try { 
+        const res = await getVehicleHistoryApi(id); 
+        return res?.data || res;
+      }
+      catch (error) {
+        console.error('Error fetching vehicle history:', error);
+        return [];
       }
     },
     enabled: !!id,
@@ -116,8 +116,8 @@ export const useJobCard = (id) => {
   return useQuery({
     queryKey: ['job-cards', id],
     queryFn: async () => {
-      try { 
-        const res = await getJobCardApi(id); 
+      try {
+        const res = await getJobCardApi(id);
         return res?.data || res;
       }
       catch { return MOCK_JOB_CARDS.data.find((j) => String(j.id) === String(id)) || null; }
@@ -175,15 +175,17 @@ export const useServices = () => {
     queryFn: async () => {
       try { return await getServicesApi(); }
       catch {
-        return { data: [
-          { id: 'S1', name: 'General Service', category: 'Maintenance', price: 3000, isActive: true },
-          { id: 'S2', name: 'Oil Change', category: 'Maintenance', price: 800, isActive: true },
-          { id: 'S3', name: 'Brake Service', category: 'Repair', price: 2000, isActive: true },
-          { id: 'S4', name: 'Body Repair', category: 'Body', price: 15000, isActive: true },
-          { id: 'S5', name: 'Paint Job', category: 'Body', price: 20000, isActive: true },
-          { id: 'S6', name: 'AC Service', category: 'Electrical', price: 2500, isActive: true },
-          { id: 'S7', name: 'Water Wash', category: 'Cleaning', price: 300, isActive: true },
-        ]};
+        return {
+          data: [
+            { id: 'S1', name: 'General Service', category: 'Maintenance', price: 3000, isActive: true },
+            { id: 'S2', name: 'Oil Change', category: 'Maintenance', price: 800, isActive: true },
+            { id: 'S3', name: 'Brake Service', category: 'Repair', price: 2000, isActive: true },
+            { id: 'S4', name: 'Body Repair', category: 'Body', price: 15000, isActive: true },
+            { id: 'S5', name: 'Paint Job', category: 'Body', price: 20000, isActive: true },
+            { id: 'S6', name: 'AC Service', category: 'Electrical', price: 2500, isActive: true },
+            { id: 'S7', name: 'Water Wash', category: 'Cleaning', price: 300, isActive: true },
+          ]
+        };
       }
     },
     staleTime: 300000,
@@ -196,14 +198,41 @@ export const useBrands = () => {
     queryFn: async () => {
       try { return await getBrandsApi(); }
       catch {
-        return { data: [
-          { id: 'B1', name: 'Hyundai', country: 'South Korea', isActive: true },
-          { id: 'B2', name: 'Maruti Suzuki', country: 'India', isActive: true },
-          { id: 'B3', name: 'Honda', country: 'Japan', isActive: true },
-          { id: 'B4', name: 'Toyota', country: 'Japan', isActive: true },
-          { id: 'B5', name: 'Mahindra', country: 'India', isActive: true },
-          { id: 'B6', name: 'Tata', country: 'India', isActive: true },
-        ]};
+        return {
+          data: [
+            { id: 'B1', name: 'Hyundai', country: 'South Korea', isActive: true },
+            { id: 'B2', name: 'Maruti Suzuki', country: 'India', isActive: true },
+            { id: 'B3', name: 'Honda', country: 'Japan', isActive: true },
+            { id: 'B4', name: 'Toyota', country: 'Japan', isActive: true },
+            { id: 'B5', name: 'Mahindra', country: 'India', isActive: true },
+            { id: 'B6', name: 'Tata', country: 'India', isActive: true },
+          ]
+        };
+      }
+    },
+    staleTime: 300000,
+  });
+};
+
+export const useBrandDropdown = () => {
+  return useQuery({
+    queryKey: ['masters', 'brandDropdown'],
+    queryFn: async () => {
+      try {
+        const res = await getBrandDropdownApi();
+        return res?.data || res;
+      }
+      catch {
+        return {
+          brands: [
+            { id: 'B1', name: 'Hyundai' },
+            { id: 'B2', name: 'Maruti Suzuki' },
+            { id: 'B3', name: 'Honda' },
+            { id: 'B4', name: 'Toyota' },
+            { id: 'B5', name: 'Mahindra' },
+            { id: 'B6', name: 'Tata' },
+          ]
+        };
       }
     },
     staleTime: 300000,
@@ -216,12 +245,14 @@ export const useModels = (brandId) => {
     queryFn: async () => {
       try { return await getModelsApi(brandId); }
       catch {
-        return { data: [
-          { id: 'M1', brandId: 'B1', name: 'i20', fuelType: 'PETROL', year: 2023 },
-          { id: 'M2', brandId: 'B1', name: 'Creta', fuelType: 'DIESEL', year: 2023 },
-          { id: 'M3', brandId: 'B2', name: 'Swift', fuelType: 'PETROL', year: 2023 },
-          { id: 'M4', brandId: 'B3', name: 'City', fuelType: 'PETROL', year: 2023 },
-        ]};
+        return {
+          data: [
+            { id: 'M1', brandId: 'B1', name: 'i20', fuelType: 'PETROL', year: 2023 },
+            { id: 'M2', brandId: 'B1', name: 'Creta', fuelType: 'DIESEL', year: 2023 },
+            { id: 'M3', brandId: 'B2', name: 'Swift', fuelType: 'PETROL', year: 2023 },
+            { id: 'M4', brandId: 'B3', name: 'City', fuelType: 'PETROL', year: 2023 },
+          ]
+        };
       }
     },
     staleTime: 300000,
@@ -234,12 +265,14 @@ export const usePricing = () => {
     queryFn: async () => {
       try { return await getPricingApi(); }
       catch {
-        return { data: [
-          { id: 'P1', serviceName: 'General Service', vehicleType: 'SEDAN', price: 3000, isActive: true },
-          { id: 'P2', serviceName: 'General Service', vehicleType: 'SUV', price: 4500, isActive: true },
-          { id: 'P3', serviceName: 'Oil Change', vehicleType: 'SEDAN', price: 800, isActive: true },
-          { id: 'P4', serviceName: 'Oil Change', vehicleType: 'SUV', price: 1200, isActive: true },
-        ]};
+        return {
+          data: [
+            { id: 'P1', serviceName: 'General Service', vehicleType: 'SEDAN', price: 3000, isActive: true },
+            { id: 'P2', serviceName: 'General Service', vehicleType: 'SUV', price: 4500, isActive: true },
+            { id: 'P3', serviceName: 'Oil Change', vehicleType: 'SEDAN', price: 800, isActive: true },
+            { id: 'P4', serviceName: 'Oil Change', vehicleType: 'SUV', price: 1200, isActive: true },
+          ]
+        };
       }
     },
     staleTime: 300000,

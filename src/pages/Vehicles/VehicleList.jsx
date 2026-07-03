@@ -9,6 +9,7 @@ import ResetFiltersButton from '../../components/common/ResetFiltersButton';
 import PageHeader from '../../components/shared/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
+import StatusBadge from '../../components/common/StatusBadge';
 import { formatDateTime } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROUTES } from '../../config/routes';
@@ -22,8 +23,8 @@ export default function VehicleList() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data, isLoading } = useVehicles({ 
-    search: debouncedSearch, 
+  const { data, isLoading } = useVehicles({
+    search: debouncedSearch,
     fromDate,
     toDate,
     page: page + 1,
@@ -64,6 +65,10 @@ export default function VehicleList() {
     { header: 'Make & Model', render: (row) => `${row.brand?.name || ''} ${row.model || ''}`.trim() || 'N/A' },
     { header: 'Type', render: (row) => row.variant || 'N/A' },
     { header: 'Fuel', accessor: 'fuelType' },
+    {
+      header: 'Status',
+      render: (row) => <StatusBadge status={row.status || 'ACTIVE'} />
+    },
     {
       header: 'Created At',
       accessor: 'createdAt',
@@ -114,7 +119,7 @@ export default function VehicleList() {
           columns={columns}
           data={tableData}
           loading={isLoading}
-          onRowClick={(row) => navigate(`${ROUTES.VEHICLES}/${row.id}`)}
+          onRowClick={(row) => navigate(`${ROUTES.VEHICLES}/view/${row.slug || row.id}`)}
           emptyMessage="No vehicles found"
           serverSide={true}
           totalCount={data?.meta?.total || 0}
@@ -133,15 +138,15 @@ export default function VehicleList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/${selectedVehicle?.id}`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/view/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
           <Eye size={16} className="mr-3 text-primary" />
           View Details
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/${selectedVehicle?.id}/edit`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/edit/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
           <Edit3 size={16} className="mr-3 text-warning" />
           Edit Vehicle
         </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/${selectedVehicle?.id}/history`); }}>
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/history/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
           <Clock size={16} className="mr-3 text-warning" />
           History
         </MenuItem>
