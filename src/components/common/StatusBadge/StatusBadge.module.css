@@ -68,3 +68,21 @@
   color: #334155;
 }
 .secondary .dot { background: #64748B; }
+
+.purple {
+  background: rgba(168, 85, 247, 0.12);
+  color: #6B21A8;
+}
+.purple .dot { background: #A855F7; }
+
+.teal {
+  background: rgba(20, 184, 166, 0.12);
+  color: #0F766E;
+}
+.teal .dot { background: #14B8A6; }
+
+.pink {
+  background: rgba(236, 72, 153, 0.12);
+  color: #BE185D;
+}
+.pink .dot { background: #EC4899; }
