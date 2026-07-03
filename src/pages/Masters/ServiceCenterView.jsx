@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Card, Typography, Grid, Skeleton } from '@mui/material';
-import { Building2, Tag, ToggleRight, ToggleLeft, Monitor, Calendar, Clock, Hash, Phone, Mail, Link, Globe } from 'lucide-react';
+import { Building2, Tag, ToggleRight, ToggleLeft, Monitor, Calendar, Clock, Hash, Phone, Mail, Link, Globe, Receipt } from 'lucide-react';
 import BackButton from '../../components/common/BackButton';
 import { ROUTES } from '../../config/routes';
 import { getServiceCenterApi } from '../../api/adminServiceCenterApi';
@@ -145,6 +145,11 @@ export default function ServiceCenterView() {
                 icon={Hash}
                 label="GST Number"
                 value={serviceCenter?.gstNumber || '-'}
+              />
+              <DetailRow
+                icon={Receipt}
+                label="Tax"
+                value={serviceCenter?.tax || '-'}
               />
               <DetailRow
                 icon={Phone}

@@ -532,43 +532,43 @@ export default function JobCardCreate() {
                 ) : (
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                     {filteredServices.map((service) => {
-                    const isSelected = isServiceSelected(service);
-                    return (
-                      <Box
-                        key={service.id}
-                        onClick={() => toggleService(service)}
-                        sx={{
-                          p: 2, borderRadius: 2, border: '1px solid',
-                          borderColor: isSelected ? 'primary.main' : 'divider',
-                          bgcolor: isSelected ? 'primary.main' : 'background.paper',
-                          color: isSelected ? '#FFFFFF' : 'inherit',
-                          cursor: 'pointer', transition: 'all 0.2s',
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                        }}
-                      >
-                        <FormControlLabel
-                          control={<Checkbox checked={isSelected} onChange={() => { }} sx={{ p: 0.5, color: isSelected ? '#FFFFFF' : 'inherit', '&.Mui-checked': { color: '#FFFFFF' } }} />}
-                          label={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography variant="body2" fontWeight={600}>{service.name}</Typography>
-                              <Chip
-                                label={service.category}
-                                size="small"
-                                sx={{
-                                  height: 20,
-                                  fontSize: '0.65rem',
-                                  bgcolor: isSelected ? 'rgba(255,255,255,0.2)' : 'action.selected',
-                                  color: isSelected ? '#FFF' : 'text.primary',
-                                  fontWeight: 600
-                                }}
-                              />
-                            </Box>
-                          }
-                          sx={{ m: 0 }}
-                        />
-                        <Typography variant="body2" fontWeight={700}>{formatCurrency(service.price)}</Typography>
-                      </Box>
-                    );
+                      const isSelected = isServiceSelected(service);
+                      return (
+                        <Box
+                          key={service.id}
+                          onClick={() => toggleService(service)}
+                          sx={{
+                            p: 2, borderRadius: 2, border: '1px solid',
+                            borderColor: isSelected ? 'primary.main' : 'divider',
+                            bgcolor: isSelected ? 'primary.main' : 'background.paper',
+                            color: isSelected ? '#FFFFFF' : 'inherit',
+                            cursor: 'pointer', transition: 'all 0.2s',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                          }}
+                        >
+                          <FormControlLabel
+                            control={<Checkbox checked={isSelected} onChange={() => { }} sx={{ p: 0.5, color: isSelected ? '#FFFFFF' : 'inherit', '&.Mui-checked': { color: '#FFFFFF' } }} />}
+                            label={
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="body2" fontWeight={600}>{service.name}</Typography>
+                                <Chip
+                                  label={service.category}
+                                  size="small"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: '0.65rem',
+                                    bgcolor: isSelected ? 'rgba(255,255,255,0.2)' : 'action.selected',
+                                    color: isSelected ? '#FFF' : 'text.primary',
+                                    fontWeight: 600
+                                  }}
+                                />
+                              </Box>
+                            }
+                            sx={{ m: 0 }}
+                          />
+                          <Typography variant="body2" fontWeight={700}>{formatCurrency(service.price)}</Typography>
+                        </Box>
+                      );
                     })}
                   </Box>
                 )}
