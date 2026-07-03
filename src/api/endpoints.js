@@ -198,4 +198,14 @@ export const ENDPOINTS = {
   KIOSK: {
     DISPLAY: '/kiosk/display',
   },
+
+  // Notifications
+  NOTIFICATIONS: {
+    LIST: '/notifications',
+    MARK_READ: (id) => `/notifications/${id}/read`,
+    MARK_ALL_READ: '/notifications/read-all',
+  },
+  DEVICE_TOKEN: {
+    REGISTER: '/device-token',
+  }
 };
