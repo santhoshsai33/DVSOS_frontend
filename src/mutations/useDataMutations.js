@@ -4,6 +4,7 @@ import { approveRequestApi, rejectRequestApi } from '../api/approvalApi';
 import { createUserApi, updateUserApi, deleteUserApi } from '../api/userApi';
 import { createServiceApi, updateServiceApi, deleteServiceApi, createBrandApi, updateBrandApi, createModelApi, updateModelApi, createPricingApi, updatePricingApi } from '../api/masterApi';
 import { customerApi } from '../api/customerApi';
+import { updateVehicleApi } from '../api/vehicleApi';
 import { toastSuccess, toastError } from '../notifications/toast';
 
 // ─── JOB CARD MUTATIONS ──────────────────────────────────
@@ -201,5 +202,19 @@ export const useUpdatePricing = (id) => {
     mutationFn: (data) => updatePricingApi(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['masters', 'pricing'] }); toastSuccess('Pricing updated'); },
     onError: (err) => toastError(err?.message || 'Failed'),
+  });
+};
+
+// ─── VEHICLE MUTATIONS ───────────────────────────────────
+export const useUpdateVehicle = (id) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => updateVehicleApi(id, data),
+    onSuccess: (_, variables) => { 
+      qc.invalidateQueries({ queryKey: ['vehicles'] }); 
+      qc.invalidateQueries({ queryKey: ['vehicles', id] }); 
+      toastSuccess('Vehicle updated successfully'); 
+    },
+    onError: (err) => toastError(err?.message || 'Failed to update vehicle'),
   });
 };

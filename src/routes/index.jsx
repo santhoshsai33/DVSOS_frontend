@@ -4,9 +4,8 @@ import DashboardLayout from '../layouts/DashboardLayout/DashboardLayout';
 import KioskLayout from '../layouts/KioskLayout/KioskLayout';
 import ProtectedRoute from '../components/shared/ProtectedRoute';
 import { ROUTES } from '../config/routes';
-import { PERMISSIONS } from '../config/permissions';
-import { ROLES } from '../constants/roles';
 import useAuthStore from '../store/useAuthStore';
+import { getFirstReadablePath } from '../utils/authAccess';
 
 import Login from '../pages/Auth/Login';
 import ForgotPassword from '../pages/Auth/ForgotPassword';
@@ -95,21 +94,10 @@ import SettingsPage from '../pages/Settings/SettingsPage';
 import DeliveredVehicles from '../pages/Delivery/DeliveredVehicles';
 import NotFound from '../pages/NotFound/NotFound';
 
-const roleHome = {
-  [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
-  [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
-  [ROLES.FLOOR_SUPERVISOR]: ROUTES.FLOOR_DASHBOARD,
-  [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_QUEUE,
-  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_DASHBOARD,
-  [ROLES.MANAGER]: ROUTES.MANAGER_DASHBOARD,
-  [ROLES.MD]: ROUTES.MD_DASHBOARD,
-  [ROLES.SUPER_ADMIN]: ROUTES.ADMIN_DASHBOARD,
-};
-
 function RootRedirect() {
-  const { isAuthenticated, role } = useAuthStore();
+  const { isAuthenticated, menus } = useAuthStore();
   if (!isAuthenticated) return <Navigate to={ROUTES.LOGIN} replace />;
-  return <Navigate to={roleHome[role] || ROUTES.PROFILE} replace />;
+  return <Navigate to={getFirstReadablePath(menus, ROUTES.PROFILE)} replace />;
 }
 
 function LegacyMasterEditRedirect({ basePath }) {
@@ -174,7 +162,7 @@ export const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           {
-            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_ADMIN} />,
+            element: <ProtectedRoute enforcePath />,
             children: [
               { path: 'admin-dashboard', element: <AdminDashboardPage /> },
               { path: 'roles', element: <RoleManagementPage /> },
@@ -225,7 +213,7 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_GATE} />,
+            element: <ProtectedRoute enforcePath />,
             children: [
               { path: 'gate-dashboard', element: <GateDashboardPage /> },
               { path: 'gate-entry', element: <GateEntryPage /> },
@@ -234,7 +222,7 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_CRM} />,
+            element: <ProtectedRoute enforcePath />,
             children: [
               { path: 'crm-dashboard', element: <CrmDashboardPage /> },
               // job-cards/create is mapped in the COMMON routes below, so we remove the CRM duplicate
@@ -245,7 +233,7 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_FLOOR} />,
+            element: <ProtectedRoute enforcePath />,
             children: [
               { path: 'floor-dashboard', element: <FloorDashboardPage /> },
               { path: 'mechanical-queue', element: <MechanicalQueuePage /> },
@@ -256,9 +244,9 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_BODY_SHOP} />,
+            element: <ProtectedRoute enforcePath />,
             children: [
-              { path: 'body-shop-dashboard', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
+              { path: 'body-shop-dashboard', element: <BodyShopDashboardPage /> },
               { path: 'body-shop-queue', element: <BodyShopQueuePage /> },
               { path: 'body-shop-jobs/:id', element: <BodyShopJobDetailPage /> },
               { path: 'body-shop-assign-mechanic', element: <BodyShopAssignMechanicPage /> },
@@ -268,7 +256,7 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_WATER_WASH} />,
+            element: <ProtectedRoute enforcePath />,
             children: [
               { path: 'water-wash-dashboard', element: <WaterWashDashboardPage /> },
               { path: 'water-wash-queue', element: <WaterWashQueuePage /> },
@@ -277,7 +265,7 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_MANAGEMENT} />,
+            element: <ProtectedRoute enforcePath />,
             children: [
               { path: 'manager-dashboard', element: <ManagerDashboardPage /> },
               { path: 'operations', element: <Navigate to={ROUTES.MANAGER_DASHBOARD} replace /> },
@@ -294,7 +282,7 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_EXECUTIVE} />,
+            element: <ProtectedRoute enforcePath />,
             children: [
               { path: 'md-dashboard', element: <MdDashboardPage /> },
               { path: 'executive-overview', element: <ExecutiveOverviewPage /> },
@@ -306,7 +294,7 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            element: <ProtectedRoute allowedRoles={PERMISSIONS.VIEW_COMMON} />,
+            element: <ProtectedRoute enforcePath />,
             children: [
               { path: 'customers', element: <CustomerListPage title="Customers" /> },
               { path: 'customers/new', element: <CustomerForm /> },
@@ -315,9 +303,12 @@ export const router = createBrowserRouter([
               { path: 'customers/:slug/edit', element: <LegacyCustomerEditRedirect /> },
               { path: 'customers/:slug', element: <CustomerDetailPage title="Customer Detail" /> },
               { path: 'vehicles', element: <VehicleListPage /> },
-              { path: 'vehicles/:id', element: <VehicleDetailPage /> },
-              { path: 'vehicles/:id/edit', element: <VehicleEditPage /> },
-              { path: 'vehicles/:id/history', element: <ServiceHistoryPage /> },
+              { path: 'vehicles/view/:slug', element: <VehicleDetailPage /> },
+              { path: 'vehicles/edit/:slug', element: <VehicleEditPage /> },
+              { path: 'vehicles/:slug/edit', element: <Navigate to="../edit/:slug" replace /> },
+              { path: 'vehicles/:slug', element: <VehicleDetailPage /> },
+              { path: 'vehicles/history/:slug', element: <ServiceHistoryPage /> },
+              { path: 'vehicles/:slug/history', element: <Navigate to="../history/:slug" replace /> },
               { path: 'job-cards', element: <JobCardListPage /> },
               { path: 'job-cards/create', element: <CreateJobCardPage /> },
               { path: 'job-cards/edit/:slug', element: <CreateJobCardPage /> },
@@ -334,8 +325,8 @@ export const router = createBrowserRouter([
 
           { path: 'dashboard', element: <Navigate to={ROUTES.MANAGER_DASHBOARD} replace /> },
           { path: 'work-queue/mechanical', element: <Navigate to={ROUTES.FLOOR_MECHANICAL_QUEUE} replace /> },
-          { path: 'work-queue/body-shop', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
-          { path: 'body-shop/dashboard', element: <Navigate to={ROUTES.BODY_SHOP_QUEUE} replace /> },
+          { path: 'work-queue/body-shop', element: <Navigate to={ROUTES.BODY_SHOP_DASHBOARD} replace /> },
+          { path: 'body-shop/dashboard', element: <Navigate to={ROUTES.BODY_SHOP_DASHBOARD} replace /> },
           { path: 'work-queue/water-wash', element: <Navigate to={ROUTES.WATER_WASH_QUEUE} replace /> },
           { path: 'water-wash/dashboard', element: <Navigate to={ROUTES.WATER_WASH_DASHBOARD} replace /> },
           { path: 'approvals', element: <Navigate to={ROUTES.MANAGER_PENDING_APPROVALS} replace /> },

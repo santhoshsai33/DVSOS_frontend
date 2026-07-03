@@ -33,6 +33,8 @@ export default function RoleList() {
       setLoading(true);
       const params = { page: page + 1, limit: rowsPerPage };
       if (search) params.search = search;
+      if (statusFilter === 'ACTIVE') params.isActive = true;
+      if (statusFilter === 'INACTIVE') params.isActive = false;
       
       const res = await getRolesApi(params);
       if (res?.success) {
@@ -52,7 +54,7 @@ export default function RoleList() {
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search, page, rowsPerPage]);
+  }, [search, page, rowsPerPage, statusFilter]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -174,7 +176,7 @@ export default function RoleList() {
           totalCount={totalCount}
           onPageChange={setPage}
           onRowsPerPageChange={(v) => { setRowsPerPage(v); setPage(0); }}
-          emptyMessage="No role policies found"
+          emptyMessage="No role found"
         />
       </Box>
 

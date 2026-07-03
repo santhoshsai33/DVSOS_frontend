@@ -13,8 +13,9 @@ import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROUTES } from '../../config/routes';
 import useAuthStore from '../../store/useAuthStore';
-import { ROLES } from '../../constants/roles';
+import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAccess';
 import DateFilter from '../../components/common/DateFilter';
+import ResetFiltersButton from '../../components/common/ResetFiltersButton';
 
 const PRIORITY_COLORS = {
   LOW: '#10B981',
@@ -25,7 +26,7 @@ const PRIORITY_COLORS = {
 
 export default function JobCardList() {
   const navigate = useNavigate();
-  const { role } = useAuthStore();
+  const { menus } = useAuthStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(0);
@@ -33,19 +34,18 @@ export default function JobCardList() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const debouncedSearch = useDebounce(search, 300);
-  const canCreateJobCard = ![ROLES.BODY_SHOP_SUPERVISOR, ROLES.WATER_WASH_TEAM].includes(role);
-  const departmentFilter = role === ROLES.BODY_SHOP_SUPERVISOR
-    ? 'body-shop'
-    : role === ROLES.WATER_WASH_TEAM
-      ? 'water-wash'
-      : undefined;
+  const department = getDepartmentFromModules(menus);
+  const canCreateJobCard = !['body-shop', 'water-wash'].includes(department);
+  const departmentFilter = ['body-shop', 'water-wash'].includes(department) ? department : undefined;
 
   const { data, isLoading } = useJobCards({
     search: debouncedSearch,
     status: statusFilter,
     department: departmentFilter,
     page: page + 1,
-    limit: rowsPerPage
+    limit: rowsPerPage,
+    fromDate,
+    toDate
   });
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -60,6 +60,14 @@ export default function JobCardList() {
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedJob(null);
+  };
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setStatusFilter('');
+    setFromDate('');
+    setToDate('');
+    setPage(0);
   };
 
   const columns = [
@@ -80,20 +88,7 @@ export default function JobCardList() {
     },
     { header: 'Owner', render: (row) => row.customer?.fullName || 'N/A' },
     { header: 'Mobile Number', render: (row) => row.customer?.mobileNo || '-' },
-    {
-      header: 'Priority',
-      render: (row) => (
-        <Typography variant="caption" sx={{
-          bgcolor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}15`,
-          color: PRIORITY_COLORS[row.priority || 'NORMAL'],
-          px: 1.5, py: 0.5, borderRadius: 8, fontWeight: 700,
-          border: '1px solid', borderColor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}40`,
-          textTransform: 'uppercase', letterSpacing: '0.5px'
-        }}>
-          {row.priority || 'NORMAL'}
-        </Typography>
-      ),
-    },
+
     { header: 'Status', render: (row) => <StatusBadge status={row.currentStatus?.statusCode || 'PENDING'} /> },
     {
       header: 'MECHANIC',
@@ -134,11 +129,11 @@ export default function JobCardList() {
       <PageHeader
         title="Job Cards"
         breadcrumbs={[{ label: 'Job Cards' }]}
-        actions={canCreateJobCard ? (
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
-            Create Job Card
-          </Button>
-        ) : null}
+        // actions={canCreateJobCard ? (
+        //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
+        //     Create Job Card
+        //   </Button>
+        // ) : null}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -155,6 +150,7 @@ export default function JobCardList() {
           onChange={(type, val) => {
             if (type === 'from') setFromDate(val);
             if (type === 'to') setToDate(val);
+            if (type === 'clear') { setFromDate(''); setToDate(''); }
             setPage(0);
           }}
         />
@@ -176,6 +172,7 @@ export default function JobCardList() {
             <MenuItem key={s} value={s}>{s || 'All Statuses'}</MenuItem>
           ))}
         </Select>
+        <ResetFiltersButton onReset={handleResetFilters} />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>
@@ -212,26 +209,26 @@ export default function JobCardList() {
         </MenuItem>
         <MenuItem onClick={() => {
           handleMenuClose();
-          if (role === ROLES.FLOOR_SUPERVISOR) {
+          if (department === 'mechanical') {
             navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
-          } else if (role === ROLES.BODY_SHOP_SUPERVISOR) {
+          } else if (department === 'body-shop') {
             navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
           } else {
-            const targetRoute = role === ROLES.CRM_TEAM ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK_NEW;
+            const targetRoute = hasReadableModule(menus, 'crm-team') ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK_NEW;
             navigate(`${targetRoute}?jobCardId=${selectedJob?.id}`);
           }
         }}>
           <PlusCircle size={16} className="mr-3 text-body-shop" />
           Add Additional Work
         </MenuItem>
-        <MenuItem onClick={() => {
+        {/* <MenuItem onClick={() => {
           handleMenuClose();
           const message = `Hello ${selectedJob?.ownerName || 'Customer'}, your vehicle service card #${selectedJob?.id} estimate is ready. Please reply YES to approve work.`;
           window.open(`https://wa.me/91${selectedJob?.ownerMobile || selectedJob?.mobile || ''}?text=${encodeURIComponent(message)}`, '_blank');
         }} sx={{ color: '#10B981' }}>
           <MessageCircle size={16} className="mr-3 text-success" />
           WhatsApp Resend
-        </MenuItem>
+        </MenuItem> */}
       </Menu>
     </Box>
   );

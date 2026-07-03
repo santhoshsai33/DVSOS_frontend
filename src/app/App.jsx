@@ -4,7 +4,7 @@ import Providers from './Providers';
 import { router } from '../routes/index';
 import useAuthStore from '../store/useAuthStore';
 import { getMeApi } from '../api/authApi';
-import { ROLES, mapSlugToRole } from '../constants/roles';
+import { hasAnyReadableMenu } from '../utils/authAccess';
 
 function AuthInitializer({ children }) {
   const { login, logout, isAuthenticated } = useAuthStore();
@@ -17,11 +17,11 @@ function AuthInitializer({ children }) {
         try {
           const response = await getMeApi();
           if (response?.success) {
-            const { user } = response.data;
-            const role = mapSlugToRole(user?.role?.slug);
+            const { user, menus = [] } = response.data;
+            const role = user?.role?.slug || null;
 
-            if (role) {
-              login(user, role, token);
+            if (hasAnyReadableMenu(menus)) {
+              login(user, role, token, menus);
             } else {
               logout();
             }

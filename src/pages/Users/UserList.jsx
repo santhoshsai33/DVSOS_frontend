@@ -16,9 +16,14 @@ import { getLocationsApi } from '../../api/adminLocationApi';
 import { formatDateTime } from '../../utils/formatters';
 import DateFilter from '../../components/common/DateFilter';
 import StatusFilter from '../../components/common/StatusFilter';
+import useAuthStore from '../../store/useAuthStore';
+import ResetFiltersButton from '../../components/common/ResetFiltersButton';
 
 export default function UserList() {
   const navigate = useNavigate();
+  const { role } = useAuthStore();
+  const isMDOrManager = ['MD', 'managing-director', 'managing_director', 'MANAGER', 'manager'].includes(role);
+
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,18 +45,23 @@ export default function UserList() {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const [rolesRes, locationsRes] = await Promise.all([
-          getRolesApi(),
-          getLocationsApi()
-        ]);
+        const rolesRes = await getRolesApi({ limit: 100 });
         if (rolesRes?.success) setRoles(rolesRes.data.roles || []);
-        if (locationsRes?.success) setLocations(locationsRes.data.locations || []);
       } catch (error) {
-        console.error('Failed to fetch dropdowns');
+        console.error('Failed to fetch roles');
+      }
+
+      if (!isMDOrManager) {
+        try {
+          const locationsRes = await getLocationsApi({ limit: 100 });
+          if (locationsRes?.success) setLocations(locationsRes.data.locations || []);
+        } catch (error) {
+          console.error('Failed to fetch locations');
+        }
       }
     };
     fetchDropdowns();
-  }, []);
+  }, [isMDOrManager]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -61,6 +71,10 @@ export default function UserList() {
         if (search) params.search = search;
         if (roleFilter) params.roleId = roleFilter;
         if (locationFilter) params.locationId = locationFilter;
+        if (statusFilter === 'ACTIVE') params.isActive = true;
+        if (statusFilter === 'INACTIVE') params.isActive = false;
+        if (fromDate) params.fromDate = fromDate;
+        if (toDate) params.toDate = toDate;
 
         const res = await getUsersApi(params);
         if (res?.success) {
@@ -78,7 +92,17 @@ export default function UserList() {
       fetchUsers();
     }, 300);
     return () => clearTimeout(timer);
-  }, [page, rowsPerPage, search, roleFilter, locationFilter]);
+  }, [page, rowsPerPage, search, roleFilter, locationFilter, statusFilter, fromDate, toDate]);
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setStatusFilter('');
+    setRoleFilter('');
+    setLocationFilter('');
+    setFromDate('');
+    setToDate('');
+    setPage(0);
+  };
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -260,25 +284,29 @@ export default function UserList() {
             <MenuItem key={role.id} value={role.id}>{role.name}</MenuItem>
           ))}
         </Select>
-        <Select
-          size="small"
-          displayEmpty
-          value={locationFilter}
-          onChange={(e) => { setLocationFilter(e.target.value); setPage(0); }}
-          sx={{
-            width: { xs: '100%', sm: 180 },
-            bgcolor: 'background.paper',
-            borderRadius: '24px',
-            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
-          }}
-        >
-          <MenuItem value="">All Locations</MenuItem>
-          {locations.map((loc) => (
-            <MenuItem key={loc.id} value={loc.id}>{loc.locationName}</MenuItem>
-          ))}
-        </Select>
+        {!isMDOrManager && (
+          <Select
+            size="small"
+            displayEmpty
+            value={locationFilter}
+            onChange={(e) => { setLocationFilter(e.target.value); setPage(0); }}
+            sx={{
+              width: { xs: '100%', sm: 180 },
+              bgcolor: 'background.paper',
+              borderRadius: '24px',
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+            }}
+          >
+            <MenuItem value="">All Locations</MenuItem>
+            {locations.map((loc) => (
+              <MenuItem key={loc.id} value={loc.id}>{loc.locationName}</MenuItem>
+            ))}
+          </Select>
+        )}
+
+        <ResetFiltersButton onReset={handleResetFilters} />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>
@@ -312,18 +340,18 @@ export default function UserList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { 
+        <MenuItem onClick={() => {
           if (getUserIdentifier(selectedUser)) {
-            navigate(getUserViewPath(selectedUser)); 
+            navigate(getUserViewPath(selectedUser));
           }
           handleMenuClose();
         }}>
           <Eye size={16} className="mr-3 text-info" style={{ color: '#0284C7' }} />
           View
         </MenuItem>
-        <MenuItem onClick={() => { 
+        <MenuItem onClick={() => {
           if (getUserIdentifier(selectedUser)) {
-            navigate(getUserEditPath(selectedUser)); 
+            navigate(getUserEditPath(selectedUser));
           }
           handleMenuClose();
         }}>

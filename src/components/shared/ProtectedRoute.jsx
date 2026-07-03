@@ -1,34 +1,31 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import { ROUTES } from '../../config/routes';
-import { ROLES } from '../../constants/roles';
+import { getFirstReadablePath, hasReadableModule, hasReadablePath } from '../../utils/authAccess';
 
-const ROLE_HOME = {
-  [ROLES.GATE_SECURITY]: ROUTES.GATE_DASHBOARD,
-  [ROLES.CRM_TEAM]: ROUTES.CRM_DASHBOARD,
-  [ROLES.FLOOR_SUPERVISOR]: ROUTES.FLOOR_DASHBOARD,
-  [ROLES.BODY_SHOP_SUPERVISOR]: ROUTES.BODY_SHOP_QUEUE,
-  [ROLES.WATER_WASH_TEAM]: ROUTES.WATER_WASH_DASHBOARD,
-  [ROLES.MANAGER]: ROUTES.MANAGER_DASHBOARD,
-  [ROLES.MD]: ROUTES.MD_DASHBOARD,
-  [ROLES.SUPER_ADMIN]: ROUTES.ADMIN_DASHBOARD,
-};
+const AUTHENTICATED_ONLY_PATHS = new Set([ ROUTES.PROFILE, ROUTES.SETTINGS ]);
 
-// eslint-disable-next-line react/prop-types
-export default function ProtectedRoute({ allowedRoles = [] }) {
-  const { isAuthenticated, role } = useAuthStore();
+
+export default function ProtectedRoute({ allowedModules = [], requiredPath, enforcePath = false }) {
+  const { isAuthenticated, menus } = useAuthStore();
   const location = useLocation();
 
   if (!isAuthenticated) {
-    // Redirect them to the /login page, but save the current location they were
-    // trying to go to when they were redirected. This allows us to send them
-    // along to that page after they login, which is a nicer user experience
-    // than dropping them off on the home page.
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    return <Navigate to={ROLE_HOME[role] || ROUTES.LOGIN} replace />;
+  if (allowedModules.length > 0 && !hasReadableModule(menus, allowedModules)) {
+    return <Navigate to={getFirstReadablePath(menus, ROUTES.PROFILE)} replace />;
+  }
+
+  const pathToCheck = requiredPath || (enforcePath ? location.pathname : null);
+
+  if (pathToCheck && AUTHENTICATED_ONLY_PATHS.has(pathToCheck)) {
+    return <Outlet />;
+  }
+
+  if (pathToCheck && !hasReadablePath(menus, pathToCheck)) {
+    return <Navigate to={getFirstReadablePath(menus, ROUTES.PROFILE)} replace />;
   }
 
   return <Outlet />;

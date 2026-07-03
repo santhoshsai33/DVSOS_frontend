@@ -26,21 +26,31 @@ export const STATUS_LABELS = {
   BODY_SHOP: 'Body Shop',
   WATER_WASH: 'Water Wash',
   CANCELLED: 'Cancelled',
+  MECHANICAL_ASSIGNED: 'Mechanical Assigned',
+  READY_FOR_DELIVERY: 'Ready for Delivery',
+  JOB_CARD_CREATED: 'Job Card Created',
+  ENTRY_CREATED: 'Entry Created',
+  EXITED: 'Exited',
 };
 
 export const STATUS_VARIANTS = {
   PENDING: 'warning',
   ASSIGNED: 'info',
-  IN_PROGRESS: 'primary',
+  IN_PROGRESS: 'purple',
   COMPLETED: 'success',
   DELAYED: 'danger',
   APPROVED: 'success',
   REJECTED: 'danger',
-  READY: 'success',
+  READY: 'primary',
   DELIVERED: 'secondary',
-  BODY_SHOP: 'info',
-  WATER_WASH: 'info',
+  BODY_SHOP: 'pink',
+  WATER_WASH: 'teal',
   CANCELLED: 'secondary',
+  MECHANICAL_ASSIGNED: 'info',
+  READY_FOR_DELIVERY: 'primary',
+  JOB_CARD_CREATED: 'success',
+  ENTRY_CREATED: 'success',
+  EXITED: 'danger',
 };
 
 export const SERVICE_TYPES = [

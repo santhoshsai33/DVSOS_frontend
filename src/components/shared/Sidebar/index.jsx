@@ -1,52 +1,63 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Car, Menu } from 'lucide-react';
+import {
+  AlertCircle,
+  Bell,
+  Building,
+  Car,
+  CheckSquare,
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
+  Clock,
+  Database,
+  Droplets,
+  FileText,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  MapPin,
+  Monitor,
+  Package,
+  Paintbrush,
+  Plus,
+  Settings,
+  ShieldCheck,
+  Truck,
+  User,
+  Users,
+  Wrench,
+} from 'lucide-react';
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Box, Typography, Divider, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import useAuthStore from '../../../store/useAuthStore';
 import useUIStore from '../../../store/useUIStore';
-import { SIDEBAR_MENUS } from '../../../constants/menus';
+import { buildSidebarMenus } from '../../../utils/authAccess';
 
-const PERMISSION_ROWS = [
-  { module: 'Administration', subModule: 'Admin Dashboard' },
-  { module: 'Administration', subModule: 'User Management' },
-  { module: 'Administration', subModule: 'Role Management' },
-  { module: 'Administration', subModule: 'Service Items' },
-  { module: 'Administration', subModule: 'System Settings' },
-  { module: 'Administration', subModule: 'Audit Logs' },
-  { module: 'Gate Operations', subModule: 'Gate Dashboard' },
-  { module: 'Gate Operations', subModule: 'Vehicle Entry' },
-  { module: 'CRM Operations', subModule: 'CRM Dashboard' },
-  { module: 'CRM Operations', subModule: 'Pending Approvals' },
-  { module: 'CRM Operations', subModule: 'Delivery Ready' },
-  { module: 'Floor Workshop', subModule: 'Floor Dashboard' },
-  { module: 'Floor Workshop', subModule: 'Assign Mechanic' },
-  { module: 'Floor Workshop', subModule: 'Additional Work' },
-  { module: 'Body Shop', subModule: 'Body Shop Queue' },
-  { module: 'Water Wash', subModule: 'Water Wash Queue' },
-  { module: 'Manager Operations', subModule: 'Manager Dashboard' },
-  { module: 'Manager Operations', subModule: 'Operations Overview' },
-  { module: 'Manager Operations', subModule: 'Delayed Jobs' },
-  { module: 'Manager Operations', subModule: 'Reports' },
-  { module: 'MD Analytics', subModule: 'MD Dashboard' },
-  { module: 'MD Analytics', subModule: 'Executive Overview' },
-  { module: 'MD Analytics', subModule: 'Performance Report' },
-  { module: 'MD Analytics', subModule: 'Service KPI' },
-  { module: 'MD Analytics', subModule: 'Stage Schedules' },
-  { module: 'Common Pages', subModule: 'Customers' },
-  { module: 'Common Pages', subModule: 'Vehicles' },
-  { module: 'Common Pages', subModule: 'Job Cards' },
-  { module: 'Common Pages', subModule: 'Notifications' }
-];
-
-const roleToDesignationMap = {
-  SUPER_ADMIN: 'Super Admin',
-  MANAGER: 'General Manager',
-  FLOOR_SUPERVISOR: 'Floor Supervisor',
-  GATE_SECURITY: 'Gate Security Executive',
-  CRM_TEAM: 'CRM Officer',
-  BODY_SHOP_SUPERVISOR: 'Body Shop Lead',
-  WATER_WASH_TEAM: 'Water Wash Lead',
-  MD: 'Managing Director'
+const ICON_MAP = {
+  AlertCircle,
+  Bell,
+  Building,
+  Car,
+  CheckSquare,
+  ClipboardList,
+  Clock,
+  Database,
+  Droplets,
+  FileText,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  MapPin,
+  Monitor,
+  Package,
+  Paintbrush,
+  Plus,
+  Settings,
+  ShieldCheck,
+  Truck,
+  User,
+  Users,
+  Wrench,
 };
 
 export default function Sidebar() {
@@ -54,39 +65,14 @@ export default function Sidebar() {
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
   const isDesktopFlyout = useMediaQuery('(min-width: 1201px)');
   const { pathname } = useLocation();
-  const { role } = useAuthStore();
+  const { menus: allowedMenus } = useAuthStore();
   const { sidebarCollapsed, sidebarMobileOpen, setSidebarMobileOpen } = useUIStore();
   const [expandedGroups, setExpandedGroups] = useState({});
   const [hoveredGroup, setHoveredGroup] = useState(null);
   const [flyoutTopOffset, setFlyoutTopOffset] = useState(0);
   const [flyoutHeight, setFlyoutHeight] = useState(375);
 
-  const designationName = roleToDesignationMap[role];
-  const savedPrivileges = JSON.parse(localStorage.getItem('dvsos_role_privileges') || '{}');
-  const rolePrivs = savedPrivileges[designationName];
-
-  const hasReadPermission = (label) => {
-    if (role === 'SUPER_ADMIN') return true;
-    if (!rolePrivs) return true;
-    const idx = PERMISSION_ROWS.findIndex(row => row.subModule === label);
-    if (idx === -1) return true;
-    return !!rolePrivs[idx]?.read;
-  };
-
-  const filterMenu = (items) => {
-    return items
-      .map(item => {
-        if (item.children && item.children.length > 0) {
-          const filteredChildren = filterMenu(item.children);
-          if (filteredChildren.length === 0) return null;
-          return { ...item, children: filteredChildren };
-        }
-        return hasReadPermission(item.label) ? item : null;
-      })
-      .filter(Boolean);
-  };
-
-  const menus = filterMenu(SIDEBAR_MENUS[role] || []);
+  const menus = buildSidebarMenus(allowedMenus, ICON_MAP);
 
   const isActive = (path) => {
     if (!path) return false;

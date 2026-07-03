@@ -6,7 +6,21 @@ import PageHeader from '../../components/shared/PageHeader';
 import StatusBadge from '../../components/common/StatusBadge';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { ROUTES } from '../../config/routes';
-import { SERVICE_HISTORY_ITEMS } from './VehicleHistory';
+const SERVICE_HISTORY_ITEMS = [
+  {
+    id: 'JC-1001',
+    date: '2024-05-15',
+    vehicleNumber: 'TN 01 AB 1234',
+    customerName: 'Ramesh Kumar',
+    services: ['General Service', 'Oil Change'],
+    cost: 4500,
+    status: 'COMPLETED',
+    technician: 'Rajan M.',
+    approvals: ['Brake Pad Replacement approved via WhatsApp'],
+    complaint: 'Customer reported brake noise and regular service due.',
+    notes: 'Oil changed, brake inspection completed, brake pad replacement approved.',
+  }
+];
 
 const fallbackJob = SERVICE_HISTORY_ITEMS[0];
 

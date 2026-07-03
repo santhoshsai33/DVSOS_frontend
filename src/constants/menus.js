@@ -102,7 +102,7 @@ export const SIDEBAR_MENUS = {
     { label: 'Vehicle Entry', path: ROUTES.GATE_ENTRY, icon: LogIn },
     { label: 'Audit Logs', path: ROUTES.ADMIN_AUDIT_LOGS, icon: FileText },
     { label: 'Notifications', path: ROUTES.NOTIFICATIONS, icon: Bell },
-    { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },
+    // { label: 'System Settings', path: ROUTES.ADMIN_SETTINGS, icon: Settings },
     { label: 'TV Display', path: ROUTES.KIOSK_TV, icon: Monitor },
   ],
 

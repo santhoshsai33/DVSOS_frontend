@@ -31,7 +31,12 @@ export default function StateList() {
     const fetchStates = async () => {
       try {
         setLoading(true);
-        const res = await getStatesApi({ page: page + 1, limit: rowsPerPage, search });
+        const params = { page: page + 1, limit: rowsPerPage };
+        if (search) params.search = search;
+        if (statusFilter === 'ACTIVE') params.isActive = true;
+        if (statusFilter === 'INACTIVE') params.isActive = false;
+
+        const res = await getStatesApi(params);
         if (res?.success) {
           setStates(res.data.states || []);
           setTotalCount(res.meta?.total || 0);
@@ -47,7 +52,7 @@ export default function StateList() {
       fetchStates();
     }, 300);
     return () => clearTimeout(timer);
-  }, [page, rowsPerPage, search]);
+  }, [page, rowsPerPage, search, statusFilter]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();

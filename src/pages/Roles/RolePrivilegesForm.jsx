@@ -35,6 +35,7 @@ const flattenMenus = (menus) => {
     flat.push({
       menuId: m.id || m.menuId,
       name: m.name,
+      path: m.path,
       canRead: m.canRead || false,
       canCreate: m.canCreate || false,
       canUpdate: m.canUpdate || false,
@@ -56,6 +57,24 @@ const validateDesignation = (value) => {
     return 'Role Name must contain letters and spaces only';
   }
   return '';
+};
+
+const isReadOnlyMenu = (menu) => {
+  const path = String(menu?.path || '').toLowerCase();
+  const name = String(menu?.name || '').toLowerCase();
+
+  return path.includes('dashboard')
+    || name.includes('dashboard')
+    || path.includes('kiosk/tv')
+    || name.includes('tv display')
+    || path.includes('notifications')
+    || name.includes('notification')
+    || path.includes('audit-logs')
+    || name.includes('audit log');
+};
+
+const supportsPermissionAction = (menu, type) => {
+  return type === 'canRead' || !isReadOnlyMenu(menu);
 };
 
 export default function RolePrivilegesForm() {
@@ -154,6 +173,9 @@ export default function RolePrivilegesForm() {
 
   const handleCheckboxChange = (moduleIndex, menuIndex, type) => {
     const updated = [...modulesList];
+    const menu = updated[moduleIndex].menus[menuIndex];
+    if (!supportsPermissionAction(menu, type)) return;
+
     updated[moduleIndex].menus[menuIndex][type] = !updated[moduleIndex].menus[menuIndex][type];
     setModulesList(updated);
   };
@@ -161,16 +183,36 @@ export default function RolePrivilegesForm() {
   const handleSelectAllChange = (moduleIndex, menuIndex) => {
     const updated = [...modulesList];
     const menu = updated[moduleIndex].menus[menuIndex];
-    const allChecked = menu.canRead && menu.canCreate && menu.canUpdate && menu.canDelete;
+    const actions = ['canRead', 'canCreate', 'canUpdate', 'canDelete']
+      .filter((type) => supportsPermissionAction(menu, type));
+    const allChecked = actions.every((type) => menu[type]);
 
-    updated[moduleIndex].menus[menuIndex] = {
-      ...menu,
-      canRead: !allChecked,
-      canCreate: !allChecked,
-      canUpdate: !allChecked,
-      canDelete: !allChecked
-    };
+    actions.forEach((type) => {
+      menu[type] = !allChecked;
+    });
+
+    if (isReadOnlyMenu(menu)) {
+      menu.canCreate = false;
+      menu.canUpdate = false;
+      menu.canDelete = false;
+    }
+
+    updated[moduleIndex].menus[menuIndex] = menu;
     setModulesList(updated);
+  };
+
+  const renderPermissionCell = (menu, moduleIndex, menuIndex, type) => {
+    if (!supportsPermissionAction(menu, type)) {
+      return <Typography variant="body2" color="text.secondary">-</Typography>;
+    }
+
+    return (
+      <Checkbox
+        checked={menu[type]}
+        onChange={() => handleCheckboxChange(moduleIndex, menuIndex, type)}
+        sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
+      />
+    );
   };
 
   const handleSave = async () => {
@@ -192,9 +234,9 @@ export default function RolePrivilegesForm() {
         permissionsPayload.push({
           menuId: menu.menuId,
           canRead: menu.canRead,
-          canCreate: menu.canCreate,
-          canUpdate: menu.canUpdate,
-          canDelete: menu.canDelete
+          canCreate: supportsPermissionAction(menu, 'canCreate') ? menu.canCreate : false,
+          canUpdate: supportsPermissionAction(menu, 'canUpdate') ? menu.canUpdate : false,
+          canDelete: supportsPermissionAction(menu, 'canDelete') ? menu.canDelete : false
         });
       });
     });
@@ -315,7 +357,9 @@ export default function RolePrivilegesForm() {
                 const moduleIndex = modulesList.findIndex(m => m.module === mod.module);
 
                 return mod.menus.map((menu, menuIndex) => {
-                  const allChecked = menu.canRead && menu.canCreate && menu.canUpdate && menu.canDelete;
+                  const selectableActions = ['canRead', 'canCreate', 'canUpdate', 'canDelete']
+                    .filter((type) => supportsPermissionAction(menu, type));
+                  const allChecked = selectableActions.every((type) => menu[type]);
                   return (
                     <TableRow key={menu.menuId} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                       <TableCell sx={{ fontWeight: 600, color: '#334155' }}>
@@ -325,32 +369,16 @@ export default function RolePrivilegesForm() {
                         {menu.name}
                       </TableCell>
                       <TableCell align="center">
-                        <Checkbox
-                          checked={menu.canRead}
-                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canRead')}
-                          sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
-                        />
+                        {renderPermissionCell(menu, moduleIndex, menuIndex, 'canRead')}
                       </TableCell>
                       <TableCell align="center">
-                        <Checkbox
-                          checked={menu.canCreate}
-                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canCreate')}
-                          sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
-                        />
+                        {renderPermissionCell(menu, moduleIndex, menuIndex, 'canCreate')}
                       </TableCell>
                       <TableCell align="center">
-                        <Checkbox
-                          checked={menu.canUpdate}
-                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canUpdate')}
-                          sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
-                        />
+                        {renderPermissionCell(menu, moduleIndex, menuIndex, 'canUpdate')}
                       </TableCell>
                       <TableCell align="center">
-                        <Checkbox
-                          checked={menu.canDelete}
-                          onChange={() => handleCheckboxChange(moduleIndex, menuIndex, 'canDelete')}
-                          sx={{ color: '#CBD5E1', '&.Mui-checked': { color: 'primary.main' } }}
-                        />
+                        {renderPermissionCell(menu, moduleIndex, menuIndex, 'canDelete')}
                       </TableCell>
                       <TableCell align="center">
                         <Checkbox

@@ -41,6 +41,8 @@ export const ENDPOINTS = {
     DETAIL: (id) => `/job-cards/detail/${id}`,
     STATUSES: '/job-cards/statuses/list',
     SERVICE_STATUSES: '/job-cards/service-statuses/list',
+    ADDITIONAL_WORK_CONTEXT: (id) => `/job-cards/${id}/additional-work/context`,
+    ADDITIONAL_WORK_REQUEST: (id) => `/job-cards/${id}/additional-work/request`,
     UPDATE: (id) => `/job-cards/update/${id}`,
     DELETE: (id) => `/job-cards/delete/${id}`,
     PENDING: '/job-cards/list?status=PENDING',
@@ -71,6 +73,8 @@ export const ENDPOINTS = {
     MANAGER: '/dashboard/manager',
     MD: '/dashboard/md',
     SUPERVISOR: '/dashboard/supervisor',
+    BODY_SHOP: '/dashboard/body-shop',
+    WATER_WASH: '/dashboard/water-wash',
     RECENT_JOBS: '/dashboard/recent-jobs',
     QUEUE_SUMMARY: '/dashboard/queue-summary',
   },
@@ -168,6 +172,16 @@ export const ENDPOINTS = {
       CREATE: '/admin/service-items/create',
       UPDATE: (id) => `/admin/service-items/update/${id}`,
       STATUS: (id) => `/admin/service-items/status/${id}`,
+    },
+    AUDIT_LOGS: {
+      LIST: '/audit-logs/list',
+      DETAIL: (id) => `/audit-logs/detail/${id}`
+    },
+    BRANDS: {
+      LIST: '/admin/brands/list',
+      CREATE: '/admin/brands/create',
+      UPDATE: (id) => `/admin/brands/update/${id}`,
+      STATUS: (id) => `/admin/brands/status/${id}`,
     }
   },
 
@@ -177,6 +191,7 @@ export const ENDPOINTS = {
     SERVICE_CREATE: '/masters/services/create',
     SERVICE_UPDATE: (id) => `/masters/services/update/${id}`,
     SERVICE_DELETE: (id) => `/masters/services/delete/${id}`,
+    BRAND_DROPDOWN: '/brands/list',
     BRANDS: '/masters/brands/list',
     BRAND_DETAIL: (id) => `/masters/brands/detail/${id}`,
     BRAND_CREATE: '/masters/brands/create',

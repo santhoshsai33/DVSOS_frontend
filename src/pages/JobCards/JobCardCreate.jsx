@@ -14,8 +14,8 @@ import { useState, useMemo, useEffect } from 'react';
 import useMasterDataStore from '../../store/useMasterDataStore';
 import { useJobCard } from '../../queries/useDataQueries';
 import useAuthStore from '../../store/useAuthStore';
-import { ROLES } from '../../constants/roles';
 import { getJobCardServiceStatusesApi, updateJobCardApi } from '../../api/jobCardApi';
+import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAccess';
 
 import Loader from '../../components/common/Loader';
 
@@ -39,13 +39,14 @@ export default function JobCardCreate() {
   const [serviceStatusOptions, setServiceStatusOptions] = useState([]);
   const [serviceStatusValues, setServiceStatusValues] = useState({});
 
-  const { role } = useAuthStore();
+  const { menus } = useAuthStore();
+  const moduleDepartment = getDepartmentFromModules(menus);
   const roleCategoryMap = {
-    [ROLES.FLOOR_SUPERVISOR]: 'Mechanical',
-    [ROLES.BODY_SHOP_SUPERVISOR]: 'Body Shop',
-    [ROLES.WATER_WASH_TEAM]: 'Water Wash',
+    mechanical: 'Mechanical',
+    'body-shop': 'Body Shop',
+    'water-wash': 'Water Wash',
   };
-  const restrictedCategory = roleCategoryMap[role];
+  const restrictedCategory = roleCategoryMap[moduleDepartment];
 
   const methods = useForm({
     defaultValues: {
@@ -235,10 +236,8 @@ export default function JobCardCreate() {
   };
 
   const getRoleDepartment = () => {
-    if ([ROLES.SUPER_ADMIN, ROLES.MANAGER, ROLES.MD].includes(role)) return 'all';
-    if (role === ROLES.FLOOR_SUPERVISOR) return 'mechanical';
-    if (role === ROLES.BODY_SHOP_SUPERVISOR) return 'body-shop';
-    if (role === ROLES.WATER_WASH_TEAM) return 'water-wash';
+    if (hasReadableModule(menus, ['admin', 'manager', 'managing-director'])) return 'all';
+    if (moduleDepartment) return moduleDepartment;
     return '';
   };
 
@@ -453,13 +452,10 @@ export default function JobCardCreate() {
                 </Typography>
 
                 <Grid container spacing={3} sx={{ mb: 4 }}>
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} md={6}>
                     <RHFSelect name="serviceType" label="Primary Category" options={CATEGORY_OPTS} placeholder="Select category" required disabled={isEditMode} />
                   </Grid>
-                  <Grid item xs={12} md={4}>
-                    <RHFSelect name="priority" label="Priority" options={PRIORITY_OPTIONS} disabled={isEditMode} />
-                  </Grid>
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} md={6}>
                     <RHFTextField name="deliveryDate" label="Expected Delivery" type="datetime-local" required readOnly={isEditMode} />
                   </Grid>
                 </Grid>
@@ -533,43 +529,43 @@ export default function JobCardCreate() {
                 ) : (
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                     {filteredServices.map((service) => {
-                    const isSelected = isServiceSelected(service);
-                    return (
-                      <Box
-                        key={service.id}
-                        onClick={() => toggleService(service)}
-                        sx={{
-                          p: 2, borderRadius: 2, border: '1px solid',
-                          borderColor: isSelected ? 'primary.main' : 'divider',
-                          bgcolor: isSelected ? 'primary.main' : 'background.paper',
-                          color: isSelected ? '#FFFFFF' : 'inherit',
-                          cursor: 'pointer', transition: 'all 0.2s',
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                        }}
-                      >
-                        <FormControlLabel
-                          control={<Checkbox checked={isSelected} onChange={() => { }} sx={{ p: 0.5, color: isSelected ? '#FFFFFF' : 'inherit', '&.Mui-checked': { color: '#FFFFFF' } }} />}
-                          label={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography variant="body2" fontWeight={600}>{service.name}</Typography>
-                              <Chip
-                                label={service.category}
-                                size="small"
-                                sx={{
-                                  height: 20,
-                                  fontSize: '0.65rem',
-                                  bgcolor: isSelected ? 'rgba(255,255,255,0.2)' : 'action.selected',
-                                  color: isSelected ? '#FFF' : 'text.primary',
-                                  fontWeight: 600
-                                }}
-                              />
-                            </Box>
-                          }
-                          sx={{ m: 0 }}
-                        />
-                        <Typography variant="body2" fontWeight={700}>{formatCurrency(service.price)}</Typography>
-                      </Box>
-                    );
+                      const isSelected = isServiceSelected(service);
+                      return (
+                        <Box
+                          key={service.id}
+                          onClick={() => toggleService(service)}
+                          sx={{
+                            p: 2, borderRadius: 2, border: '1px solid',
+                            borderColor: isSelected ? 'primary.main' : 'divider',
+                            bgcolor: isSelected ? 'primary.main' : 'background.paper',
+                            color: isSelected ? '#FFFFFF' : 'inherit',
+                            cursor: 'pointer', transition: 'all 0.2s',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                          }}
+                        >
+                          <FormControlLabel
+                            control={<Checkbox checked={isSelected} onChange={() => { }} sx={{ p: 0.5, color: isSelected ? '#FFFFFF' : 'inherit', '&.Mui-checked': { color: '#FFFFFF' } }} />}
+                            label={
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="body2" fontWeight={600}>{service.name}</Typography>
+                                <Chip
+                                  label={service.category}
+                                  size="small"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: '0.65rem',
+                                    bgcolor: isSelected ? 'rgba(255,255,255,0.2)' : 'action.selected',
+                                    color: isSelected ? '#FFF' : 'text.primary',
+                                    fontWeight: 600
+                                  }}
+                                />
+                              </Box>
+                            }
+                            sx={{ m: 0 }}
+                          />
+                          <Typography variant="body2" fontWeight={700}>{formatCurrency(service.price)}</Typography>
+                        </Box>
+                      );
                     })}
                   </Box>
                 )}

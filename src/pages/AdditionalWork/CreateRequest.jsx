@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Alert, Box, Card, Checkbox, Chip, Divider, FormControlLabel, Grid, MenuItem, TextField, Typography, } from '@mui/material';
 import { ArrowLeft, Car, ClipboardList, MessageCircle, Send, Wrench, } from 'lucide-react';
 import Button from '../../components/common/Button';
@@ -7,11 +8,10 @@ import Loader from '../../components/common/Loader';
 import PageHeader from '../../components/shared/PageHeader';
 import StatusBadge from '../../components/common/StatusBadge';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
-import { useJobCard } from '../../queries/useDataQueries';
+import { createAdditionalWorkRequestApi, getAdditionalWorkContextApi } from '../../api/jobCardApi';
 import { toastError, toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import { formatCurrency, formatDate, formatPhone, snakeToLabel } from '../../utils/formatters';
-import useMasterDataStore from '../../store/useMasterDataStore';
 
 const TAX_RATE = 18;
 
@@ -50,7 +50,7 @@ function serviceRows(jobCard) {
       category: service.categoryName || service.category || 'Mechanical',
       qty: service.quantity || 1,
       price: Number(service.priceSnapshot || service.price || service.amount || 0),
-      status: service.approvalStatus || service.status || 'Approved',
+      status: service.approvalStatus?.name || service.approvalStatus?.code || service.serviceStatus?.name || service.serviceStatus?.code || service.status || 'Approved',
     };
   });
 }
@@ -112,8 +112,13 @@ export function AdditionalWorkRequestScreen({
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const jobCardId = searchParams.get('jobCardId');
-  const { data: jobCardPayload, isLoading } = useJobCard(jobCardId);
-  const jobCardRaw = normalizePayload(jobCardPayload);
+  const { data: contextPayload, isLoading } = useQuery({
+    queryKey: ['additional-work-context', jobCardId, defaultCategory],
+    queryFn: () => getAdditionalWorkContextApi(jobCardId, { category: defaultCategory }),
+    enabled: Boolean(jobCardId),
+  });
+  const context = normalizePayload(contextPayload);
+  const jobCardRaw = context?.jobCard || null;
   const jobCard = jobCardRaw || {
     id: jobCardId || 'Unknown',
     ownerName: 'Unknown Customer',
@@ -123,30 +128,41 @@ export function AdditionalWorkRequestScreen({
     services: []
   };
 
-  const { masterServices, serviceCategories } = useMasterDataStore();
-
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
+  const [parentJobCardServiceId, setParentJobCardServiceId] = useState('');
   const [priority, setPriority] = useState('NORMAL');
   const [expectedDelivery, setExpectedDelivery] = useState('');
   const [requestSource, setRequestSource] = useState(requestSources[0]?.value || 'MECHANIC_IDENTIFIED');
-  const [notes, setNotes] = useState('');
+  const [mechanicExplanation, setMechanicExplanation] = useState('');
   const [selectedAdditionalServices, setSelectedAdditionalServices] = useState([]);
   const [isSending, setIsSending] = useState(false);
 
-  const currentServices = useMemo(() => serviceRows(jobCard), [jobCard]);
+  const currentServices = useMemo(() => serviceRows({ services: context?.currentServices || jobCard.services || [] }), [context?.currentServices, jobCard.services]);
+  const eligibleParentServices = useMemo(() => serviceRows({ services: context?.eligibleParentServices || [] }), [context?.eligibleParentServices]);
   const availableServices = useMemo(() => {
-    if (!selectedCategory || selectedCategory === 'ALL') return masterServices;
-    return masterServices.filter((service) => service.category?.toLowerCase() === selectedCategory.toLowerCase());
-  }, [masterServices, selectedCategory]);
+    const services = Array.isArray(context?.availableServices) ? context.availableServices : [];
+    if (!selectedCategory || selectedCategory === 'ALL') return services;
+    return services.filter((service) => service.category?.toLowerCase() === selectedCategory.toLowerCase());
+  }, [context?.availableServices, selectedCategory]);
   const categoryOptions = useMemo(() => {
-    const categories = serviceCategories.length ? serviceCategories : [{ id: 'C1', name: defaultCategory }];
-    return categories.map((category) => ({ value: category.name, label: category.name }));
-  }, [defaultCategory, serviceCategories]);
+    const labels = new Set([defaultCategory]);
+    (context?.availableServices || []).forEach((service) => {
+      if (service.category) labels.add(service.category);
+    });
+    return Array.from(labels).map((label) => ({ value: label, label }));
+  }, [context?.availableServices, defaultCategory]);
+  const pendingApproval = context?.pendingApproval || null;
   const baseSubtotal = currentServices.reduce((sum, service) => sum + Number(service.price || 0) * Number(service.qty || 1), 0);
   const additionalSubtotal = selectedAdditionalServices.reduce((sum, service) => sum + Number(service.price || 0), 0);
   const subtotal = baseSubtotal + additionalSubtotal;
   const tax = subtotal * (TAX_RATE / 100);
   const total = subtotal + tax;
+
+  useEffect(() => {
+    if (!parentJobCardServiceId && eligibleParentServices.length) {
+      setParentJobCardServiceId(String(eligibleParentServices[0].id));
+    }
+  }, [eligibleParentServices, parentJobCardServiceId]);
 
   const toggleAdditionalService = (service) => {
     setSelectedAdditionalServices((current) => {
@@ -167,11 +183,37 @@ export function AdditionalWorkRequestScreen({
       return;
     }
 
-    setIsSending(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsSending(false);
-    toastSuccess(successMessage);
-    navigate(listRoute);
+    if (!parentJobCardServiceId) {
+      toastError('Select the current service that needs additional work.');
+      return;
+    }
+
+    if (mechanicExplanation.trim().length < 5) {
+      toastError('Enter the mechanic explanation for the customer approval message.');
+      return;
+    }
+
+    try {
+      setIsSending(true);
+      const response = await createAdditionalWorkRequestApi(jobCardId, {
+        category: selectedCategory,
+        parentJobCardServiceId: Number(parentJobCardServiceId),
+        priority,
+        expectedDeliveryAt: expectedDelivery || undefined,
+        requestSource,
+        mechanicExplanation: mechanicExplanation.trim(),
+        serviceItems: selectedAdditionalServices.map((service) => ({
+          serviceItemId: service.serviceItemId || service.id,
+          quantity: 1,
+        })),
+      });
+      toastSuccess(response?.message || successMessage || 'Approval sent to customer');
+      navigate(listRoute);
+    } catch (error) {
+      toastError(error?.message || 'Unable to send additional work approval.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   if (!jobCardId) {
@@ -289,6 +331,23 @@ export function AdditionalWorkRequestScreen({
                   </TextField>
                 </Grid>
                 <Grid item xs={12} md={4}>
+                  <FieldLabel required>Current Service</FieldLabel>
+                  <TextField
+                    select
+                    fullWidth
+                    value={parentJobCardServiceId}
+                    onChange={(event) => setParentJobCardServiceId(event.target.value)}
+                    required
+                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
+                  >
+                    {eligibleParentServices.map((service) => (
+                      <MenuItem key={service.id} value={String(service.id)}>
+                        {service.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} md={4}>
                   <FieldLabel>Priority</FieldLabel>
                   <TextField select fullWidth value={priority} onChange={(event) => setPriority(event.target.value)} sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} >
                     <MenuItem value="LOW">Low</MenuItem>
@@ -310,17 +369,23 @@ export function AdditionalWorkRequestScreen({
                   </TextField>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <FieldLabel>Internal Supervisor Notes</FieldLabel>
-                  <TextField fullWidth placeholder="Add notes for internal tracking" value={notes} onChange={(event) => setNotes(event.target.value)} sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} />
+                  <FieldLabel required>Mechanic Explanation</FieldLabel>
+                  <TextField fullWidth required placeholder="Explain why this extra work is needed" value={mechanicExplanation} onChange={(event) => setMechanicExplanation(event.target.value)} sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} />
                 </Grid>
               </Grid>
+
+              {!eligibleParentServices.length && (
+                <Alert severity="warning" sx={{ mb: 3, borderRadius: 0 }}>
+                  No active service is available in this department for additional work.
+                </Alert>
+              )}
 
               <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 2, color: '#334155', textTransform: 'uppercase' }}>
                 Available Services
               </Typography>
 
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                {availableServices.map((service) => {
+                {availableServices.length ? availableServices.map((service) => {
                   const isSelected = selectedAdditionalServices.some((item) => item.id === service.id);
                   return (
                     <Box
@@ -348,7 +413,11 @@ export function AdditionalWorkRequestScreen({
                       </Typography>
                     </Box>
                   );
-                })}
+                }) : (
+                  <Alert severity="info" sx={{ gridColumn: '1 / -1', borderRadius: 0 }}>
+                    No active service items found for this department.
+                  </Alert>
+                )}
               </Box>
             </SectionCard>
           </Box>
@@ -426,7 +495,12 @@ export function AdditionalWorkRequestScreen({
                   <Typography sx={{ fontWeight: 900, color: '#0F766E' }}>{formatCurrency(total)}</Typography>
                 </Box>
               </Box>
-              <Button fullWidth type="submit" variant="primary" leftIcon={Send} isLoading={isSending} sx={{ mt: 2.5 }}>
+              {pendingApproval && (
+                <Alert severity="info" sx={{ mt: 2.5, borderRadius: 0 }}>
+                  Pending approval {pendingApproval.approvalCode ? `(${pendingApproval.approvalCode})` : ''} is already waiting for customer response.
+                </Alert>
+              )}
+              <Button fullWidth type="submit" variant="primary" leftIcon={Send} isLoading={isSending} disabled={!eligibleParentServices.length} sx={{ mt: 2.5 }}>
                 {sendButtonLabel}
               </Button>
             </SectionCard>

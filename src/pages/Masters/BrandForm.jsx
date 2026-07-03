@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Box, Grid, Typography } from '@mui/material';
 import { z } from 'zod';
@@ -9,29 +9,24 @@ import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
+import { adminBrandApi } from '../../api/adminBrandApi';
 
 const schema = z.object({
   name: z.string()
     .trim()
     .min(1, 'Brand name is required')
+    .regex(/^[a-zA-Z0-9\s]+$/, 'Special characters and symbols are not allowed')
+    .regex(/[a-zA-Z]/, 'Brand name must contain at least one letter')
 });
-
-const DEFAULT_BRANDS = [
-  { id: 'b-1', name: 'Hyundai', country: 'South Korea', slug: 'hyundai', isActive: true },
-  { id: 'b-2', name: 'Maruti Suzuki', country: 'India', slug: 'maruti-suzuki', isActive: true },
-  { id: 'b-3', name: 'Honda', country: 'Japan', slug: 'honda', isActive: true },
-  { id: 'b-4', name: 'Toyota', country: 'Japan', slug: 'toyota', isActive: true },
-  { id: 'b-5', name: 'Mahindra', country: 'India', slug: 'mahindra', isActive: true },
-  { id: 'b-6', name: 'Tata', country: 'India', slug: 'tata', isActive: true },
-];
 
 export default function BrandForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { slug } = useParams();
-  const brandIdentifier = slug;
-  const isEdit = !!brandIdentifier;
+  const isEdit = !!slug;
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
+  const [brandId, setBrandId] = useState(null);
 
   const methods = useForm({
     resolver: zodResolver(schema),
@@ -43,59 +38,62 @@ export default function BrandForm() {
   const { handleSubmit, reset } = methods;
 
   useEffect(() => {
-    if (isEdit) {
+    const loadBrandData = async () => {
+      if (!isEdit) return;
+      
       setLoading(true);
-      const stored = localStorage.getItem('mock_brands');
-      const brands = stored ? JSON.parse(stored) : DEFAULT_BRANDS;
-      const brand = brands.find(b => b.slug === brandIdentifier || b.id === brandIdentifier);
-
-      if (brand) {
-        reset({
-          name: brand.name
-        });
-      } else {
-        toastError('Brand not found');
-        navigate(ROUTES.ADMIN_MASTER_BRANDS);
+      
+      // Try to get from location state first (passed from list view)
+      if (location.state?.brand) {
+        reset({ name: location.state.brand.name });
+        setBrandId(location.state.brand.id);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    }
-  }, [isEdit, brandIdentifier, reset, navigate]);
+      
+      // If no state, we have to search for it using the list API since detail API is omitted
+      try {
+        const res = await adminBrandApi.getBrands({ limit: 100 });
+        const brands = res.data?.brands || [];
+        const found = brands.find(b => b.slug === slug || b.id === Number(slug));
+        
+        if (found) {
+          reset({ name: found.name });
+          setBrandId(found.id);
+        } else {
+          toastError('Brand not found');
+          navigate(ROUTES.ADMIN_MASTER_BRANDS);
+        }
+      } catch (error) {
+        toastError('Failed to load brand data');
+        navigate(ROUTES.ADMIN_MASTER_BRANDS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBrandData();
+  }, [isEdit, slug, reset, navigate, location.state]);
 
   const onSubmit = async (data) => {
     try {
       setSaving(true);
-      const stored = localStorage.getItem('mock_brands');
-      const brands = stored ? JSON.parse(stored) : [...DEFAULT_BRANDS];
-
+      
       if (isEdit) {
-        const updated = brands.map(b => {
-          if (b.slug === brandIdentifier || b.id === brandIdentifier) {
-            const updatedSlug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-            return {
-              ...b,
-              name: data.name,
-              slug: updatedSlug
-            };
-          }
-          return b;
-        });
-        localStorage.setItem('mock_brands', JSON.stringify(updated));
+        if (!brandId) {
+            toastError('Brand ID not found for update');
+            return;
+        }
+        await adminBrandApi.updateBrand(brandId, data);
         toastSuccess(`Brand "${data.name}" updated successfully.`);
       } else {
-        const newSlug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        const newBrand = {
-          id: `b-${Date.now()}`,
-          name: data.name,
-          slug: newSlug,
-          isActive: true
-        };
-        brands.push(newBrand);
-        localStorage.setItem('mock_brands', JSON.stringify(brands));
+        await adminBrandApi.createBrand(data);
         toastSuccess(`Brand "${data.name}" added successfully.`);
       }
+      
       navigate(ROUTES.ADMIN_MASTER_BRANDS);
     } catch (error) {
-      toastError('Failed to save brand');
+      toastError(error.response?.data?.message || 'Failed to save brand');
     } finally {
       setSaving(false);
     }

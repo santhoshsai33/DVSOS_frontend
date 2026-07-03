@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Box, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
 import {
   AlertTriangle,
@@ -15,6 +15,7 @@ import DataTable from '../../components/common/DataTable';
 import PageHeader from '../../components/shared/PageHeader';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { ROUTES } from '../../config/routes';
+import { getWaterWashDashboardApi } from '../../api/dashboardApi';
 
 const INITIAL_WASH_JOBS = [
   {
@@ -117,10 +118,10 @@ const INITIAL_WASH_JOBS = [
 
 const SLA_MINUTES = 20;
 const COLS = [
-  { key: 'PENDING', label: 'Pending', icon: Clock, color: '#F59E0B' },
-  { key: 'ASSIGNED', label: 'Assigned', icon: UserPlus, color: '#3B82F6' },
-  { key: 'IN_PROGRESS', label: 'In Progress', icon: Droplets, color: '#8B5CF6' },
-  { key: 'COMPLETED', label: 'Completed', icon: CheckCircle2, color: '#10B981' },
+  { key: 'pending', label: 'Pending', icon: Clock, color: '#F59E0B' },
+  { key: 'assigned', label: 'Assigned', icon: UserPlus, color: '#3B82F6' },
+  { key: 'inProgress', label: 'In Progress', icon: Droplets, color: '#8B5CF6' },
+  { key: 'completed', label: 'Completed', icon: CheckCircle2, color: '#10B981' },
 ];
 
 const statusMeta = {
@@ -198,28 +199,36 @@ function StageChip({ label }) {
 export default function WaterWashQueue() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [jobs] = useState(INITIAL_WASH_JOBS);
+  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState([]);
+  const [kpis, setKpis] = useState({ pending: 0, assigned: 0, inProgress: 0, completed: 0 });
 
   const isDashboard = location.pathname === ROUTES.WATER_WASH_DASHBOARD;
 
-  const summary = useMemo(() => {
-    const waiting = jobs.filter((job) => job.status === 'UNASSIGNED').length;
-
-    return {
-      PENDING: waiting,
-      ASSIGNED: jobs.filter((job) => job.status === 'ASSIGNED').length,
-      IN_PROGRESS: jobs.filter((job) => job.status === 'ASSIGNED').length,
-      COMPLETED: jobs.filter((job) => ['COMPLETED', 'READY_FOR_DELIVERY'].includes(job.status)).length,
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const response = await getWaterWashDashboardApi();
+        if (response.success) {
+          setJobs(response.data?.queue || []);
+          setKpis(response.data?.kpis || { pending: 0, assigned: 0, inProgress: 0, completed: 0 });
+        }
+      } catch (error) {
+        console.error('Failed to fetch water wash dashboard:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-  }, [jobs]);
+    fetchDashboard();
+  }, []);
 
   const openJob = (job) => {
     navigate(`${ROUTES.JOB_CARDS}/${job.id}`);
   };
 
   const displayedJobs = useMemo(() => {
-    const sorted = [...jobs].sort((a, b) => new Date(b.movedAt) - new Date(a.movedAt));
-    return isDashboard ? sorted.slice(0, 4) : sorted;
+    return isDashboard ? jobs.slice(0, 4) : jobs;
   }, [isDashboard, jobs]);
 
   const columns = [
@@ -342,11 +351,11 @@ export default function WaterWashQueue() {
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, minHeight: '100%' }}>
-      <Grid container spacing={2} sx={{ mb: 2 }}>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F0F4FF', minHeight: '100%' }}>
+      <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
         {COLS.map((col) => {
           const Icon = col.icon;
-          const count = summary[col.key] || 0;
+          const count = kpis[col.key] || 0;
           return (
             <Grid item xs={12} sm={6} md={3} key={col.key}>
               <Card
@@ -391,6 +400,7 @@ export default function WaterWashQueue() {
               <DataTable
                 columns={columns}
                 data={displayedJobs}
+                loading={loading}
                 showPagination={false}
                 onRowClick={openJob}
                 emptyMessage="No vehicles in water wash queue"
