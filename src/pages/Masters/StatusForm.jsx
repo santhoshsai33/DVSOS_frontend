@@ -13,13 +13,12 @@ import { ROUTES } from '../../config/routes';
 import { getStatusDetailApi, createStatusApi, updateStatusApi } from '../../api/adminStatusMasterApi';
 import { getModulesApi } from '../../api/adminModuleApi';
 
+import { commonValidations } from '../../validations/commonSchema';
+
 const schema = z.object({
-  moduleId: z.union([z.string(), z.number()]).refine(val => !!val, { message: 'Please select a module' }),
-  statusName: z.string()
-    .trim()
-    .min(1, 'Status name is required')
-    .regex(/^[a-zA-Z\s]+$/, 'Special characters and numbers are not allowed'),
-  description: z.string().trim().optional()
+  moduleId: commonValidations.requiredUnionId('module'),
+  statusName: commonValidations.lettersOnly('Status name'),
+  description: commonValidations.optionalString
 });
 
 export default function StatusForm() {

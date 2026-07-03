@@ -11,12 +11,11 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import { getModuleDetailApi, createModuleApi, updateModuleApi } from '../../api/adminModuleApi';
 
+import { commonValidations } from '../../validations/commonSchema';
+
 const schema = z.object({
-  moduleName: z.string()
-    .trim()
-    .min(1, 'Module name is required')
-    .regex(/^[a-zA-Z\s]+$/, 'Special characters and numbers are not allowed'),
-  description: z.string().trim().optional()
+  moduleName: commonValidations.lettersOnly('Module name'),
+  description: commonValidations.optionalString
 });
 
 export default function ModuleForm() {

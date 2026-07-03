@@ -11,11 +11,10 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import { getStateDetailApi, createStateApi, updateStateApi } from '../../api/adminStateApi';
 
+import { commonValidations } from '../../validations/commonSchema';
+
 const schema = z.object({
-  stateName: z.string()
-    .trim()
-    .min(1, 'State name is required')
-    .regex(/^[a-zA-Z\s]+$/, 'Special characters and numbers are not allowed')
+  stateName: commonValidations.lettersOnly('State name')
 });
 
 export default function StateForm() {

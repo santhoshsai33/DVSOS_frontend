@@ -10,8 +10,10 @@ import { forgotPasswordApi } from '../../api/authApi';
 import styles from './Auth.module.css';
 import { Box } from '@mui/material';
 
+import { commonValidations } from '../../validations/commonSchema';
+
 const schema = z.object({
-  email: z.string().email('Enter a valid email address'),
+  email: commonValidations.email,
 });
 
 export default function ForgotPassword() {

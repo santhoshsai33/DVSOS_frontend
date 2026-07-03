@@ -15,12 +15,14 @@ import { ROUTES } from '../../config/routes';
 import { getServiceCategoriesApi } from '../../api/adminServiceCategoryApi';
 import { createServiceItemApi, updateServiceItemApi, getServiceItemApi } from '../../api/adminServiceItemApi';
 
+import { commonValidations } from '../../validations/commonSchema';
+
 const schema = z.object({
-  categoryId: z.number({ required_error: 'Category Group is required', invalid_type_error: 'Category Group is required' }).min(1, 'Category Group is required'),
-  name: z.string().trim().min(1, 'Service Item Name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters are not allowed'),
-  description: z.string().trim().optional().or(z.literal('')),
-  defaultPrice: z.coerce.number({ required_error: 'Base Price is required' }).min(0, 'Price cannot be negative'),
-  estimatedMinutes: z.coerce.number().min(0, 'Minutes cannot be negative').optional().or(z.literal(''))
+  categoryId: commonValidations.requiredNumber('Category Group'),
+  name: commonValidations.alphaNumeric('Service Item Name'),
+  description: commonValidations.optionalString,
+  defaultPrice: commonValidations.positiveAmount('Base Price'),
+  estimatedMinutes: commonValidations.optionalAmount
 });
 
 export default function ServiceItemForm() {

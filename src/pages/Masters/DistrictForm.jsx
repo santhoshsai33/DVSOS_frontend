@@ -13,12 +13,11 @@ import { ROUTES } from '../../config/routes';
 import { getStatesApi } from '../../api/adminStateApi';
 import { getDistrictDetailApi, createDistrictApi, updateDistrictApi } from '../../api/adminDistrictApi';
 
+import { commonValidations } from '../../validations/commonSchema';
+
 const schema = z.object({
-  stateId: z.coerce.number().min(1, 'State is required'),
-  districtName: z.string()
-    .trim()
-    .min(1, 'District name is required')
-    .regex(/^[a-zA-Z\s]+$/, 'Special characters and numbers are not allowed')
+  stateId: commonValidations.requiredNumber('State'),
+  districtName: commonValidations.lettersOnly('District name')
 });
 
 export default function DistrictForm() {

@@ -13,9 +13,11 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import { createServiceCategoryApi, updateServiceCategoryApi, getServiceCategoryApi } from '../../api/adminServiceCategoryApi';
 
+import { commonValidations } from '../../validations/commonSchema';
+
 const schema = z.object({
-  name: z.string().trim().min(1, 'Category Name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters are not allowed'),
-  description: z.string().trim().optional().or(z.literal(''))
+  name: commonValidations.alphaNumeric('Category Name'),
+  description: commonValidations.optionalString
 });
 
 export default function ServiceCategoryForm() {

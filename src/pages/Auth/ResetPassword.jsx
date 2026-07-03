@@ -10,9 +10,11 @@ import { resetPasswordApi } from '../../api/authApi';
 import styles from './Auth.module.css';
 import { Box } from '@mui/material';
 
+import { commonValidations } from '../../validations/commonSchema';
+
 const schema = z.object({
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string()
+  password: commonValidations.password(6),
+  confirmPassword: commonValidations.requiredString('Confirm Password')
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword']

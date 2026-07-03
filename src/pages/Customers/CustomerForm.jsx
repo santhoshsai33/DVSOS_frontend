@@ -14,6 +14,18 @@ import { ROUTES } from '../../config/routes';
 import { useCustomerDetails } from '../../queries/useDataQueries';
 import { useUpdateCustomer } from '../../mutations/useDataMutations';
 
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { commonValidations } from '../../validations/commonSchema';
+
+const schema = z.object({
+  fullName: commonValidations.requiredString('Customer Full Name'),
+  emailId: commonValidations.email,
+  mobileNo: commonValidations.mobile,
+  alternateMobileNo: commonValidations.optionalMobile,
+  address: commonValidations.optionalString
+});
+
 export default function CustomerForm() {
   const navigate = useNavigate();
   const { id, slug } = useParams();
@@ -24,6 +36,7 @@ export default function CustomerForm() {
   const updateMutation = useUpdateCustomer();
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
       fullName: '',
       emailId: '',
@@ -104,13 +117,6 @@ export default function CustomerForm() {
                 type="email"
                 placeholder="Enter email address"
                 required
-                rules={{
-                  required: 'Email address is required',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
-                  }
-                }}
               />
             </Grid>
           </Grid>
@@ -126,13 +132,6 @@ export default function CustomerForm() {
                 onInput={(e) => {
                   e.target.value = e.target.value.replace(/[^0-9]/g, '');
                 }}
-                rules={{
-                  required: 'Mobile number is required',
-                  pattern: {
-                    value: /^(?!0{10})\d{10}$/,
-                    message: 'Mobile number must be exactly 10 digits and cannot be all zeros'
-                  }
-                }}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -143,12 +142,6 @@ export default function CustomerForm() {
                 inputProps={{ maxLength: 10 }}
                 onInput={(e) => {
                   e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                }}
-                rules={{
-                  pattern: {
-                    value: /^(?!0{10})\d{10}$/,
-                    message: 'Mobile number must be exactly 10 digits and cannot be all zeros'
-                  }
                 }}
               />
             </Grid>

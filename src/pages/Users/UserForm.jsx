@@ -23,24 +23,23 @@ const GENDER_OPTIONS = [
   { value: 'OTHER', label: 'Other' },
 ];
 
+import { commonValidations } from '../../validations/commonSchema';
+
 const getValidationSchema = (isMD) => z.object({
-  fullName: z.string().trim().min(1, 'Full Name is required').regex(/^[a-zA-Z\s]+$/, 'Full Name must contain letters and spaces only'),
-  email: z.string().trim().min(1, 'Email is required').email('Invalid email format'),
-  mobile: z.string().trim().min(1, 'Mobile Number is required').regex(/^[0-9]{10}$/, 'Mobile Number must be exactly 10 digits').refine(val => !/^0+$/.test(val), 'Mobile Number cannot be all zeros'),
-  roleId: z.number().min(1, 'Role is required'),
+  fullName: commonValidations.lettersOnly('Full Name'),
+  email: commonValidations.email,
+  mobile: commonValidations.mobile,
+  roleId: commonValidations.requiredNumber('Role'),
   locationId: isMD
-    ? z.any().optional()
-    : z.number({ required_error: 'Location is required', invalid_type_error: 'Location is required' }).min(1, 'Location is required'),
-  password: z.string().optional(),
-  status: z.string().optional(),
-  dob: z.string().trim().min(1, 'Date of Birth is required').refine((val) => {
-    const date = new Date(val);
-    return date < new Date();
-  }, 'Date of Birth must be in the past'),
-  licenceNumber: z.string().trim().toUpperCase().length(15, 'Licence Number must be exactly 15 characters').regex(/^[A-Z]{2}[0-9]{13}$/i, 'Invalid Licence Number format (e.g., MH1220100000000)'),
-  emergencyContact: z.string().trim().optional().or(z.literal('')),
-  gender: z.string().trim().min(1, 'Gender is required'),
-  address: z.string().trim().optional().or(z.literal('')),
+    ? commonValidations.optionalAny
+    : commonValidations.requiredNumber('Location'),
+  password: commonValidations.optionalPassword,
+  status: commonValidations.optionalStatus,
+  dob: commonValidations.pastDate('Date of Birth'),
+  licenceNumber: commonValidations.licenceNumber,
+  emergencyContact: commonValidations.optionalString,
+  gender: commonValidations.requiredString('Gender'),
+  address: commonValidations.optionalString,
 });
 
 export default function UserForm() {

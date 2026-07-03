@@ -11,7 +11,16 @@ import {
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { commonValidations } from '../../validations/commonSchema';
 
+const schema = z.object({
+  stageName: commonValidations.requiredString('Stage Name'),
+  intervalMinutes: commonValidations.requiredNumber('Alert Interval Time'),
+  roles: z.array(z.string()).min(1, 'Please select at least one role'),
+  message: commonValidations.requiredString('Alert Message')
+});
 import Button from '../../components/common/Button';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFSelect from '../../components/form/RHFSelect';
@@ -38,6 +47,7 @@ export default function StageScheduleForm() {
   const isEdit = Boolean(id);
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
       stageName: '',
       intervalMinutes: '',
@@ -117,7 +127,6 @@ export default function StageScheduleForm() {
               <Controller
                 name="roles"
                 control={control}
-                rules={{ required: 'Please select at least one role' }}
                 render={({ field, fieldState: { error } }) => (
                   <FormControl fullWidth size="small" error={!!error}>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', mb: 0.75 }}>

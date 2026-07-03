@@ -9,12 +9,22 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROLE_LABELS } from '../../constants/roles';
 import { getInitials, avatarColor } from '../../utils/helpers';
 import { updateProfileApi } from '../../api/authApi';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { commonValidations } from '../../validations/commonSchema';
+
+const schema = z.object({
+  name: commonValidations.requiredString('Full Name'),
+  email: commonValidations.email,
+  phone: commonValidations.mobile
+});
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, role, setUser } = useAuthStore();
 
   const methods = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
       name: user?.fullName || user?.name || '',
       email: user?.emailId || user?.email || '',
@@ -92,13 +102,6 @@ export default function ProfilePage() {
                 label="Email Address"
                 type="email"
                 placeholder="Enter email address"
-                rules={{
-                  required: "Email address is required",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Please enter a valid email address"
-                  }
-                }}
               />
             </Grid>
           </Grid>
@@ -115,37 +118,9 @@ export default function ProfilePage() {
                   // Allow only digits and remove leading zero
                   e.target.value = e.target.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
                 }}
-                rules={{
-                  required: "Phone number is required",
-                  pattern: {
-                    value: /^[1-9][0-9]{9}$/,
-                    message: "Phone number must be exactly 10 digits and cannot start with 0"
-                  }
-                }}
               />
             </Grid>
           </Grid>
-
-          {/* <Divider sx={{ my: 5 }} /> */}
-          {/* 
-          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-            Change Password
-          </Typography>
-
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField name="currentPassword" label="Current Password" type="password" placeholder="Leave blank to keep unchanged" />
-            </Grid>
-          </Grid>
-
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <RHFTextField name="newPassword" label="New Password" type="password" placeholder="Enter new password" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <RHFTextField name="confirmPassword" label="Confirm New Password" type="password" placeholder="Re-enter new password" />
-            </Grid>
-          </Grid> */}
 
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
             <Button variant="secondary" type="button" onClick={() => reset()}>
