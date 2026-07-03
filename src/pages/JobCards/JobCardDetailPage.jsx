@@ -100,7 +100,7 @@ export default function JobCardDetailPage() {
   const defaultServices = allServices.filter(s => !s.isAdditional);
   const additionalServices = allServices.filter(s => s.isAdditional);
 
-  const taxRate = 18; // Default mock tax
+  const taxRate = jobCard.billing?.taxRate ?? jobCard.taxRate ?? 18;
   const subtotal = displayJobCard.estimatedCost / (1 + taxRate / 100);
 
   const approvedAdditionalTotal = additionalServices
@@ -286,7 +286,7 @@ export default function JobCardDetailPage() {
                     </Box>
                   )}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2" color="text.secondary">Tax (18%)</Typography>
+                    <Typography variant="body2" color="text.secondary">Tax ({taxRate}%)</Typography>
                     <Typography variant="body2">{formatCurrency(totalTaxAmount)}</Typography>
                   </Box>
                   <Divider sx={{ my: 1, borderStyle: 'dashed' }} />
