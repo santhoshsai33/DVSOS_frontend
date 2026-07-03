@@ -1,18 +1,36 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bell, ChevronDown, LogOut, User, Settings as SettingsIcon, Menu as MenuIcon, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, User, Settings as SettingsIcon, Menu as MenuIcon, PanelLeftClose, PanelLeft, FileText, Truck, AlertCircle, Info } from 'lucide-react';
 import { AppBar, Toolbar, IconButton, Typography, Box, Badge, Avatar, Menu, MenuItem, Divider, ListItemIcon, ListItemText } from '@mui/material';
 import useAuthStore from '../../../store/useAuthStore';
 import useUIStore from '../../../store/useUIStore';
 import { ROUTES } from '../../../config/routes';
 import { getInitials, avatarColor } from '../../../utils/helpers';
 import { getMeApi } from '../../../api/authApi';
+import {
+  getNotificationsApi,
+  markNotificationReadApi,
+  markAllNotificationsReadApi
+} from '../../../api/notificationApi';
+import {
+  requestNotificationPermissionAndRegister,
+  setupForegroundMessageListener
+} from '../../../config/firebase';
+import { toastInfo } from '../../../notifications/toast';
 
-const MOCK_NOTIFICATIONS = [
-  { id: '1', text: 'New approval request from Rajan M.', time: '5 min ago', read: false },
-  { id: '2', text: 'Vehicle TN 01 AB 1234 is ready for delivery', time: '12 min ago', read: false },
-  { id: '3', text: 'Delayed vehicle alert: DL 04 RS 3344', time: '1 hr ago', read: true },
-];
+const getNotificationIcon = (type) => {
+  const t = String(type || '').toUpperCase();
+  if (t.includes('JOB') || t.includes('ASSIGN') || t.includes('WORK')) {
+    return <FileText size={18} color="#3B82F6" style={{ marginTop: 2 }} />;
+  }
+  if (t.includes('GATE') || t.includes('VEHICLE')) {
+    return <Truck size={18} color="#10B981" style={{ marginTop: 2 }} />;
+  }
+  if (t.includes('DELAY') || t.includes('WARN') || t.includes('ERROR')) {
+    return <AlertCircle size={18} color="#EF4444" style={{ marginTop: 2 }} />;
+  }
+  return <Info size={18} color="#64748B" style={{ marginTop: 2 }} />;
+};
 
 export default function Topbar() {
   const { user, role, logout, setUser, setMenus } = useAuthStore();
@@ -21,7 +39,29 @@ export default function Topbar() {
   const location = useLocation();
   const [notifAnchorEl, setNotifAnchorEl] = useState(null);
   const [userAnchorEl, setUserAnchorEl] = useState(null);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await getNotificationsApi({ limit: 10 });
+      if (response?.success) {
+        const list = response.data?.notifications || [];
+        const mapped = list.map((n) => {
+          const date = new Date(n.createdAt);
+          const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          return {
+            ...n,
+            text: n.message ? `${n.title}: ${n.message}` : n.title,
+            time: timeStr,
+            read: n.readAt !== null
+          };
+        });
+        setNotifications(mapped);
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -39,6 +79,59 @@ export default function Topbar() {
     fetchUserDetails();
   }, [setUser, setMenus]);
 
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      // Register device token with FCM
+      requestNotificationPermissionAndRegister();
+ 
+      // Listen for foreground notification pushes
+      const unsubscribe = setupForegroundMessageListener((payload) => {
+        console.log("React Application received foreground push payload:", payload);
+        fetchNotifications();
+        if (payload?.notification) {
+          toastInfo(`${payload.notification.title}: ${payload.notification.body}`);
+          
+          // Trigger a browser notification if permitted
+          if (Notification.permission === 'granted') {
+            try {
+              new Notification(payload.notification.title, {
+                body: payload.notification.body,
+                icon: '/favicon.ico'
+              });
+            } catch (err) {
+              console.warn('Could not launch browser Notification in foreground:', err);
+            }
+          }
+        }
+      });
+ 
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => {
+        clearInterval(interval);
+        if (unsubscribe) unsubscribe();
+      };
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const handleServiceWorkerMessage = (event) => {
+      if (event.data && event.data.type === 'FCM_BG_MESSAGE') {
+        console.log('Received broadcast from Service Worker:', event.data.payload);
+        fetchNotifications();
+        const payload = event.data.payload;
+        if (payload?.notification) {
+          toastInfo(`${payload.notification.title}: ${payload.notification.body}`);
+        }
+      }
+    };
+
+    navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
+    return () => {
+      navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
+    };
+  }, []);
+
   const unread = notifications.filter((n) => !n.read).length;
 
   const handleLogout = () => {
@@ -46,8 +139,34 @@ export default function Topbar() {
     navigate(ROUTES.LOGIN);
   };
 
-  const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const handleNotificationClick = async (n) => {
+    setNotifAnchorEl(null);
+    if (!n.read) {
+      try {
+        await markNotificationReadApi(n.id);
+        setNotifications((prev) =>
+          prev.map((item) => (item.id === n.id ? { ...item, read: true } : item))
+        );
+      } catch (error) {
+        console.error('Failed to mark notification as read:', error);
+      }
+    }
+
+    // Dynamic redirection based on entity links
+    if (n.jobCard?.slug) {
+      navigate(`/job-cards/view/${n.jobCard.slug}`);
+    } else if (n.gateEntry?.slug) {
+      navigate(`/gate-entry`); // Fallback or list
+    }
+  };
+
+  const markAllRead = async () => {
+    try {
+      await markAllNotificationsReadApi();
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
   };
 
   const pageTitle = location.pathname
@@ -110,19 +229,37 @@ export default function Topbar() {
               </Typography>
             </Box>
             <Divider />
-            {notifications.map((n) => (
-              <MenuItem key={n.id} sx={{ py: 1.5, px: 2, alignItems: 'flex-start', bgcolor: n.read ? 'transparent' : 'action.hover' }}>
-                {!n.read && <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mt: 0.8, mr: 1.5 }} />}
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="body2" sx={{ fontWeight: n.read ? 400 : 500, color: 'text.primary', mb: 0.5, whiteSpace: 'normal' }}>
-                    {n.text}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {n.time}
-                  </Typography>
+            <Box sx={{ maxHeight: 350, overflowY: 'auto' }}>
+              {notifications.length === 0 ? (
+                <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+                  <Typography variant="body2">No notifications</Typography>
                 </Box>
-              </MenuItem>
-            ))}
+              ) : (
+                notifications.map((n) => (
+                  <MenuItem 
+                    key={n.id} 
+                    onClick={() => handleNotificationClick(n)} 
+                    sx={{ 
+                      py: 1.5, px: 2, 
+                      alignItems: 'flex-start', 
+                      bgcolor: n.read ? 'transparent' : 'action.hover',
+                      gap: 1.5
+                    }}
+                  >
+                    {!n.read && <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mt: 0.8 }} />}
+                    {getNotificationIcon(n.notificationType)}
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: n.read ? 400 : 500, color: 'text.primary', mb: 0.5, whiteSpace: 'normal' }}>
+                        {n.text}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {n.time}
+                      </Typography>
+                    </Box>
+                  </MenuItem>
+                ))
+              )}
+            </Box>
           </Menu>
 
           <Box

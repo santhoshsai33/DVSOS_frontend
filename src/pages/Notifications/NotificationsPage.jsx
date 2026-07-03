@@ -1,50 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Card, Typography, List, ListItem, ListItemText, ListItemIcon, IconButton, Chip, Tabs, Tab, Divider, Avatar } from '@mui/material';
-import { Check, CheckCircle2, AlertCircle, Info, Bell, CheckSquare } from 'lucide-react';
+import { Check, CheckCircle2, AlertCircle, Info, Bell, CheckSquare, FileText, Truck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/shared/PageHeader';
 import Button from '../../components/common/Button';
 import { formatDateTime } from '../../utils/formatters';
-
-const INITIAL_NOTIFICATIONS = [
-  { id: '1', type: 'INFO', title: 'New Vehicle Assigned', message: 'TN 01 AB 1234 has been assigned to your bay.', timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), read: false },
-  { id: '2', type: 'WARNING', title: 'Approval Pending', message: 'Additional work approval pending for Job Card JC-1033.', timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), read: false },
-  { id: '3', type: 'SUCCESS', title: 'Job Completed', message: 'Water wash completed for KA 05 XY 9876.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), read: true },
-  { id: '4', type: 'ERROR', title: 'Delayed Job', message: 'Job Card JC-1020 is exceeding the estimated delivery time.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), read: true },
-  { id: '5', type: 'INFO', title: 'System Update', message: 'DVSOS system will be down for maintenance at 2 AM.', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), read: true },
-];
+import {
+  getNotificationsApi,
+  markNotificationReadApi,
+  markAllNotificationsReadApi
+} from '../../api/notificationApi';
 
 const getIcon = (type) => {
-  switch(type) {
-    case 'SUCCESS': return <CheckCircle2 size={20} color="#10B981" />;
-    case 'WARNING': return <AlertCircle size={20} color="#F59E0B" />;
-    case 'ERROR': return <AlertCircle size={20} color="#EF4444" />;
-    case 'INFO':
-    default: return <Info size={20} color="#3B82F6" />;
+  const t = String(type || '').toUpperCase();
+  if (t.includes('JOB') || t.includes('ASSIGN') || t.includes('WORK')) {
+    return <FileText size={20} color="#3B82F6" />;
   }
+  if (t.includes('GATE') || t.includes('VEHICLE')) {
+    return <Truck size={20} color="#10B981" />;
+  }
+  if (t.includes('DELAY') || t.includes('WARN') || t.includes('ERROR')) {
+    return <AlertCircle size={20} color="#EF4444" />;
+  }
+  return <Info size={20} color="#64748B" />;
 };
 
 const getBgColor = (type) => {
-  switch(type) {
-    case 'SUCCESS': return '#10B98115';
-    case 'WARNING': return '#F59E0B15';
-    case 'ERROR': return '#EF444415';
-    case 'INFO':
-    default: return '#3B82F615';
+  const t = String(type || '').toUpperCase();
+  if (t.includes('JOB') || t.includes('ASSIGN') || t.includes('WORK')) {
+    return '#3B82F615';
   }
+  if (t.includes('GATE') || t.includes('VEHICLE')) {
+    return '#10B98115';
+  }
+  if (t.includes('DELAY') || t.includes('WARN') || t.includes('ERROR')) {
+    return '#EF444415';
+  }
+  return '#64748B15';
 };
 
 export default function NotificationsPage({ title = 'Notifications' }) {
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
   const [tab, setTab] = useState(0);
+  const navigate = useNavigate();
 
-  const filteredNotifs = notifications.filter(n => tab === 0 ? true : !n.read);
-
-  const markAsRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  const fetchNotifications = async () => {
+    try {
+      const response = await getNotificationsApi({ limit: 50 });
+      if (response?.success) {
+        const list = response.data?.notifications || [];
+        setNotifications(list);
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
   };
 
-  const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const filteredNotifs = notifications.filter(n => tab === 0 ? true : n.readAt === null);
+
+  const markAsRead = async (id) => {
+    try {
+      await markNotificationReadApi(id);
+      setNotifications(prev =>
+        prev.map(n => n.id === id ? { ...n, readAt: new Date().toISOString() } : n)
+      );
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
+
+  const markAllRead = async () => {
+    try {
+      await markAllNotificationsReadApi();
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, readAt: new Date().toISOString() }))
+      );
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
+  };
+
+  const handleItemClick = async (notif) => {
+    if (notif.readAt === null) {
+      await markAsRead(notif.id);
+    }
+    // Dynamic navigation based on relation ids
+    if (notif.jobCard?.slug) {
+      navigate(`/job-cards/view/${notif.jobCard.slug}`);
+    } else if (notif.gateEntry?.slug) {
+      navigate(`/gate-entry`);
+    }
   };
 
   return (
@@ -84,53 +133,66 @@ export default function NotificationsPage({ title = 'Notifications' }) {
                </Typography>
             </Box>
           ) : (
-            filteredNotifs.map((notif, index) => (
-              <React.Fragment key={notif.id}>
-                 <ListItem 
-                   sx={{ 
-                     py: 2.5, px: { xs: 2, sm: 3 }, 
-                     bgcolor: notif.read ? 'transparent' : '#F8FAFC',
-                     transition: 'background-color 0.2s',
-                     '&:hover': { bgcolor: '#F1F5F9' }
-                   }}
-                   secondaryAction={
-                     !notif.read && (
-                       <IconButton edge="end" size="small" onClick={() => markAsRead(notif.id)} title="Mark as read">
-                         <Check size={20} color="#64748B" />
-                       </IconButton>
-                     )
-                   }
-                 >
-                   <ListItemIcon sx={{ minWidth: { xs: 48, sm: 64 } }}>
-                      <Avatar sx={{ bgcolor: getBgColor(notif.type), width: 40, height: 40 }}>
-                        {getIcon(notif.type)}
-                      </Avatar>
-                   </ListItemIcon>
-                   <ListItemText
-                     primary={
-                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-                         <Typography variant="subtitle2" fontWeight={notif.read ? 600 : 700} color={notif.read ? 'text.secondary' : 'text.primary'}>
-                           {notif.title}
-                         </Typography>
-                         {!notif.read && <Chip label="New" size="small" color="primary" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700 }} />}
-                       </Box>
+            filteredNotifs.map((notif, index) => {
+              const isRead = notif.readAt !== null;
+              return (
+                <React.Fragment key={notif.id}>
+                   <ListItem 
+                     sx={{ 
+                       py: 2.5, px: { xs: 2, sm: 3 }, 
+                       bgcolor: isRead ? 'transparent' : '#F8FAFC',
+                       transition: 'background-color 0.2s',
+                       cursor: 'pointer',
+                       '&:hover': { bgcolor: '#F1F5F9' }
+                     }}
+                     onClick={() => handleItemClick(notif)}
+                     secondaryAction={
+                       !isRead && (
+                         <IconButton 
+                           edge="end" 
+                           size="small" 
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             markAsRead(notif.id);
+                           }} 
+                           title="Mark as read"
+                         >
+                           <Check size={20} color="#64748B" />
+                         </IconButton>
+                       )
                      }
-                     secondary={
-                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pr: { xs: 4, sm: 8 } }}>
-                         <Typography variant="body2" color={notif.read ? 'text.secondary' : 'text.primary'}>
-                           {notif.message}
-                         </Typography>
-                         <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5 }}>
-                           {formatDateTime(notif.timestamp)}
-                         </Typography>
-                       </Box>
-                     }
-                     sx={{ m: 0 }}
-                   />
-                 </ListItem>
-                 {index < filteredNotifs.length - 1 && <Divider />}
-              </React.Fragment>
-            ))
+                   >
+                     <ListItemIcon sx={{ minWidth: { xs: 48, sm: 64 } }}>
+                        <Avatar sx={{ bgcolor: getBgColor(notif.notificationType), width: 40, height: 40 }}>
+                          {getIcon(notif.notificationType)}
+                        </Avatar>
+                     </ListItemIcon>
+                     <ListItemText
+                       primary={
+                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+                           <Typography variant="subtitle2" fontWeight={isRead ? 600 : 700} color={isRead ? 'text.secondary' : 'text.primary'}>
+                             {notif.title}
+                           </Typography>
+                           {!isRead && <Chip label="New" size="small" color="primary" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700 }} />}
+                         </Box>
+                       }
+                       secondary={
+                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pr: { xs: 4, sm: 8 } }}>
+                           <Typography variant="body2" color={isRead ? 'text.secondary' : 'text.primary'}>
+                             {notif.message}
+                           </Typography>
+                           <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5 }}>
+                             {formatDateTime(notif.createdAt)}
+                           </Typography>
+                         </Box>
+                       }
+                       sx={{ m: 0 }}
+                     />
+                   </ListItem>
+                   {index < filteredNotifs.length - 1 && <Divider />}
+                </React.Fragment>
+              );
+            })
           )}
         </List>
       </Card>

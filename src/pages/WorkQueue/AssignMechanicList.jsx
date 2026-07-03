@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, Printer, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
-import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Card } from '@mui/material';
+import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Card, Chip } from '@mui/material';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import PageHeader from '../../components/shared/PageHeader';
@@ -294,7 +294,24 @@ export default function AssignMechanicList() {
                 )}
                 {mechanics.map((mechanic) => (
                   <MenuItem key={mechanic.id} value={mechanic.id}>
-                    {mechanic.fullName}{mechanic.employeeCode ? ` (${mechanic.employeeCode})` : ''}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
+                      <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                        {mechanic.fullName}{mechanic.employeeCode ? ` (${mechanic.employeeCode})` : ''}
+                      </Typography>
+                      <Chip
+                        size="small"
+                        label={mechanic.availabilityLabel || (mechanic.activeJobCount > 0 ? `Busy (${mechanic.activeJobCount} jobs)` : 'Available')}
+                        sx={{
+                          height: 22,
+                          fontSize: '0.68rem',
+                          fontWeight: 800,
+                          bgcolor: mechanic.activeJobCount > 0 ? '#FEF3C7' : '#DCFCE7',
+                          color: mechanic.activeJobCount > 0 ? '#B45309' : '#15803D',
+                          border: '1px solid',
+                          borderColor: mechanic.activeJobCount > 0 ? '#FCD34D' : '#86EFAC',
+                        }}
+                      />
+                    </Box>
                   </MenuItem>
                 ))}
               </Select>
