@@ -191,6 +191,7 @@ export const ENDPOINTS = {
     SERVICE_CREATE: '/masters/services/create',
     SERVICE_UPDATE: (id) => `/masters/services/update/${id}`,
     SERVICE_DELETE: (id) => `/masters/services/delete/${id}`,
+    BRAND_DROPDOWN: '/brands/list',
     BRANDS: '/masters/brands/list',
     BRAND_DETAIL: (id) => `/masters/brands/detail/${id}`,
     BRAND_CREATE: '/masters/brands/create',

@@ -11,9 +11,10 @@ import { ROUTES } from '../../config/routes';
 import VehicleImageSlider from '../../components/common/VehicleImageSlider';
 
 export default function VehicleDetailPage() {
-  const { id } = useParams();
+  const { slug, id } = useParams();
+  const identifier = slug || id;
   const navigate = useNavigate();
-  const { data: vehicle, isLoading } = useVehicle(id);
+  const { data: vehicle, isLoading } = useVehicle(identifier);
 
   if (isLoading) return <Loader fullPage text="Loading vehicle details..." />;
 
@@ -50,9 +51,6 @@ export default function VehicleDetailPage() {
             <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.VEHICLES)}>
               Back
             </Button>
-            <Button variant="secondary" leftIcon={History} onClick={() => navigate(`${ROUTES.VEHICLES}/${id}/history`)}>
-              Service History
-            </Button>
           </Box>
         }
       />
@@ -77,7 +75,7 @@ export default function VehicleDetailPage() {
                 }}>
                   Registration
                 </Box>
-                <StatusBadge status={displayVehicle.status} />
+                {/* <StatusBadge status={displayVehicle.status} /> */}
               </Box>
 
               <Typography variant="h3" sx={{
@@ -178,27 +176,12 @@ export default function VehicleDetailPage() {
           {/* Right Panel */}
           <Grid item xs={12} md={5} sx={{
             bgcolor: '#EEF2FF',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'stretch',
-            justifyContent: 'stretch',
             position: 'relative',
             p: 0,
             overflow: 'hidden',
             minHeight: 512
           }}>
-            {/* Soft decorative circles/glow */}
-            <Box sx={{
-              position: 'absolute',
-              width: '450px',
-              height: '450px',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(238,242,255,1) 0%, rgba(219,234,254,0.6) 100%)',
-              zIndex: 1,
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-            }} />
+
 
             {/* Subtle dots pattern for tech texture */}
             <Box sx={{
@@ -213,7 +196,9 @@ export default function VehicleDetailPage() {
               zIndex: 1
             }} />
 
-            <VehicleImageSlider images={displayVehicle.images || []} />
+            <Box sx={{ position: 'absolute', inset: 0 }}>
+              <VehicleImageSlider images={displayVehicle.images || []} />
+            </Box>
           </Grid>
         </Grid>
       </Card>

@@ -9,6 +9,7 @@ export const deleteServiceApi = (id) => axiosInstance.delete(ENDPOINTS.MASTERS.S
 
 // Brands
 export const getBrandsApi = () => axiosInstance.get(ENDPOINTS.MASTERS.BRANDS);
+export const getBrandDropdownApi = () => axiosInstance.get(ENDPOINTS.MASTERS.BRAND_DROPDOWN);
 export const createBrandApi = (data) => axiosInstance.post(ENDPOINTS.MASTERS.BRAND_CREATE, data);
 export const updateBrandApi = (id, data) => axiosInstance.put(ENDPOINTS.MASTERS.BRAND_UPDATE(id), data);
 export const deleteBrandApi = (id) => axiosInstance.delete(ENDPOINTS.MASTERS.BRAND_DELETE(id));
