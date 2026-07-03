@@ -15,6 +15,8 @@ const schema = z.object({
   name: z.string()
     .trim()
     .min(1, 'Brand name is required')
+    .regex(/^[a-zA-Z0-9\s]+$/, 'Special characters and symbols are not allowed')
+    .regex(/[a-zA-Z]/, 'Brand name must contain at least one letter')
 });
 
 export default function BrandForm() {

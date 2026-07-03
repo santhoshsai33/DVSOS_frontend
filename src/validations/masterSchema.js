@@ -8,7 +8,7 @@ export const serviceSchema = z.object({
 });
 
 export const brandSchema = z.object({
-  name: z.string().min(2, 'Brand name is required'),
+  name: z.string().min(2, 'Brand name is required').regex(/^[a-zA-Z0-9\s]+$/, 'Special characters and symbols are not allowed').regex(/[a-zA-Z]/, 'Brand name must contain at least one letter'),
   country: z.string().optional(),
   isActive: z.boolean().default(true),
 });
