@@ -111,19 +111,6 @@ export default function RolePrivilegesForm() {
               navigate(ROUTES.ADMIN_ROLE_PRIVILEGES_EDIT.replace(':slug', role.slug), { replace: true });
             }
 
-            // Inject Stage Schedules for managing-director if not present
-            const mdModule = modules.find(m => m.module === 'managing-director' || m.module === 'MD Analytics');
-            if (mdModule && !mdModule.menus.find(m => m.name === 'Stage Schedules')) {
-              mdModule.menus.splice(1, 0, {
-                menuId: 'mock-stage-schedules-id',
-                name: 'Stage Schedules',
-                canRead: true,
-                canCreate: true,
-                canUpdate: true,
-                canDelete: true
-              });
-            }
-
             // Prefer the module that already has saved permissions, then role-name match.
             if (modules.length > 0) {
               const moduleWithPermissions = modules.find(m =>
@@ -148,19 +135,6 @@ export default function RolePrivilegesForm() {
               module: mod.module,
               menus: flattenMenus(mod.menus)
             }));
-
-            // Inject Stage Schedules for managing-director if not present
-            const mdModule = mapped.find(m => m.module === 'managing-director' || m.module === 'MD Analytics');
-            if (mdModule && !mdModule.menus.find(m => m.name === 'Stage Schedules')) {
-              mdModule.menus.splice(1, 0, {
-                menuId: 'mock-stage-schedules-id',
-                name: 'Stage Schedules',
-                canRead: false,
-                canCreate: false,
-                canUpdate: false,
-                canDelete: false
-              });
-            }
 
             setModulesList(mapped);
           }
