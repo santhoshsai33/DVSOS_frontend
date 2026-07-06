@@ -58,6 +58,7 @@ const ICON_MAP = {
   User,
   Users,
   Wrench,
+  Tool: Wrench,
 };
 
 export default function Sidebar() {

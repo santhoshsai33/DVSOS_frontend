@@ -22,6 +22,8 @@ import StateList from '../pages/Masters/StateList';
 import StateForm from '../pages/Masters/StateForm';
 import BrandList from '../pages/Masters/BrandList';
 import BrandForm from '../pages/Masters/BrandForm';
+import BayList from '../pages/Masters/BayList';
+import BayForm from '../pages/Masters/BayForm';
 import DistrictList from '../pages/Masters/DistrictList';
 import DistrictForm from '../pages/Masters/DistrictForm';
 import ServiceCenterList from '../pages/Masters/ServiceCenterList';
@@ -288,6 +290,9 @@ export const router = createBrowserRouter([
               { path: 'executive-overview', element: <ExecutiveOverviewPage /> },
               { path: 'performance-report', element: <PerformanceReportPage /> },
               { path: 'service-kpi', element: <ServiceKpiPage /> },
+              { path: 'md-bays', element: <BayList /> },
+              { path: 'md-bays/new', element: <BayForm /> },
+              { path: 'md-bays/edit/:slug', element: <BayForm /> },
               { path: 'md-stage-schedules', element: <MdStageSchedules /> },
               { path: 'md-stage-schedules/new', element: <MdStageScheduleForm /> },
               { path: 'md-stage-schedules/:id/edit', element: <MdStageScheduleForm /> },
