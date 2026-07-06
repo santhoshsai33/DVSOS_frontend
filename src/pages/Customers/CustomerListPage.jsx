@@ -20,6 +20,7 @@ const INITIAL_CUSTOMERS = [
 
 import { useCustomers } from '../../queries/useDataQueries';
 import { useUpdateCustomerStatus } from '../../mutations/useDataMutations';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function CustomerListPage() {
   const navigate = useNavigate();
@@ -29,6 +30,10 @@ export default function CustomerListPage() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const { canRead, canCreate, canUpdate } = usePermissions();
+  const canReadCustomers = canRead('/customers');
+  const canCreateCustomers = canCreate('/customers');
+  const canUpdateCustomers = canUpdate('/customers');
 
   const { data: customerData, isLoading } = useCustomers({ 
     page, 
@@ -99,25 +104,37 @@ export default function CustomerListPage() {
     {
       header: 'Status',
       render: (row) => (
-        <RHFSwitch
-          value={row.isActive ? 'ACTIVE' : 'INACTIVE'}
-          onChange={(newVal) => handleStatusChange(row.id, newVal === 'ACTIVE')}
-        />
+        canUpdateCustomers ? (
+          <RHFSwitch
+            value={row.isActive ? 'ACTIVE' : 'INACTIVE'}
+            onChange={(newVal) => handleStatusChange(row.id, newVal === 'ACTIVE')}
+          />
+        ) : (
+          <Typography variant="body2">{row.isActive ? 'ACTIVE' : 'INACTIVE'}</Typography>
+        )
       )
     },
-    {
+    ...(canReadCustomers || canUpdateCustomers ? [{
       header: 'Actions',
       render: (row) => (
         <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
           <MoreVertical size={18} />
         </IconButton>
       )
-    }
+    }] : [])
   ];
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
-      <PageHeader title="Customer Directory" breadcrumbs={[{ label: 'Customers' }]} />
+      <PageHeader
+        title="Customer Directory"
+        breadcrumbs={[{ label: 'Customers' }]}
+        actions={canCreateCustomers ? (
+          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CUSTOMERS_NEW || '/customers/new')}>
+            Add Customer
+          </Button>
+        ) : null}
+      />
 
       <Box sx={{ display: 'flex', mb: 3, gap: 2, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
@@ -154,14 +171,18 @@ export default function CustomerListPage() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/customers/view/${selectedCustomer?.slug || selectedCustomer?.id}`); }}>
-          <Eye size={16} style={{ marginRight: 12, color: '#0ea5e9' }} />
-          View Customer
-        </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/customers/edit/${selectedCustomer?.slug || selectedCustomer?.id}`); }}>
-          <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
-          Edit Customer
-        </MenuItem>
+        {canReadCustomers && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(`/customers/view/${selectedCustomer?.slug || selectedCustomer?.id}`); }}>
+            <Eye size={16} style={{ marginRight: 12, color: '#0ea5e9' }} />
+            View Customer
+          </MenuItem>
+        )}
+        {canUpdateCustomers && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(`/customers/edit/${selectedCustomer?.slug || selectedCustomer?.id}`); }}>
+            <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
+            Edit Customer
+          </MenuItem>
+        )}
 
       </Menu>
     </Box>

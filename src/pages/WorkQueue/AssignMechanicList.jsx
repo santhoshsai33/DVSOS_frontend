@@ -13,6 +13,7 @@ import useAuthStore from '../../store/useAuthStore';
 import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi, assignQueueWorkApi } from '../../api/queueApi';
 import { getMechanicsDropdownApi } from '../../api/userApi';
 import { getDepartmentFromModules } from '../../utils/authAccess';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const PENDING_JOBS = [
   { id: 'Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'General Service', priority: 'HIGH', waitTime: '1 hr 20 min', deliveryDate: new Date(Date.now() + 2 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
@@ -31,6 +32,8 @@ export default function AssignMechanicList() {
   const isWaterWash = queueCategory === 'water-wash';
   const assigneeLabel = isBodyShop ? 'Technician' : isWaterWash ? 'Member' : 'Mechanic';
   const pageTitle = isBodyShop ? 'Assign Technician (Body Shop)' : isWaterWash ? 'Assign Water Wash Member' : 'Assign Mechanic';
+  const { canUpdate } = usePermissions();
+  const canAssignWork = canUpdate('/job-cards');
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -168,7 +171,7 @@ export default function AssignMechanicList() {
         </Box>
       ),
     },
-    {
+    ...(canAssignWork ? [{
       header: 'ACTION',
       render: (row) => (
         <Button
@@ -187,7 +190,7 @@ export default function AssignMechanicList() {
           Assign
         </Button>
       ),
-    },
+    }] : []),
   ];
 
   const handleConfirmAssign = () => {
@@ -260,7 +263,7 @@ export default function AssignMechanicList() {
       </Box>
 
       <Modal
-        show={assignModal.isOpen}
+        show={assignModal.isOpen && canAssignWork}
         onHide={() => setAssignModal({ isOpen: false, item: null })}
         title={`Assign ${assigneeLabel}`}
         confirmLabel="Assign"

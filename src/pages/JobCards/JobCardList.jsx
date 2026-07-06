@@ -16,6 +16,7 @@ import useAuthStore from '../../store/useAuthStore';
 import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAccess';
 import DateFilter from '../../components/common/DateFilter';
 import ResetFiltersButton from '../../components/common/ResetFiltersButton';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const PRIORITY_COLORS = {
   LOW: '#10B981',
@@ -34,8 +35,14 @@ export default function JobCardList() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const debouncedSearch = useDebounce(search, 300);
+  const { canRead, canCreate, canUpdate } = usePermissions();
+  const canReadJobCards = canRead('/job-cards');
+  const canCreateJobCards = canCreate('/job-cards');
+  const canUpdateJobCards = canUpdate('/job-cards');
+  const canCreateFloorAdditionalWork = canCreate('/additional-work');
+  const canCreateBodyShopAdditionalWork = canCreate('/body-shop-additional-work');
   const department = getDepartmentFromModules(menus);
-  const canCreateJobCard = !['body-shop', 'water-wash'].includes(department);
+  const canCreateJobCard = canCreateJobCards && !['body-shop', 'water-wash'].includes(department);
   const departmentFilter = ['body-shop', 'water-wash'].includes(department) ? department : undefined;
 
   const { data, isLoading } = useJobCards({
@@ -112,14 +119,14 @@ export default function JobCardList() {
     },
     { header: 'Est. Cost', render: (row) => <Typography variant="body2" fontWeight={600}>{formatCurrency(row.totalEstimate)}</Typography> },
     { header: 'Created', render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography> },
-    {
+    ...(canReadJobCards || canUpdateJobCards || canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork ? [{
       header: 'Actions',
       render: (row) => (
         <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
           <MoreVertical size={18} />
         </IconButton>
       ),
-    },
+    }] : []),
   ];
 
   const tableData = data?.data || [];
@@ -129,11 +136,11 @@ export default function JobCardList() {
       <PageHeader
         title="Job Cards"
         breadcrumbs={[{ label: 'Job Cards' }]}
-        // actions={canCreateJobCard ? (
-        //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
-        //     Create Job Card
-        //   </Button>
-        // ) : null}
+        actions={canCreateJobCard ? (
+          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
+            Create Job Card
+          </Button>
+        ) : null}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -199,28 +206,31 @@ export default function JobCardList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 220, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/view/${selectedJob?.slug || selectedJob?.id}`); }}>
-          <Eye size={16} className="mr-3 text-primary" />
-          View
-        </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/edit/${selectedJob?.slug || selectedJob?.id}`); }}>
-          <Edit size={16} className="mr-3 text-warning" />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={() => {
-          handleMenuClose();
-          if (department === 'mechanical') {
-            navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
-          } else if (department === 'body-shop') {
-            navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
-          } else {
-            const targetRoute = hasReadableModule(menus, 'crm-team') ? ROUTES.CRM_ADDITIONAL_WORK : ROUTES.FLOOR_ADDITIONAL_WORK_NEW;
-            navigate(`${targetRoute}?jobCardId=${selectedJob?.id}`);
-          }
-        }}>
-          <PlusCircle size={16} className="mr-3 text-body-shop" />
-          Add Additional Work
-        </MenuItem>
+        {canReadJobCards && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/view/${selectedJob?.slug || selectedJob?.id}`); }}>
+            <Eye size={16} className="mr-3 text-primary" />
+            View
+          </MenuItem>
+        )}
+        {canUpdateJobCards && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/edit/${selectedJob?.slug || selectedJob?.id}`); }}>
+            <Edit size={16} className="mr-3 text-warning" />
+            Edit
+          </MenuItem>
+        )}
+        {(canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork) && (
+          <MenuItem onClick={() => {
+            handleMenuClose();
+            if (department === 'body-shop' || (!canCreateFloorAdditionalWork && canCreateBodyShopAdditionalWork)) {
+              navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
+            } else {
+              navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
+            }
+          }}>
+            <PlusCircle size={16} className="mr-3 text-body-shop" />
+            Add Additional Work
+          </MenuItem>
+        )}
         {/* <MenuItem onClick={() => {
           handleMenuClose();
           const message = `Hello ${selectedJob?.ownerName || 'Customer'}, your vehicle service card #${selectedJob?.id} estimate is ready. Please reply YES to approve work.`;

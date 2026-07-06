@@ -6,6 +6,7 @@ import PageHeader from '../../components/shared/PageHeader';
 import { ROUTES } from '../../config/routes';
 import { formatDateTime } from '../../utils/formatters';
 import styles from './AdditionalWorkList.module.css';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const MOCK_REQUESTS = [
   { id: 'AW-001', vehicleNumber: 'TN 01 AB 1234', requestDate: new Date(Date.now() - 3600000).toISOString(), description: 'Brake pads worn out, needs replacement', estimatedCost: '2,500', status: 'PENDING_APPROVAL' },
@@ -14,17 +15,19 @@ const MOCK_REQUESTS = [
 
 export default function AdditionalWorkList() {
   const navigate = useNavigate();
+  const { canCreate } = usePermissions();
+  const canCreateAdditionalWork = canCreate('/additional-work');
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Additional Work Requests"
         breadcrumbs={[{ label: 'Additional Work' }]}
-        action={
+        actions={canCreateAdditionalWork ? (
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.FLOOR_ADDITIONAL_WORK_NEW)}>
             New Request
           </Button>
-        }
+        ) : null}
       />
 
       <div className={styles.panel}>

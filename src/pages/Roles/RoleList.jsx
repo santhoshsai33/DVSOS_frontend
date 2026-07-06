@@ -12,6 +12,7 @@ import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
 import { getRolesApi, updateRoleStatusApi } from '../../api/roleApi';
 import StatusFilter from '../../components/common/StatusFilter';
+import { usePermissions } from '../../hooks/usePermissions';
 
 
 
@@ -27,6 +28,9 @@ export default function RoleList() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [totalCount, setTotalCount] = React.useState(0);
   const [statusFilter, setStatusFilter] = React.useState('');
+  const { canCreate, canUpdate } = usePermissions();
+  const canCreateRoles = canCreate('/roles');
+  const canUpdateRoles = canUpdate('/roles');
 
   const fetchRoles = async () => {
     try {
@@ -122,20 +126,24 @@ export default function RoleList() {
     {
       header: 'Status',
       render: (row) => (
-        <RHFSwitch
-          value={row.isActive}
-          onChange={(newVal) => handleStatusChange(row.id, newVal)}
-        />
+        canUpdateRoles ? (
+          <RHFSwitch
+            value={row.isActive}
+            onChange={(newVal) => handleStatusChange(row.id, newVal)}
+          />
+        ) : (
+          <Typography variant="body2">{row.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</Typography>
+        )
       )
     },
-    {
+    ...(canUpdateRoles ? [{
       header: 'Actions',
       render: (row) => (
         <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
           <MoreVertical size={18} />
         </IconButton>
       )
-    }
+    }] : [])
   ];
 
   return (
@@ -143,11 +151,11 @@ export default function RoleList() {
       <PageHeader
         title="Role Management"
         // breadcrumbs={[{ label: 'Roles' }]}
-        actions={
+        actions={canCreateRoles ? (
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_ROLE_PRIVILEGES)}>
             Add Role Privileges
           </Button>
-        }
+        ) : null}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -196,10 +204,12 @@ export default function RoleList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedRole)); }}>
-          <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
-          Edit
-        </MenuItem>
+        {canUpdateRoles && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedRole)); }}>
+            <Edit size={16} style={{ marginRight: 12, color: '#0d9488' }} />
+            Edit
+          </MenuItem>
+        )}
         {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} style={{ marginRight: 12, color: 'inherit' }} />
           Deactivate

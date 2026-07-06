@@ -1,5 +1,5 @@
 import useAuthStore from '../store/useAuthStore';
-import { hasReadableModule, hasReadablePath } from '../utils/authAccess';
+import { hasMenuAction, hasReadableModule, hasReadablePath } from '../utils/authAccess';
 
 export const usePermissions = () => {
   const { role, menus } = useAuthStore();
@@ -7,6 +7,10 @@ export const usePermissions = () => {
   const hasRole = () => false;
   const hasModule = (moduleNames) => hasReadableModule(menus, moduleNames);
   const hasPath = (path) => hasReadablePath(menus, path);
+  const canRead = (path) => hasMenuAction(menus, path, 'canRead');
+  const canCreate = (path) => hasMenuAction(menus, path, 'canCreate');
+  const canUpdate = (path) => hasMenuAction(menus, path, 'canUpdate');
+  const canDelete = (path) => hasMenuAction(menus, path, 'canDelete');
 
   const isManagement = () => hasModule(['manager', 'managing-director', 'admin']);
   const canApprove = () => hasModule(['manager', 'managing-director', 'admin', 'crm-team']);
@@ -20,6 +24,10 @@ export const usePermissions = () => {
     hasRole,
     hasModule,
     hasPath,
+    canRead,
+    canCreate,
+    canUpdate,
+    canDelete,
     isManagement,
     canApprove,
     canManageUsers,

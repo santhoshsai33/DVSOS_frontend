@@ -13,6 +13,7 @@ import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { getServiceItemsApi, updateServiceItemStatusApi } from '../../api/adminServiceItemApi';
 import StatusFilter from '../../components/common/StatusFilter';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function ServiceItems() {
   const navigate = useNavigate();
@@ -23,6 +24,9 @@ export default function ServiceItems() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [statusFilter, setStatusFilter] = useState('');
+  const { canCreate, canUpdate } = usePermissions();
+  const canCreateItems = canCreate('/master-items');
+  const canUpdateItems = canUpdate('/master-items');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -129,20 +133,24 @@ export default function ServiceItems() {
       header: 'Status',
       accessor: 'isActive',
       render: (row) => (
-        <RHFSwitch
-          value={row.isActive !== undefined ? row.isActive : true}
-          onChange={(newVal) => handleStatusChange(row.id, newVal)}
-        />
+        canUpdateItems ? (
+          <RHFSwitch
+            value={row.isActive !== undefined ? row.isActive : true}
+            onChange={(newVal) => handleStatusChange(row.id, newVal)}
+          />
+        ) : (
+          <Typography variant="body2">{row.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</Typography>
+        )
       )
     },
-    {
+    ...(canUpdateItems ? [{
       header: 'Actions',
       render: (row) => (
         <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
           <MoreVertical size={18} />
         </IconButton>
       )
-    }
+    }] : [])
   ];
 
   return (
@@ -150,11 +158,11 @@ export default function ServiceItems() {
       <PageHeader
         title="Service Items"
         // breadcrumbs={[{ label: 'Service Items' }]}
-        actions={
+        actions={canCreateItems ? (
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_ITEMS_NEW)}>
             Add Service Item
           </Button>
-        }
+        ) : null}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -202,10 +210,12 @@ export default function ServiceItems() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedItem)); }}>
-          <Edit size={16} className="mr-3 text-primary" />
-          Edit
-        </MenuItem>
+        {canUpdateItems && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedItem)); }}>
+            <Edit size={16} className="mr-3 text-primary" />
+            Edit
+          </MenuItem>
+        )}
         {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Deactivate

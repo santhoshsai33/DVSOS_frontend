@@ -13,6 +13,7 @@ import StatusBadge from '../../components/common/StatusBadge';
 import { formatDateTime } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROUTES } from '../../config/routes';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function VehicleList() {
   const navigate = useNavigate();
@@ -22,6 +23,9 @@ export default function VehicleList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const debouncedSearch = useDebounce(search, 300);
+  const { canRead, canUpdate } = usePermissions();
+  const canReadVehicles = canRead('/vehicles');
+  const canUpdateVehicles = canUpdate('/vehicles');
 
   const { data, isLoading } = useVehicles({
     search: debouncedSearch,
@@ -74,14 +78,14 @@ export default function VehicleList() {
       accessor: 'createdAt',
       render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography>,
     },
-    {
+    ...(canReadVehicles || canUpdateVehicles ? [{
       header: 'Actions',
       render: (row) => (
         <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
           <MoreVertical size={18} />
         </IconButton>
       ),
-    },
+    }] : []),
   ];
 
   const tableData = data?.data || [];
@@ -138,18 +142,24 @@ export default function VehicleList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/view/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
-          <Eye size={16} className="mr-3 text-primary" />
-          View Details
-        </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/edit/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
-          <Edit3 size={16} className="mr-3 text-warning" />
-          Edit Vehicle
-        </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/history/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
-          <Clock size={16} className="mr-3 text-warning" />
-          History
-        </MenuItem>
+        {canReadVehicles && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/view/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
+            <Eye size={16} className="mr-3 text-primary" />
+            View Details
+          </MenuItem>
+        )}
+        {canUpdateVehicles && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/edit/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
+            <Edit3 size={16} className="mr-3 text-warning" />
+            Edit Vehicle
+          </MenuItem>
+        )}
+        {canReadVehicles && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/history/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
+            <Clock size={16} className="mr-3 text-warning" />
+            History
+          </MenuItem>
+        )}
       </Menu>
     </Box>
   );
