@@ -207,6 +207,12 @@ export const ENDPOINTS = {
     PRICING_CREATE: '/masters/pricing/create',
     PRICING_UPDATE: (id) => `/masters/pricing/update/${id}`,
     PRICING_DELETE: (id) => `/masters/pricing/delete/${id}`,
+    BAYS: {
+      LIST: '/bays/list',
+      CREATE: '/bays/create',
+      UPDATE: (id) => `/bays/update/${id}`,
+      STATUS: (id) => `/bays/status/${id}`,
+    }
   },
 
   // Kiosk
