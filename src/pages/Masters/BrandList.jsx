@@ -29,29 +29,56 @@ export default function BrandList() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
 
-  const fetchBrands = async () => {
-    try {
-      setLoading(true);
-      const params = {
-        page: page + 1,
-        limit: rowsPerPage,
-        search: search || undefined,
-        isActive: statusFilter === 'ACTIVE' ? true : statusFilter === 'INACTIVE' ? false : undefined
-      };
-      const response = await adminBrandApi.getBrands(params);
-      setBrands(response.data?.brands || []);
-      setTotalCount(response.meta?.total || 0);
-    } catch (error) {
-      toastError('Failed to fetch brands');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchBrands();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fetchBrands = async () => {
+      try {
+        setLoading(true);
+        // Still pass params in case backend gets updated to support them later
+        const params = { page: page + 1, limit: rowsPerPage };
+        if (search) params.search = search;
+        if (statusFilter === 'ACTIVE') params.isActive = true;
+        if (statusFilter === 'INACTIVE') params.isActive = false;
+
+        const res = await adminBrandApi.getBrands(params);
+        if (res?.success || Array.isArray(res?.data?.brands) || Array.isArray(res?.data) || Array.isArray(res)) {
+          let fetchedBrands = res?.data?.brands || res?.data || res || [];
+          if (!Array.isArray(fetchedBrands)) fetchedBrands = [];
+
+          // --- Client-side Fallback Filtering ---
+          // If backend didn't filter, we filter here
+          if (search) {
+            const lowerSearch = search.toLowerCase();
+            fetchedBrands = fetchedBrands.filter(b => b.name?.toLowerCase().includes(lowerSearch));
+          }
+          if (statusFilter === 'ACTIVE') {
+            fetchedBrands = fetchedBrands.filter(b => b.isActive === true);
+          } else if (statusFilter === 'INACTIVE') {
+            fetchedBrands = fetchedBrands.filter(b => b.isActive === false);
+          }
+
+          const hasMetaTotal = res?.meta?.total !== undefined;
+          setTotalCount(hasMetaTotal ? res.meta.total : fetchedBrands.length);
+
+          // --- Client-side Fallback Pagination ---
+          // If backend didn't paginate (returned all), we slice it here
+          if (!hasMetaTotal && fetchedBrands.length > rowsPerPage) {
+            const start = page * rowsPerPage;
+            fetchedBrands = fetchedBrands.slice(start, start + rowsPerPage);
+          }
+
+          setBrands(fetchedBrands);
+        }
+      } catch (error) {
+        toastError(error?.message || 'Failed to fetch brands');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchBrands();
+    }, 300);
+    return () => clearTimeout(timer);
   }, [page, rowsPerPage, search, statusFilter]);
 
   const handleMenuClick = (event, row) => {
@@ -72,12 +99,17 @@ export default function BrandList() {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await adminBrandApi.updateBrandStatus(id, newStatus);
-      setBrands(prev => prev.map(b => b.id === id ? { ...b, isActive: newStatus } : b));
-      toastSuccess('Brand status updated successfully!');
+      const res = await adminBrandApi.updateBrandStatus(id, newStatus);
+      // If the API call didn't throw an error, we consider it a success.
+      // Some APIs might not return { success: true }, so we shouldn't strictly require it.
+      if (res?.success !== false) {
+        toastSuccess('Brand status updated successfully!');
+        setBrands(prev => prev.map(b => b.id === id ? { ...b, isActive: newStatus } : b));
+      } else {
+        toastError(res?.message || 'Failed to update status');
+      }
     } catch (error) {
-      toastError(error.response?.data?.message || 'Failed to update status');
-      fetchBrands(); // Refresh to original state
+      toastError(error?.response?.data?.message || error?.message || 'Failed to update status');
     }
   };
 
@@ -160,9 +192,9 @@ export default function BrandList() {
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
         {canUpdateBrands && (
-          <MenuItem onClick={() => { 
-            handleMenuClose(); 
-            navigate(getEditPath(selectedBrand), { state: { brand: selectedBrand } }); 
+          <MenuItem onClick={() => {
+            handleMenuClose();
+            navigate(getEditPath(selectedBrand), { state: { brand: selectedBrand } });
           }}>
             <Edit size={16} className="mr-3 text-primary" />
             Edit
