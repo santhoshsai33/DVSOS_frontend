@@ -129,11 +129,11 @@ export default function CustomerListPage() {
       <PageHeader
         title="Customer Directory"
         breadcrumbs={[{ label: 'Customers' }]}
-        actions={canCreateCustomers ? (
-          <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CUSTOMERS_NEW || '/customers/new')}>
-            Add Customer
-          </Button>
-        ) : null}
+        // actions={canCreateCustomers ? (
+        //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CUSTOMERS_NEW || '/customers/new')}>
+        //     Add Customer
+        //   </Button>
+        // ) : null}
       />
 
       <Box sx={{ display: 'flex', mb: 3, gap: 2, flexWrap: 'wrap' }}>
