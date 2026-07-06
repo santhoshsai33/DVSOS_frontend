@@ -28,6 +28,7 @@ import {
   saveRoleMenuPermissionsApi,
   updateRoleMenuPermissionsApi
 } from '../../api/roleApi';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const flattenMenus = (menus) => {
   let flat = [];
@@ -82,6 +83,8 @@ export default function RolePrivilegesForm() {
   const { slug } = useParams();
   const roleIdentifier = slug;
   const isEdit = !!roleIdentifier;
+  const { canCreate, canUpdate } = usePermissions();
+  const canSaveRolePermissions = isEdit ? canUpdate('/roles') : canCreate('/roles');
 
   const [designation, setDesignation] = useState('');
   const [designationError, setDesignationError] = useState('');
@@ -408,7 +411,7 @@ export default function RolePrivilegesForm() {
           variant="primary"
           isLoading={saving}
           onClick={handleSave}
-          disabled={loading || saving}
+          disabled={loading || saving || !canSaveRolePermissions}
         >
           {isEdit ? 'Save Changes' : 'Add Role Privileges'}
         </Button>

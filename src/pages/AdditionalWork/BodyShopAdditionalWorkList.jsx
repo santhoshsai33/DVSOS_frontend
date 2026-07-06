@@ -6,6 +6,7 @@ import PageHeader from '../../components/shared/PageHeader';
 import { ROUTES } from '../../config/routes';
 import { formatDateTime } from '../../utils/formatters';
 import styles from './AdditionalWorkList.module.css';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const MOCK_REQUESTS = [
   { id: 'AW-B01', vehicleNumber: 'TN 01 AB 1234', requestDate: new Date(Date.now() - 3600000).toISOString(), description: 'Found deep scratch on rear bumper, needs paint touchup', estimatedCost: '1,500', status: 'PENDING_APPROVAL' },
@@ -14,17 +15,19 @@ const MOCK_REQUESTS = [
 
 export default function BodyShopAdditionalWorkList() {
   const navigate = useNavigate();
+  const { canCreate } = usePermissions();
+  const canCreateAdditionalWork = canCreate('/body-shop-additional-work');
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Additional Work Requests (Body Shop)"
         breadcrumbs={[{ label: 'Additional Work' }]}
-        action={
+        actions={canCreateAdditionalWork ? (
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW)}>
             New Request
           </Button>
-        }
+        ) : null}
       />
 
       <div className={styles.panel}>

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import { hasMenuAction } from '../utils/authAccess';
 
-const useAuthStore = create((set) => ({
+const useAuthStore = create((set, get) => ({
   user: null,
   role: null,
   menus: [],
@@ -19,6 +20,10 @@ const useAuthStore = create((set) => ({
 
   setUser: (userData) => set({ user: userData }),
   setMenus: (menus = []) => set({ menus }),
+  canRead: (path) => hasMenuAction(get().menus, path, 'canRead'),
+  canCreate: (path) => hasMenuAction(get().menus, path, 'canCreate'),
+  canUpdate: (path) => hasMenuAction(get().menus, path, 'canUpdate'),
+  canDelete: (path) => hasMenuAction(get().menus, path, 'canDelete'),
 }));
 
 export default useAuthStore;

@@ -16,13 +16,15 @@ import { getLocationsApi } from '../../api/adminLocationApi';
 import { formatDateTime } from '../../utils/formatters';
 import DateFilter from '../../components/common/DateFilter';
 import StatusFilter from '../../components/common/StatusFilter';
-import useAuthStore from '../../store/useAuthStore';
 import ResetFiltersButton from '../../components/common/ResetFiltersButton';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function UserList() {
   const navigate = useNavigate();
-  const { role } = useAuthStore();
-  const isMDOrManager = ['MD', 'managing-director', 'managing_director', 'MANAGER', 'manager'].includes(role);
+  const { canRead, canCreate, canUpdate } = usePermissions();
+  const canCreateUsers = canCreate('/users');
+  const canUpdateUsers = canUpdate('/users');
+  const canReadLocations = canRead('/locations');
 
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -51,7 +53,7 @@ export default function UserList() {
         console.error('Failed to fetch roles');
       }
 
-      if (!isMDOrManager) {
+      if (canReadLocations) {
         try {
           const locationsRes = await getLocationsApi({ limit: 100 });
           if (locationsRes?.success) setLocations(locationsRes.data.locations || []);
@@ -61,7 +63,7 @@ export default function UserList() {
       }
     };
     fetchDropdowns();
-  }, [isMDOrManager]);
+  }, [canReadLocations]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -207,10 +209,14 @@ export default function UserList() {
       header: 'Status',
       accessor: 'isActive',
       render: (row) => (
-        <RHFSwitch
-          value={row.isActive !== undefined ? row.isActive : true}
-          onChange={(newVal) => handleStatusChange(row.id, newVal)}
-        />
+        canUpdateUsers ? (
+          <RHFSwitch
+            value={row.isActive !== undefined ? row.isActive : true}
+            onChange={(newVal) => handleStatusChange(row.id, newVal)}
+          />
+        ) : (
+          <Typography variant="body2">{row.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</Typography>
+        )
       ),
     },
     {
@@ -234,13 +240,13 @@ export default function UserList() {
         title="User Management"
         // breadcrumbs={[{ label: 'Users' }]}
         actions={
-          <Button
+          canCreateUsers ? <Button
             variant="primary"
             leftIcon={Plus}
             onClick={() => navigate(ROUTES.ADMIN_USER_NEW)}
           >
             Add User
-          </Button>
+          </Button> : null
         }
       />
 
@@ -284,7 +290,7 @@ export default function UserList() {
             <MenuItem key={role.id} value={role.id}>{role.name}</MenuItem>
           ))}
         </Select>
-        {!isMDOrManager && (
+        {canReadLocations && (
           <Select
             size="small"
             displayEmpty
@@ -349,15 +355,17 @@ export default function UserList() {
           <Eye size={16} className="mr-3 text-info" style={{ color: '#0284C7' }} />
           View
         </MenuItem>
-        <MenuItem onClick={() => {
-          if (getUserIdentifier(selectedUser)) {
-            navigate(getUserEditPath(selectedUser));
-          }
-          handleMenuClose();
-        }}>
-          <Edit size={16} className="mr-3 text-primary" />
-          Edit
-        </MenuItem>
+        {canUpdateUsers && (
+          <MenuItem onClick={() => {
+            if (getUserIdentifier(selectedUser)) {
+              navigate(getUserEditPath(selectedUser));
+            }
+            handleMenuClose();
+          }}>
+            <Edit size={16} className="mr-3 text-primary" />
+            Edit
+          </MenuItem>
+        )}
         {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Deactivate

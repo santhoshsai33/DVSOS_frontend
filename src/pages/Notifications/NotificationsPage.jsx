@@ -10,6 +10,7 @@ import {
   markNotificationReadApi,
   markAllNotificationsReadApi
 } from '../../api/notificationApi';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const getIcon = (type) => {
   const t = String(type || '').toUpperCase();
@@ -43,6 +44,8 @@ export default function NotificationsPage({ title = 'Notifications' }) {
   const [notifications, setNotifications] = useState([]);
   const [tab, setTab] = useState(0);
   const navigate = useNavigate();
+  const { canUpdate } = usePermissions();
+  const canUpdateNotifications = canUpdate('/notifications');
 
   const fetchNotifications = async () => {
     try {
@@ -85,7 +88,7 @@ export default function NotificationsPage({ title = 'Notifications' }) {
   };
 
   const handleItemClick = async (notif) => {
-    if (notif.readAt === null) {
+    if (notif.readAt === null && canUpdateNotifications) {
       await markAsRead(notif.id);
     }
     // Dynamic navigation based on relation ids
@@ -101,11 +104,11 @@ export default function NotificationsPage({ title = 'Notifications' }) {
       <PageHeader 
         title={title} 
         breadcrumbs={[{ label: title }]} 
-        actions={
+        actions={canUpdateNotifications ? (
            <Button variant="secondary" leftIcon={CheckSquare} onClick={markAllRead}>
              Mark all as read
            </Button>
-        }
+        ) : null}
       />
       
       <Card sx={{ borderRadius: 0 }}>
@@ -147,7 +150,7 @@ export default function NotificationsPage({ title = 'Notifications' }) {
                      }}
                      onClick={() => handleItemClick(notif)}
                      secondaryAction={
-                       !isRead && (
+                       !isRead && canUpdateNotifications && (
                          <IconButton 
                            edge="end" 
                            size="small" 

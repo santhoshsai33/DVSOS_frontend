@@ -12,6 +12,7 @@ import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { getServiceCategoriesApi, updateServiceCategoryStatusApi } from '../../api/adminServiceCategoryApi';
 import StatusFilter from '../../components/common/StatusFilter';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function ServiceCategories() {
   const navigate = useNavigate();
@@ -22,6 +23,9 @@ export default function ServiceCategories() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [statusFilter, setStatusFilter] = useState('');
+  const { canCreate, canUpdate } = usePermissions();
+  const canCreateCategories = canCreate('/master-categories');
+  const canUpdateCategories = canUpdate('/master-categories');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -114,20 +118,24 @@ export default function ServiceCategories() {
       header: 'Status',
       accessor: 'isActive',
       render: (row) => (
-        <RHFSwitch
-          value={row.isActive !== undefined ? row.isActive : true}
-          onChange={(newVal) => handleStatusChange(row.id, newVal)}
-        />
+        canUpdateCategories ? (
+          <RHFSwitch
+            value={row.isActive !== undefined ? row.isActive : true}
+            onChange={(newVal) => handleStatusChange(row.id, newVal)}
+          />
+        ) : (
+          <Typography variant="body2">{row.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</Typography>
+        )
       )
     },
-    {
+    ...(canUpdateCategories ? [{
       header: 'Actions',
       render: (row) => (
         <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
           <MoreVertical size={18} />
         </IconButton>
       )
-    }
+    }] : [])
   ];
 
   return (
@@ -135,11 +143,11 @@ export default function ServiceCategories() {
       <PageHeader
         title="Service Categories"
         // breadcrumbs={[{ label: 'Categories' }]}
-        actions={
+        actions={canCreateCategories ? (
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_CATEGORIES_NEW)}>
             Add Category
           </Button>
-        }
+        ) : null}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -187,10 +195,12 @@ export default function ServiceCategories() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedCategory)); }}>
-          <Edit size={16} className="mr-3 text-primary" />
-          Edit
-        </MenuItem>
+        {canUpdateCategories && (
+          <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedCategory)); }}>
+            <Edit size={16} className="mr-3 text-primary" />
+            Edit
+          </MenuItem>
+        )}
         {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Trash2 size={16} className="mr-3" />
           Deactivate

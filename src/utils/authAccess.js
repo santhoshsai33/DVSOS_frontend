@@ -64,6 +64,15 @@ export const hasReadablePath = (modules = [], path) => {
   });
 };
 
+export const hasMenuAction = (modules = [], path, action) => {
+  const requestedPath = normalizePath(path);
+
+  return flattenMenuModules(modules).some((menu) => {
+    const menuPath = routePatternToBasePath(menu.path);
+    return (requestedPath === menuPath || requestedPath.startsWith(`${menuPath}/`)) && menu[action] === true;
+  });
+};
+
 export const hasAnyReadableMenu = (modules = []) => getReadableMenus(modules).length > 0;
 
 export const getDepartmentFromModules = (modules = []) => {

@@ -11,9 +11,14 @@ import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { useDebounce } from '../../hooks/useDebounce';
 import { toastSuccess } from '../../notifications/toast';
 import { gateEntryApi } from '../../api/gateEntryApi';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function GateEntryList({ onAddClick, onViewClick, onEntryClick }) {
   const navigate = useNavigate();
+  const { canRead, canCreate, canUpdate } = usePermissions();
+  const canReadGateEntry = canRead('/gate-entry');
+  const canCreateGateEntry = canCreate('/gate-entry');
+  const canUpdateGateEntry = canUpdate('/gate-entry');
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -88,7 +93,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
     { header: 'Mobile', accessor: 'mobile', sortable: false },
     { header: 'Make & Model', accessor: 'makeModel', sortable: false },
     { header: 'Status', sortable: false, render: (row) => <StatusBadge status={row.status} /> },
-    {
+    ...(canReadGateEntry || canCreateGateEntry || canUpdateGateEntry ? [{
       header: 'Action',
       sortable: false,
       render: (row) => (
@@ -96,7 +101,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
           <MoreVertical size={18} />
         </IconButton>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -104,13 +109,13 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
       <PageHeader
         title="Vehicle Entry"
         breadcrumbs={[{ label: 'Vehicle Entry' }]}
-        // actions={
-        //   onAddClick && (
-        //     <Button variant="primary" leftIcon={Plus} onClick={onAddClick}>
-        //       New Entry
-        //     </Button>
-        //   )
-        // }
+        actions={
+          onAddClick && canCreateGateEntry ? (
+            <Button variant="primary" leftIcon={Plus} onClick={onAddClick}>
+              New Entry
+            </Button>
+          ) : null
+        }
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -171,26 +176,32 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { 
-          const idOrSlug = selectedEntry?.slug || selectedEntry?.id;
-          handleMenuClose(); 
-          if(idOrSlug) navigate(`/gate-entry/view/${idOrSlug}`); 
-        }}>
-          <Eye size={16} className="mr-3 text-primary" />
-          View
-        </MenuItem>
-        <MenuItem onClick={() => { 
-          const entry = selectedEntry;
-          handleMenuClose(); 
-          if(onEntryClick) onEntryClick(entry); 
-        }}>
-          <LogIn size={16} className="mr-3 text-warning" />
-          Entry
-        </MenuItem>
-        <MenuItem onClick={() => { handleMenuClose(); setExitVehicle(selectedEntry); setShowExitModal(true); }} sx={{ color: 'error.main' }}>
-          <LogOut size={16} className="mr-3" />
-          Exit
-        </MenuItem>
+        {canReadGateEntry && (
+          <MenuItem onClick={() => { 
+            const idOrSlug = selectedEntry?.slug || selectedEntry?.id;
+            handleMenuClose(); 
+            if(idOrSlug) navigate(`/gate-entry/view/${idOrSlug}`); 
+          }}>
+            <Eye size={16} className="mr-3 text-primary" />
+            View
+          </MenuItem>
+        )}
+        {canCreateGateEntry && (
+          <MenuItem onClick={() => { 
+            const entry = selectedEntry;
+            handleMenuClose(); 
+            if(onEntryClick) onEntryClick(entry); 
+          }}>
+            <LogIn size={16} className="mr-3 text-warning" />
+            Entry
+          </MenuItem>
+        )}
+        {canUpdateGateEntry && (
+          <MenuItem onClick={() => { handleMenuClose(); setExitVehicle(selectedEntry); setShowExitModal(true); }} sx={{ color: 'error.main' }}>
+            <LogOut size={16} className="mr-3" />
+            Exit
+          </MenuItem>
+        )}
       </Menu>
 
       <Modal open={showExitModal} onClose={() => setShowExitModal(false)}>
@@ -237,7 +248,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
             </Box>
             <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
               <Button variant="secondary" type="button" onClick={() => setShowExitModal(false)}>Cancel</Button>
-              <Button variant="primary" type="submit">Confirm Exit</Button>
+              {canUpdateGateEntry && <Button variant="primary" type="submit">Confirm Exit</Button>}
             </Box>
           </form>
         </Box>

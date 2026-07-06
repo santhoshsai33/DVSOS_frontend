@@ -16,6 +16,7 @@ import { getRolesApi } from '../../api/roleApi';
 import { getLocationsApi } from '../../api/adminLocationApi';
 import useAuthStore from '../../store/useAuthStore';
 import BackButton from '../../components/common/BackButton';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const GENDER_OPTIONS = [
   { value: 'MALE', label: 'Male' },
@@ -25,14 +26,12 @@ const GENDER_OPTIONS = [
 
 import { commonValidations } from '../../validations/commonSchema';
 
-const getValidationSchema = (isMD) => z.object({
+const getValidationSchema = (canAssignLocation) => z.object({
   fullName: commonValidations.lettersOnly('Full Name'),
   email: commonValidations.email,
   mobile: commonValidations.mobile,
   roleId: commonValidations.requiredNumber('Role'),
-  locationId: isMD
-    ? commonValidations.optionalAny
-    : commonValidations.requiredNumber('Location'),
+  locationId: canAssignLocation ? commonValidations.requiredNumber('Location') : commonValidations.optionalAny,
   password: commonValidations.optionalPassword,
   status: commonValidations.optionalStatus,
   dob: commonValidations.pastDate('Date of Birth'),
@@ -48,8 +47,9 @@ export default function UserForm() {
   const userIdentifier = slug;
   const isEdit = !!userIdentifier;
 
-  const { role, user: currentUser } = useAuthStore();
-  const isMD = ['MD', 'managing-director', 'managing_director'].includes(role);
+  const { user: currentUser } = useAuthStore();
+  const { canRead } = usePermissions();
+  const canAssignLocation = canRead('/locations');
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
@@ -57,7 +57,7 @@ export default function UserForm() {
   const [locations, setLocations] = useState([]);
 
   const methods = useForm({
-    resolver: zodResolver(getValidationSchema(isMD)),
+    resolver: zodResolver(getValidationSchema(canAssignLocation)),
     defaultValues: {
       fullName: '',
       email: '',
@@ -89,7 +89,7 @@ export default function UserForm() {
       }
     };
     const fetchLocations = async () => {
-      if (isMD) return; // MD doesn't need to fetch locations
+      if (!canAssignLocation) return;
       try {
         const res = await getLocationsApi({ limit: 100 });
         if (res?.success) {
@@ -102,7 +102,7 @@ export default function UserForm() {
     };
     fetchRoles();
     fetchLocations();
-  }, [isMD]);
+  }, [canAssignLocation]);
 
   useEffect(() => {
     if (isEdit) {
@@ -147,7 +147,7 @@ export default function UserForm() {
         email: data.email,
         mobile: data.mobile || undefined,
         roleId: data.roleId,
-        locationId: isMD ? (currentUser?.locationId || currentUser?.location?.id) : data.locationId,
+        locationId: canAssignLocation ? data.locationId : (currentUser?.locationId || currentUser?.location?.id),
         password: isEdit ? undefined : (data.password || undefined),
         isActive: data.status === 'ACTIVE',
         dob: data.dob || undefined,
@@ -294,7 +294,7 @@ export default function UserForm() {
               </Grid>
             </Grid>
 
-            {!isMD && (
+            {canAssignLocation && (
               <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid item xs={12} md={6}>
                   <RHFSelect name="locationId" label="Location" options={locations} placeholder="Select location" required />

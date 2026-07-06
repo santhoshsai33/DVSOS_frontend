@@ -11,6 +11,7 @@ import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import StatusFilter from '../../components/common/StatusFilter';
 import { adminBrandApi } from '../../api/adminBrandApi';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function BrandList() {
   const navigate = useNavigate();
@@ -21,6 +22,9 @@ export default function BrandList() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [statusFilter, setStatusFilter] = useState('');
   const [totalCount, setTotalCount] = useState(0);
+  const { canCreate, canUpdate } = usePermissions();
+  const canCreateBrands = canCreate('/master-brands');
+  const canUpdateBrands = canUpdate('/master-brands');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -87,31 +91,35 @@ export default function BrandList() {
       header: 'Status',
       accessor: 'isActive',
       render: (row) => (
-        <RHFSwitch
-          value={row.isActive !== undefined ? row.isActive : true}
-          onChange={(newVal) => handleStatusChange(row.id, newVal)}
-        />
+        canUpdateBrands ? (
+          <RHFSwitch
+            value={row.isActive !== undefined ? row.isActive : true}
+            onChange={(newVal) => handleStatusChange(row.id, newVal)}
+          />
+        ) : (
+          <Typography variant="body2">{row.isActive !== false ? 'ACTIVE' : 'INACTIVE'}</Typography>
+        )
       )
     },
-    {
+    ...(canUpdateBrands ? [{
       header: 'Actions',
       render: (row) => (
         <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
           <MoreVertical size={18} />
         </IconButton>
       )
-    }
+    }] : [])
   ];
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Brand Master"
-        actions={
+        actions={canCreateBrands ? (
           <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.ADMIN_MASTER_BRANDS_NEW)}>
             Add Brand
           </Button>
-        }
+        ) : null}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -151,13 +159,15 @@ export default function BrandList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
       >
-        <MenuItem onClick={() => { 
-          handleMenuClose(); 
-          navigate(getEditPath(selectedBrand), { state: { brand: selectedBrand } }); 
-        }}>
-          <Edit size={16} className="mr-3 text-primary" />
-          Edit
-        </MenuItem>
+        {canUpdateBrands && (
+          <MenuItem onClick={() => { 
+            handleMenuClose(); 
+            navigate(getEditPath(selectedBrand), { state: { brand: selectedBrand } }); 
+          }}>
+            <Edit size={16} className="mr-3 text-primary" />
+            Edit
+          </MenuItem>
+        )}
       </Menu>
     </Box>
   );
