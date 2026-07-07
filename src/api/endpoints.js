@@ -229,5 +229,18 @@ export const ENDPOINTS = {
   },
   DEVICE_TOKEN: {
     REGISTER: '/device-token',
+  },
+
+  STAGE_TIME_LIMITS: {
+    LIST: '/stage-time-limits/list',
+    CREATE: '/stage-time-limits/create',
+    DETAIL: (id) => `/stage-time-limits/detail/${id}`,
+    UPDATE: (id) => `/stage-time-limits/update/${id}`,
+    STATUS: (id) => `/stage-time-limits/status/${id}`,
+    MODULES: '/modules',
+    STATUSES: '/statuses',
+    ROLES: '/roles',
+    USERS: '/users',
+    LOCATIONS: '/locations',
   }
 };

@@ -1,55 +1,52 @@
-import React, { useState } from 'react';
-import { Box, Card, Typography, IconButton, Chip, Menu, MenuItem } from '@mui/material';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Box, Card, Typography, IconButton, Menu, MenuItem, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { Plus, Edit, MoreVertical } from 'lucide-react';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import SearchBar from '../../components/common/SearchBar';
 import RHFSwitch from '../../components/form/RHFSwitch';
-import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import { ROUTES } from '../../config/routes';
-import { toastSuccess } from '../../notifications/toast';
+import { toastError, toastSuccess } from '../../notifications/toast';
+import {
+  getStageTimeLimitsApi,
+  updateStageTimeLimitStatusApi
+} from '../../api/stageTimeLimitApi';
 
 export default function StageSchedules() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  
+  const [schedules, setSchedules] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [deleteItem, setDeleteItem] = useState(null);
 
-  // Dummy Data for UI
-  const [schedules, setSchedules] = useState([
-    {
-      id: 1,
-      stageName: 'Mechanical Inspection',
-      intervalMinutes: 30,
-      roles: ['MANAGER', 'FLOOR_SUPERVISOR'],
-      message: 'Please complete the general inspection.',
-      isActive: true,
-    },
-    {
-      id: 2,
-      stageName: 'Body Shop Repair',
-      intervalMinutes: 60,
-      roles: ['BODY_SHOP_SUPERVISOR'],
-      message: 'Fix the rear bumper dent.',
-      isActive: true,
-    },
-  ]);
+  const fetchSchedules = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await getStageTimeLimitsApi({
+        page: page + 1,
+        limit: rowsPerPage,
+        search: search.trim() || undefined
+      });
 
-  const filteredSchedules = schedules.filter((s) =>
-    s.stageName.toLowerCase().includes(search.toLowerCase()) ||
-    s.message.toLowerCase().includes(search.toLowerCase())
-  );
+      setSchedules(res?.data?.schedules || []);
+      setTotalCount(res?.meta?.total || 0);
+    } catch (error) {
+      toastError(error?.response?.data?.message || error?.message || 'Failed to load stage schedules');
+    } finally {
+      setLoading(false);
+    }
+  }, [page, rowsPerPage, search]);
 
-  const paginatedSchedules = filteredSchedules.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  useEffect(() => {
+    fetchSchedules();
+  }, [fetchSchedules]);
 
   const handleMenuClick = (event, row) => {
     event.stopPropagation();
@@ -69,58 +66,52 @@ export default function StageSchedules() {
     handleMenuClose();
   };
 
-  const handleDeleteClick = () => {
-    setDeleteItem(selectedSchedule);
-    handleMenuClose();
-  };
-
-  const confirmDelete = () => {
-    if (deleteItem) {
-      setSchedules(prev => prev.filter(s => s.id !== deleteItem.id));
-      toastSuccess('Schedule deleted successfully!');
-      setDeleteItem(null);
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await updateStageTimeLimitStatusApi(id, newStatus);
+      setSchedules((prev) => prev.map((schedule) => (
+        schedule.id === id ? { ...schedule, isActive: newStatus } : schedule
+      )));
+      toastSuccess('Schedule status updated successfully');
+    } catch (error) {
+      toastError(error?.response?.data?.message || error?.message || 'Failed to update schedule status');
     }
-  };
-
-  const handleStatusChange = (id, newStatus) => {
-    setSchedules(prev => prev.map(s => s.id === id ? { ...s, isActive: newStatus } : s));
-    toastSuccess('Schedule status updated successfully!');
   };
 
   const columns = [
     {
-      header: 'Stage Name',
-      accessor: 'stageName',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.stageName}</Typography>,
+      header: 'Location',
+      accessor: 'locationName',
+      render: (row) => <Typography variant="body2" fontWeight={600}>{row.locationName || 'All Locations'}</Typography>
     },
     {
-      header: 'Interval Time',
-      accessor: 'intervalMinutes',
-      render: (row) => (
-        <Typography variant="body2" color="text.secondary">
-          {row.intervalMinutes} Minutes
-        </Typography>
-      ),
+      header: 'Module',
+      accessor: 'moduleName'
     },
     {
-      header: 'Assigned Roles',
-      accessor: 'roles',
+      header: 'Status / Stage',
+      accessor: 'statusName',
       render: (row) => (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          {row.roles.map((role, idx) => (
-            <Chip key={idx} label={role.replace(/_/g, ' ')} size="small" variant="outlined" />
-          ))}
+        <Box>
+          <Typography variant="body2" fontWeight={600}>{row.statusName}</Typography>
+          <Typography variant="caption" color="text.secondary">{row.stageCode}</Typography>
         </Box>
-      ),
+      )
     },
     {
-      header: 'Message',
-      accessor: 'message',
+      header: 'Interval',
+      accessor: 'allowedMinutes',
+      render: (row) => `${row.allowedMinutes} min`
+    },
+    {
+      header: 'Notify',
       render: (row) => (
-        <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
-          {row.message}
-        </Typography>
-      ),
+        <Chip
+          size="small"
+          variant="outlined"
+          label={row.notifyRoleName ? `Role: ${row.notifyRoleName}` : `User: ${row.notifyUserName || '-'}`}
+        />
+      )
     },
     {
       header: 'Status',
@@ -130,7 +121,7 @@ export default function StageSchedules() {
           value={row.isActive}
           onChange={(newVal) => handleStatusChange(row.id, newVal)}
         />
-      ),
+      )
     },
     {
       header: 'Actions',
@@ -138,15 +129,15 @@ export default function StageSchedules() {
         <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
           <MoreVertical size={18} />
         </IconButton>
-      ),
-    },
+      )
+    }
   ];
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title="Stage Schedules"
-        actions={
+        actions={(
           <Button
             variant="primary"
             leftIcon={Plus}
@@ -154,7 +145,7 @@ export default function StageSchedules() {
           >
             Add Schedule
           </Button>
-        }
+        )}
       />
 
       <Box sx={{ display: 'flex', mb: 3 }}>
@@ -173,15 +164,18 @@ export default function StageSchedules() {
       <Card sx={{ borderRadius: 0 }}>
         <DataTable
           columns={columns}
-          data={paginatedSchedules}
-          loading={false}
+          data={schedules}
+          loading={loading}
           emptyMessage="No schedules found."
-          serverSide={false}
-          totalCount={filteredSchedules.length}
+          serverSide
+          totalCount={totalCount}
           page={page}
           rowsPerPage={rowsPerPage}
           onPageChange={setPage}
-          onRowsPerPageChange={setRowsPerPage}
+          onRowsPerPageChange={(value) => {
+            setRowsPerPage(value);
+            setPage(0);
+          }}
         />
       </Card>
 
@@ -197,19 +191,7 @@ export default function StageSchedules() {
           <Edit size={16} className="mr-3 text-primary" />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
-          <Trash2 size={16} className="mr-3" />
-          Delete
-        </MenuItem>
       </Menu>
-
-      <ConfirmDeleteDialog
-        open={!!deleteItem}
-        title="Delete Schedule"
-        message={`Are you sure you want to delete the schedule for "${deleteItem?.stageName}"?`}
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteItem(null)}
-      />
     </Box>
   );
 }
