@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Grid } from '@mui/material';
 import { Car, Clock, Wrench, CheckCircle2, LogOut, Maximize } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,28 +8,56 @@ import { ROUTES } from '../../config/routes';
 import useAuthStore from '../../store/useAuthStore';
 import { getFirstReadablePath } from '../../utils/authAccess';
 
-// Mock data simulating live updates
-const MOCK_LIVE_DATA = {
-  mechanical: [
-    { id: 'JC-1042', vehicle: 'TN 01 AB 1234', model: 'Hyundai i20', status: 'IN_PROGRESS', waitTime: '45 mins' },
-    { id: 'JC-1045', vehicle: 'KA 05 XY 9876', model: 'Maruti Swift', status: 'IN_PROGRESS', waitTime: '1 hr 10 min' },
-    { id: 'JC-1047', vehicle: 'AP 16 ZZ 7700', model: 'Tata Nexon', status: 'IN_PROGRESS', waitTime: '20 mins' },
-  ],
-  bodyShop: [
-    { id: 'JC-1038', vehicle: 'MH 12 PQ 4567', model: 'Honda City', status: 'IN_PROGRESS', waitTime: '2 hrs' },
-    { id: 'JC-1041', vehicle: 'TN 09 LM 8899', model: 'Mahindra XUV', status: 'IN_PROGRESS', waitTime: '3.5 hrs' },
-  ],
-  waterWash: [
-    { id: 'JC-1050', vehicle: 'DL 04 RS 3344', model: 'Toyota Fortuner', status: 'IN_PROGRESS', waitTime: '15 mins' },
-    { id: 'JC-1052', vehicle: 'TN 11 GG 2211', model: 'Honda Jazz', status: 'IN_PROGRESS', waitTime: '5 mins' },
-  ],
-  ready: [
-    { id: 'JC-1033', vehicle: 'TN 02 CD 5566', model: 'Hyundai Creta', status: 'READY', time: '10:15 AM' },
-    { id: 'JC-1035', vehicle: 'KL 10 EE 4433', model: 'Maruti Baleno', status: 'READY', time: '11:30 AM' },
-  ],
+import { useTvKioskDashboard } from '../../queries/useDashboardQueries';
+import { useSocket } from '../../hooks/useSocket';
+
+const formatWaitTime = (minutes) => {
+  if (!minutes && minutes !== 0) return 'Just now';
+  if (minutes < 60) return `${minutes} mins`;
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hrs} hr ${mins} min` : `${hrs} hrs`;
 };
 
+const formatReadyTime = (dateString) => {
+  if (!dateString) return 'Just now';
+  const date = new Date(dateString);
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+};
+
+function useAutoScroll(items, maxVisible = 4, intervalMs = 3000) {
+  const [displayItems, setDisplayItems] = useState(items);
+  
+  // Only reset display items if the actual data from the backend changes
+  const itemsKey = items.map(i => i.id).join(',');
+
+  useEffect(() => {
+    setDisplayItems(items);
+  }, [itemsKey]);
+
+  useEffect(() => {
+    if (items.length <= maxVisible) return;
+    
+    const interval = setInterval(() => {
+      setDisplayItems(prev => {
+        if (prev.length <= 1) return prev;
+        const next = [...prev];
+        const first = next.shift();
+        next.push(first);
+        return next;
+      });
+    }, intervalMs);
+    
+    return () => clearInterval(interval);
+  }, [items.length, maxVisible, intervalMs]);
+
+  return displayItems;
+}
+
 function DisplaySection({ title, icon: Icon, items, statusClass }) {
+  const [parent] = useAutoAnimate({ duration: 800, easing: 'ease-in-out' });
+  const animatedItems = useAutoScroll(items, 4, 3500);
+
   return (
     <div className={`${styles.section} ${statusClass}`}>
       <div className={styles.sectionHeader}>
@@ -37,12 +66,15 @@ function DisplaySection({ title, icon: Icon, items, statusClass }) {
         </div>
         <span className={styles.countBadge}>{items.length}</span>
       </div>
-      <div className={styles.list}>
-        {items.map((item, i) => (
-          <div key={i} className={styles.listItem}>
+      <div className={styles.list} ref={parent}>
+        {animatedItems.map((item) => (
+          <div key={item.id} className={styles.listItem}>
             <div className={styles.itemMain}>
               <span className={styles.vehicleNo}>{item.vehicle}</span>
               <span className={styles.modelName}>{item.model}</span>
+            </div>
+            <div style={{ padding: '0.5rem 0 0.25rem', fontSize: '1.3rem', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {item.customerName}
             </div>
             <div className={styles.itemMeta}>
               <span className={styles.jobId}>{item.id}</span>
@@ -60,11 +92,40 @@ export default function KioskDisplay() {
   const navigate = useNavigate();
   const { menus, isAuthenticated } = useAuthStore();
   const [time, setTime] = useState(new Date());
+  const [readyParent] = useAutoAnimate({ duration: 800, easing: 'ease-in-out' });
+
+  const { data: rawJobs, refetch } = useTvKioskDashboard();
+  const jobs = Array.isArray(rawJobs?.data || rawJobs) ? (rawJobs?.data || rawJobs || []) : [];
+
+  useSocket({
+    jobCardStatusChanged: (data) => {
+      console.log('Live update received:', data);
+      refetch();
+    }
+  });
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
+    const timer = setInterval(() => {
+      setTime(new Date());
+      refetch(); // Polling backup every minute to update wait times
+    }, 60000);
     return () => clearInterval(timer);
-  }, []);
+  }, [refetch]);
+
+  const mechanical = jobs.filter(j => j.column === 'MECHANICAL').map(j => ({
+    id: j.id, vehicle: j.vehicleNumber, model: j.vehicleInfo, waitTime: formatWaitTime(j.waitMinutes), customerName: j.customerName
+  }));
+  const bodyShop = jobs.filter(j => j.column === 'BODY_SHOP').map(j => ({
+    id: j.id, vehicle: j.vehicleNumber, model: j.vehicleInfo, waitTime: formatWaitTime(j.waitMinutes), customerName: j.customerName
+  }));
+  const waterWash = jobs.filter(j => j.column === 'WATER_WASH').map(j => ({
+    id: j.id, vehicle: j.vehicleNumber, model: j.vehicleInfo, waitTime: formatWaitTime(j.waitMinutes), customerName: j.customerName
+  }));
+  const ready = jobs.filter(j => j.column === 'READY_FOR_DELIVERY').map(j => ({
+    id: j.id, vehicle: j.vehicleNumber, model: j.vehicleInfo, time: formatReadyTime(j.updatedAt), customerName: j.customerName
+  }));
+
+  const animatedReady = useAutoScroll(ready, 4, 3500);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -78,7 +139,7 @@ export default function KioskDisplay() {
 
   const exitKiosk = () => {
     if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => { });
     }
     navigate(isAuthenticated ? getFirstReadablePath(menus, ROUTES.PROFILE) : ROUTES.LOGIN);
   };
@@ -114,25 +175,29 @@ export default function KioskDisplay() {
       <div className={styles.grid}>
         <Grid container spacing={3} sx={{ height: '100%' }}>
           <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
-            <DisplaySection title="Mechanical" icon={Wrench} items={MOCK_LIVE_DATA.mechanical} statusClass={styles.mechSection} />
+            <DisplaySection title="Mechanical" icon={Wrench} items={mechanical} statusClass={styles.mechSection} />
           </Grid>
           <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
-            <DisplaySection title="Body Shop" icon={Wrench} items={MOCK_LIVE_DATA.bodyShop} statusClass={styles.bodySection} />
+            <DisplaySection title="Body Shop" icon={Wrench} items={bodyShop} statusClass={styles.bodySection} />
           </Grid>
           <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
-            <DisplaySection title="Water Wash" icon={Wrench} items={MOCK_LIVE_DATA.waterWash} statusClass={styles.washSection} />
+            <DisplaySection title="Water Wash" icon={Wrench} items={waterWash} statusClass={styles.washSection} />
           </Grid>
           <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
             <div className={`${styles.section} ${styles.readySection}`}>
               <div className={styles.sectionHeader}>
                 <div className={styles.sectionTitle}><CheckCircle2 size={24} /> Ready for Delivery</div>
+                <span className={styles.countBadge}>{ready.length}</span>
               </div>
-              <div className={styles.list}>
-                {MOCK_LIVE_DATA.ready.map((item, i) => (
-                  <div key={i} className={[styles.listItem, styles.readyItem].join(' ')}>
+              <div className={styles.list} ref={readyParent}>
+                {animatedReady.map((item) => (
+                  <div key={item.id} className={[styles.listItem, styles.readyItem].join(' ')}>
                     <div className={styles.itemMain}>
                       <span className={styles.vehicleNo}>{item.vehicle}</span>
                       <span className={styles.modelName}>{item.model}</span>
+                    </div>
+                    <div style={{ padding: '0.5rem 0 0.25rem', fontSize: '1.3rem', fontWeight: 900, color: '#064e3b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {item.customerName}
                     </div>
                     <div className={styles.itemMeta}>
                       <span className={styles.jobId}>{item.id}</span>
@@ -140,6 +205,7 @@ export default function KioskDisplay() {
                     </div>
                   </div>
                 ))}
+                {ready.length === 0 && <div className={styles.empty}>No vehicles ready</div>}
               </div>
             </div>
           </Grid>

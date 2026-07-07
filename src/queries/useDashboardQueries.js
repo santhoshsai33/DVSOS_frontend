@@ -4,7 +4,8 @@ import {
   getManagerDashboardApi,
   getMDDashboardApi,
   getSupervisorDashboardApi,
-  getQueueSummaryApi
+  getQueueSummaryApi,
+  getTvKioskDashboardApi
 } from '../api/dashboardApi';
 
 // Mock data for offline development
@@ -127,5 +128,20 @@ export const useQueueSummary = () => {
     },
     staleTime: 15000,
     refetchInterval: 30000,
+  });
+};
+
+export const useTvKioskDashboard = () => {
+  return useQuery({
+    queryKey: ['dashboard', 'tv-kiosk'],
+    queryFn: async () => {
+      try {
+        const response = await getTvKioskDashboardApi();
+        return response.data || response;
+      } catch {
+        return [];
+      }
+    },
+    staleTime: 0, // We want fresh data when socket tells us to fetch
   });
 };
