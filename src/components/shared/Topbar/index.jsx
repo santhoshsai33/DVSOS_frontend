@@ -9,10 +9,12 @@ import { getInitials, avatarColor } from '../../../utils/helpers';
 import { getMeApi } from '../../../api/authApi';
 import {
   getNotificationsApi,
+  getUnreadNotificationCountApi,
   markNotificationReadApi,
   markAllNotificationsReadApi
 } from '../../../api/notificationApi';
 import {
+  removeRegisteredDeviceToken,
   requestNotificationPermissionAndRegister,
   setupForegroundMessageListener
 } from '../../../config/firebase';
@@ -40,6 +42,18 @@ export default function Topbar() {
   const [notifAnchorEl, setNotifAnchorEl] = useState(null);
   const [userAnchorEl, setUserAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await getUnreadNotificationCountApi();
+      if (response?.success) {
+        setUnreadCount(response.data?.count || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread notification count:', error);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -58,6 +72,7 @@ export default function Topbar() {
         });
         setNotifications(mapped);
       }
+      await fetchUnreadCount();
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
     }
@@ -132,9 +147,8 @@ export default function Topbar() {
     };
   }, []);
 
-  const unread = notifications.filter((n) => !n.read).length;
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await removeRegisteredDeviceToken();
     logout();
     navigate(ROUTES.LOGIN);
   };
@@ -147,6 +161,7 @@ export default function Topbar() {
         setNotifications((prev) =>
           prev.map((item) => (item.id === n.id ? { ...item, read: true } : item))
         );
+        setUnreadCount((count) => Math.max(0, count - 1));
       } catch (error) {
         console.error('Failed to mark notification as read:', error);
       }
@@ -164,6 +179,7 @@ export default function Topbar() {
     try {
       await markAllNotificationsReadApi();
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
     }
@@ -209,7 +225,7 @@ export default function Topbar() {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton color="inherit" onClick={(e) => setNotifAnchorEl(e.currentTarget)}>
-            <Badge badgeContent={unread} color="error">
+            <Badge badgeContent={unreadCount} color="error">
               <Bell size={20} />
             </Badge>
           </IconButton>
@@ -247,7 +263,7 @@ export default function Topbar() {
                     }}
                   >
                     {!n.read && <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mt: 0.8 }} />}
-                    {getNotificationIcon(n.notificationType)}
+                    {getNotificationIcon(n.type)}
                     <Box sx={{ flexGrow: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: n.read ? 400 : 500, color: 'text.primary', mb: 0.5, whiteSpace: 'normal' }}>
                         {n.text}

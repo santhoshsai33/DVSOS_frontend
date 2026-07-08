@@ -226,11 +226,13 @@ export const ENDPOINTS = {
   // Notifications
   NOTIFICATIONS: {
     LIST: '/notifications',
+    UNREAD_COUNT: '/notifications/unread-count',
     MARK_READ: (id) => `/notifications/${id}/read`,
     MARK_ALL_READ: '/notifications/read-all',
   },
   DEVICE_TOKEN: {
     REGISTER: '/device-token',
+    REMOVE: '/device-token',
   },
 
   STAGE_TIME_LIMITS: {
