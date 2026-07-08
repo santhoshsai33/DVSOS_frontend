@@ -64,6 +64,7 @@ export const ENDPOINTS = {
     WATER_WASH: '/queues/water-wash/list',
     UPDATE_STATUS: (id) => `/queues/status/${id}`,
     ASSIGN: (id) => `/queues/assign/${id}`,
+    REASSIGN: (id) => `/queues/reassign/${id}`,
   },
 
   // Dashboard
@@ -209,6 +210,7 @@ export const ENDPOINTS = {
     PRICING_DELETE: (id) => `/masters/pricing/delete/${id}`,
     BAYS: {
       LIST: '/bays/list',
+      CRM_DROPDOWN: '/crm/bays/dropdown',
       CREATE: '/bays/create',
       UPDATE: (id) => `/bays/update/${id}`,
       STATUS: (id) => `/bays/status/${id}`,

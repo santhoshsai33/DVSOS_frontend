@@ -1,9 +1,10 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Grid, Typography, Divider, Card, CardContent, Checkbox, FormControlLabel, IconButton, Chip, TextField, MenuItem } from '@mui/material';
-import { Save, Search, MessageCircle, ArrowLeft, X, Plus } from 'lucide-react';
+import { Save, Search, MessageCircle, ArrowLeft, X, Plus, UserPlus } from 'lucide-react';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
+import Modal from '../../components/common/Modal';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFSelect from '../../components/form/RHFSelect';
 import RHFTextarea from '../../components/form/RHFTextarea';
@@ -15,7 +16,11 @@ import useMasterDataStore from '../../store/useMasterDataStore';
 import { useJobCard } from '../../queries/useDataQueries';
 import useAuthStore from '../../store/useAuthStore';
 import { getJobCardServiceStatusesApi, updateJobCardApi } from '../../api/jobCardApi';
+import { assignQueueWorkApi, reassignQueueWorkApi } from '../../api/queueApi';
+import { getMechanicsDropdownApi } from '../../api/userApi';
+import { adminBayApi } from '../../api/adminBayApi';
 import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAccess';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Loader from '../../components/common/Loader';
 
@@ -26,7 +31,14 @@ const PRIORITY_OPTIONS = [
   { value: 'URGENT', label: 'Urgent' },
 ];
 
+const BAY_TYPE_BY_CATEGORY = {
+  mechanical: 'Mechanical',
+  'body-shop': 'Body Shop',
+  'water-wash': 'Water Wash'
+};
+
 export default function JobCardCreate() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { id, slug } = useParams();
   const jobCardIdentifier = slug || id;
@@ -38,8 +50,12 @@ export default function JobCardCreate() {
   const [customService, setCustomService] = useState({ name: '', price: '' });
   const [serviceStatusOptions, setServiceStatusOptions] = useState([]);
   const [serviceStatusValues, setServiceStatusValues] = useState({});
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [selectedAssignUser, setSelectedAssignUser] = useState('');
+  const [selectedAssignBay, setSelectedAssignBay] = useState('');
 
-  const { menus } = useAuthStore();
+  const { menus, user } = useAuthStore();
+  const locationId = user?.locationId || user?.location_id || user?.branchId || '';
   const moduleDepartment = getDepartmentFromModules(menus);
   const roleCategoryMap = {
     mechanical: 'Mechanical',
@@ -273,6 +289,109 @@ export default function JobCardCreate() {
       && !isServiceCompleted(service);
   };
 
+  const getAssignmentDepartment = (assignment) => {
+    const category = assignment?.jobCardService?.serviceItem?.category || assignment?.service?.category;
+    const normalized = normalizeDepartment(category?.slug || category?.name);
+    if (['mechanical', 'mechanic', 'mechnanic', 'floor'].includes(normalized)) return 'mechanical';
+    if (['body-shop', 'bodyshop', 'paint', 'denting'].includes(normalized)) return 'body-shop';
+    if (['water-wash', 'wash'].includes(normalized)) return 'water-wash';
+    return '';
+  };
+
+  const activeAssignmentDetails = useMemo(() => {
+    return assignmentDetails.filter((assignment) => !assignment.completedAt);
+  }, [assignmentDetails]);
+
+  const assignmentCategory = useMemo(() => {
+    const activeAssignmentCategory = activeAssignmentDetails.map(getAssignmentDepartment).find(Boolean);
+    if (activeAssignmentCategory) return activeAssignmentCategory;
+
+    const selectedServiceCategory = selectedServices.map(getServiceDepartment).find(Boolean);
+    if (selectedServiceCategory) return selectedServiceCategory;
+
+    if (moduleDepartment) return moduleDepartment;
+    return 'mechanical';
+  }, [activeAssignmentDetails, selectedServices, moduleDepartment]);
+
+  const canReassignExistingWork = activeAssignmentDetails.some((assignment) => getAssignmentDepartment(assignment) === assignmentCategory);
+  const assignButtonLabel = canReassignExistingWork ? 'Reassign Mechanic & Bay' : 'Assign Mechanic & Bay';
+
+  const { data: mechanicsResponse, isLoading: isMechanicsLoading } = useQuery({
+    queryKey: ['job-card-edit-mechanics', locationId, assignmentCategory],
+    queryFn: () => getMechanicsDropdownApi({ locationId, category: assignmentCategory }),
+    enabled: isEditMode && assignModalOpen,
+    staleTime: 60000
+  });
+
+  const { data: baysResponse, isLoading: isBaysLoading } = useQuery({
+    queryKey: ['job-card-edit-bays', locationId, assignmentCategory],
+    queryFn: () => adminBayApi.getBayDropdown({
+      locationId,
+      bayType: BAY_TYPE_BY_CATEGORY[assignmentCategory]
+    }),
+    enabled: isEditMode && assignModalOpen,
+    staleTime: 30000
+  });
+
+  const mechanics = mechanicsResponse?.data?.users || mechanicsResponse?.users || [];
+  const bays = baysResponse?.data?.bays || baysResponse?.data?.data?.bays || baysResponse?.bays || [];
+  const selectedBayItem = bays.find((bay) => String(bay.id) === String(selectedAssignBay));
+
+  const assignMutation = useMutation({
+    mutationFn: ({ payload, isReassign }) => {
+      return isReassign
+        ? reassignQueueWorkApi(jobCard?.id, payload)
+        : assignQueueWorkApi(jobCard?.id, payload);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['job-cards', jobCardIdentifier] });
+      await queryClient.invalidateQueries({ queryKey: ['job-card-edit-bays'] });
+      setAssignModalOpen(false);
+      setSelectedAssignUser('');
+      setSelectedAssignBay('');
+      toastSuccess(canReassignExistingWork ? 'Mechanic and bay reassigned successfully.' : 'Mechanic and bay assigned successfully.');
+    },
+    onError: (error) => {
+      toastError(error?.message || 'Failed to update mechanic and bay assignment.');
+    }
+  });
+
+  const openAssignModal = () => {
+    const firstActiveAssignment = activeAssignmentDetails.find((assignment) => getAssignmentDepartment(assignment) === assignmentCategory);
+    setSelectedAssignUser(firstActiveAssignment?.assignedUser?.id || firstActiveAssignment?.assignedUserId || '');
+    setSelectedAssignBay(firstActiveAssignment?.bay?.id || firstActiveAssignment?.bayId || '');
+    setAssignModalOpen(true);
+  };
+
+  const handleAssignMechanicBay = () => {
+    if (!selectedAssignUser) {
+      toastInfo('Please select a mechanic');
+      return;
+    }
+
+    if (!selectedAssignBay) {
+      toastInfo('Please select a bay');
+      return;
+    }
+
+    const bayBusyByOtherJob = selectedBayItem?.availability === 'BUSY'
+      && !activeAssignmentDetails.some((assignment) => String(assignment.bayId || assignment.bay?.id) === String(selectedAssignBay));
+
+    if (bayBusyByOtherJob) {
+      toastError('Selected bay is already busy');
+      return;
+    }
+
+    assignMutation.mutate({
+      isReassign: canReassignExistingWork,
+      payload: {
+        assignedUserId: Number(selectedAssignUser),
+        bayId: Number(selectedAssignBay),
+        category: assignmentCategory
+      }
+    });
+  };
+
   if (isEditMode && isJobCardLoading) {
     return <Loader fullPage text="Loading job card details..." />;
   }
@@ -335,8 +454,21 @@ export default function JobCardCreate() {
     }
   };
 
-  const taxAmount = subtotal * (companySettings.defaultTaxRate / 100);
-  const grandTotal = subtotal + taxAmount;
+  const billSubtotal = isEditMode
+    ? Number(jobCard?.serviceSubtotal ?? jobCard?.billing?.serviceSubtotal ?? subtotal)
+    : subtotal;
+  const billTaxRate = isEditMode
+    ? Number(jobCard?.taxRate ?? jobCard?.billing?.taxRate ?? companySettings.defaultTaxRate ?? 0)
+    : Number(companySettings.defaultTaxRate ?? 0);
+  const billTaxAmount = isEditMode
+    ? Number(jobCard?.taxAmount ?? jobCard?.billing?.taxAmount ?? ((billSubtotal * billTaxRate) / 100))
+    : (billSubtotal * (billTaxRate / 100));
+  const billDiscountAmount = isEditMode
+    ? Number(jobCard?.discountAmount ?? jobCard?.billing?.discountAmount ?? 0)
+    : 0;
+  const grandTotal = isEditMode
+    ? Number(jobCard?.finalAmount ?? jobCard?.billing?.finalAmount ?? jobCard?.totalEstimate ?? (billSubtotal + billTaxAmount - billDiscountAmount))
+    : billSubtotal + billTaxAmount - billDiscountAmount;
 
   const handleWhatsAppApproval = async () => {
     if (selectedServices.length === 0) {
@@ -432,7 +564,7 @@ export default function JobCardCreate() {
                     </Box>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <RHFTextField name="makeModel" label="Make & Model" placeholder="e.g. Hyundai Creta" required readOnly={isEditMode} />
+                    <RHFTextField name="makeModel" label="Brand & Model" placeholder="e.g. Hyundai Creta" required readOnly={isEditMode} />
                   </Grid>
                 </Grid>
 
@@ -444,6 +576,28 @@ export default function JobCardCreate() {
                     <RHFTextField name="ownerMobile" label="Mobile Number" placeholder="10-digit mobile" required readOnly={isEditMode} />
                   </Grid>
                 </Grid>
+
+                <Grid container spacing={3} sx={{ mt: 0 }}>
+                  <Grid item xs={12} md={6}>
+                    <RHFTextField name="deliveryDate" label="Expected Delivery" type="datetime-local" required readOnly={isEditMode} />
+                  </Grid>
+                  {isEditMode && (
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75, fontWeight: 600 }}>
+                        Mechanic & Bay
+                      </Typography>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        leftIcon={UserPlus}
+                        onClick={openAssignModal}
+                        fullWidth
+                      >
+                        {assignButtonLabel}
+                      </Button>
+                    </Grid>
+                  )}
+                </Grid>
               </Card>
 
               <Card sx={{ borderRadius: 3, boxShadow: 0, p: 3, mb: 4 }}>
@@ -451,14 +605,13 @@ export default function JobCardCreate() {
                   Service Configuration & Master List
                 </Typography>
 
-                <Grid container spacing={3} sx={{ mb: 4 }}>
-                  <Grid item xs={12} md={6}>
-                    <RHFSelect name="serviceType" label="Primary Category" options={CATEGORY_OPTS} placeholder="Select category" required disabled={isEditMode} />
+                {!isEditMode && (
+                  <Grid container spacing={3} sx={{ mb: 4 }}>
+                    <Grid item xs={12} md={6}>
+                      <RHFSelect name="serviceType" label="Primary Category" options={CATEGORY_OPTS} placeholder="Select category" required />
+                    </Grid>
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    <RHFTextField name="deliveryDate" label="Expected Delivery" type="datetime-local" required readOnly={isEditMode} />
-                  </Grid>
-                </Grid>
+                )}
 
                 <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 2, color: 'text.secondary', textTransform: 'uppercase' }}>
                   {isEditMode ? 'Job Card Services' : 'Available Services'}
@@ -704,12 +857,18 @@ export default function JobCardCreate() {
                   <Box sx={{ bgcolor: 'background.default', borderRadius: 2, p: 2, display: 'flex', flexDirection: 'column', gap: 1, border: '1px solid', borderColor: 'divider' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">Subtotal</Typography>
-                      <Typography variant="body2" fontWeight={500}>{formatCurrency(subtotal)}</Typography>
+                      <Typography variant="body2" fontWeight={500}>{formatCurrency(billSubtotal)}</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">Tax ({companySettings.defaultTaxRate}%)</Typography>
-                      <Typography variant="body2" fontWeight={500}>{formatCurrency(taxAmount)}</Typography>
+                      <Typography variant="body2" color="text.secondary">Tax ({billTaxRate}%)</Typography>
+                      <Typography variant="body2" fontWeight={500}>{formatCurrency(billTaxAmount)}</Typography>
                     </Box>
+                    {billDiscountAmount > 0 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" color="text.secondary">Discount</Typography>
+                        <Typography variant="body2" fontWeight={500}>-{formatCurrency(billDiscountAmount)}</Typography>
+                      </Box>
+                    )}
                     <Divider sx={{ my: 1, borderStyle: 'dashed' }} />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="subtitle1" fontWeight={700} color="primary.main">Grand Total</Typography>
@@ -742,6 +901,69 @@ export default function JobCardCreate() {
               </Card>
             </Grid>
           </Grid>
+
+          <Modal
+            show={assignModalOpen}
+            onHide={() => {
+              setAssignModalOpen(false);
+              setSelectedAssignUser('');
+              setSelectedAssignBay('');
+            }}
+            title={assignButtonLabel}
+            confirmLabel={canReassignExistingWork ? 'Reassign' : 'Assign'}
+            onConfirm={handleAssignMechanicBay}
+            isConfirming={assignMutation.isPending}
+          >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <TextField
+                select
+                fullWidth
+                label="Mechanic"
+                value={selectedAssignUser}
+                onChange={(event) => setSelectedAssignUser(event.target.value)}
+                disabled={isMechanicsLoading || assignMutation.isPending}
+              >
+                <MenuItem value="" disabled>
+                  {isMechanicsLoading ? 'Loading mechanics...' : 'Select mechanic'}
+                </MenuItem>
+                {mechanics.map((mechanic) => (
+                  <MenuItem key={mechanic.id} value={mechanic.id}>
+                    {mechanic.fullName}
+                    {mechanic.employeeCode ? ` - ${mechanic.employeeCode}` : ''}
+                    {mechanic.availabilityLabel ? ` (${mechanic.availabilityLabel})` : ''}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                select
+                fullWidth
+                label="Bay"
+                value={selectedAssignBay}
+                onChange={(event) => setSelectedAssignBay(event.target.value)}
+                disabled={isBaysLoading || assignMutation.isPending}
+              >
+                <MenuItem value="" disabled>
+                  {isBaysLoading ? 'Loading bays...' : 'Select bay'}
+                </MenuItem>
+                {bays.map((bay) => {
+                  const isCurrentJobBay = activeAssignmentDetails.some((assignment) => String(assignment.bayId || assignment.bay?.id) === String(bay.id));
+                  const isBusy = bay.availability === 'BUSY' && !isCurrentJobBay;
+                  return (
+                    <MenuItem key={bay.id} value={bay.id} disabled={isBusy}>
+                      {bay.bayName || bay.bayCode}
+                      {bay.bayCode && bay.bayName ? ` - ${bay.bayCode}` : ''}
+                      {isCurrentJobBay ? ' (Current)' : bay.availabilityLabel ? ` (${bay.availabilityLabel})` : ''}
+                    </MenuItem>
+                  );
+                })}
+              </TextField>
+
+              <Typography variant="caption" color="text.secondary">
+                Category: {BAY_TYPE_BY_CATEGORY[assignmentCategory] || 'Mechanical'}
+              </Typography>
+            </Box>
+          </Modal>
         </form>
       </FormProvider>
     </Box>
