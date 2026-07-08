@@ -6,6 +6,10 @@ export const adminBayApi = {
     return await axiosInstance.get(ENDPOINTS.MASTERS.BAYS.LIST, { params });
   },
 
+  getBayDropdown: async (params) => {
+    return await axiosInstance.get(ENDPOINTS.MASTERS.BAYS.CRM_DROPDOWN, { params });
+  },
+
   createBay: async (data) => {
     return await axiosInstance.post(ENDPOINTS.MASTERS.BAYS.CREATE, data);
   },

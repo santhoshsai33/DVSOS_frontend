@@ -9,10 +9,10 @@ export default function BodyShopCreateRequest() {
       listRoute={ROUTES.BODY_SHOP_ADDITIONAL_WORK}
       backRoute={ROUTES.JOB_CARDS}
       emptyMessage="Open a body shop job card from the Job Cards action menu to create additional body work against that vehicle."
-      subtitle="Review vehicle details, current job card work, then send one approval batch for body shop additional work."
-      successMessage="Body shop additional work approval request prepared for WhatsApp."
+      subtitle="Review vehicle details, current job card work, then approve one batch for body shop additional work."
+      successMessage="Body shop additional work approved successfully."
       serviceSectionTitle="Body Shop Service Configuration and Master List"
-      sendButtonLabel="Send Body Shop Approval"
+      sendButtonLabel="Approve Body Shop Work"
       vehicleSectionTitle="Body Shop Vehicle and Customer Details"
       currentItemsTitle="Current Body Shop Job Items"
       assigneeLabel="Body Shop Technician"

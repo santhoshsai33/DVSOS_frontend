@@ -16,16 +16,9 @@ export default function JobCardDetailPage() {
   const navigate = useNavigate();
   const { data: jobCard, isLoading } = useJobCard(jobCardIdentifier);
 
-  const normalizeText = (value) => String(value || '').trim().toLowerCase().replace(/[_\s]+/g, '-');
-  const isMechanicalAssignment = (assignment) => {
-    const category = assignment?.jobCardService?.serviceItem?.category || assignment?.service?.category;
-    const normalizedCategory = normalizeText(category?.slug || category?.name);
-    return ['mechanical', 'mechanic', 'mechnanic', 'floor'].includes(normalizedCategory);
-  };
-
   const assignmentDetails = useMemo(() => {
-    const assignments = jobCard?.workAssignments || [];
-    return assignments.filter(isMechanicalAssignment);
+    const assignments = Array.isArray(jobCard?.workAssignments) ? jobCard.workAssignments : [];
+    return assignments.filter((assignment) => assignment?.assignedUser || assignment?.jobCardService || assignment?.service);
   }, [jobCard]);
 
   const getAssignmentStatusCode = (assignment) => {
@@ -72,6 +65,15 @@ export default function JobCardDetailPage() {
     );
   }
 
+  const vehicleBrandModel = [
+    jobCard.vehicle?.brand?.name,
+    jobCard.vehicle?.model,
+    jobCard.vehicle?.variant
+  ].filter(Boolean).join(' ');
+  const complaintText = String(jobCard.customerComplaint || '').trim();
+  const additionalNotesText = String(jobCard.additionalNotes || '').trim();
+  const legacyNotesText = !complaintText && !additionalNotesText ? String(jobCard.notes || '').trim() : '';
+
   // Map API fields to UI fields
   const displayJobCard = {
     ...jobCard,
@@ -81,8 +83,11 @@ export default function JobCardDetailPage() {
     ownerMobile: jobCard.customer?.mobileNo || jobCard.ownerMobile || jobCard.mobile || '—',
     vehicleNumber: jobCard.vehicle?.registrationNo || jobCard.vehicleNumber || '—',
     serviceType: jobCard.gateEntry?.entryType || jobCard.serviceType || '—',
+    vehicleBrandModel: vehicleBrandModel || jobCard.makeModel || jobCard.vehicleModel || '-',
     estimatedCost: jobCard.totalEstimate || jobCard.estimatedCost || 0,
-    notes: jobCard.customerComplaint || jobCard.additionalNotes || jobCard.notes,
+    complaint: complaintText,
+    additionalNotes: additionalNotesText,
+    notes: legacyNotesText,
     status: jobCard.currentStatus?.statusCode || jobCard.status || 'PENDING',
     services: Array.isArray(jobCard.services) && typeof jobCard.services[0] === 'string'
       ? jobCard.services.map(s => ({ name: s, price: 0, quantity: 1, status: 'PENDING', isAdditional: false }))
@@ -99,6 +104,11 @@ export default function JobCardDetailPage() {
   const allServices = displayJobCard.services || [];
   const defaultServices = allServices.filter(s => !s.isAdditional);
   const additionalServices = allServices.filter(s => s.isAdditional);
+  const noteItems = [
+    displayJobCard.complaint ? { label: 'Customer Complaint', value: displayJobCard.complaint } : null,
+    displayJobCard.additionalNotes ? { label: 'Additional Notes', value: displayJobCard.additionalNotes } : null,
+    displayJobCard.notes ? { label: 'Notes', value: displayJobCard.notes } : null
+  ].filter(Boolean);
 
   const taxRate = jobCard.billing?.taxRate ?? jobCard.taxRate ?? 18;
   const subtotal = displayJobCard.estimatedCost / (1 + taxRate / 100);
@@ -160,9 +170,9 @@ export default function JobCardDetailPage() {
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6} sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2, mt: 2 }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Service Category</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Brand & Model</Typography>
                     <Typography variant="body2" fontWeight={600}>
-                      {displayJobCard.serviceType?.replace('_', ' ') || '—'}
+                      {displayJobCard.vehicleBrandModel}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -208,6 +218,7 @@ export default function JobCardDetailPage() {
             </Card>
 
             {/* Additional Work & Services */}
+            {additionalServices.length > 0 && (
             <Card sx={{ borderRadius: 0 }}>
               <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
                 <PlusCircle size={18} color="#0d9488" />
@@ -246,19 +257,29 @@ export default function JobCardDetailPage() {
                 </Box>
               </Box>
             </Card>
+            )}
 
             {/* Complaints / Notes */}
+            {noteItems.length > 0 && (
             <Card sx={{ borderRadius: 0 }}>
               <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Shield size={18} color="#0d9488" />
                 <Typography variant="subtitle1" fontWeight={700}>Additional Notes & Complaints</Typography>
               </Box>
-              <Box sx={{ p: 3 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: displayJobCard.notes ? 'normal' : 'italic' }}>
-                  {displayJobCard.notes || 'No notes or special instructions provided by the customer.'}
-                </Typography>
+              <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {noteItems.map((item) => (
+                  <Box key={item.label}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                      {item.label}
+                    </Typography>
+                    <Typography variant="body2" color="text.primary">
+                      {item.value}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
             </Card>
+            )}
 
           </Box>
         </Grid>

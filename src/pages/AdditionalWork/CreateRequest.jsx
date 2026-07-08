@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Box, Card, Checkbox, Chip, Divider, FormControlLabel, Grid, MenuItem, TextField, Typography, } from '@mui/material';
+import { Alert, Box, Card, Checkbox, Chip, Divider, FormControlLabel, Grid, TextField, Typography, } from '@mui/material';
 import { ArrowLeft, Car, ClipboardList, MessageCircle, Send, Wrench, } from 'lucide-react';
 import Button from '../../components/common/Button';
 import Loader from '../../components/common/Loader';
@@ -13,14 +13,7 @@ import { toastError, toastSuccess } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import { formatCurrency, formatDate, formatPhone, snakeToLabel } from '../../utils/formatters';
 
-const TAX_RATE = 18;
-
-const REQUEST_SOURCES = [
-  { value: 'MECHANIC_IDENTIFIED', label: 'Mechanic identified' },
-  { value: 'SUPERVISOR_INSPECTION', label: 'Supervisor inspection' },
-  { value: 'ROAD_TEST', label: 'Road test' },
-  { value: 'CUSTOMER_APPROVED_CALLBACK', label: 'Customer callback' },
-];
+const TAX_RATE = 0;
 
 function normalizePayload(payload) {
   return payload?.data?.data || payload?.data || payload || null;
@@ -100,14 +93,12 @@ export function AdditionalWorkRequestScreen({
   backRoute = ROUTES.JOB_CARDS,
   emptyMessage = 'Open a job card from the Job Cards action menu to create additional work against that vehicle.',
   subtitle = 'Review the vehicle, current job card, then send one approval batch for the extra work.',
-  successMessage = 'Additional work approval request prepared for WhatsApp.',
-  serviceSectionTitle = 'Service Configuration and Master List',
-  sendButtonLabel = 'Send WhatsApp Approval',
+  successMessage = 'Additional work approved successfully.',
+  sendButtonLabel = 'Approve Additional Work',
   vehicleSectionTitle = 'Vehicle and Customer Details',
   currentItemsTitle = 'Current Job Card Items',
   assigneeLabel = 'Mechanic',
   additionalBillLabel = 'Additional Work',
-  requestSources = REQUEST_SOURCES,
 }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -128,11 +119,8 @@ export function AdditionalWorkRequestScreen({
     services: []
   };
 
-  const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
   const [parentJobCardServiceId, setParentJobCardServiceId] = useState('');
-  const [priority, setPriority] = useState('NORMAL');
   const [expectedDelivery, setExpectedDelivery] = useState('');
-  const [requestSource, setRequestSource] = useState(requestSources[0]?.value || 'MECHANIC_IDENTIFIED');
   const [mechanicExplanation, setMechanicExplanation] = useState('');
   const [selectedAdditionalServices, setSelectedAdditionalServices] = useState([]);
   const [isSending, setIsSending] = useState(false);
@@ -141,21 +129,15 @@ export function AdditionalWorkRequestScreen({
   const eligibleParentServices = useMemo(() => serviceRows({ services: context?.eligibleParentServices || [] }), [context?.eligibleParentServices]);
   const availableServices = useMemo(() => {
     const services = Array.isArray(context?.availableServices) ? context.availableServices : [];
-    if (!selectedCategory || selectedCategory === 'ALL') return services;
-    return services.filter((service) => service.category?.toLowerCase() === selectedCategory.toLowerCase());
-  }, [context?.availableServices, selectedCategory]);
-  const categoryOptions = useMemo(() => {
-    const labels = new Set([defaultCategory]);
-    (context?.availableServices || []).forEach((service) => {
-      if (service.category) labels.add(service.category);
-    });
-    return Array.from(labels).map((label) => ({ value: label, label }));
+    if (!defaultCategory || defaultCategory === 'ALL') return services;
+    return services.filter((service) => service.category?.toLowerCase() === defaultCategory.toLowerCase());
   }, [context?.availableServices, defaultCategory]);
   const pendingApproval = context?.pendingApproval || null;
+  const jobCardTaxRate = Number(jobCard.taxRate ?? jobCard.billing?.taxRate ?? TAX_RATE);
   const baseSubtotal = currentServices.reduce((sum, service) => sum + Number(service.price || 0) * Number(service.qty || 1), 0);
   const additionalSubtotal = selectedAdditionalServices.reduce((sum, service) => sum + Number(service.price || 0), 0);
   const subtotal = baseSubtotal + additionalSubtotal;
-  const tax = subtotal * (TAX_RATE / 100);
+  const tax = subtotal * (jobCardTaxRate / 100);
   const total = subtotal + tax;
 
   useEffect(() => {
@@ -196,18 +178,16 @@ export function AdditionalWorkRequestScreen({
     try {
       setIsSending(true);
       const response = await createAdditionalWorkRequestApi(jobCardId, {
-        category: selectedCategory,
+        category: defaultCategory,
         parentJobCardServiceId: Number(parentJobCardServiceId),
-        priority,
         expectedDeliveryAt: expectedDelivery || undefined,
-        requestSource,
         mechanicExplanation: mechanicExplanation.trim(),
         serviceItems: selectedAdditionalServices.map((service) => ({
           serviceItemId: service.serviceItemId || service.id,
           quantity: 1,
         })),
       });
-      toastSuccess(response?.message || successMessage || 'Approval sent to customer');
+      toastSuccess(response?.message || successMessage || 'Additional work approved successfully.');
       navigate(listRoute);
     } catch (error) {
       toastError(error?.message || 'Unable to send additional work approval.');
@@ -267,23 +247,23 @@ export function AdditionalWorkRequestScreen({
                   <VehicleNumberPlate vehicleNumber={jobCard.vehicleNumber} />
                 </Grid>
                 <Grid item xs={6} md={3}>
-                  <InfoItem label="Job Card" value={jobCard.id} />
+                  <InfoItem label="Job Card" value={jobCard.jobCardNo} />
                 </Grid>
-                <Grid item xs={6} md={3}>
-                  <InfoItem label="Status" value={snakeToLabel(jobCard.status)} />
-                </Grid>
-                <Grid item xs={6} md={3}>
+                {/* <Grid item xs={6} md={3}>
+                  <InfoItem label="Expected Delivery Date" value={snakeToLabel(jobCard.expectedDeliveryAt)} />
+                </Grid> */}
+                {/* <Grid item xs={6} md={3}>
                   <InfoItem label={assigneeLabel} value={jobCard.technician || 'Unassigned'} />
-                </Grid>
+                </Grid> */}
                 <Grid item xs={6} md={3}>
                   <InfoItem label="Created" value={formatDate(jobCard.createdAt)} />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <InfoItem label="Make / Model" value={jobCard.makeModel || jobCard.vehicleInfo || 'Not captured'} />
+                  <InfoItem label="Brand / Model" value={jobCard.makeModel || jobCard.vehicleInfo || 'Not captured'} />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                {/* <Grid item xs={12} md={6}>
                   <InfoItem label="Service Category" value={snakeToLabel(jobCard.serviceType)} />
-                </Grid>
+                </Grid> */}
               </Grid>
             </SectionCard>
 
@@ -317,56 +297,11 @@ export function AdditionalWorkRequestScreen({
               </Box>
             </SectionCard>
 
-            <SectionCard icon={Wrench} title={serviceSectionTitle}>
+            <SectionCard icon={Wrench} title="Additional Work">
               <Grid container spacing={2.5} sx={{ mb: 4 }}>
-                <Grid item xs={12} md={4}>
-                  <FieldLabel required>Primary Category</FieldLabel>
-                  <TextField select fullWidth value={selectedCategory} onChange={(event) => { setSelectedCategory(event.target.value); setSelectedAdditionalServices([]); }}
-                    required
-                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
-                  >
-                    {categoryOptions.map((category) => (
-                      <MenuItem key={category.value} value={category.value}>{category.label}</MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <FieldLabel required>Current Service</FieldLabel>
-                  <TextField
-                    select
-                    fullWidth
-                    value={parentJobCardServiceId}
-                    onChange={(event) => setParentJobCardServiceId(event.target.value)}
-                    required
-                    sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }}
-                  >
-                    {eligibleParentServices.map((service) => (
-                      <MenuItem key={service.id} value={String(service.id)}>
-                        {service.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <FieldLabel>Priority</FieldLabel>
-                  <TextField select fullWidth value={priority} onChange={(event) => setPriority(event.target.value)} sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} >
-                    <MenuItem value="LOW">Low</MenuItem>
-                    <MenuItem value="NORMAL">Normal</MenuItem>
-                    <MenuItem value="HIGH">High</MenuItem>
-                    <MenuItem value="URGENT">Urgent</MenuItem>
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={6}>
                   <FieldLabel required>Expected Delivery</FieldLabel>
                   <TextField fullWidth type="datetime-local" value={expectedDelivery} onChange={(event) => setExpectedDelivery(event.target.value)} required sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <FieldLabel>Request Source</FieldLabel>
-                  <TextField select fullWidth value={requestSource} onChange={(event) => setRequestSource(event.target.value)} sx={{ '& .MuiInputBase-root': { height: 56, bgcolor: '#FFFFFF' } }} >
-                    {requestSources.map((source) => (
-                      <MenuItem key={source.value} value={source.value}>{source.label}</MenuItem>
-                    ))}
-                  </TextField>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <FieldLabel required>Mechanic Explanation</FieldLabel>
@@ -428,7 +363,7 @@ export function AdditionalWorkRequestScreen({
             <SectionCard icon={MessageCircle} title="Approval Preview">
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                 <Typography sx={{ fontWeight: 800 }}>Bill Preview</Typography>
-                <Chip label="Pending send" size="small" sx={{ bgcolor: '#FEF3C7', color: '#B45309', fontWeight: 800 }} />
+                {/* <Chip label="Pending send" size="small" sx={{ bgcolor: '#FEF3C7', color: '#B45309', fontWeight: 800 }} /> */}
               </Box>
 
               <Box
@@ -486,7 +421,7 @@ export function AdditionalWorkRequestScreen({
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>{formatCurrency(subtotal)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Tax ({TAX_RATE}%)</Typography>
+                  <Typography variant="body2" color="text.secondary">Tax ({jobCardTaxRate}%)</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>{formatCurrency(tax)}</Typography>
                 </Box>
                 <Divider />

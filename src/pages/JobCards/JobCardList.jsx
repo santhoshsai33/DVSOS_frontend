@@ -117,6 +117,28 @@ export default function JobCardList() {
         );
       }
     },
+    {
+      header: 'BAY',
+      accessor: 'bay',
+      render: (row) => {
+        const bay = row.bay || row.assignedBay;
+        const bayName = bay?.bayName || bay?.bayCode || 'Unassigned';
+
+        return (
+          <Chip
+            label={bayName}
+            size="small"
+            sx={{
+              bgcolor: bay ? '#ecfdf5' : 'transparent',
+              color: bay ? '#047857' : '#64748b',
+              border: `1px solid ${bay ? '#a7f3d0' : '#cbd5e1'}`,
+              fontWeight: 600,
+              borderRadius: '9999px'
+            }}
+          />
+        );
+      }
+    },
     { header: 'Est. Cost', render: (row) => <Typography variant="body2" fontWeight={600}>{formatCurrency(row.totalEstimate)}</Typography> },
     { header: 'Created', render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography> },
     ...(canReadJobCards || canUpdateJobCards || canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork ? [{

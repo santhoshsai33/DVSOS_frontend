@@ -156,6 +156,17 @@ export default function BodyShopQueue() {
       ),
     },
     {
+      header: 'BAY',
+      render: (row) => {
+        const bay = row.bay || row.assignedBay;
+        return (
+          <Typography sx={{ fontSize: '0.875rem', color: bay || row.bayName ? '#374151' : '#94a3b8', fontWeight: bay || row.bayName ? 600 : 500 }}>
+            {bay?.bayName || bay?.bayCode || row.bayName || '—'}
+          </Typography>
+        );
+      },
+    },
+    {
       header: 'STATUS',
       render: (row) => (
         <Chip

@@ -12,6 +12,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '../../store/useAuthStore';
 import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi, assignQueueWorkApi } from '../../api/queueApi';
 import { getMechanicsDropdownApi } from '../../api/userApi';
+import { adminBayApi } from '../../api/adminBayApi';
 import { getDepartmentFromModules } from '../../utils/authAccess';
 import { usePermissions } from '../../hooks/usePermissions';
 
@@ -22,6 +23,11 @@ const PENDING_JOBS = [
 ];
 
 const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', URGENT: '#EF4444' };
+const BAY_TYPE_BY_CATEGORY = {
+  mechanical: 'Mechanical',
+  'body-shop': 'Body Shop',
+  'water-wash': 'Water Wash'
+};
 
 export default function AssignMechanicList() {
   const queryClient = useQueryClient();
@@ -61,8 +67,19 @@ export default function AssignMechanicList() {
     staleTime: 60000
   });
 
+  const { data: baysResponse, isLoading: isBaysLoading } = useQuery({
+    queryKey: ['assignment-bays', role, locationId, queueCategory],
+    queryFn: () => adminBayApi.getBayDropdown({
+      locationId,
+      bayType: BAY_TYPE_BY_CATEGORY[queueCategory]
+    }),
+    enabled: !!role,
+    staleTime: 30000
+  });
+
   const apiJobs = jobsResponse?.data?.data || jobsResponse?.data || PENDING_JOBS;
   const mechanics = mechanicsResponse?.data?.users || mechanicsResponse?.users || [];
+  const bays = baysResponse?.data?.bays || baysResponse?.data?.data?.bays || baysResponse?.bays || [];
 
   const [localJobs, setLocalJobs] = useState([]);
 
@@ -74,12 +91,15 @@ export default function AssignMechanicList() {
 
   const [assignModal, setAssignModal] = useState({ isOpen: false, item: null });
   const [selectedMechanic, setSelectedMechanic] = useState('');
+  const [selectedBay, setSelectedBay] = useState('');
   const selectedMechanicUser = mechanics.find((mechanic) => String(mechanic.id) === String(selectedMechanic));
+  const selectedBayItem = bays.find((bay) => String(bay.id) === String(selectedBay));
 
   const assignMutation = useMutation({
     mutationFn: ({ jobCardId, payload }) => assignQueueWorkApi(jobCardId, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['assign-mechanic-queue'] });
+      await queryClient.invalidateQueries({ queryKey: ['assignment-bays'] });
       setLocalJobs((currentJobs) => currentJobs.filter((job) => {
         const currentJobCardId = job.jobCardId || job.id;
         const assignedJobCardId = assignModal.item?.jobCardId || assignModal.item?.id;
@@ -87,7 +107,7 @@ export default function AssignMechanicList() {
       }));
       setAssignModal({ isOpen: false, item: null });
 
-      toastSuccess(`Assigned to ${selectedMechanicUser?.fullName || assigneeLabel.toLowerCase()}. Job Card sent to printer!`);
+      toastSuccess(`Assigned to ${selectedMechanicUser?.fullName || assigneeLabel.toLowerCase()}${selectedBayItem ? ` in ${selectedBayItem.bayName || selectedBayItem.bayCode}` : ''}. Job Card sent to printer!`);
 
       // setTimeout(() => {
       //   toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
@@ -107,6 +127,7 @@ export default function AssignMechanicList() {
   const handleAssignClick = (item) => {
     setAssignModal({ isOpen: true, item });
     setSelectedMechanic('');
+    setSelectedBay('');
   };
 
   const columns = [
@@ -134,6 +155,17 @@ export default function AssignMechanicList() {
           {row.serviceNames?.length ? row.serviceNames.join(', ') : (row.serviceType || '—')}
         </Typography>
       ),
+    },
+    {
+      header: 'BAY',
+      render: (row) => {
+        const bay = row.bay || row.assignedBay;
+        return (
+          <Typography sx={{ fontSize: '0.875rem', color: bay ? '#374151' : '#94a3b8', fontWeight: bay ? 600 : 500 }}>
+            {bay?.bayName || bay?.bayCode || '—'}
+          </Typography>
+        );
+      },
     },
     {
       header: 'PRIORITY',
@@ -199,6 +231,16 @@ export default function AssignMechanicList() {
       return;
     }
 
+    if (!selectedBay) {
+      toastInfo('Please select a bay');
+      return;
+    }
+
+    if (selectedBayItem?.availability === 'BUSY') {
+      toastError('Selected bay is already busy');
+      return;
+    }
+
     const jobCardId = assignModal.item?.jobCardId || assignModal.item?.id;
 
     if (!jobCardId) {
@@ -210,6 +252,7 @@ export default function AssignMechanicList() {
       jobCardId,
       payload: {
         assignedUserId: Number(selectedMechanic),
+        bayId: Number(selectedBay),
         category: assignModal.item?.category || queueCategory
       }
     });
@@ -264,7 +307,11 @@ export default function AssignMechanicList() {
 
       <Modal
         show={assignModal.isOpen && canAssignWork}
-        onHide={() => setAssignModal({ isOpen: false, item: null })}
+        onHide={() => {
+          setAssignModal({ isOpen: false, item: null });
+          setSelectedMechanic('');
+          setSelectedBay('');
+        }}
         title={`Assign ${assigneeLabel}`}
         confirmLabel="Assign"
         onConfirm={handleConfirmAssign}
@@ -317,6 +364,52 @@ export default function AssignMechanicList() {
                     </Box>
                   </MenuItem>
                 ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth size="small">
+              <InputLabel>Bay Number</InputLabel>
+              <Select
+                value={selectedBay}
+                label="Bay Number"
+                onChange={(e) => setSelectedBay(e.target.value)}
+                sx={{ borderRadius: 2 }}
+              >
+                {isBaysLoading && (
+                  <MenuItem disabled value="">
+                    Loading bays...
+                  </MenuItem>
+                )}
+                {!isBaysLoading && bays.length === 0 && (
+                  <MenuItem disabled value="">
+                    No active {BAY_TYPE_BY_CATEGORY[queueCategory]?.toLowerCase()} bays found
+                  </MenuItem>
+                )}
+                {bays.map((bay) => {
+                  const isBusy = bay.availability === 'BUSY';
+                  return (
+                    <MenuItem key={bay.id} value={bay.id} disabled={isBusy}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                          {bay.bayName || bay.bayCode}
+                        </Typography>
+                        <Chip
+                          size="small"
+                          label={bay.availabilityLabel || (isBusy ? 'Busy' : 'Available')}
+                          sx={{
+                            height: 22,
+                            fontSize: '0.68rem',
+                            fontWeight: 800,
+                            bgcolor: isBusy ? '#FEF3C7' : '#DCFCE7',
+                            color: isBusy ? '#B45309' : '#15803D',
+                            border: '1px solid',
+                            borderColor: isBusy ? '#FCD34D' : '#86EFAC',
+                          }}
+                        />
+                      </Box>
+                    </MenuItem>
+                  );
+                })}
               </Select>
             </FormControl>
 {/* 
