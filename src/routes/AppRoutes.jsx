@@ -11,6 +11,7 @@ import Login from '../pages/Auth/Login';
 import ManagerDashboard from '../pages/Dashboard/ManagerDashboard';
 import NotFound from '../pages/NotFound/NotFound';
 import KioskDisplay from '../pages/Kiosk/KioskDisplay';
+import TVKiosk from '../pages/TVKiosk/TVKiosk';
 import GateEntryList from '../pages/GateEntry/GateEntryList';
 import GateEntryForm from '../pages/GateEntry/GateEntryForm';
 import GateEntryDetails from '../pages/GateEntry/GateEntryDetails';
@@ -43,6 +44,7 @@ export default function AppRoutes() {
       {/* Public Kiosk Route */}
       <Route element={<KioskLayout />}>
         <Route path="/kiosk" element={<KioskDisplay />} />
+        <Route path="/kiosk/tv" element={<TVKiosk />} />
       </Route>
 
       {/* Protected Routes */}

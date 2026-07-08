@@ -202,8 +202,8 @@
   border: 1px solid #f1f5f9;
   border-radius: 12px;
   padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
+  /* display: flex;
+  flex-direction: column; */
   gap: 1rem;
   border-left: 6px solid var(--section-color, #cbd5e1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
@@ -211,10 +211,10 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.listItem:hover {
+/* .listItem:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
+} */
 
 @keyframes slideIn {
   from {
@@ -328,19 +328,23 @@
 
 /* Custom Section Colors for TV Display */
 .mechSection {
-  --section-color: #3b82f6; /* Blue */
+  --section-color: #3b82f6;
+  /* Blue */
 }
 
 .bodySection {
-  --section-color: #f59e0b; /* Amber */
+  --section-color: #f59e0b;
+  /* Amber */
 }
 
 .washSection {
-  --section-color: #0ea5e9; /* Light Blue/Cyan */
+  --section-color: #0ea5e9;
+  /* Light Blue/Cyan */
 }
 
 .readySection {
-  --section-color: #10b981; /* Emerald Green */
+  --section-color: #10b981;
+  /* Emerald Green */
 }
 
 .empty {

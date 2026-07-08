@@ -220,6 +220,7 @@ export const ENDPOINTS = {
   // Kiosk
   KIOSK: {
     DISPLAY: '/kiosk/display',
+    TV: '/kiosk/tv',
   },
 
   // Notifications

@@ -10,3 +10,4 @@ export const getBodyShopDashboardApi = () => axiosInstance.get(ENDPOINTS.DASHBOA
 export const getWaterWashDashboardApi = () => axiosInstance.get(ENDPOINTS.DASHBOARD.WATER_WASH);
 export const getRecentJobsApi = () => axiosInstance.get(ENDPOINTS.DASHBOARD.RECENT_JOBS);
 export const getQueueSummaryApi = () => axiosInstance.get(ENDPOINTS.DASHBOARD.QUEUE_SUMMARY);
+export const getTvKioskDashboardApi = () => axiosInstance.get(ENDPOINTS.KIOSK.TV);
