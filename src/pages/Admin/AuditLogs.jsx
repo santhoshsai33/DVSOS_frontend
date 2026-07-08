@@ -64,6 +64,7 @@ export default function AuditLogs() {
   const columns = [
     {
       header: 'User',
+      width: '16.66%',
       render: (row) => {
         const userName = row.performedBy?.fullName || 'System';
         const color = getHashColor(userName);
@@ -91,15 +92,17 @@ export default function AuditLogs() {
         );
       }
     },
-    { header: 'Action', accessor: 'actionType' },
+    { header: 'Action', accessor: 'actionType', width: '16.66%' },
     {
       header: 'Table Name',
+      width: '16.66%',
       render: (row) => row.tableName
     },
-    { header: 'Record', accessor: 'recordName' },
-    { header: 'Comments', accessor: 'comments' },
+    { header: 'Record', accessor: 'recordName', width: '16.66%' },
+    { header: 'Comments', accessor: 'comments', width: '16.66%' },
     {
       header: 'Timestamp',
+      width: '16.66%',
       render: (row) => {
         const formatted = formatDateTime(row.performedAt);
         const color = getHashColor(formatted);

@@ -99,7 +99,7 @@ export default function DataTable({
             <TableHead>
               <TableRow>
                 {columns.map((col, index) => {
-                  const isActionColumn = String(col.header || '').toLowerCase().includes('action');
+                  const isActionColumn = String(col.header || '').toLowerCase() === 'actions';
 
                   return (
                     <TableCell

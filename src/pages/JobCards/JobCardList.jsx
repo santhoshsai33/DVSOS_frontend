@@ -101,19 +101,25 @@ export default function JobCardList() {
       header: 'MECHANIC',
       accessor: 'technician',
       render: (row) => {
-        const mechanicName = row.technician || 'Unassigned';
+        const mechanicStr = row.technician || 'Unassigned';
+        const mechanics = mechanicStr.split(',').map(name => name.trim()).filter(Boolean);
         return (
-          <Chip
-            label={mechanicName}
-            size="small"
-            sx={{
-              bgcolor: mechanicName === 'Unassigned' ? 'transparent' : '#eff6ff',
-              color: mechanicName === 'Unassigned' ? '#d97706' : '#2563eb',
-              border: `1px solid ${mechanicName === 'Unassigned' ? '#fcd34d' : '#bfdbfe'}`,
-              fontWeight: 600,
-              borderRadius: '9999px'
-            }}
-          />
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            {mechanics.map((mechanicName, idx) => (
+              <Chip
+                key={idx}
+                label={mechanicName}
+                size="small"
+                sx={{
+                  bgcolor: mechanicName === 'Unassigned' ? 'transparent' : '#eff6ff',
+                  color: mechanicName === 'Unassigned' ? '#d97706' : '#2563eb',
+                  border: `1px solid ${mechanicName === 'Unassigned' ? '#fcd34d' : '#bfdbfe'}`,
+                  fontWeight: 600,
+                  borderRadius: '9999px'
+                }}
+              />
+            ))}
+          </Box>
         );
       }
     },

@@ -71,9 +71,28 @@ export default function FloorWorkStatus() {
     },
     {
       header: 'MECHANIC',
-      render: (row) => (
-        <Typography sx={{ fontSize: '0.875rem', color: '#374151', fontWeight: 600 }}>{row.mechanic}</Typography>
-      ),
+      render: (row) => {
+        const mechanicStr = row.mechanic || 'Unassigned';
+        const mechanics = mechanicStr.split(',').map(name => name.trim()).filter(Boolean);
+        return (
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            {mechanics.map((mechanicName, idx) => (
+              <Chip
+                key={idx}
+                label={mechanicName}
+                size="small"
+                sx={{
+                  bgcolor: mechanicName === 'Unassigned' ? 'transparent' : '#eff6ff',
+                  color: mechanicName === 'Unassigned' ? '#d97706' : '#2563eb',
+                  border: `1px solid ${mechanicName === 'Unassigned' ? '#fcd34d' : '#bfdbfe'}`,
+                  fontWeight: 600,
+                  borderRadius: '9999px'
+                }}
+              />
+            ))}
+          </Box>
+        );
+      },
     },
     {
       header: 'NEXT STAGE',
