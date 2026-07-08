@@ -15,7 +15,6 @@ node_modules
 dist
 dist-ssr
 *.local
-src/socket/
 public
 
 # Editor directories and files
