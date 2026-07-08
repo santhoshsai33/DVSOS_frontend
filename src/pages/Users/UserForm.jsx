@@ -267,6 +267,7 @@ export default function UserForm() {
                   label="Licence Number"
                   placeholder="Enter licence number"
                   required
+                  inputProps={{ maxLength: 15 }}
                 />
               </Grid>
               <Grid item xs={12} md={6}>

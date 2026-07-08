@@ -83,19 +83,28 @@ export default function MechanicalQueue() {
     },
     {
       header: 'MECHANIC',
-      render: (row) => (
-        <Chip
-          label={row.mechanic}
-          size="small"
-          sx={{
-            bgcolor: row.mechanic === 'Unassigned' ? 'transparent' : '#eff6ff',
-            color: row.mechanic === 'Unassigned' ? '#d97706' : '#2563eb',
-            border: `1px solid ${row.mechanic === 'Unassigned' ? '#fcd34d' : '#bfdbfe'}`,
-            fontWeight: 600,
-            borderRadius: '9999px'
-          }}
-        />
-      ),
+      render: (row) => {
+        const mechanicStr = row.mechanic || 'Unassigned';
+        const mechanics = mechanicStr.split(',').map(name => name.trim()).filter(Boolean);
+        return (
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            {mechanics.map((mechanicName, idx) => (
+              <Chip
+                key={idx}
+                label={mechanicName}
+                size="small"
+                sx={{
+                  bgcolor: mechanicName === 'Unassigned' ? 'transparent' : '#eff6ff',
+                  color: mechanicName === 'Unassigned' ? '#d97706' : '#2563eb',
+                  border: `1px solid ${mechanicName === 'Unassigned' ? '#fcd34d' : '#bfdbfe'}`,
+                  fontWeight: 600,
+                  borderRadius: '9999px'
+                }}
+              />
+            ))}
+          </Box>
+        );
+      },
     },
     {
       header: 'BAY',
