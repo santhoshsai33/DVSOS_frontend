@@ -10,9 +10,9 @@ import Loader from '../../components/common/Loader';
 
 function InfoRow({ icon: Icon, label, value }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25 }}>
-      <Box sx={{ color: 'text.secondary', display: 'flex', mt: 0.25 }}><Icon size={15} /></Box>
-      <Typography variant="caption" sx={{ width: 60, color: 'text.secondary', fontWeight: 800, mt: 0.25 }}>{label}</Typography>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Box sx={{ color: 'text.secondary', display: 'flex' }}><Icon size={15} /></Box>
+      <Typography variant="caption" sx={{ width: 60, color: 'text.secondary', fontWeight: 800 }}>{label}</Typography>
       <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>{value}</Typography>
     </Box>
   );
@@ -34,8 +34,8 @@ export default function VehicleHistory() {
         breadcrumbs={[{ label: 'Vehicles', path: ROUTES.VEHICLES }, { label: 'History' }]}
         actions={
           identifier && (
-            <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(`${ROUTES.VEHICLES}/view/${identifier}`)}>
-              Back to Vehicle Details
+            <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(`${ROUTES.VEHICLES}`)}>
+              Back to Vehicle List
             </Button>
           )
         }

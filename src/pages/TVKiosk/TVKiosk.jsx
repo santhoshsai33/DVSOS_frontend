@@ -54,7 +54,7 @@ const JobCard = ({ job, color, isReady }) => (
         {job.vehicleInfo}
       </Typography>
     </Box>
-    
+
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.6rem, 0.75vw, 0.8rem)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -126,7 +126,7 @@ const TVKiosk = () => {
             </Typography>
           </Box>
         </Box>
-        
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px, 2.5vw, 24px)' }}>
           <Box sx={{ textAlign: 'right' }}>
             <Typography color="text.secondary" fontWeight="bold" sx={{ fontSize: 'clamp(0.55rem, 0.75vw, 0.75rem)' }}>
