@@ -28,7 +28,7 @@ import {
   Users,
   Wrench,
 } from 'lucide-react';
-import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Box, Typography, Divider, IconButton, useTheme, useMediaQuery, Tooltip } from '@mui/material';
+import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Collapse, Box, Typography, Divider, IconButton, useTheme, useMediaQuery, Tooltip, Popover } from '@mui/material';
 import useAuthStore from '../../../store/useAuthStore';
 import useUIStore from '../../../store/useUIStore';
 import { buildSidebarMenus } from '../../../utils/authAccess';
@@ -82,12 +82,24 @@ export default function Sidebar() {
   const effectiveCollapsed = sidebarCollapsed || (isLaptop && !userHasToggled);
 
   const [expandedGroups, setExpandedGroups] = useState({});
-  const [hoveredGroup, setHoveredGroup] = useState(null);
-  const [flyoutTopOffset, setFlyoutTopOffset] = useState(0);
-  const [flyoutHeight, setFlyoutHeight] = useState(375);
+  const [hoverAnchorEl, setHoverAnchorEl] = useState(null);
+  const [hoveredMenuLabel, setHoveredMenuLabel] = useState(null);
 
   const menus = buildSidebarMenus(allowedMenus, ICON_MAP);
-  const useFlyout = isDesktopFlyout && effectiveCollapsed;
+
+  const handlePopoverOpen = (event, label) => {
+    if (isDesktopFlyout) {
+      setHoverAnchorEl(event.currentTarget);
+      setHoveredMenuLabel(label);
+    }
+  };
+
+  const handlePopoverClose = () => {
+    if (isDesktopFlyout) {
+      setHoverAnchorEl(null);
+      setHoveredMenuLabel(null);
+    }
+  };
 
   const isActive = (path) => {
     if (!path) return false;
@@ -128,37 +140,21 @@ export default function Sidebar() {
     const isCollapsedState = !forceExpanded && effectiveCollapsed && !isMobile;
 
     if (hasChildren) {
-      const isHovered = hoveredGroup === item.label;
+      const isHovered = hoveredMenuLabel === item.label;
+      const isMenuOpen = Boolean(hoverAnchorEl) && hoveredMenuLabel === item.label;
+
       return (
         <Box
           key={item.label}
-          onMouseEnter={(e) => {
-            if (useFlyout) {
-              setHoveredGroup(item.label);
-              const rect = e.currentTarget.getBoundingClientRect();
-              const viewportHeight = window.innerHeight;
-              const itemHeight = 40;
-              const padding = 16;
-              const calculatedHeight = Math.max(375, Math.min(viewportHeight - 80, (item.children.length * itemHeight) + padding));
-              setFlyoutHeight(calculatedHeight);
-              let desiredViewportTop = rect.top;
-              if (desiredViewportTop + calculatedHeight > viewportHeight - 40) {
-                desiredViewportTop = viewportHeight - 40 - calculatedHeight;
-              }
-              if (desiredViewportTop < 40) {
-                desiredViewportTop = 40;
-              }
-              setFlyoutTopOffset(desiredViewportTop - rect.top);
-            }
-          }}
-          onMouseLeave={() => useFlyout && setHoveredGroup(null)}
+          onMouseEnter={(e) => handlePopoverOpen(e, item.label)}
+          onMouseLeave={handlePopoverClose}
           sx={{
             position: 'relative',
           }}
         >
           <Tooltip title={item.label} placement="right" arrow disableHoverListener={!isCollapsedState}>
             <ListItemButton
-              onClick={() => toggleGroup(item.label)}
+              onClick={() => !isDesktopFlyout && toggleGroup(item.label)}
               sx={{
                 borderRadius: 0,
                 mb: 0.5,
@@ -178,7 +174,7 @@ export default function Sidebar() {
               )}
               {!isCollapsedState && <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: groupActive ? 600 : 500 }} />}
               {!isCollapsedState && (
-                useFlyout ? (
+                isDesktopFlyout ? (
                   <Box
                     sx={{
                       display: 'inline-flex',
@@ -196,43 +192,57 @@ export default function Sidebar() {
           </Tooltip>
 
           {/* Mobile/Tablet view: collapse dropdown */}
-          {!useFlyout ? (
+          {!isDesktopFlyout ? (
             <Collapse in={isExpanded && !isCollapsedState} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
                 {item.children.map((child) => renderMenuItem(child, depth + 1))}
               </List>
             </Collapse>
           ) : (
-            /* Desktop view: right-side hover flyout */
-            <Box
+            /* Desktop view: right-side hover Popover (via React Portal) */
+            <Popover
+              open={isMenuOpen}
+              anchorEl={hoverAnchorEl}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              onClose={handlePopoverClose}
+              marginThreshold={0}
+              PaperProps={{
+                onMouseEnter: () => {
+                  if (isDesktopFlyout) {
+                    setHoveredMenuLabel(item.label);
+                  }
+                },
+                onMouseLeave: handlePopoverClose,
+                sx: {
+                  minWidth: 220,
+                  maxHeight: 'calc(100vh - 80px)',
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  scrollBehavior: 'smooth',
+                  bgcolor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  borderRadius: '4px',
+                  py: 1,
+                  pointerEvents: 'auto',
+                }
+              }}
               sx={{
-                position: 'absolute',
-                left: '100%',
-                top: flyoutTopOffset,
-                zIndex: theme.zIndex.drawer + 1,
-                minWidth: 220,
-                height: flyoutHeight,
-                maxHeight: 'calc(100vh - 80px)',
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                scrollBehavior: 'smooth',
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                borderRadius: '4px',
-                py: 1,
-                opacity: isHovered ? 1 : 0,
-                visibility: isHovered ? 'visible' : 'hidden',
-                transform: isHovered ? 'translateX(4px)' : 'translateX(0px)',
-                transition: 'opacity 250ms ease-in-out, transform 250ms ease-in-out, visibility 250ms ease-in-out, top 250ms ease-in-out',
-                pointerEvents: isHovered ? 'auto' : 'none',
+                pointerEvents: 'none',
               }}
             >
               <List component="div" disablePadding>
                 {item.children.map((child) => renderMenuItem(child, depth + 1, true))}
               </List>
-            </Box>
+            </Popover>
           )}
         </Box>
       );
@@ -282,7 +292,7 @@ export default function Sidebar() {
       bgcolor: 'background.paper',
       borderRight: '1px solid',
       borderColor: 'divider',
-      overflow: { xs: 'auto', lg: effectiveCollapsed ? 'visible' : 'hidden' }
+      overflow: { xs: 'auto', lg: 'hidden' }
     }}>
       {/* Brand */}
       <Box sx={{ height: 64, display: 'flex', alignItems: 'center', px: effectiveCollapsed && !isMobile ? 0 : 3, justifyContent: effectiveCollapsed && !isMobile ? 'center' : 'flex-start', flexShrink: 0 }}>
@@ -301,7 +311,7 @@ export default function Sidebar() {
       {/* Nav */}
       <Box sx={{
         flexGrow: 1,
-        overflowY: { xs: 'auto', lg: effectiveCollapsed ? 'visible' : 'auto' },
+        overflowY: { xs: 'auto', lg: 'auto' },
         overflowX: 'hidden',
         py: 2,
         '&::-webkit-scrollbar': {
@@ -351,7 +361,7 @@ export default function Sidebar() {
             width: sidebarWidth,
             height: '100vh',
             transition: theme.transitions.create('width', { easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen }),
-            overflow: effectiveCollapsed ? 'visible' : 'hidden'
+            overflow: 'hidden'
           },
         }}
         open
