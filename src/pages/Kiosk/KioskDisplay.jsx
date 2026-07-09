@@ -73,7 +73,7 @@ function DisplaySection({ title, icon: Icon, items, statusClass }) {
               <span className={styles.vehicleNo}>{item.vehicle}</span>
               <span className={styles.modelName}>{item.model}</span>
             </div>
-            <div style={{ padding: '0.5rem 0 0.25rem', fontSize: '1.3rem', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div className={styles.customerName}>
               {item.customerName}
             </div>
             <div className={styles.itemMeta}>
@@ -173,20 +173,20 @@ export default function KioskDisplay() {
 
       {/* Main Grid */}
       <div className={styles.grid}>
-        <Grid container spacing={3} sx={{ height: '100%' }}>
-          <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
+        <Grid container spacing={{ xs: 1.5, md: 2, lg: 3 }} sx={{ height: { xs: 'auto', lg: '100%' } }}>
+          <Grid item xs={12} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
             <DisplaySection title="Mechanical" icon={Wrench} items={mechanical} statusClass={styles.mechSection} />
           </Grid>
-          <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
+          <Grid item xs={12} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
             <DisplaySection title="Body Shop" icon={Wrench} items={bodyShop} statusClass={styles.bodySection} />
           </Grid>
-          <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
+          <Grid item xs={12} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
             <DisplaySection title="Water Wash" icon={Wrench} items={waterWash} statusClass={styles.washSection} />
           </Grid>
-          <Grid item xs={12} lg={3} sx={{ height: '100%' }}>
+          <Grid item xs={12} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
             <div className={`${styles.section} ${styles.readySection}`}>
               <div className={styles.sectionHeader}>
-                <div className={styles.sectionTitle}><CheckCircle2 size={24} /> Ready for Delivery</div>
+                <div className={styles.sectionTitle}><CheckCircle2 size={24} /> Delivery</div>
                 <span className={styles.countBadge}>{ready.length}</span>
               </div>
               <div className={styles.list} ref={readyParent}>
@@ -196,7 +196,7 @@ export default function KioskDisplay() {
                       <span className={styles.vehicleNo}>{item.vehicle}</span>
                       <span className={styles.modelName}>{item.model}</span>
                     </div>
-                    <div style={{ padding: '0.5rem 0 0.25rem', fontSize: '1.3rem', fontWeight: 900, color: '#064e3b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <div className={`${styles.customerName} ${styles.readyCustomer}`}>
                       {item.customerName}
                     </div>
                     <div className={styles.itemMeta}>

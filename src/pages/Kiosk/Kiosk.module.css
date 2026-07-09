@@ -15,11 +15,11 @@
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   color: #0f172a;
-  padding: 1.5rem 2.5rem;
+  padding: clamp(0.75rem, 1.5vw, 1.5rem) clamp(1rem, 2.5vw, 2.5rem);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2.5rem;
+  gap: clamp(1rem, 2.5vw, 2.5rem);
   z-index: 10;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
@@ -43,7 +43,7 @@
 }
 
 .brandName {
-  font-size: 1.75rem;
+  font-size: clamp(1.2rem, 1.75vw, 1.75rem);
   font-weight: 900;
   margin: 0;
   letter-spacing: 0.03em;
@@ -53,7 +53,7 @@
 }
 
 .brandSub {
-  font-size: 0.85rem;
+  font-size: clamp(0.65rem, 0.85vw, 0.85rem);
   color: #2563eb;
   font-weight: 700;
   margin: 0;
@@ -77,7 +77,7 @@
 }
 
 .clockTime {
-  font-size: 1.8rem;
+  font-size: clamp(1.2rem, 1.8vw, 1.8rem);
   font-weight: 900;
   color: #0f172a;
   line-height: 1.1;
@@ -86,7 +86,7 @@
 }
 
 .clockDate {
-  font-size: 0.95rem;
+  font-size: clamp(0.7rem, 0.95vw, 0.95rem);
   color: #64748b;
   font-weight: 700;
   text-transform: uppercase;
@@ -141,7 +141,7 @@
 /* Main Grid */
 .grid {
   flex: 1;
-  padding: 1.5rem;
+  padding: clamp(0.75rem, 1.5vw, 1.5rem);
   overflow: hidden;
 }
 
@@ -159,7 +159,7 @@
 
 .sectionHeader {
   background: #f8fafc;
-  padding: 1.5rem;
+  padding: clamp(0.8rem, 1.5vw, 1.5rem);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -167,7 +167,7 @@
 }
 
 .sectionTitle {
-  font-size: 1.4rem;
+  font-size: clamp(1rem, 1.4vw, 1.4rem);
   font-weight: 800;
   color: var(--section-color, #334155);
   display: flex;
@@ -180,9 +180,9 @@
 .countBadge {
   background: var(--section-color, #94a3b8);
   color: #fff;
-  font-size: 1.2rem;
+  font-size: clamp(0.9rem, 1.2vw, 1.2rem);
   font-weight: 800;
-  padding: 0.25rem 1rem;
+  padding: 0.25rem clamp(0.6rem, 1vw, 1rem);
   border-radius: 999px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -237,7 +237,7 @@
 }
 
 .vehicleNo {
-  font-size: clamp(1.25rem, 1.35vw, 1.8rem);
+  font-size: clamp(1rem, 1.35vw, 1.8rem);
   font-weight: 900;
   color: #0f172a;
   background: #f8fafc;
@@ -254,7 +254,7 @@
 }
 
 .modelName {
-  font-size: 1.1rem;
+  font-size: clamp(0.8rem, 1.1vw, 1.1rem);
   color: #64748b;
   font-weight: 600;
   min-width: 0;
@@ -271,7 +271,7 @@
 }
 
 .jobId {
-  font-size: 0.95rem;
+  font-size: clamp(0.7rem, 0.95vw, 0.95rem);
   color: #94a3b8;
   font-weight: 700;
 }
@@ -280,7 +280,7 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 1rem;
+  font-size: clamp(0.75rem, 1rem, 1rem);
   font-weight: 800;
   color: var(--section-color, #64748b);
 }
@@ -351,7 +351,61 @@
   text-align: center;
   padding: 3rem 1rem;
   color: #64748b;
-  font-size: 1.2rem;
+  font-size: clamp(0.9rem, 1.2rem, 1.2rem);
   font-weight: 600;
   font-style: italic;
+}
+
+.customerName {
+  padding: 0.5rem 0 0.25rem;
+  font-size: clamp(0.9rem, 1.3vw, 1.3rem);
+  font-weight: 900;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.readyCustomer {
+  color: #064e3b;
+}
+
+@media (max-width: 1199.95px) {
+  .container {
+    height: auto;
+    width: 100%;
+    overflow: visible;
+  }
+  .grid {
+    overflow: visible;
+  }
+  .header {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .brand {
+    width: 100%;
+    justify-content: center;
+  }
+  .controlsGroup {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+  }
+  .brand {
+    flex-direction: column;
+    text-align: center;
+  }
+  .clockRight {
+    align-items: center;
+  }
 }

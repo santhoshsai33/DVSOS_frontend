@@ -5,3 +5,12 @@
   background: var(--color-primary);
   color: #fff;
 }
+
+@media (max-width: 1199.95px) {
+  .kiosk {
+    height: auto;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
