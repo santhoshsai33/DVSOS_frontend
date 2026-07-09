@@ -1,16 +1,30 @@
 .panel {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   padding: 1.5rem;
   margin-top: 1.5rem;
 }
 
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
 .title {
-  margin: 0 0 1.5rem;
+  margin: 0;
   font-weight: 600;
   font-size: 1.1rem;
   color: var(--color-text);
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
 }
 
 .emptyState {
@@ -73,9 +87,57 @@
 }
 
 .description {
-  margin: 0;
+  margin: 0.15rem 0 0;
   font-size: 0.85rem;
   color: var(--color-text-muted);
+}
+
+.jobLine {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.jobLine span:not(:last-child)::after {
+  content: "/";
+  margin-left: 0.5rem;
+  color: #cbd5e1;
+}
+
+.serviceFlow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+}
+
+.parentService,
+.additionalServices {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.parentService {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.additionalServices {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.arrow {
+  color: var(--color-text-muted);
+  font-weight: 700;
 }
 
 .meta {
@@ -119,9 +181,18 @@
   color: #f59e0b;
 }
 
+.rejected {
+  background: #dc262615;
+  color: #dc2626;
+}
+
 @media (max-width: 480px) {
   .panel {
     padding: 1rem;
+  }
+
+  .panelHeader {
+    flex-direction: column;
   }
 
   .requestCard {

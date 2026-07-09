@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
-import { registerDeviceTokenApi } from '../api/notificationApi';
+import { registerDeviceTokenApi, removeDeviceTokenApi } from '../api/notificationApi';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -24,6 +24,20 @@ try {
 
 export { app, messaging };
 
+const DEVICE_ID_STORAGE_KEY = 'dvsos_web_device_id';
+const FCM_TOKEN_STORAGE_KEY = 'dvsos_fcm_token';
+
+function getWebDeviceId() {
+  let deviceId = localStorage.getItem(DEVICE_ID_STORAGE_KEY);
+
+  if (!deviceId) {
+    deviceId = crypto?.randomUUID ? crypto.randomUUID() : `web-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(DEVICE_ID_STORAGE_KEY, deviceId);
+  }
+
+  return deviceId;
+}
+
 /**
  * Request notification permission and register FCM device token.
  */
@@ -43,7 +57,8 @@ export async function requestNotificationPermissionAndRegister() {
       const token = await getToken(messaging, { vapidKey });
       if (token) {
         console.log('FCM token generated successfully:', token);
-        await registerDeviceTokenApi(token);
+        localStorage.setItem(FCM_TOKEN_STORAGE_KEY, token);
+        await registerDeviceTokenApi(token, 'WEB', getWebDeviceId());
       } else {
         console.warn('No registration token available. Request permission to generate one.');
       }
@@ -52,6 +67,22 @@ export async function requestNotificationPermissionAndRegister() {
     }
   } catch (error) {
     console.error('An error occurred while retrieving token:', error);
+  }
+}
+
+export async function removeRegisteredDeviceToken() {
+  const token = localStorage.getItem(FCM_TOKEN_STORAGE_KEY);
+
+  if (!token) {
+    return;
+  }
+
+  try {
+    await removeDeviceTokenApi(token);
+  } catch (error) {
+    console.warn('Unable to remove FCM device token:', error);
+  } finally {
+    localStorage.removeItem(FCM_TOKEN_STORAGE_KEY);
   }
 }
 

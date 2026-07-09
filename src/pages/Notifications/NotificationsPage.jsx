@@ -49,7 +49,7 @@ export default function NotificationsPage({ title = 'Notifications' }) {
 
   const fetchNotifications = async () => {
     try {
-      const response = await getNotificationsApi({ limit: 50 });
+      const response = await getNotificationsApi({ limit: 50, unreadOnly: tab === 1 });
       if (response?.success) {
         const list = response.data?.notifications || [];
         setNotifications(list);
@@ -61,9 +61,9 @@ export default function NotificationsPage({ title = 'Notifications' }) {
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [tab]);
 
-  const filteredNotifs = notifications.filter(n => tab === 0 ? true : n.readAt === null);
+  const filteredNotifs = notifications;
 
   const markAsRead = async (id) => {
     try {
@@ -166,8 +166,8 @@ export default function NotificationsPage({ title = 'Notifications' }) {
                      }
                    >
                      <ListItemIcon sx={{ minWidth: { xs: 48, sm: 64 } }}>
-                        <Avatar sx={{ bgcolor: getBgColor(notif.notificationType), width: 40, height: 40 }}>
-                          {getIcon(notif.notificationType)}
+                        <Avatar sx={{ bgcolor: getBgColor(notif.type), width: 40, height: 40 }}>
+                          {getIcon(notif.type)}
                         </Avatar>
                      </ListItemIcon>
                      <ListItemText

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, User, Settings as SettingsIcon, Menu as MenuIcon, PanelLeftClose, PanelLeft, FileText, Truck, AlertCircle, Info } from 'lucide-react';
-import { AppBar, Toolbar, IconButton, Typography, Box, Badge, Avatar, Menu, MenuItem, Divider, ListItemIcon, ListItemText } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Box, Badge, Avatar, Menu, MenuItem, Divider, ListItemIcon, ListItemText, useTheme, useMediaQuery } from '@mui/material';
 import useAuthStore from '../../../store/useAuthStore';
 import useUIStore from '../../../store/useUIStore';
 import { ROUTES } from '../../../config/routes';
@@ -9,10 +9,12 @@ import { getInitials, avatarColor } from '../../../utils/helpers';
 import { getMeApi } from '../../../api/authApi';
 import {
   getNotificationsApi,
+  getUnreadNotificationCountApi,
   markNotificationReadApi,
   markAllNotificationsReadApi
 } from '../../../api/notificationApi';
 import {
+  removeRegisteredDeviceToken,
   requestNotificationPermissionAndRegister,
   setupForegroundMessageListener
 } from '../../../config/firebase';
@@ -33,13 +35,39 @@ const getNotificationIcon = (type) => {
 };
 
 export default function Topbar() {
+  const theme = useTheme();
+  const isLaptop = useMediaQuery('(max-width: 1366px)');
   const { user, role, logout, setUser, setMenus } = useAuthStore();
   const { sidebarCollapsed, toggleSidebar, setSidebarMobileOpen } = useUIStore();
+  const [userHasToggled, setUserHasToggled] = useState(false);
+  const [lastCollapsedVal, setLastCollapsedVal] = useState(sidebarCollapsed);
+
+  useEffect(() => {
+    if (sidebarCollapsed !== lastCollapsedVal) {
+      setUserHasToggled(true);
+      setLastCollapsedVal(sidebarCollapsed);
+    }
+  }, [sidebarCollapsed, lastCollapsedVal]);
+
+  const effectiveCollapsed = sidebarCollapsed || (isLaptop && !userHasToggled);
+
   const navigate = useNavigate();
   const location = useLocation();
   const [notifAnchorEl, setNotifAnchorEl] = useState(null);
   const [userAnchorEl, setUserAnchorEl] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await getUnreadNotificationCountApi();
+      if (response?.success) {
+        setUnreadCount(response.data?.count || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread notification count:', error);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -58,6 +86,7 @@ export default function Topbar() {
         });
         setNotifications(mapped);
       }
+      await fetchUnreadCount();
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
     }
@@ -132,9 +161,8 @@ export default function Topbar() {
     };
   }, []);
 
-  const unread = notifications.filter((n) => !n.read).length;
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await removeRegisteredDeviceToken();
     logout();
     navigate(ROUTES.LOGIN);
   };
@@ -147,6 +175,7 @@ export default function Topbar() {
         setNotifications((prev) =>
           prev.map((item) => (item.id === n.id ? { ...item, read: true } : item))
         );
+        setUnreadCount((count) => Math.max(0, count - 1));
       } catch (error) {
         console.error('Failed to mark notification as read:', error);
       }
@@ -164,6 +193,7 @@ export default function Topbar() {
     try {
       await markAllNotificationsReadApi();
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
     }
@@ -177,8 +207,8 @@ export default function Topbar() {
 
   return (
     <AppBar position="fixed" color="default" elevation={0} sx={{
-      width: { lg: `calc(100% - ${sidebarCollapsed ? 80 : 260}px)` },
-      ml: { lg: `${sidebarCollapsed ? 80 : 260}px` },
+      width: { lg: `calc(100% - ${effectiveCollapsed ? 80 : 260}px)` },
+      ml: { lg: `${effectiveCollapsed ? 80 : 260}px` },
       borderBottom: '1px solid',
       borderColor: 'divider',
       bgcolor: 'background.paper',
@@ -200,7 +230,7 @@ export default function Topbar() {
           onClick={toggleSidebar}
           sx={{ mr: 2, display: { xs: 'none', lg: 'flex' } }}
         >
-          {sidebarCollapsed ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
+          {effectiveCollapsed ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
         </IconButton>
 
         <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600, fontSize: '1.1rem' }}>
@@ -209,7 +239,7 @@ export default function Topbar() {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton color="inherit" onClick={(e) => setNotifAnchorEl(e.currentTarget)}>
-            <Badge badgeContent={unread} color="error">
+            <Badge badgeContent={unreadCount} color="error">
               <Bell size={20} />
             </Badge>
           </IconButton>
@@ -247,7 +277,7 @@ export default function Topbar() {
                     }}
                   >
                     {!n.read && <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mt: 0.8 }} />}
-                    {getNotificationIcon(n.notificationType)}
+                    {getNotificationIcon(n.type)}
                     <Box sx={{ flexGrow: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: n.read ? 400 : 500, color: 'text.primary', mb: 0.5, whiteSpace: 'normal' }}>
                         {n.text}
