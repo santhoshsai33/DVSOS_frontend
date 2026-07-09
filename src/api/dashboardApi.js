@@ -3,7 +3,7 @@ import { ENDPOINTS } from './endpoints';
 
 export const getDashboardStatsApi = () => axiosInstance.get(ENDPOINTS.DASHBOARD.STATS);
 export const getAdminDashboardApi = () => axiosInstance.get(ENDPOINTS.DASHBOARD.ADMIN);
-export const getManagerDashboardApi = () => axiosInstance.get(ENDPOINTS.DASHBOARD.MANAGER);
+export const getManagerDashboardApi = (params) => axiosInstance.get(ENDPOINTS.DASHBOARD.MANAGER, { params });
 export const getMDDashboardApi = (params) => axiosInstance.get(ENDPOINTS.DASHBOARD.MD, { params });
 export const getSupervisorDashboardApi = () => axiosInstance.get(ENDPOINTS.DASHBOARD.SUPERVISOR);
 export const getBodyShopDashboardApi = () => axiosInstance.get(ENDPOINTS.DASHBOARD.BODY_SHOP);

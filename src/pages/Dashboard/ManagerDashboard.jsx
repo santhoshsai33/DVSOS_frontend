@@ -47,30 +47,35 @@ function StagePill({ tone, children }) {
 export default function ManagerDashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(5);
   const [data, setData] = useState({
     kpis: [],
     pipeline: [],
-    vehicles: []
+    vehicles: [],
+    pagination: { total: 0 }
   });
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        setLoading(true);
-        const response = await getManagerDashboardApi();
+        setTableLoading(true);
+        const response = await getManagerDashboardApi({ page: page + 1, limit });
         if (response.success) {
-          setData(response.data || { kpis: [], pipeline: [], vehicles: [] });
+          setData(response.data || { kpis: [], pipeline: [], vehicles: [], pagination: { total: 0 } });
         }
       } catch (error) {
         console.error('Failed to fetch manager dashboard:', error);
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
+        setTableLoading(false);
       }
     };
 
     fetchDashboard();
-  }, []);
+  }, [page, limit]);
   const jobCardColumns = [
     {
       header: 'Job Card #',
@@ -123,7 +128,7 @@ export default function ManagerDashboard() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100%' }}>
-      {loading ? (
+      {initialLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
           <CircularProgress />
         </Box>
@@ -194,7 +199,15 @@ export default function ManagerDashboard() {
             <DataTable
               columns={jobCardColumns}
               data={data.vehicles || []}
-              showPagination={false}
+              loading={tableLoading}
+              showPagination={true}
+              serverSide={true}
+              totalCount={data.pagination?.total || 0}
+              page={page}
+              rowsPerPage={limit}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+              onPageChange={(newPage) => setPage(newPage)}
+              onRowsPerPageChange={(newLimit) => setLimit(newLimit)}
               onRowClick={(row) => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
               emptyMessage="No recent job cards found"
             />
