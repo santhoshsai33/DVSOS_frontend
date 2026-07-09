@@ -8,4 +8,4 @@ export const markAllNotificationsReadApi = () => axiosInstance.patch(ENDPOINTS.N
 export const registerDeviceTokenApi = (token, platform = 'WEB', deviceId = null) => (
   axiosInstance.post(ENDPOINTS.DEVICE_TOKEN.REGISTER, { token, platform, deviceId })
 );
-export const removeDeviceTokenApi = (token) => axiosInstance.delete(ENDPOINTS.DEVICE_TOKEN.REMOVE, { data: { token } });
+export const removeDeviceTokenApi = (token) => axiosInstance.put(ENDPOINTS.DEVICE_TOKEN.REMOVE, { token });
