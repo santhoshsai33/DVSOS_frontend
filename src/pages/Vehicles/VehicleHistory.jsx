@@ -67,7 +67,7 @@ export default function VehicleHistory() {
             </Box>
 
             <Box sx={{ px: 2.5, py: 1.75, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1, flexWrap: 'wrap' }}>
-              <Button size="sm" variant="outline" leftIcon={FileText} onClick={() => navigate(`/job-cards/view/${job.slug || job.id}`)}>
+              <Button size="sm" variant="outline" leftIcon={FileText} onClick={() => navigate(`/job-cards/view/${job.slug || job.id}`, { state: { fromVehicleHistory: true } })}>
                 View Full Job Card
               </Button>
             </Box>

@@ -31,6 +31,8 @@ export const STATUS_LABELS = {
   JOB_CARD_CREATED: 'Job Card Created',
   ENTRY_CREATED: 'Entry Created',
   EXITED: 'Exited',
+  ACTIVE: 'Active',
+  INACTIVE: 'Inactive',
 };
 
 export const STATUS_VARIANTS = {
@@ -51,6 +53,8 @@ export const STATUS_VARIANTS = {
   JOB_CARD_CREATED: 'success',
   ENTRY_CREATED: 'success',
   EXITED: 'danger',
+  ACTIVE: 'success',
+  INACTIVE: 'danger',
 };
 
 export const SERVICE_TYPES = [

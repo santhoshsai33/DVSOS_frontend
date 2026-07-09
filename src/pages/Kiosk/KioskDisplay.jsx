@@ -27,7 +27,7 @@ const formatReadyTime = (dateString) => {
 
 function useAutoScroll(items, maxVisible = 4, intervalMs = 3000) {
   const [displayItems, setDisplayItems] = useState(items);
-  
+
   // Only reset display items if the actual data from the backend changes
   const itemsKey = items.map(i => i.id).join(',');
 
@@ -37,7 +37,7 @@ function useAutoScroll(items, maxVisible = 4, intervalMs = 3000) {
 
   useEffect(() => {
     if (items.length <= maxVisible) return;
-    
+
     const interval = setInterval(() => {
       setDisplayItems(prev => {
         if (prev.length <= 1) return prev;
@@ -47,7 +47,7 @@ function useAutoScroll(items, maxVisible = 4, intervalMs = 3000) {
         return next;
       });
     }, intervalMs);
-    
+
     return () => clearInterval(interval);
   }, [items.length, maxVisible, intervalMs]);
 
@@ -69,16 +69,20 @@ function DisplaySection({ title, icon: Icon, items, statusClass }) {
       <div className={styles.list} ref={parent}>
         {animatedItems.map((item) => (
           <div key={item.id} className={styles.listItem}>
-            <div className={styles.itemMain}>
-              <span className={styles.vehicleNo}>{item.vehicle}</span>
-              <span className={styles.modelName}>{item.model}</span>
-            </div>
-            <div className={styles.customerName}>
-              {item.customerName}
-            </div>
-            <div className={styles.itemMeta}>
+            <div className={styles.cardHeader}>
               <span className={styles.jobId}>{item.id}</span>
-              <span className={styles.time}><Clock size={14} /> {item.waitTime || item.time}</span>
+              <span className={styles.timeBadge}><Clock size={14} /> {item.waitTime || item.time}</span>
+            </div>
+
+            <div className={styles.cardBody}>
+              <div className={styles.licensePlate}>
+                <div className={styles.plateInd}>IND</div>
+                <span className={styles.plateText}>{item.vehicle}</span>
+              </div>
+              <div className={styles.customerDetails}>
+                <h3 className={styles.customerName}>{item.customerName}</h3>
+                {/* <p className={styles.modelName}>{item.model}</p> */}
+              </div>
             </div>
           </div>
         ))}
@@ -174,34 +178,38 @@ export default function KioskDisplay() {
       {/* Main Grid */}
       <div className={styles.grid}>
         <Grid container spacing={{ xs: 1.5, md: 2, lg: 3 }} sx={{ height: { xs: 'auto', lg: '100%' } }}>
-          <Grid item xs={12} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
+          <Grid item xs={12} sm={6} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
             <DisplaySection title="Mechanical" icon={Wrench} items={mechanical} statusClass={styles.mechSection} />
           </Grid>
-          <Grid item xs={12} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
+          <Grid item xs={12} sm={6} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
             <DisplaySection title="Body Shop" icon={Wrench} items={bodyShop} statusClass={styles.bodySection} />
           </Grid>
-          <Grid item xs={12} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
+          <Grid item xs={12} sm={6} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
             <DisplaySection title="Water Wash" icon={Wrench} items={waterWash} statusClass={styles.washSection} />
           </Grid>
-          <Grid item xs={12} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
+          <Grid item xs={12} sm={6} lg={3} sx={{ height: { xs: 'auto', lg: '100%' }, minHeight: { xs: '450px', lg: 'auto' } }}>
             <div className={`${styles.section} ${styles.readySection}`}>
               <div className={styles.sectionHeader}>
-                <div className={styles.sectionTitle}><CheckCircle2 size={24} /> Delivery</div>
+                <div className={styles.sectionTitle}><CheckCircle2 size={24} /> Ready to Delivery</div>
                 <span className={styles.countBadge}>{ready.length}</span>
               </div>
               <div className={styles.list} ref={readyParent}>
                 {animatedReady.map((item) => (
-                  <div key={item.id} className={[styles.listItem, styles.readyItem].join(' ')}>
-                    <div className={styles.itemMain}>
-                      <span className={styles.vehicleNo}>{item.vehicle}</span>
-                      <span className={styles.modelName}>{item.model}</span>
-                    </div>
-                    <div className={`${styles.customerName} ${styles.readyCustomer}`}>
-                      {item.customerName}
-                    </div>
-                    <div className={styles.itemMeta}>
+                  <div key={item.id} className={`${styles.listItem} ${styles.readyItem}`}>
+                    <div className={styles.cardHeader}>
                       <span className={styles.jobId}>{item.id}</span>
-                      <span className={styles.time}>Since {item.time}</span>
+                      <span className={`${styles.timeBadge} ${styles.readyTimeBadge}`}><CheckCircle2 size={14} /> Since {item.time}</span>
+                    </div>
+
+                    <div className={styles.cardBody}>
+                      <div className={styles.licensePlate}>
+                        <div className={styles.plateInd}>IND</div>
+                        <span className={styles.plateText}>{item.vehicle}</span>
+                      </div>
+                      <div className={styles.customerDetails}>
+                        <h3 className={`${styles.customerName} ${styles.readyCustomer}`}>{item.customerName}</h3>
+                        {/* <p className={styles.modelName}>{item.model}</p> */}
+                      </div>
                     </div>
                   </div>
                 ))}
