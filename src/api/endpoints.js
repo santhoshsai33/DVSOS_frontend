@@ -41,6 +41,7 @@ export const ENDPOINTS = {
     DETAIL: (id) => `/job-cards/detail/${id}`,
     STATUSES: '/job-cards/statuses/list',
     SERVICE_STATUSES: '/job-cards/service-statuses/list',
+    ADDITIONAL_WORK_LIST: '/job-cards/additional-work/list',
     ADDITIONAL_WORK_CONTEXT: (id) => `/job-cards/${id}/additional-work/context`,
     ADDITIONAL_WORK_REQUEST: (id) => `/job-cards/${id}/additional-work/request`,
     UPDATE: (id) => `/job-cards/update/${id}`,
@@ -227,7 +228,7 @@ export const ENDPOINTS = {
   NOTIFICATIONS: {
     LIST: '/notifications',
     UNREAD_COUNT: '/notifications/unread-count',
-    MARK_READ: (id) => `/notifications/${id}/read`,
+    MARK_READ: (id) => `/notifications/read/${id}`,
     MARK_ALL_READ: '/notifications/read-all',
   },
   DEVICE_TOKEN: {
