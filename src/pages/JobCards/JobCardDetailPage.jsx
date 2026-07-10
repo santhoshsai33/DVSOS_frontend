@@ -56,7 +56,7 @@ export default function JobCardDetailPage() {
   };
 
   if (isLoading) {
-    return <Loader fullPage text="Loading job card details..." />;
+    return <Loader text="Loading job card details..." />;
   }
 
   if (!jobCard) {
@@ -194,7 +194,7 @@ export default function JobCardDetailPage() {
                 <FileText size={18} color="#0d9488" />
                 <Typography variant="subtitle1" fontWeight={700}>Selected Services</Typography>
               </Box>
-              <Box sx={{ overflowX: 'auto' }}>
+              <Box sx={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 300 }}>
                 <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                   <Box component="thead">
                     <Box component="tr" sx={{ bgcolor: 'rgba(18, 52, 59, 0.02)', borderBottom: '1px solid', borderColor: 'divider' }}>

@@ -334,9 +334,6 @@ export default function StageScheduleForm() {
               )}
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <RHFSwitch name="isActive" label="Active" />
-            </Grid>
           </Grid>
 
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>

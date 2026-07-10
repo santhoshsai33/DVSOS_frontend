@@ -53,7 +53,7 @@ export default function VehicleEditPage() {
 
   const updateVehicleMutation = useUpdateVehicle(identifier);
 
-  if (isLoading) return <Loader fullPage text="Loading vehicle..." />;
+  if (isLoading) return <Loader text="Loading vehicle..." />;
 
   const onSubmit = (data) => {
     updateVehicleMutation.mutate(data, {
