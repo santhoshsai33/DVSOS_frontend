@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Card, IconButton, Menu, MenuItem, Typography, Tooltip } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
@@ -113,7 +113,17 @@ export default function ServiceCategories() {
       accessor: 'name',
       render: (row) => <Typography variant="body2" fontWeight={600}>{row.name}</Typography>
     },
-    { header: 'Description', accessor: 'description' },
+    {
+      header: 'Description',
+      accessor: 'description',
+      render: (row) => (
+        <Tooltip title={row.description || ''} arrow placement="bottom">
+          <span style={{ maxWidth: 250, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {row.description || '-'}
+          </span>
+        </Tooltip>
+      )
+    },
     {
       header: 'Status',
       accessor: 'isActive',

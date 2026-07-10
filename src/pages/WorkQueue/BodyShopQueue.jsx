@@ -75,10 +75,10 @@ const QUEUE_DATA = [
 ];
 
 const COLS = [
-  { key: 'pending', label: 'Pending', icon: Clock, color: '#F59E0B' },
-  { key: 'assigned', label: 'Assigned', icon: User, color: '#3B82F6' },
-  { key: 'inProgress', label: 'In Progress', icon: Paintbrush, color: '#8B5CF6' },
-  { key: 'completed', label: 'Completed', icon: CheckCircle2, color: '#10B981' },
+  { key: 'pending', label: 'Pending Body Work', icon: Clock, color: '#F59E0B' },
+  { key: 'assigned', label: 'Assigned Body Shop', icon: User, color: '#3B82F6' },
+  { key: 'inProgress', label: 'Body Work In Progress', icon: Paintbrush, color: '#8B5CF6' },
+  { key: 'completed', label: 'Body Work Completed', icon: CheckCircle2, color: '#10B981' },
 ];
 
 export default function BodyShopQueue() {
@@ -283,7 +283,9 @@ export default function BodyShopQueue() {
                 data={queue}
                 loading={loading}
                 emptyMessage="No jobs in queue"
-                showPagination={false}
+                showPagination={true}
+                defaultItemsPerPage={5}
+                rowsPerPageOptions={[5, 10, 25, 50]}
               />
             </CardContent>
           </Card>

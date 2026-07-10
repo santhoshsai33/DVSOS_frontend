@@ -20,7 +20,7 @@ import { commonValidations } from '../../validations/commonSchema';
 const schema = z.object({
   categoryId: commonValidations.requiredNumber('Category Group'),
   name: commonValidations.alphaNumeric('Service Item Name'),
-  description: commonValidations.optionalString,
+  description: commonValidations.optionalDescription,
   defaultPrice: commonValidations.positiveAmount('Base Price'),
   estimatedMinutes: commonValidations.optionalAmount
 });

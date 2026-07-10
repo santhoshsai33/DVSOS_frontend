@@ -36,9 +36,9 @@ const getValidationSchema = (canAssignLocation) => z.object({
   status: commonValidations.optionalStatus,
   dob: commonValidations.pastDate('Date of Birth'),
   licenceNumber: commonValidations.licenceNumber,
-  emergencyContact: commonValidations.optionalString,
+  emergencyContact: commonValidations.optionalMobile,
   gender: commonValidations.requiredString('Gender'),
-  address: commonValidations.optionalString,
+  address: commonValidations.address,
 });
 
 export default function UserForm() {
@@ -275,6 +275,7 @@ export default function UserForm() {
                   name="emergencyContact"
                   label="Emergency Contact Number"
                   placeholder="Enter emergency contact number"
+                  inputProps={{ maxLength: 10 }}
                   onChange={(e) => {
                     const cleanVal = e.target.value.replace(/[^0-9]/g, '');
                     methods.setValue('emergencyContact', cleanVal, { shouldValidate: true });

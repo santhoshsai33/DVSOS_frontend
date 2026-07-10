@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Card, IconButton, Menu, MenuItem, Typography, Tooltip } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
@@ -95,6 +95,13 @@ export default function StatusList() {
     {
       header: 'Description',
       accessor: 'description',
+      render: (row) => (
+        <Tooltip title={row.description || ''} arrow placement="bottom">
+          <span style={{ maxWidth: 250, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {row.description || '-'}
+          </span>
+        </Tooltip>
+      )
     },
 
     {

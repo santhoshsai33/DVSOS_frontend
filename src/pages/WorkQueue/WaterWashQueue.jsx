@@ -118,10 +118,10 @@ const INITIAL_WASH_JOBS = [
 
 const SLA_MINUTES = 20;
 const COLS = [
-  { key: 'pending', label: 'Pending', icon: Clock, color: '#F59E0B' },
-  { key: 'assigned', label: 'Assigned', icon: UserPlus, color: '#3B82F6' },
-  { key: 'inProgress', label: 'In Progress', icon: Droplets, color: '#8B5CF6' },
-  { key: 'completed', label: 'Completed', icon: CheckCircle2, color: '#10B981' },
+  { key: 'pending', label: 'Pending Water Wash', icon: Clock, color: '#F59E0B' },
+  { key: 'assigned', label: 'Assigned Wash', icon: UserPlus, color: '#3B82F6' },
+  { key: 'inProgress', label: 'Water Wash In Progress', icon: Droplets, color: '#8B5CF6' },
+  { key: 'completed', label: 'Water Wash Completed', icon: CheckCircle2, color: '#10B981' },
 ];
 
 const statusMeta = {
@@ -412,7 +412,9 @@ export default function WaterWashQueue() {
                 columns={columns}
                 data={displayedJobs}
                 loading={loading}
-                showPagination={false}
+                showPagination={true}
+                defaultItemsPerPage={5}
+                rowsPerPageOptions={[5, 10, 25, 50]}
                 onRowClick={openJob}
                 emptyMessage="No vehicles in water wash queue"
               />

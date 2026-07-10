@@ -17,7 +17,7 @@ import { commonValidations } from '../../validations/commonSchema';
 
 const schema = z.object({
   name: commonValidations.alphaNumeric('Category Name'),
-  description: commonValidations.optionalString
+  description: commonValidations.optionalDescription
 });
 
 export default function ServiceCategoryForm() {

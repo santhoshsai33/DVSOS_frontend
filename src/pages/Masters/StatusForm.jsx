@@ -18,7 +18,7 @@ import { commonValidations } from '../../validations/commonSchema';
 const schema = z.object({
   moduleId: commonValidations.requiredUnionId('module'),
   statusName: commonValidations.lettersOnly('Status name'),
-  description: commonValidations.optionalString
+  description: commonValidations.optionalDescription
 });
 
 export default function StatusForm() {

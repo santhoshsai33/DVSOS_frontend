@@ -19,11 +19,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { commonValidations } from '../../validations/commonSchema';
 
 const schema = z.object({
-  fullName: commonValidations.requiredString('Customer Full Name'),
+  fullName: commonValidations.requiredString('Customer Full Name', 50),
   emailId: commonValidations.email,
   mobileNo: commonValidations.mobile,
   alternateMobileNo: commonValidations.optionalMobile,
-  address: commonValidations.optionalString
+  address: commonValidations.address
 });
 
 export default function CustomerForm() {
@@ -36,6 +36,7 @@ export default function CustomerForm() {
   const updateMutation = useUpdateCustomer();
 
   const methods = useForm({
+    mode: 'onChange',
     resolver: zodResolver(schema),
     defaultValues: {
       fullName: '',
