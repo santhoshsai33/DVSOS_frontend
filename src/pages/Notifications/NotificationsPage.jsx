@@ -88,7 +88,7 @@ export default function NotificationsPage({ title = 'Notifications' }) {
   };
 
   const handleItemClick = async (notif) => {
-    if (notif.readAt === null && canUpdateNotifications) {
+    if (notif.readAt === null) {
       await markAsRead(notif.id);
     }
     // Dynamic navigation based on relation ids
@@ -150,7 +150,7 @@ export default function NotificationsPage({ title = 'Notifications' }) {
                      }}
                      onClick={() => handleItemClick(notif)}
                      secondaryAction={
-                       !isRead && canUpdateNotifications && (
+                       !isRead && (
                          <IconButton 
                            edge="end" 
                            size="small" 

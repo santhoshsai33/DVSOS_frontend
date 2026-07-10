@@ -215,7 +215,7 @@ export default function BodyShopQueue() {
           variant="primary"
           size="sm"
           rightIcon={ArrowRight}
-          onClick={() => navigate(`${ROUTES.JOB_CARDS}/${row.id}`)}
+          onClick={() => navigate(`${ROUTES.JOB_CARDS}/view/${row.slug || row.id}`)}
           sx={{
             fontWeight: 600,
             textTransform: 'none',

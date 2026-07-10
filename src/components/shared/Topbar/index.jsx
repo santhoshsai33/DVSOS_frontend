@@ -19,7 +19,7 @@ import {
   setupForegroundMessageListener
 } from '../../../config/firebase';
 import { toastInfo } from '../../../notifications/toast';
-
+import { usePermissions } from '../../../hooks/usePermissions';
 const getNotificationIcon = (type) => {
   const t = String(type || '').toUpperCase();
   if (t.includes('JOB') || t.includes('ASSIGN') || t.includes('WORK')) {
@@ -58,7 +58,11 @@ export default function Topbar() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const { canRead } = usePermissions();
+  const canReadNotifications = canRead('/notifications');
+
   const fetchUnreadCount = async () => {
+    if (!canReadNotifications) return;
     try {
       const response = await getUnreadNotificationCountApi();
       if (response?.success) {
@@ -70,6 +74,7 @@ export default function Topbar() {
   };
 
   const fetchNotifications = async () => {
+    if (!canReadNotifications) return;
     try {
       const response = await getNotificationsApi({ limit: 10 });
       if (response?.success) {
@@ -109,7 +114,7 @@ export default function Topbar() {
   }, [setUser, setMenus]);
 
   useEffect(() => {
-    if (user) {
+    if (user && canReadNotifications) {
       fetchNotifications();
       // Register device token with FCM
       requestNotificationPermissionAndRegister();
@@ -141,7 +146,7 @@ export default function Topbar() {
         if (unsubscribe) unsubscribe();
       };
     }
-  }, [user]);
+  }, [user, canReadNotifications]);
 
   useEffect(() => {
     const handleServiceWorkerMessage = (event) => {
@@ -238,11 +243,13 @@ export default function Topbar() {
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton color="inherit" onClick={(e) => setNotifAnchorEl(e.currentTarget)}>
-            <Badge badgeContent={unreadCount} color="error">
-              <Bell size={20} />
-            </Badge>
-          </IconButton>
+          {canReadNotifications && (
+            <IconButton color="inherit" onClick={(e) => setNotifAnchorEl(e.currentTarget)}>
+              <Badge badgeContent={unreadCount} color="error">
+                <Bell size={20} />
+              </Badge>
+            </IconButton>
+          )}
 
           <Menu
             anchorEl={notifAnchorEl}

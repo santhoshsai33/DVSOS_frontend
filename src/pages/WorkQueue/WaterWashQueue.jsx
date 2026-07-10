@@ -17,105 +17,6 @@ import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { ROUTES } from '../../config/routes';
 import { getWaterWashDashboardApi } from '../../api/dashboardApi';
 
-const INITIAL_WASH_JOBS = [
-  {
-    id: 'W1',
-    vehicleNumber: 'TN 09 AB 1234',
-    customer: 'Rajesh Kumar',
-    mobile: '+91 98765 43210',
-    vehicle: 'Maruti Swift 2019',
-    details: 'White - Petrol',
-    washService: 'Premium Wash',
-    previousStages: ['Mech'],
-    waitMinutes: 22,
-    movedAt: '2026-06-18T10:45:00+05:30',
-    status: 'UNASSIGNED',
-    assignee: '',
-    priority: 'HIGH',
-    delivery: '5:30 PM',
-  },
-  {
-    id: 'W2',
-    vehicleNumber: 'KA 01 MX 5678',
-    customer: 'Priya Sharma',
-    mobile: '+91 87654 32109',
-    vehicle: 'Honda City 2021',
-    details: 'Silver - Petrol',
-    washService: 'Exterior Wash',
-    previousStages: ['Mech'],
-    waitMinutes: 5,
-    movedAt: '2026-06-18T10:38:00+05:30',
-    status: 'ASSIGNED',
-    assignee: 'Wash Team A',
-    priority: 'NORMAL',
-    delivery: '4:45 PM',
-  },
-  {
-    id: 'W3',
-    vehicleNumber: 'MH 02 XY 9012',
-    customer: 'Arun Pillai',
-    mobile: '+91 76543 21098',
-    vehicle: 'Hyundai i20 2022',
-    details: 'Red - Diesel',
-    washService: 'Foam Wash',
-    previousStages: ['Mech', 'Body'],
-    waitMinutes: 3,
-    movedAt: '2026-06-18T10:25:00+05:30',
-    status: 'UNASSIGNED',
-    assignee: '',
-    priority: 'NORMAL',
-    delivery: '6:00 PM',
-  },
-  {
-    id: 'W4',
-    vehicleNumber: 'DL 05 AA 2233',
-    customer: 'Vikram N.',
-    mobile: '+91 65432 10987',
-    vehicle: 'Toyota Innova 2020',
-    details: 'Grey - Diesel',
-    washService: 'Full Detail Wash',
-    previousStages: ['Mech', 'Body'],
-    waitMinutes: 0,
-    movedAt: '2026-06-18T09:58:00+05:30',
-    status: 'READY_FOR_DELIVERY',
-    assignee: 'Wash Team B',
-    priority: 'NORMAL',
-    delivery: 'Ready',
-  },
-  {
-    id: 'W5',
-    vehicleNumber: 'AP 16 ZZ 7700',
-    customer: 'Kiran Reddy',
-    mobile: '+91 90000 11223',
-    vehicle: 'Tata Nexon 2023',
-    details: 'Blue - Diesel',
-    washService: 'Interior Cleaning',
-    previousStages: ['Mech'],
-    waitMinutes: 38,
-    movedAt: '2026-06-18T09:42:00+05:30',
-    status: 'UNASSIGNED',
-    assignee: '',
-    priority: 'HIGH',
-    delivery: 'Overdue',
-  },
-  {
-    id: 'W6',
-    vehicleNumber: 'KL 08 XY 5544',
-    customer: 'Mohan D.',
-    mobile: '+91 94444 99887',
-    vehicle: 'Maruti Dzire 2021',
-    details: 'Brown - Petrol',
-    washService: 'Basic Wash',
-    previousStages: ['Mech'],
-    waitMinutes: 0,
-    movedAt: '2026-06-18T09:15:00+05:30',
-    status: 'COMPLETED',
-    assignee: 'Wash Team C',
-    priority: 'NORMAL',
-    delivery: '12:30 PM',
-  },
-];
-
 const SLA_MINUTES = 20;
 const COLS = [
   { key: 'pending', label: 'Pending', icon: Clock, color: '#F59E0B' },
@@ -224,7 +125,7 @@ export default function WaterWashQueue() {
   }, []);
 
   const openJob = (job) => {
-    navigate(`${ROUTES.JOB_CARDS}/${job.id}`);
+    navigate(`${ROUTES.JOB_CARDS}/view/${job.slug || job.id}`);
   };
 
   const displayedJobs = useMemo(() => {
@@ -262,14 +163,14 @@ export default function WaterWashQueue() {
         </Box>
       ),
     },
-    {
-      header: 'WASH DETAILS',
-      render: (row) => (
-        <Typography sx={{ fontSize: '0.875rem', color: '#374151' }}>
-          {row.washService}
-        </Typography>
-      ),
-    },
+    // {
+    //   header: 'WASH DETAILS',
+    //   render: (row) => (
+    //     <Typography sx={{ fontSize: '0.875rem', color: '#374151' }}>
+    //       {row.washService}
+    //     </Typography>
+    //   ),
+    // },
     {
       header: 'PREVIOUS STAGES',
       render: (row) => (

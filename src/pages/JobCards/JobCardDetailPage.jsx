@@ -101,12 +101,12 @@ export default function JobCardDetailPage() {
     services: Array.isArray(jobCard.services) && typeof jobCard.services[0] === 'string'
       ? jobCard.services.map(s => ({ name: s, price: 0, quantity: 1, status: 'PENDING', isAdditional: false }))
       : (jobCard.services?.map(s => ({
-          name: s.serviceName || s.serviceItem?.name || 'Unknown Service',
-          price: Number(s.price || 0),
-          quantity: Number(s.quantity || 1),
-          status: s.serviceStatus?.statusCode || 'PENDING',
-          isAdditional: !!s.isAdditional
-        })) || [])
+        name: s.serviceName || s.serviceItem?.name || 'Unknown Service',
+        price: Number(s.price || 0),
+        quantity: Number(s.quantity || 1),
+        status: s.serviceStatus?.statusCode || 'PENDING',
+        isAdditional: !!s.isAdditional
+      })) || [])
   };
 
   // Split services into default and additional
@@ -134,7 +134,7 @@ export default function JobCardDetailPage() {
     <Box sx={{ minHeight: '100%', p: { xs: 2, md: 4 } }}>
       {/* Page Header */}
       <PageHeader
-        title={`Job Card: #${displayJobCard.id}`}
+        title={`Job Card: ${displayJobCard.id}`}
         subtitle={`Created on ${formatDateTime(displayJobCard.createdAt)}`}
         breadcrumbs={[{ label: 'Job Cards', path: ROUTES.JOB_CARDS }, { label: 'View Details' }]}
         actions={
@@ -228,66 +228,66 @@ export default function JobCardDetailPage() {
 
             {/* Additional Work & Services */}
             {additionalServices.length > 0 && (
-            <Card sx={{ borderRadius: 0 }}>
-              <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PlusCircle size={18} color="#0d9488" />
-                <Typography variant="subtitle1" fontWeight={700}>Additional Work & Services</Typography>
-              </Box>
-              <Box sx={{ overflowX: 'auto' }}>
-                <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-                  <Box component="thead">
-                    <Box component="tr" sx={{ bgcolor: 'rgba(18, 52, 59, 0.02)', borderBottom: '1px solid', borderColor: 'divider' }}>
-                      <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'left', color: 'text.secondary' }}>Service Description</Box>
-                      <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'center', color: 'text.secondary', width: 120 }}>Status</Box>
-                      <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'right', color: 'text.secondary', width: 150 }}>Rate</Box>
+              <Card sx={{ borderRadius: 0 }}>
+                <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PlusCircle size={18} color="#0d9488" />
+                  <Typography variant="subtitle1" fontWeight={700}>Additional Work & Services</Typography>
+                </Box>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                    <Box component="thead">
+                      <Box component="tr" sx={{ bgcolor: 'rgba(18, 52, 59, 0.02)', borderBottom: '1px solid', borderColor: 'divider' }}>
+                        <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'left', color: 'text.secondary' }}>Service Description</Box>
+                        <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'center', color: 'text.secondary', width: 120 }}>Status</Box>
+                        <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'right', color: 'text.secondary', width: 150 }}>Rate</Box>
+                      </Box>
+                    </Box>
+                    <Box component="tbody">
+                      {additionalServices.length === 0 ? (
+                        <Box component="tr">
+                          <Box component="td" colSpan="3" sx={{ p: 3, textAlign: 'center', fontStyle: 'italic', color: 'text.disabled' }}>
+                            No additional services registered.
+                          </Box>
+                        </Box>
+                      ) : (
+                        additionalServices.map((service, index) => (
+                          <Box component="tr" key={index} sx={{ borderBottom: index < additionalServices.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
+                            <Box component="td" sx={{ p: 2, fontWeight: 500 }}>{service.name}</Box>
+                            <Box component="td" sx={{ p: 2, textAlign: 'center' }}>
+                              <StatusBadge status={service.status} />
+                            </Box>
+                            <Box component="td" sx={{ p: 2, textAlign: 'right', fontWeight: 600 }}>
+                              {formatCurrency(service.price)}
+                            </Box>
+                          </Box>
+                        ))
+                      )}
                     </Box>
                   </Box>
-                  <Box component="tbody">
-                    {additionalServices.length === 0 ? (
-                      <Box component="tr">
-                        <Box component="td" colSpan="3" sx={{ p: 3, textAlign: 'center', fontStyle: 'italic', color: 'text.disabled' }}>
-                          No additional services registered.
-                        </Box>
-                      </Box>
-                    ) : (
-                      additionalServices.map((service, index) => (
-                        <Box component="tr" key={index} sx={{ borderBottom: index < additionalServices.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
-                          <Box component="td" sx={{ p: 2, fontWeight: 500 }}>{service.name}</Box>
-                          <Box component="td" sx={{ p: 2, textAlign: 'center' }}>
-                            <StatusBadge status={service.status} />
-                          </Box>
-                          <Box component="td" sx={{ p: 2, textAlign: 'right', fontWeight: 600 }}>
-                            {formatCurrency(service.price)}
-                          </Box>
-                        </Box>
-                      ))
-                    )}
-                  </Box>
                 </Box>
-              </Box>
-            </Card>
+              </Card>
             )}
 
             {/* Complaints / Notes */}
             {noteItems.length > 0 && (
-            <Card sx={{ borderRadius: 0 }}>
-              <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Shield size={18} color="#0d9488" />
-                <Typography variant="subtitle1" fontWeight={700}>Additional Notes & Complaints</Typography>
-              </Box>
-              <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {noteItems.map((item) => (
-                  <Box key={item.label}>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                      {item.label}
-                    </Typography>
-                    <Typography variant="body2" color="text.primary">
-                      {item.value}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Card>
+              <Card sx={{ borderRadius: 0 }}>
+                <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Shield size={18} color="#0d9488" />
+                  <Typography variant="subtitle1" fontWeight={700}>Additional Notes & Complaints</Typography>
+                </Box>
+                <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {noteItems.map((item) => (
+                    <Box key={item.label}>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                        {item.label}
+                      </Typography>
+                      <Typography variant="body2" color="text.primary">
+                        {item.value}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Card>
             )}
 
           </Box>

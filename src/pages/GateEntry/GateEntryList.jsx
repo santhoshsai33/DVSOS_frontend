@@ -109,13 +109,13 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
       <PageHeader
         title="Vehicle Entry"
         breadcrumbs={[{ label: 'Vehicle Entry' }]}
-        // actions={
-        //   onAddClick && canCreateGateEntry ? (
-        //     <Button variant="primary" leftIcon={Plus} onClick={onAddClick}>
-        //       New Entry
-        //     </Button>
-        //   ) : null
-        // }
+      // actions={
+      //   onAddClick && canCreateGateEntry ? (
+      //     <Button variant="primary" leftIcon={Plus} onClick={onAddClick}>
+      //       New Entry
+      //     </Button>
+      //   ) : null
+      // }
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -181,16 +181,16 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
         PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
       >
         {canReadGateEntry && (
-          <MenuItem onClick={() => { 
+          <MenuItem onClick={() => {
             const idOrSlug = selectedEntry?.slug || selectedEntry?.id;
-            handleMenuClose(); 
-            if(idOrSlug) navigate(`/gate-entry/view/${idOrSlug}`); 
+            handleMenuClose();
+            if (idOrSlug) navigate(`/gate-entry/view/${idOrSlug}`);
           }}>
             <Eye size={16} className="mr-3 text-primary" />
             View
           </MenuItem>
         )}
-        {canCreateGateEntry && (
+        {/* {canCreateGateEntry && (
           <MenuItem onClick={() => { 
             const entry = selectedEntry;
             handleMenuClose(); 
@@ -205,7 +205,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
             <LogOut size={16} className="mr-3" />
             Exit
           </MenuItem>
-        )}
+        )} */}
       </Menu>
 
       <Modal open={showExitModal} onClose={() => setShowExitModal(false)}>
