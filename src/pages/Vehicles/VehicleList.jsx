@@ -71,7 +71,7 @@ export default function VehicleList() {
     { header: 'Fuel', accessor: 'fuelType' },
     {
       header: 'Status',
-      render: (row) => <StatusBadge status={row.status || 'ACTIVE'} />
+      render: (row) => <StatusBadge status={row.isActive === false ? 'INACTIVE' : 'ACTIVE'} />
     },
     {
       header: 'Created At',

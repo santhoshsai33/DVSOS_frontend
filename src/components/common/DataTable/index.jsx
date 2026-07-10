@@ -30,6 +30,7 @@ export default function DataTable({
   totalCount = 0,
   page: serverPage = 0,
   rowsPerPage: serverRowsPerPage = 10,
+  rowsPerPageOptions = [10, 25, 50],
   onPageChange,
   onRowsPerPageChange
 }) {
@@ -148,6 +149,7 @@ export default function DataTable({
                       bgcolor: '#FFFFFF',
                       cursor: onRowClick ? 'pointer' : 'default',
                       transition: 'background-color 0.2s',
+
                     }}
                   >
                     {columns.map((col, colIndex) => {
@@ -162,7 +164,8 @@ export default function DataTable({
                             color: '#334155',
                             fontSize: '0.875rem',
                             fontWeight: 500,
-                            whiteSpace: isActionColumn ? 'nowrap' : 'normal',
+                            // whiteSpace: isActionColumn ? 'nowrap' : 'normal',
+                            whiteSpace: 'nowrap',
                             width: isActionColumn ? '1%' : col.width || 'auto',
                             '&:first-of-type': { pl: 4 },
                             '&:last-of-type': { pr: 4 }
@@ -206,7 +209,7 @@ export default function DataTable({
                   height: 36
                 }}
               >
-                {[10, 25, 50].map((num) => (
+                {rowsPerPageOptions.map((num) => (
                   <MenuItem key={num} value={num} sx={{ fontSize: '0.875rem' }}>{num}</MenuItem>
                 ))}
               </Select>

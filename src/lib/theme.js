@@ -165,6 +165,7 @@ const theme = createTheme({
           border: '1px solid rgba(0, 0, 0, 0.12)',
           borderRadius: 8,
           backgroundColor: '#ffffff',
+          overflowX: 'auto',
         },
       },
     },

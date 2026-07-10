@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Box, Card, Grid, Typography } from '@mui/material';
-import { Save } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
@@ -44,7 +44,7 @@ export default function VehicleEditPage() {
         mobile: vehicle.customer?.mobileNo || vehicle.mobile || '',
         brand: vehicle.brandId || '',
         makeModel: vehicle.model || vehicle.makeModel || '',
-        status: vehicle.status || 'ACTIVE',
+        status: vehicle.isActive === false ? 'INACTIVE' : 'ACTIVE',
         type: vehicle.variant || vehicle.type || '',
         fuelType: vehicle.fuelType || '',
       });
@@ -68,6 +68,15 @@ export default function VehicleEditPage() {
       <PageHeader
         title="Edit Vehicle"
         breadcrumbs={[{ label: 'Vehicles', path: ROUTES.VEHICLES }, { label: 'Edit' }]}
+        actions={
+          <Box
+            component="button"
+            onClick={() => navigate(ROUTES.VEHICLES)}
+            className="back-btn"
+          >
+            <ArrowLeft size={16} /> Back to List
+          </Box>
+        }
       />
 
       <Card sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>

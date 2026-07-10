@@ -15,14 +15,14 @@ const formatWaitTime = (minutes) => {
 };
 
 const ColumnHeader = ({ title, icon: Icon, count, color }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, pb: 1, borderBottom: `2px solid ${color}` }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Icon sx={{ color }} />
-      <Typography variant="subtitle1" fontWeight="bold" color={color} sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, pb: 1, borderBottom: `2px solid ${color}`, gap: 0.5 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 8px)', minWidth: 0 }}>
+      <Icon sx={{ color, fontSize: 'clamp(1rem, 1.3vw, 1.5rem)' }} />
+      <Typography fontWeight="bold" color={color} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: 'clamp(0.7rem, 0.9vw, 1.1rem)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {title}
       </Typography>
     </Box>
-    <Chip label={count} size="small" sx={{ bgcolor: color, color: 'white', fontWeight: 'bold' }} />
+    <Chip label={count} size="small" sx={{ bgcolor: color, color: 'white', fontWeight: 'bold', fontSize: 'clamp(0.65rem, 0.8vw, 0.85rem)', height: 'clamp(18px, 1.5vw, 24px)', minWidth: 'clamp(18px, 1.5vw, 24px)' }} />
   </Box>
 );
 
@@ -30,40 +30,41 @@ const JobCard = ({ job, color, isReady }) => (
   <Paper
     elevation={1}
     sx={{
-      p: 2,
-      mb: 2,
+      p: 'clamp(8px, 1.2vw, 16px)',
+      mb: 'clamp(8px, 1.2vw, 16px)',
       borderRadius: 2,
       borderLeft: `6px solid ${color}`,
+      borderLeftWidth: 'clamp(4px, 0.5vw, 8px)',
       bgcolor: isReady ? '#e8f5e9' : 'white',
       border: isReady ? `2px solid ${color}` : undefined,
       display: 'flex',
       flexDirection: 'column',
-      gap: 1.5,
+      gap: 'clamp(6px, 1vw, 12px)',
       transition: 'transform 0.2s',
       '&:hover': {
         transform: 'scale(1.02)'
       }
     }}
   >
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-      <Typography variant="h6" fontWeight="bold" sx={{ letterSpacing: 1 }}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+      <Typography fontWeight="bold" sx={{ letterSpacing: 0.5, fontSize: 'clamp(0.85rem, 1.1vw, 1.25rem)', whiteSpace: 'nowrap' }}>
         {job.vehicleNumber}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: '40%', textAlign: 'right', lineHeight: 1.2 }}>
+      <Typography color="text.secondary" sx={{ maxWidth: '55%', textAlign: 'right', lineHeight: 1.2, fontSize: 'clamp(0.65rem, 0.8vw, 0.875rem)', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
         {job.vehicleInfo}
       </Typography>
     </Box>
-    
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="body2" color="text.secondary">
+
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <Typography color="text.secondary" sx={{ fontSize: 'clamp(0.6rem, 0.75vw, 0.8rem)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {job.id}
         </Typography>
-        <Typography variant="body2" fontWeight="bold" color="text.primary">
+        <Typography fontWeight="bold" color="text.primary" sx={{ fontSize: 'clamp(0.65rem, 0.8vw, 0.875rem)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {job.customerName}
         </Typography>
       </Box>
-      <Typography variant="body2" fontWeight="bold" color={color} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <Typography fontWeight="bold" color={color} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: 'clamp(0.65rem, 0.8vw, 0.875rem)', whiteSpace: 'nowrap', flexShrink: 0 }}>
         {isReady ? 'Ready' : formatWaitTime(job.waitMinutes)}
       </Typography>
     </Box>
@@ -105,7 +106,7 @@ const TVKiosk = () => {
     { id: 'MECHANICAL', title: 'Mechanical', icon: Build, color: '#3B82F6' },
     { id: 'BODY_SHOP', title: 'Body Shop', icon: DirectionsCarFilled, color: '#F59E0B' },
     { id: 'WATER_WASH', title: 'Water Wash', icon: InvertColors, color: '#06B6D4' },
-    { id: 'READY_FOR_DELIVERY', title: 'Ready For Delivery', icon: CheckCircle, color: '#10B981' }
+    { id: 'READY_FOR_DELIVERY', title: 'Delivery', icon: CheckCircle, color: '#10B981' }
   ];
 
   const getJobsForColumn = (colId) => jobs.filter(j => j.column === colId);
@@ -113,52 +114,52 @@ const TVKiosk = () => {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#F3F4F6', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <Box sx={{ bgcolor: 'white', px: 4, py: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ bgcolor: '#3B82F6', p: 1, borderRadius: 2, display: 'flex' }}>
-            <DirectionsCar sx={{ color: 'white' }} />
+      <Box sx={{ bgcolor: 'white', px: 'clamp(16px, 3vw, 32px)', py: 'clamp(8px, 1.5vw, 16px)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 'clamp(8px, 1.5vw, 16px)' }}>
+          <Box sx={{ bgcolor: '#3B82F6', p: 'clamp(4px, 0.8vw, 8px)', borderRadius: 2, display: 'flex' }}>
+            <DirectionsCar sx={{ color: 'white', fontSize: 'clamp(1.2rem, 2vw, 2rem)' }} />
           </Box>
           <Box>
-            <Typography variant="h5" fontWeight="900" color="#1E3A8A">DVSOS Live Status</Typography>
-            <Typography variant="caption" fontWeight="bold" color="#60A5FA" sx={{ letterSpacing: 1, textTransform: 'uppercase' }}>
+            <Typography fontWeight="900" color="#1E3A8A" sx={{ fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)', lineHeight: 1.2 }}>DVSOS Live Status</Typography>
+            <Typography fontWeight="bold" color="#60A5FA" sx={{ letterSpacing: 0.5, textTransform: 'uppercase', fontSize: 'clamp(0.55rem, 0.75vw, 0.75rem)' }}>
               Vehicle Service Operations Center
             </Typography>
           </Box>
         </Box>
-        
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px, 2.5vw, 24px)' }}>
           <Box sx={{ textAlign: 'right' }}>
-            <Typography variant="caption" color="text.secondary" fontWeight="bold">
+            <Typography color="text.secondary" fontWeight="bold" sx={{ fontSize: 'clamp(0.55rem, 0.75vw, 0.75rem)' }}>
               {currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
             </Typography>
-            <Typography variant="h5" fontWeight="bold" color="#111827">
+            <Typography fontWeight="bold" color="#111827" sx={{ fontSize: 'clamp(1.1rem, 1.8vw, 1.5rem)', lineHeight: 1.2 }}>
               {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
             </Typography>
           </Box>
-          <IconButton onClick={toggleFullscreen} sx={{ bgcolor: '#F3F4F6' }}>
-            {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+          <IconButton onClick={toggleFullscreen} sx={{ bgcolor: '#F3F4F6', p: 'clamp(4px, 0.8vw, 8px)' }}>
+            {isFullscreen ? <FullscreenExit sx={{ fontSize: 'clamp(1rem, 1.5vw, 1.5rem)' }} /> : <Fullscreen sx={{ fontSize: 'clamp(1rem, 1.5vw, 1.5rem)' }} />}
           </IconButton>
-          <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: '#FEE2E2', color: '#EF4444', borderRadius: 2, px: 2, gap: 1 }}>
-            <Typography variant="button" fontWeight="bold">Exit</Typography>
+          <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: '#FEE2E2', color: '#EF4444', borderRadius: 2, px: 'clamp(8px, 1.5vw, 16px)', py: 'clamp(4px, 0.8vw, 8px)', gap: 0.5 }}>
+            <Typography variant="button" fontWeight="bold" sx={{ fontSize: 'clamp(0.7rem, 0.9vw, 0.875rem)' }}>Exit</Typography>
           </IconButton>
         </Box>
       </Box>
 
       {/* Main Content */}
-      <Box sx={{ p: 4, flex: 1, overflow: 'hidden' }}>
-        <Grid container spacing={4} sx={{ height: '100%' }}>
+      <Box sx={{ p: 'clamp(12px, 2.5vw, 32px)', flex: 1, overflow: 'hidden' }}>
+        <Grid container spacing={'clamp(12px, 2.5vw, 32px)'} sx={{ height: '100%' }}>
           {columns.map(col => {
             const colJobs = getJobsForColumn(col.id);
             return (
               <Grid item xs={12} sm={6} md={3} key={col.id} sx={{ height: '100%' }}>
-                <Paper sx={{ height: '100%', p: 3, borderRadius: 3, display: 'flex', flexDirection: 'column', bgcolor: 'white' }}>
+                <Paper sx={{ height: '100%', p: 'clamp(12px, 2vw, 24px)', borderRadius: 3, display: 'flex', flexDirection: 'column', bgcolor: 'white' }}>
                   <ColumnHeader title={col.title} icon={col.icon} count={colJobs.length} color={col.color} />
                   <Box sx={{ flex: 1, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: 6 }, '&::-webkit-scrollbar-thumb': { bgcolor: '#E5E7EB', borderRadius: 3 } }}>
                     {colJobs.map(job => (
                       <JobCard key={job.rawId} job={job} color={col.color} isReady={col.id === 'READY_FOR_DELIVERY'} />
                     ))}
                     {colJobs.length === 0 && (
-                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', mt: 4 }}>
+                      <Typography color="text.secondary" sx={{ textAlign: 'center', mt: 4, fontSize: 'clamp(0.75rem, 0.9vw, 0.875rem)' }}>
                         No vehicles in this stage
                       </Typography>
                     )}

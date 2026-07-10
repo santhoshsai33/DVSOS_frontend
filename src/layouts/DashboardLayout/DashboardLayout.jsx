@@ -1,12 +1,27 @@
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Box, useTheme, useMediaQuery } from '@mui/material';
 import Sidebar from '../../components/shared/Sidebar';
 import Topbar from '../../components/shared/Topbar';
 import useUIStore from '../../store/useUIStore';
 
 export default function DashboardLayout() {
+  const theme = useTheme();
+  // Laptop/Medium screens (under 1366px wide)
+  const isLaptop = useMediaQuery('(max-width: 1366px)');
   const { sidebarCollapsed } = useUIStore();
-  const sidebarWidth = sidebarCollapsed ? 80 : 260;
+  const [userHasToggled, setUserHasToggled] = useState(false);
+  const [lastCollapsedVal, setLastCollapsedVal] = useState(sidebarCollapsed);
+
+  useEffect(() => {
+    if (sidebarCollapsed !== lastCollapsedVal) {
+      setUserHasToggled(true);
+      setLastCollapsedVal(sidebarCollapsed);
+    }
+  }, [sidebarCollapsed, lastCollapsedVal]);
+
+  const effectiveCollapsed = sidebarCollapsed || (isLaptop && !userHasToggled);
+  const sidebarWidth = effectiveCollapsed ? 80 : 260;
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', bgcolor: 'background.default' }}>
@@ -29,3 +44,4 @@ export default function DashboardLayout() {
     </Box>
   );
 }
+

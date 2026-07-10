@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, User, Settings as SettingsIcon, Menu as MenuIcon, PanelLeftClose, PanelLeft, FileText, Truck, AlertCircle, Info } from 'lucide-react';
-import { AppBar, Toolbar, IconButton, Typography, Box, Badge, Avatar, Menu, MenuItem, Divider, ListItemIcon, ListItemText } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Box, Badge, Avatar, Menu, MenuItem, Divider, ListItemIcon, ListItemText, useTheme, useMediaQuery } from '@mui/material';
 import useAuthStore from '../../../store/useAuthStore';
 import useUIStore from '../../../store/useUIStore';
 import { ROUTES } from '../../../config/routes';
@@ -35,8 +35,22 @@ const getNotificationIcon = (type) => {
 };
 
 export default function Topbar() {
+  const theme = useTheme();
+  const isLaptop = useMediaQuery('(max-width: 1366px)');
   const { user, role, logout, setUser, setMenus } = useAuthStore();
   const { sidebarCollapsed, toggleSidebar, setSidebarMobileOpen } = useUIStore();
+  const [userHasToggled, setUserHasToggled] = useState(false);
+  const [lastCollapsedVal, setLastCollapsedVal] = useState(sidebarCollapsed);
+
+  useEffect(() => {
+    if (sidebarCollapsed !== lastCollapsedVal) {
+      setUserHasToggled(true);
+      setLastCollapsedVal(sidebarCollapsed);
+    }
+  }, [sidebarCollapsed, lastCollapsedVal]);
+
+  const effectiveCollapsed = sidebarCollapsed || (isLaptop && !userHasToggled);
+
   const navigate = useNavigate();
   const location = useLocation();
   const [notifAnchorEl, setNotifAnchorEl] = useState(null);
@@ -193,8 +207,8 @@ export default function Topbar() {
 
   return (
     <AppBar position="fixed" color="default" elevation={0} sx={{
-      width: { lg: `calc(100% - ${sidebarCollapsed ? 80 : 260}px)` },
-      ml: { lg: `${sidebarCollapsed ? 80 : 260}px` },
+      width: { lg: `calc(100% - ${effectiveCollapsed ? 80 : 260}px)` },
+      ml: { lg: `${effectiveCollapsed ? 80 : 260}px` },
       borderBottom: '1px solid',
       borderColor: 'divider',
       bgcolor: 'background.paper',
@@ -216,7 +230,7 @@ export default function Topbar() {
           onClick={toggleSidebar}
           sx={{ mr: 2, display: { xs: 'none', lg: 'flex' } }}
         >
-          {sidebarCollapsed ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
+          {effectiveCollapsed ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
         </IconButton>
 
         <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600, fontSize: '1.1rem' }}>

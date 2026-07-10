@@ -310,3 +310,30 @@ code {
 .status-kiosk-bodyshop { --section-color: #F59E0B; --section-bg: rgba(245, 158, 11, 0.1); }
 .status-kiosk-waterwash { --section-color: #06B6D4; --section-bg: rgba(6, 182, 212, 0.1); }
 .status-kiosk-ready { --section-color: #10B981; --section-bg: rgba(16, 185, 129, 0.1); }
+
+/* Responsive Adjustments for Laptops & Medium Screens */
+@media (max-width: 1366px) {
+  .table-header-premium {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .table-header-premium > div {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  .surface-card {
+    padding: 1rem;
+  }
+  .p-4 {
+    padding: 1rem !important;
+  }
+  .p-5 {
+    padding: 1.5rem !important;
+  }
+}

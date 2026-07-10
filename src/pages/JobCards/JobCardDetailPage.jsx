@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Grid, Card, Typography, Divider, Chip } from '@mui/material';
 import { ArrowLeft, Car, User, Shield, FileText, AlertTriangle, PlusCircle } from 'lucide-react';
 import { useJobCard } from '../../queries/useDataQueries';
@@ -14,7 +14,16 @@ export default function JobCardDetailPage() {
   const { id, slug } = useParams();
   const jobCardIdentifier = slug || id;
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: jobCard, isLoading } = useJobCard(jobCardIdentifier);
+
+  const handleBack = () => {
+    if (location.state?.fromVehicleHistory) {
+      navigate(-1);
+    } else {
+      navigate(ROUTES.JOB_CARDS);
+    }
+  };
 
   const assignmentDetails = useMemo(() => {
     const assignments = Array.isArray(jobCard?.workAssignments) ? jobCard.workAssignments : [];
@@ -58,7 +67,7 @@ export default function JobCardDetailPage() {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           The job card "{jobCardIdentifier}" could not be located in our records.
         </Typography>
-        <Button variant="primary" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.JOB_CARDS)}>
+        <Button variant="primary" leftIcon={ArrowLeft} onClick={handleBack}>
           Back to List
         </Button>
       </Box>
@@ -130,7 +139,7 @@ export default function JobCardDetailPage() {
         breadcrumbs={[{ label: 'Job Cards', path: ROUTES.JOB_CARDS }, { label: 'View Details' }]}
         actions={
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(ROUTES.JOB_CARDS)}>
+            <Button variant="back" leftIcon={ArrowLeft} onClick={handleBack}>
               Back
             </Button>
           </Box>
