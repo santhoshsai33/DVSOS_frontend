@@ -393,7 +393,7 @@ export default function JobCardCreate() {
   };
 
   if (isEditMode && isJobCardLoading) {
-    return <Loader fullPage text="Loading job card details..." />;
+    return <Loader text="Loading job card details..." />;
   }
 
   const vehicleNumber = watch('vehicleNumber');

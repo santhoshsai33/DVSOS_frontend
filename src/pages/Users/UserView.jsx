@@ -1,19 +1,63 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Card, Typography, Grid, Skeleton } from '@mui/material';
+import { Box, Card, Typography, Grid } from '@mui/material';
+import { 
+  User, Mail, Phone, MapPin, Shield, ToggleRight, ToggleLeft, 
+  Calendar, Clock, CalendarDays, CreditCard, PhoneCall, Monitor 
+} from 'lucide-react';
 import BackButton from '../../components/common/BackButton';
+import Loader from '../../components/common/Loader';
 import { ROUTES } from '../../config/routes';
 import { getUserApi } from '../../api/userApi';
 import { toastError } from '../../notifications/toast';
 
-const DetailRow = ({ label, value, isLast = false }) => (
-  <Box sx={{ display: 'flex', py: 1.5, borderBottom: isLast ? 'none' : '1px solid', borderColor: 'divider' }}>
-    <Typography variant="body2" fontWeight={600} sx={{ width: '40%', color: 'text.primary' }}>
-      {label}
-    </Typography>
-    <Typography variant="body2" sx={{ width: '60%', color: 'text.secondary', wordBreak: 'break-word' }}>
-      {value || '-'}
-    </Typography>
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  } catch (e) {
+    return 'N/A';
+  }
+};
+
+const DetailRow = ({ icon: Icon, label, value, isLast = false }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      py: 2.25,
+      borderBottom: isLast ? 'none' : '1px solid',
+      borderColor: '#eff6ff',
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box
+        sx={{
+          width: 38,
+          height: 38,
+          borderRadius: '50%',
+          bgcolor: '#eff6ff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#2563eb',
+          mr: 2,
+        }}
+      >
+        <Icon size={18} />
+      </Box>
+      <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500 }}>
+        {label}
+      </Typography>
+    </Box>
+    <Box sx={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem', textAlign: 'right', wordBreak: 'break-all', maxWidth: '50%' }}>
+      {value}
+    </Box>
   </Box>
 );
 
@@ -49,9 +93,7 @@ export default function UserView() {
   if (loading) {
     return (
       <Box sx={{ p: { xs: 2, md: 4 } }}>
-        <Card sx={{ p: 4, borderRadius: 1, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
-          <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 1 }} />
-        </Card>
+        <Loader text="Loading user details..." />
       </Box>
     );
   }
@@ -59,68 +101,100 @@ export default function UserView() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5" fontWeight={700}>User Details</Typography>
+        <Typography variant="h5" fontWeight={800}>User Details</Typography>
         <BackButton to={ROUTES.ADMIN_USERS} label="Back to Users" />
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 1, boxShadow: 'none', border: '1px solid', borderColor: 'divider', height: '100%' }}>
-            <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+      <Card
+        sx={{
+          p: { xs: 3, md: 4 },
+          borderRadius: 0,
+          boxShadow: '0 4px 16px rgba(37, 99, 235, 0.05)',
+          border: '1px solid #dce6f5',
+          bgcolor: '#FFFFFF',
+        }}
+      >
+        <Grid container spacing={4}>
+          {/* Left Column: User Information */}
+          <Grid
+            item
+            xs={12}
+            md={6}
+            sx={{
+              borderRight: { md: '1px solid #eff6ff' },
+              pr: { md: 4 },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+              <User size={22} color="#2563eb" />
+              <Typography variant="subtitle1" fontWeight={700} color="#2563eb">
                 User Information
               </Typography>
             </Box>
-            <Box sx={{ px: 2, pb: 1 }}>
-              <DetailRow label="Full Name" value={user?.fullName} />
-              <DetailRow label="Email" value={user?.email || user?.emailId} />
-              <DetailRow label="Mobile" value={user?.mobile || user?.mobileNo} />
-              <DetailRow label="Location" value={user?.location?.locationName || user?.locationName} />
-              <DetailRow label="Role" value={user?.role?.name} />
-              <DetailRow 
-                label="Status" 
-                isLast={true}
+
+            <Box>
+              <DetailRow icon={User} label="Full Name" value={user?.fullName || '-'} />
+              <DetailRow icon={Mail} label="Email" value={user?.email || user?.emailId || '-'} />
+              <DetailRow icon={Phone} label="Mobile" value={user?.mobile || user?.mobileNo || '-'} />
+              <DetailRow icon={MapPin} label="Location" value={user?.location?.locationName || user?.locationName || '-'} />
+              <DetailRow icon={Shield} label="Role" value={user?.role?.name || '-'} />
+              <DetailRow
+                icon={user?.isActive ? ToggleRight : ToggleLeft}
+                label="Status"
                 value={
-                  <Typography variant="caption" fontWeight={700} color={user?.isActive ? 'success.main' : 'error.main'}>
-                    {user?.isActive ? 'ACTIVE' : 'INACTIVE'}
-                  </Typography>
-                } 
+                  <Box
+                    component="span"
+                    sx={{
+                      color: user?.isActive ? '#059669' : '#dc2626',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {user?.isActive ? 'Active' : 'Inactive'}
+                  </Box>
+                }
+                isLast={true}
               />
             </Box>
-          </Card>
-        </Grid>
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 1, boxShadow: 'none', border: '1px solid', borderColor: 'divider', height: '100%' }}>
-            <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="subtitle1" fontWeight={700} color="text.primary">
-                System Details
-              </Typography>
-            </Box>
-            <Box sx={{ px: 2, pb: 1 }}>
-              <DetailRow label="Created On" value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'} />
-              <DetailRow label="Last Updated" value={user?.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'N/A'} isLast={true} />
-            </Box>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 1, boxShadow: 'none', border: '1px solid', borderColor: 'divider', height: '100%' }}>
-            <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+          {/* Right Column: Personal & System Details */}
+          <Grid
+            item
+            xs={12}
+            md={6}
+            sx={{
+              pl: { md: 4 },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+              <User size={22} color="#2563eb" />
+              <Typography variant="subtitle1" fontWeight={700} color="#2563eb">
                 Personal Details
               </Typography>
             </Box>
-            <Box sx={{ px: 2, pb: 1 }}>
-              <DetailRow label="Date of Birth" value={user?.dob ? new Date(user.dob).toLocaleDateString() : '-'} />
-              <DetailRow label="Gender" value={user?.gender} />
-              <DetailRow label="Licence Number" value={user?.licenceNumber} />
-              <DetailRow label="Emergency Contact" value={user?.emergencyContact} />
-              <DetailRow label="Address" value={user?.address} isLast={true} />
+
+            <Box sx={{ mb: 4 }}>
+              <DetailRow icon={CalendarDays} label="Date of Birth" value={user?.dob ? new Date(user.dob).toLocaleDateString() : '-'} />
+              <DetailRow icon={User} label="Gender" value={user?.gender || '-'} />
+              <DetailRow icon={CreditCard} label="Licence Number" value={user?.licenceNumber || '-'} />
+              <DetailRow icon={PhoneCall} label="Emergency Contact" value={user?.emergencyContact || '-'} />
+              <DetailRow icon={MapPin} label="Address" value={user?.address || '-'} isLast={true} />
             </Box>
-          </Card>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+              <Monitor size={22} color="#2563eb" />
+              <Typography variant="subtitle1" fontWeight={700} color="#2563eb">
+                System Details
+              </Typography>
+            </Box>
+
+            <Box>
+              <DetailRow icon={Calendar} label="Created On" value={formatDate(user?.createdAt)} />
+              <DetailRow icon={Clock} label="Last Updated" value={formatDate(user?.updatedAt)} isLast={true} />
+            </Box>
+          </Grid>
         </Grid>
-      </Grid>
+      </Card>
     </Box>
   );
 }

@@ -16,7 +16,7 @@ export default function VehicleDetailPage() {
   const navigate = useNavigate();
   const { data: vehicle, isLoading } = useVehicle(identifier);
 
-  if (isLoading) return <Loader fullPage text="Loading vehicle details..." />;
+  if (isLoading) return <Loader text="Loading vehicle details..." />;
 
   if (!vehicle) {
     return (

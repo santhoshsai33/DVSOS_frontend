@@ -1,18 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Card, Typography, Grid, Skeleton } from '@mui/material';
+import { Box, Card, Typography, Grid } from '@mui/material';
+import { User, Mail, Phone, ToggleRight, ToggleLeft, Calendar, Clock, MapPin, Activity } from 'lucide-react';
 import BackButton from '../../components/common/BackButton';
+import Loader from '../../components/common/Loader';
 import { ROUTES } from '../../config/routes';
 import { useCustomerDetails } from '../../queries/useDataQueries';
 
-const DetailRow = ({ label, value, isLast = false }) => (
-  <Box sx={{ display: 'flex', py: 1.5, borderBottom: isLast ? 'none' : '1px solid', borderColor: 'divider' }}>
-    <Typography variant="body2" fontWeight={600} sx={{ width: '40%', color: 'text.primary' }}>
-      {label}
-    </Typography>
-    <Typography variant="body2" sx={{ width: '60%', color: 'text.secondary', wordBreak: 'break-word' }}>
-      {value || '-'}
-    </Typography>
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  } catch (e) {
+    return 'N/A';
+  }
+};
+
+const DetailRow = ({ icon: Icon, label, value, isLast = false }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      py: 2.25,
+      borderBottom: isLast ? 'none' : '1px solid',
+      borderColor: '#eff6ff',
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box
+        sx={{
+          width: 38,
+          height: 38,
+          borderRadius: '50%',
+          bgcolor: '#eff6ff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#2563eb',
+          mr: 2,
+        }}
+      >
+        <Icon size={18} />
+      </Box>
+      <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500 }}>
+        {label}
+      </Typography>
+    </Box>
+    <Box sx={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem', textAlign: 'right', wordBreak: 'break-all', maxWidth: '50%' }}>
+      {value}
+    </Box>
   </Box>
 );
 
@@ -28,9 +69,7 @@ export default function CustomerDetailPage() {
   if (isLoading) {
     return (
       <Box sx={{ p: { xs: 2, md: 4 } }}>
-        <Card sx={{ p: 4, borderRadius: 1, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
-          <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 1 }} />
-        </Card>
+        <Loader text="Loading customer details..." />
       </Box>
     );
   }
@@ -39,10 +78,10 @@ export default function CustomerDetailPage() {
     return (
       <Box sx={{ p: { xs: 2, md: 4 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Typography variant="h5" fontWeight={700}>Customer Details</Typography>
+          <Typography variant="h5" fontWeight={800}>Customer Details</Typography>
           <BackButton to={ROUTES.CUSTOMERS} label="Back to Customers" />
         </Box>
-        <Card sx={{ p: 4, borderRadius: 1, boxShadow: 'none', border: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
+        <Card sx={{ p: 4, borderRadius: 0, boxShadow: 'none', border: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
           <Typography variant="body1" color="text.secondary">Customer not found.</Typography>
         </Card>
       </Box>
@@ -52,52 +91,119 @@ export default function CustomerDetailPage() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5" fontWeight={700}>Customer Details</Typography>
+        <Typography variant="h5" fontWeight={800}>Customer Details</Typography>
         <BackButton to={ROUTES.CUSTOMERS} label="Back to Customers" />
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 1, boxShadow: 'none', border: '1px solid', borderColor: 'divider', height: '100%' }}>
-            <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+      <Card
+        sx={{
+          p: { xs: 3, md: 4 },
+          borderRadius: 0,
+          boxShadow: '0 4px 16px rgba(37, 99, 235, 0.05)',
+          border: '1px solid #dce6f5',
+          bgcolor: '#FFFFFF',
+        }}
+      >
+        <Grid container spacing={4}>
+          {/* Left Column: Customer Information */}
+          <Grid
+            item
+            xs={12}
+            md={6}
+            sx={{
+              borderRight: { md: '1px solid #eff6ff' },
+              pr: { md: 4 },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+              <User size={22} color="#2563eb" />
+              <Typography variant="subtitle1" fontWeight={700} color="#2563eb">
                 Customer Information
               </Typography>
             </Box>
-            <Box sx={{ px: 2, pb: 1 }}>
-              <DetailRow label="Full Name" value={customer?.fullName} />
-              <DetailRow label="Email" value={customer?.emailId} />
-              <DetailRow label="Mobile" value={customer?.mobileNo} />
-              <DetailRow label="Alternative Mobile" value={customer?.alternateMobileNo} />
+
+            <Box>
               <DetailRow
-                label="Status"
-                value={
-                  <Typography variant="caption" fontWeight={700} color={customer?.isActive ? 'success.main' : 'error.main'}>
-                    {customer?.isActive ? 'ACTIVE' : 'INACTIVE'}
-                  </Typography>
-                }
+                icon={User}
+                label="Full Name"
+                value={customer?.fullName || '-'}
+              />
+              <DetailRow
+                icon={Mail}
+                label="Email"
+                value={customer?.emailId || '-'}
+              />
+              <DetailRow
+                icon={Phone}
+                label="Mobile"
+                value={customer?.mobileNo || '-'}
+              />
+              <DetailRow
+                icon={Phone}
+                label="Alternative Mobile"
+                value={customer?.alternateMobileNo || '-'}
+              />
+              <DetailRow
+                icon={MapPin}
+                label="Address"
+                value={customer?.address || '-'}
                 isLast={true}
               />
             </Box>
-          </Card>
-        </Grid>
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 1, boxShadow: 'none', border: '1px solid', borderColor: 'divider', height: '100%' }}>
-            <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="subtitle1" fontWeight={700} color="text.primary">
-                System & Address Details
+          {/* Right Column: System & Activity Details */}
+          <Grid
+            item
+            xs={12}
+            md={6}
+            sx={{
+              pl: { md: 4 },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+              <Activity size={22} color="#2563eb" />
+              <Typography variant="subtitle1" fontWeight={700} color="#2563eb">
+                System & Activity Details
               </Typography>
             </Box>
-            <Box sx={{ px: 2, pb: 1 }}>
-              <DetailRow label="Created On" value={customer?.createdAt ? new Date(customer.createdAt).toLocaleDateString() : 'N/A'} />
-              <DetailRow label="Last Updated" value={customer?.updatedAt ? new Date(customer.updatedAt).toLocaleDateString() : 'N/A'} />
-              <DetailRow label="Total Service Visits" value={`${history.length || 0} visits`} />
-              <DetailRow label="Address" value={customer?.address} isLast={true} />
+
+            <Box>
+              <DetailRow
+                icon={customer?.isActive ? ToggleRight : ToggleLeft}
+                label="Status"
+                value={
+                  <Box
+                    component="span"
+                    sx={{
+                      color: customer?.isActive ? '#059669' : '#dc2626',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {customer?.isActive ? 'Active' : 'Inactive'}
+                  </Box>
+                }
+              />
+              <DetailRow
+                icon={Activity}
+                label="Total Service Visits"
+                value={`${history.length || 0} visits`}
+              />
+              <DetailRow
+                icon={Calendar}
+                label="Created On"
+                value={formatDate(customer?.createdAt)}
+              />
+              <DetailRow
+                icon={Clock}
+                label="Last Updated"
+                value={formatDate(customer?.updatedAt)}
+                isLast={true}
+              />
             </Box>
-          </Card>
+          </Grid>
         </Grid>
-      </Grid>
+      </Card>
     </Box>
   );
 }
