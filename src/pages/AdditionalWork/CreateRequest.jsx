@@ -217,9 +217,9 @@ export function AdditionalWorkRequestScreen({
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F4F6F9', minHeight: '100%' }}>
       <PageHeader
-        title={`${domainLabel} / ${jobCard.id}`}
+        title={`${domainLabel} / ${jobCard.jobCardNo || jobCard.slug || jobCard.id}`}
         subtitle={subtitle}
-        breadcrumbs={[{ label: domainLabel, path: listRoute }, { label: jobCard.id }]}
+        breadcrumbs={[{ label: domainLabel, path: listRoute }, { label: jobCard.jobCardNo || jobCard.slug || jobCard.id }]}
         actions={
           <Button variant="back" leftIcon={ArrowLeft} onClick={() => navigate(backRoute)}>
             Back to Job Cards
