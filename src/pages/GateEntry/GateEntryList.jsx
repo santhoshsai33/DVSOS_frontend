@@ -25,7 +25,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
   const debSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useState('');
   const [serviceTypeFilter, setServiceTypeFilter] = useState('');
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
 
@@ -60,7 +60,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
     try {
       setLoading(true);
       const res = await gateEntryApi.list({
-        page,
+        page: page + 1,
         limit,
         search: debSearch,
         status: statusFilter,
@@ -160,10 +160,14 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
           showPagination={true}
           defaultItemsPerPage={limit}
           totalItems={total}
+          serverSide={true}
+          totalCount={total}
+          page={page}
+          rowsPerPage={limit}
           onPageChange={(newPage) => setPage(newPage)}
           onRowsPerPageChange={(newLimit) => {
             setLimit(newLimit);
-            setPage(1);
+            setPage(0);
           }}
         />
       </Card>

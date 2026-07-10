@@ -249,10 +249,11 @@ export default function JobCardList() {
         {(canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork) && (
           <MenuItem onClick={() => {
             handleMenuClose();
+            const jobCardIdentifier = selectedJob?.slug || selectedJob?.jobCardNo || selectedJob?.id;
             if (department === 'body-shop' || (!canCreateFloorAdditionalWork && canCreateBodyShopAdditionalWork)) {
-              navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
+              navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}`);
             } else {
-              navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${selectedJob?.id}`);
+              navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}`);
             }
           }}>
             <PlusCircle size={16} className="mr-3 text-body-shop" />

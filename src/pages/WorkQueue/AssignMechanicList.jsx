@@ -167,20 +167,20 @@ export default function AssignMechanicList() {
         );
       },
     },
-    {
-      header: 'PRIORITY',
-      render: (row) => (
-        <Typography variant="caption" sx={{
-          bgcolor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}15`,
-          color: PRIORITY_COLORS[row.priority || 'NORMAL'],
-          px: 1.5, py: 0.5, borderRadius: 8, fontWeight: 700,
-          border: '1px solid', borderColor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}40`,
-          textTransform: 'uppercase', letterSpacing: '0.5px'
-        }}>
-          {row.priority || 'NORMAL'}
-        </Typography>
-      ),
-    },
+    // {
+    //   header: 'PRIORITY',
+    //   render: (row) => (
+    //     <Typography variant="caption" sx={{
+    //       bgcolor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}15`,
+    //       color: PRIORITY_COLORS[row.priority || 'NORMAL'],
+    //       px: 1.5, py: 0.5, borderRadius: 8, fontWeight: 700,
+    //       border: '1px solid', borderColor: `${PRIORITY_COLORS[row.priority || 'NORMAL']}40`,
+    //       textTransform: 'uppercase', letterSpacing: '0.5px'
+    //     }}>
+    //       {row.priority || 'NORMAL'}
+    //     </Typography>
+    //   ),
+    // },
     {
       header: 'WAIT TIME',
       render: (row) => (

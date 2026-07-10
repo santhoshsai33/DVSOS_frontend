@@ -87,14 +87,6 @@ export default function AdminDashboard() {
       action: () => navigate(ROUTES.ADMIN_ROLES),
     },
     {
-      label: 'Service Items',
-      value: summary.serviceItems || 0,
-      icon: Wrench,
-      color: '#13323a',
-      progressBarColor: '#dc2626',
-      action: () => navigate(ROUTES.ADMIN_MASTER_ITEMS),
-    },
-    {
       label: 'Service Categories',
       value: summary.serviceCategories || 0,
       icon: ClipboardList,
@@ -102,6 +94,15 @@ export default function AdminDashboard() {
       progressBarColor: '#d97706',
       action: () => navigate(ROUTES.ADMIN_MASTER_CATEGORIES),
     },
+    {
+      label: 'Service Items',
+      value: summary.serviceItems || 0,
+      icon: Wrench,
+      color: '#13323a',
+      progressBarColor: '#dc2626',
+      action: () => navigate(ROUTES.ADMIN_MASTER_ITEMS),
+    },
+
   ];
 
   return (
