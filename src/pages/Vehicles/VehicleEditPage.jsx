@@ -44,7 +44,7 @@ export default function VehicleEditPage() {
         mobile: vehicle.customer?.mobileNo || vehicle.mobile || '',
         brand: vehicle.brandId || '',
         makeModel: vehicle.model || vehicle.makeModel || '',
-        status: vehicle.status || 'ACTIVE',
+        status: vehicle.isActive === false ? 'INACTIVE' : 'ACTIVE',
         type: vehicle.variant || vehicle.type || '',
         fuelType: vehicle.fuelType || '',
       });
