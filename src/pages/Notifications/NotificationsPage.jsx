@@ -101,20 +101,20 @@ export default function NotificationsPage({ title = 'Notifications' }) {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
-      <PageHeader 
-        title={title} 
-        breadcrumbs={[{ label: title }]} 
+      <PageHeader
+        title={title}
+        breadcrumbs={[{ label: title }]}
         actions={canUpdateNotifications ? (
-           <Button variant="secondary" leftIcon={CheckSquare} onClick={markAllRead}>
-             Mark all as read
-           </Button>
+          <Button variant="secondary" leftIcon={CheckSquare} onClick={markAllRead}>
+            Mark all as read
+          </Button>
         ) : null}
       />
-      
+
       <Card sx={{ borderRadius: 0 }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
-          <Tabs 
-            value={tab} 
+          <Tabs
+            value={tab}
             onChange={(e, v) => setTab(v)}
             sx={{
               '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '0.95rem' }
@@ -127,72 +127,72 @@ export default function NotificationsPage({ title = 'Notifications' }) {
         <List disablePadding>
           {filteredNotifs.length === 0 ? (
             <Box sx={{ p: 8, textAlign: 'center', color: 'text.secondary' }}>
-               <Bell size={48} style={{ opacity: 0.2, margin: '0 auto 16px auto', display: 'block' }} />
-               <Typography variant="h6" fontWeight={700} color="text.primary" gutterBottom>
-                 All caught up!
-               </Typography>
-               <Typography variant="body2">
-                 You have no new notifications right now.
-               </Typography>
+              <Bell size={48} style={{ opacity: 0.2, margin: '0 auto 16px auto', display: 'block' }} />
+              <Typography variant="h6" fontWeight={700} color="text.primary" gutterBottom>
+                All caught up!
+              </Typography>
+              <Typography variant="body2">
+                You have no new notifications right now.
+              </Typography>
             </Box>
           ) : (
             filteredNotifs.map((notif, index) => {
               const isRead = notif.readAt !== null;
               return (
                 <React.Fragment key={notif.id}>
-                   <ListItem 
-                     sx={{ 
-                       py: 2.5, px: { xs: 2, sm: 3 }, 
-                       bgcolor: isRead ? 'transparent' : '#F8FAFC',
-                       transition: 'background-color 0.2s',
-                       cursor: 'pointer',
-                       '&:hover': { bgcolor: '#F1F5F9' }
-                     }}
-                     onClick={() => handleItemClick(notif)}
-                     secondaryAction={
-                       !isRead && (
-                         <IconButton 
-                           edge="end" 
-                           size="small" 
-                           onClick={(e) => {
-                             e.stopPropagation();
-                             markAsRead(notif.id);
-                           }} 
-                           title="Mark as read"
-                         >
-                           <Check size={20} color="#64748B" />
-                         </IconButton>
-                       )
-                     }
-                   >
-                     <ListItemIcon sx={{ minWidth: { xs: 48, sm: 64 } }}>
-                        <Avatar sx={{ bgcolor: getBgColor(notif.type), width: 40, height: 40 }}>
-                          {getIcon(notif.type)}
-                        </Avatar>
-                     </ListItemIcon>
-                     <ListItemText
-                       primary={
-                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-                           <Typography variant="subtitle2" fontWeight={isRead ? 600 : 700} color={isRead ? 'text.secondary' : 'text.primary'}>
-                             {notif.title}
-                           </Typography>
-                           {!isRead && <Chip label="New" size="small" color="primary" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700 }} />}
-                         </Box>
-                       }
-                       secondary={
-                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pr: { xs: 4, sm: 8 } }}>
-                           <Typography variant="body2" color={isRead ? 'text.secondary' : 'text.primary'}>
-                             {notif.message}
-                           </Typography>
-                           <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5 }}>
-                             {formatDateTime(notif.createdAt)}
-                           </Typography>
-                         </Box>
-                       }
-                       sx={{ m: 0 }}
-                     />
-                   </ListItem>
-                   {index < filteredNotifs.length - 1 && <Divider />}
+                  <ListItem
+                    sx={{
+                      py: 2.5, px: { xs: 2, sm: 3 },
+                      bgcolor: isRead ? 'transparent' : '#F8FAFC',
+                      transition: 'background-color 0.2s',
+                      cursor: 'pointer',
+                      '&:hover': { bgcolor: '#F1F5F9' }
+                    }}
+                    onClick={() => handleItemClick(notif)}
+                    secondaryAction={
+                      !isRead && (
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(notif.id);
+                          }}
+                          title="Mark as read"
+                        >
+                          <Check size={20} color="#64748B" />
+                        </IconButton>
+                      )
+                    }
+                  >
+                    <ListItemIcon sx={{ minWidth: { xs: 48, sm: 64 } }}>
+                      <Avatar sx={{ bgcolor: getBgColor(notif.type), width: 40, height: 40 }}>
+                        {getIcon(notif.type)}
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+                          <Typography variant="subtitle2" fontWeight={isRead ? 600 : 700} color={isRead ? 'text.secondary' : 'text.primary'}>
+                            {notif.title}
+                          </Typography>
+                          {!isRead && <Chip label="New" size="small" color="primary" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 700 }} />}
+                        </Box>
+                      }
+                      secondary={
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pr: { xs: 4, sm: 8 } }}>
+                          <Typography variant="body2" color={isRead ? 'text.secondary' : 'text.primary'}>
+                            {notif.message}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mt: 0.5 }}>
+                            {formatDateTime(notif.createdAt)}
+                          </Typography>
+                        </Box>
+                      }
+                      sx={{ m: 0 }}
+                    />
+                  </ListItem>
+                  {index < filteredNotifs.length - 1 && <Divider />}
                 </React.Fragment>
               );
             })

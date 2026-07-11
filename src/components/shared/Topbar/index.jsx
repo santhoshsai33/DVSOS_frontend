@@ -76,7 +76,7 @@ export default function Topbar() {
   const fetchNotifications = async () => {
     if (!canReadNotifications) return;
     try {
-      const response = await getNotificationsApi({ limit: 10 });
+      const response = await getNotificationsApi({ unreadOnly: true, limit: 10 });
       if (response?.success) {
         const list = response.data?.notifications || [];
         const mapped = list.map((n) => {
@@ -118,14 +118,14 @@ export default function Topbar() {
       fetchNotifications();
       // Register device token with FCM
       requestNotificationPermissionAndRegister();
- 
+
       // Listen for foreground notification pushes
       const unsubscribe = setupForegroundMessageListener((payload) => {
         console.log("React Application received foreground push payload:", payload);
         fetchNotifications();
         if (payload?.notification) {
           toastInfo(`${payload.notification.title}: ${payload.notification.body}`);
-          
+
           // Trigger a browser notification if permitted
           if (Notification.permission === 'granted') {
             try {
@@ -139,7 +139,7 @@ export default function Topbar() {
           }
         }
       });
- 
+
       const interval = setInterval(fetchNotifications, 30000);
       return () => {
         clearInterval(interval);
@@ -261,9 +261,9 @@ export default function Topbar() {
           >
             <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="subtitle1" fontWeight={600}>Notifications</Typography>
-              <Typography variant="body2" color="primary" sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={markAllRead}>
+              {/* <Typography variant="body2" color="primary" sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }} onClick={markAllRead}>
                 Mark all read
-              </Typography>
+              </Typography> */}
             </Box>
             <Divider />
             <Box sx={{ maxHeight: 350, overflowY: 'auto' }}>
@@ -273,12 +273,12 @@ export default function Topbar() {
                 </Box>
               ) : (
                 notifications.map((n) => (
-                  <MenuItem 
-                    key={n.id} 
-                    onClick={() => handleNotificationClick(n)} 
-                    sx={{ 
-                      py: 1.5, px: 2, 
-                      alignItems: 'flex-start', 
+                  <MenuItem
+                    key={n.id}
+                    onClick={() => handleNotificationClick(n)}
+                    sx={{
+                      py: 1.5, px: 2,
+                      alignItems: 'flex-start',
                       bgcolor: n.read ? 'transparent' : 'action.hover',
                       gap: 1.5
                     }}
