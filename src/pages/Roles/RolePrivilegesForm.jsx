@@ -53,6 +53,9 @@ const validateDesignation = (value) => {
   if (!value.trim()) {
     return 'Role Name is required';
   }
+  if (value.length > 50) {
+    return 'Role Name must not exceed 50 characters';
+  }
   const lettersOnlyRegex = /^[a-zA-Z\s]+$/;
   if (!lettersOnlyRegex.test(value)) {
     return 'Role Name must contain letters and spaces only';

@@ -177,12 +177,16 @@ export default function ServiceCenterForm() {
               <Grid item xs={12} md={6}>
                 <RHFTextField
                   name="tax"
-                  label="Tax"
+                  label="Tax (%)"
                   placeholder="e.g. 18"
                   required
-                  inputProps={{ pattern: '[0-9]*' }}
+                  inputProps={{ maxLength: 3 }}
                   onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+                    let val = e.target.value.replace(/[^0-9.]/g, '');
+                    if (val.split('.').length > 2) {
+                      val = val.replace(/\.+$/, '');
+                    }
+                    e.target.value = val;
                   }}
                 />
               </Grid>

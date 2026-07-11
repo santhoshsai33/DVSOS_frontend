@@ -22,11 +22,11 @@ const schema = z.object({
   serviceCenterId: commonValidations.requiredNumber('Service Center'),
   stateId: commonValidations.requiredNumber('State'),
   districtId: commonValidations.requiredNumber('District'),
-  name: commonValidations.requiredString('Location Name'),
+  name: commonValidations.requiredString('Location Name', 50),
   phoneNo: commonValidations.optionalMobile,
   email: commonValidations.optionalEmail,
-  pincode: commonValidations.optionalString,
-  address: commonValidations.optionalString,
+  pincode: commonValidations.pincode,
+  address: commonValidations.address,
 });
 
 export default function LocationForm() {
@@ -43,6 +43,7 @@ export default function LocationForm() {
   const [districts, setDistricts] = useState([]);
 
   const methods = useForm({
+    mode: 'onChange',
     resolver: zodResolver(schema),
     defaultValues: {
       serviceCenterId: '',
@@ -241,7 +242,12 @@ export default function LocationForm() {
                 <RHFTextField
                   name="pincode"
                   label="Pincode"
-                  placeholder="e.g. 600017"
+                  placeholder="Enter pincode"
+                  inputProps={{ maxLength: 6 }}
+                  onChange={(e) => {
+                    const cleanVal = e.target.value.replace(/[^0-9]/g, '');
+                    methods.setValue('pincode', cleanVal, { shouldValidate: true });
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>

@@ -14,7 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { commonValidations } from '../../validations/commonSchema';
 
 const schema = z.object({
-  name: commonValidations.requiredString('Full Name'),
+  name: commonValidations.requiredString('Full Name', 50),
   email: commonValidations.email,
   phone: commonValidations.mobile
 });
@@ -24,6 +24,7 @@ export default function ProfilePage() {
   const { user, role, setUser } = useAuthStore();
 
   const methods = useForm({
+    mode: 'onChange',
     resolver: zodResolver(schema),
     defaultValues: {
       name: user?.fullName || user?.name || '',
@@ -123,7 +124,7 @@ export default function ProfilePage() {
           </Grid>
 
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button variant="secondary" type="button" onClick={() => reset()}>
+            <Button variant="secondary" type="button" onClick={() => navigate(-1)}>
               Cancel
             </Button>
             <Button variant="primary" type="submit" isLoading={isSubmitting}>

@@ -15,7 +15,7 @@ import { commonValidations } from '../../validations/commonSchema';
 
 const schema = z.object({
   moduleName: commonValidations.lettersOnly('Module name'),
-  description: commonValidations.optionalString
+  description: commonValidations.optionalDescription
 });
 
 export default function ModuleForm() {

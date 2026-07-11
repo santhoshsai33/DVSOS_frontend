@@ -9,10 +9,10 @@ import { getSupervisorDashboardApi } from '../../api/dashboardApi';
 import useAuthStore from '../../store/useAuthStore';
 
 const COLS = [
-  { key: 'PENDING', label: 'Pending', icon: Clock, color: '#F59E0B' },
-  { key: 'ASSIGNED', label: 'Assigned', icon: User, color: '#3B82F6' },
-  { key: 'IN_PROGRESS', label: 'In Progress', icon: Wrench, color: '#8B5CF6' },
-  { key: 'COMPLETED', label: 'Completed', icon: CheckCircle2, color: '#10B981' },
+  { key: 'PENDING', label: 'Pending Mechanical', icon: Clock, color: '#F59E0B' },
+  { key: 'ASSIGNED', label: 'Assigned Mechanic', icon: User, color: '#3B82F6' },
+  { key: 'IN_PROGRESS', label: 'Mechanical In Progress', icon: Wrench, color: '#8B5CF6' },
+  { key: 'COMPLETED', label: 'Mechanical Completed', icon: CheckCircle2, color: '#10B981' },
 ];
 
 export default function MechanicalQueue() {
@@ -230,7 +230,9 @@ export default function MechanicalQueue() {
                 columns={columns}
                 data={queue}
                 emptyMessage="No jobs in queue"
-                showPagination={false}
+                showPagination={true}
+                defaultItemsPerPage={5}
+                rowsPerPageOptions={[5, 10, 25, 50]}
               />
             </CardContent>
           </Card>
