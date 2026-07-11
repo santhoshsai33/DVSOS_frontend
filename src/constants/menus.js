@@ -79,8 +79,8 @@ export const SIDEBAR_MENUS = {
   [ROLES.MANAGER]: [
     { label: 'Manager Dashboard', path: ROUTES.MANAGER_DASHBOARD, icon: LayoutDashboard },
     { label: 'User Management', path: ROUTES.ADMIN_USERS, icon: Users },
-    { label: 'TV Display', path: ROUTES.KIOSK_TV, icon: Monitor },
     ...commonLinks,
+    { label: 'TV Display', path: ROUTES.KIOSK_TV, icon: Monitor },
   ],
 
   [ROLES.MD]: [
