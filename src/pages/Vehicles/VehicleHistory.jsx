@@ -1,5 +1,5 @@
-import { Box, Card, Grid, Typography } from '@mui/material';
-import { ArrowLeft, Calendar, Camera, CheckCircle2, FileText, IndianRupee, Wrench } from 'lucide-react';
+import { Box, Card, Grid, Typography, Chip } from '@mui/material';
+import { ArrowLeft, Calendar, FileText, IndianRupee, Wrench, Clock } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '../../components/shared/PageHeader';
 import StatusBadge from '../../components/common/StatusBadge';
@@ -7,16 +7,6 @@ import Button from '../../components/common/Button';
 import { ROUTES } from '../../config/routes';
 import { useVehicleHistory } from '../../queries/useDataQueries';
 import Loader from '../../components/common/Loader';
-
-function InfoRow({ icon: Icon, label, value }) {
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-      <Box sx={{ color: 'text.secondary', display: 'flex' }}><Icon size={15} /></Box>
-      <Typography variant="caption" sx={{ width: 60, color: 'text.secondary', fontWeight: 800 }}>{label}</Typography>
-      <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>{value}</Typography>
-    </Box>
-  );
-}
 
 export default function VehicleHistory() {
   const { slug, id } = useParams();
@@ -41,34 +31,130 @@ export default function VehicleHistory() {
         }
       />
 
-      <Box sx={{ display: 'grid', gap: 2 }}>
+      {/* History List */}
+      <Box sx={{ display: 'grid', gap: 3 }}>
         {history.length === 0 && (
-          <Card sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
-            <Typography variant="body1" color="text.secondary">No service history found for this vehicle.</Typography>
+          <Card sx={{ p: 6, textAlign: 'center', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+            <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600 }}>
+              No service history found for this vehicle.
+            </Typography>
           </Card>
         )}
         {history.map((job) => (
-          <Card key={job.id} sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-            <Box sx={{ px: 2.5, py: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                <FileText size={20} color="#2563EB" />
-                <Typography variant="subtitle1" sx={{ color: 'primary.main', fontWeight: 900 }}>{job.id}</Typography>
+          <Card
+            key={job.id}
+            sx={{
+              borderRadius: '16px',
+              overflow: 'hidden',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 30px rgba(37, 99, 235, 0.08)',
+                borderColor: '#bfdbfe',
+              }
+            }}
+          >
+            {/* Header info */}
+            <Box
+              sx={{
+                px: 3,
+                py: 2.5,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 2,
+                borderBottom: '1px solid #f1f5f9',
+                background: 'linear-gradient(to right, #f8fafc, #ffffff)'
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ p: 1, borderRadius: '8px', bgcolor: '#eff6ff', color: '#2563eb' }}>
+                  <FileText size={20} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ color: '#1e293b', fontWeight: 800 }}>
+                    {job.id}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Clock size={12} /> Date: {job.date}
+                  </Typography>
+                </Box>
               </Box>
               <StatusBadge status={job.status} />
             </Box>
 
-            <Box sx={{ p: 2.5 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={3}><InfoRow icon={Calendar} label="Date" value={job.date} /></Grid>
-                <Grid item xs={12} md={6}><InfoRow icon={Wrench} label="Services" value={job.services?.length ? job.services.join(', ') : 'No Services'} /></Grid>
-                <Grid item xs={12} md={3}><InfoRow icon={IndianRupee} label="Cost" value={`Rs. ${job.cost.toLocaleString('en-IN')}`} /></Grid>
+            {/* Content body */}
+            <Box sx={{ p: 3 }}>
+              <Grid container spacing={3} alignItems="center">
+                <Grid item xs={12} md={8}>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 1, textTransform: 'uppercase' }}>
+                    Services Rendered
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {job.services?.length ? (
+                      job.services.map((service, index) => (
+                        <Chip
+                          key={index}
+                          label={service}
+                          icon={<Wrench size={12} />}
+                          sx={{
+                            bgcolor: '#f1f5f9',
+                            color: '#334155',
+                            fontWeight: 600,
+                            borderRadius: '8px',
+                            border: '1px solid #e2e8f0',
+                            '& .MuiChip-icon': { color: '#64748b' }
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <Typography variant="body2" sx={{ color: '#94a3b8', fontStyle: 'italic' }}>No services specified</Typography>
+                    )}
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={4} sx={{ textAlign: { md: 'right' } }}>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, display: 'block', mb: 0.5, textTransform: 'uppercase' }}>
+                    Total Cost
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: { xs: 'flex-start', md: 'flex-end' }, gap: 0.5 }}>
+                    <IndianRupee size={20} color="#10b981" />
+                    {job.cost.toLocaleString('en-IN')}
+                  </Typography>
+                </Grid>
               </Grid>
-
             </Box>
 
-            <Box sx={{ px: 2.5, py: 1.75, borderTop: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1, flexWrap: 'wrap' }}>
-              <Button size="sm" variant="outline" leftIcon={FileText} onClick={() => navigate(`/job-cards/view/${job.slug || job.id}`, { state: { fromVehicleHistory: true } })}>
-                View Full Job Card
+            {/* Card Footer Actions */}
+            <Box
+              sx={{
+                px: 3,
+                py: 2,
+                borderTop: '1px solid #f1f5f9',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                bgcolor: '#fafafa'
+              }}
+            >
+              <Button
+                size="sm"
+                variant="outline"
+                leftIcon={FileText}
+                onClick={() => navigate(`/job-cards/view/${job.slug || job.id}`, { state: { fromVehicleHistory: true } })}
+                sx={{
+                  borderRadius: '10px',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  borderColor: '#cbd5e1',
+                  color: '#475569',
+                  '&:hover': {
+                    borderColor: '#94a3b8',
+                    bgcolor: '#f1f5f9'
+                  }
+                }}
+              >
+                View Full Details
               </Button>
             </Box>
           </Card>
