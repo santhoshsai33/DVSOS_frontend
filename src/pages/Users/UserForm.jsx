@@ -34,7 +34,12 @@ const getValidationSchema = (canAssignLocation) => z.object({
   locationId: canAssignLocation ? commonValidations.requiredNumber('Location') : commonValidations.optionalAny,
   password: commonValidations.optionalPassword,
   status: commonValidations.optionalStatus,
-  dob: commonValidations.pastDate('Date of Birth'),
+  dob: z.string().trim().min(1, 'Date of Birth is required').refine((val) => {
+    const inputDate = new Date(val);
+    const today = new Date();
+    const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    return inputDate <= eighteenYearsAgo;
+  }, 'User must be at least 18 years old'),
   licenceNumber: commonValidations.licenceNumber,
   emergencyContact: commonValidations.optionalMobile,
   gender: commonValidations.requiredString('Gender'),

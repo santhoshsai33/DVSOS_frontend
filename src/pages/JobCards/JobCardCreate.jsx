@@ -512,7 +512,24 @@ export default function JobCardCreate() {
     }
   };
 
-  const handleServiceStatusChange = (jobCardServiceId, statusId) => {
+  const handleServiceStatusChange = (service, statusId) => {
+    const jobCardServiceId = service.jobCardServiceId;
+    const selectedStatus = serviceStatusOptions.find(s => String(s.value) === String(statusId));
+    const statusCode = selectedStatus?.code?.toUpperCase() || '';
+
+    const progressingStatuses = ['ASSIGNED', 'IN_PROGRESS', 'COMPLETED'];
+    const isProgressingStatus = progressingStatuses.some(status => statusCode.includes(status));
+
+    if (isProgressingStatus) {
+      const serviceDept = getServiceDepartment(service);
+      const hasAnyAssignment = assignmentDetails.some(a => getAssignmentDepartment(a) === serviceDept);
+
+      if (!hasAnyAssignment) {
+        toastError(`Please assign a mechanic and bay for ${serviceDept || 'this department'} services first.`);
+        return;
+      }
+    }
+
     setServiceStatusValues((current) => ({
       ...current,
       [jobCardServiceId]: statusId
@@ -667,7 +684,7 @@ export default function JobCardCreate() {
                             fullWidth
                             size="small"
                             value={serviceStatusValues[service.jobCardServiceId] || ''}
-                            onChange={(event) => handleServiceStatusChange(service.jobCardServiceId, event.target.value)}
+                            onChange={(event) => handleServiceStatusChange(service, event.target.value)}
                             disabled={!canEditServiceStatus(service)}
                           >
                             <MenuItem value="" disabled>Select status</MenuItem>

@@ -1,42 +1,23 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Box } from '@mui/material';
-import { AlertCircle, CheckCircle2, Clock, FileText, Plus, SearchX, XCircle } from 'lucide-react';
+import { Box, Card, Typography, Select, MenuItem, Tooltip } from '@mui/material';
+import { Clock } from 'lucide-react';
 import Button from '../../components/common/Button';
-import Loader from '../../components/common/Loader';
 import PageHeader from '../../components/shared/PageHeader';
 import { ROUTES } from '../../config/routes';
 import { getAdditionalWorkRequestsApi } from '../../api/jobCardApi';
 import { formatCurrency, formatDateTime } from '../../utils/formatters';
-import styles from './AdditionalWorkList.module.css';
 import { usePermissions } from '../../hooks/usePermissions';
+import DataTable from '../../components/common/DataTable';
+import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
+import StatusBadge from '../../components/common/StatusBadge';
+import SearchBar from '../../components/common/SearchBar';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const normalizePayload = (payload) => payload?.data || payload || {};
 
 const getStatusCode = (request) => String(request?.statusCode || request?.status?.code || '').toUpperCase();
-
-const getStatusLabel = (request) => {
-  const statusCode = getStatusCode(request);
-  if (statusCode === 'PENDING') return 'Pending Approval';
-  if (statusCode === 'APPROVED') return 'Approved';
-  if (statusCode === 'REJECTED') return 'Rejected';
-  return request?.statusName || statusCode || 'Pending';
-};
-
-const getStatusClass = (request) => {
-  const statusCode = getStatusCode(request);
-  if (statusCode === 'APPROVED') return styles.approved;
-  if (statusCode === 'REJECTED') return styles.rejected;
-  return styles.pending;
-};
-
-const getStatusIcon = (request) => {
-  const statusCode = getStatusCode(request);
-  if (statusCode === 'APPROVED') return <CheckCircle2 size={24} color="#059669" />;
-  if (statusCode === 'REJECTED') return <XCircle size={24} color="#DC2626" />;
-  return <AlertCircle size={24} color="#D97706" />;
-};
 
 const getServiceNames = (request) => {
   const services = Array.isArray(request?.services) ? request.services : [];
@@ -52,96 +33,141 @@ export function AdditionalWorkRequestListScreen({
   const navigate = useNavigate();
   const { canCreate } = usePermissions();
   const canCreateAdditionalWork = canCreate(permissionPath);
+
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const debouncedSearch = useDebounce(search, 300);
+
   const { data: payload, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ['additional-work-requests', category],
-    queryFn: () => getAdditionalWorkRequestsApi({ category }),
+    queryKey: ['additional-work-requests', category, debouncedSearch, statusFilter, page, rowsPerPage],
+    queryFn: () => getAdditionalWorkRequestsApi({
+      category,
+      search: debouncedSearch,
+      status: statusFilter,
+      page: page + 1,
+      limit: rowsPerPage
+    }),
     staleTime: 20000
   });
+
   const data = normalizePayload(payload);
   const requests = useMemo(() => {
-    return Array.isArray(data?.requests) ? data.requests : [];
-  }, [data?.requests]);
+    return Array.isArray(data?.requests) ? data.requests : (Array.isArray(data) ? data : []);
+  }, [data]);
+
+  const totalCount = data?.meta?.total || data?.total || requests.length;
+
+  const columns = [
+    {
+      header: 'Approval ID',
+      accessor: 'approvalId',
+      render: (row) => (
+        <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
+          {row.approvalCode || row.approvalId}
+        </Typography>
+      ),
+    },
+    {
+      header: 'Job Card',
+      accessor: 'jobCardNo',
+      render: (row) => (
+        <Typography variant="body2">
+          {row.jobCardNo || `Job Card ${row.jobCardId}`}
+        </Typography>
+      ),
+    },
+    {
+      header: 'Vehicle',
+      render: (row) => (
+        <VehicleNumberPlate vehicleNumber={row.vehicleNumber || 'Unknown'} />
+      ),
+    },
+    { header: 'Customer', render: (row) => row.customerName || 'N/A' },
+    {
+      header: 'Services',
+      render: (row) => {
+        const parentService = row.linkedServiceLabel || 'Original service';
+        const addServices = getServiceNames(row) || 'Additional work';
+        return (
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Tooltip title={addServices} placement="bottom">
+              <Typography
+                variant="body2"
+                fontWeight={500}
+                sx={{
+                  display: '-webkit-box',
+                  overflow: 'hidden',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: 1,
+                  wordBreak: 'break-word',
+                  maxWidth: '200px'
+                }}
+              >
+                {addServices}
+              </Typography>
+            </Tooltip>
+          </Box>
+        );
+      },
+    },
+    { header: 'Amount', render: (row) => <Typography variant="body2" fontWeight={600}>{formatCurrency(row.totalAmount || 0)}</Typography> },
+    { header: 'Requested At', render: (row) => <Typography variant="body2">{formatDateTime(row.requestedAt)}</Typography> },
+    { header: 'Status', render: (row) => <StatusBadge status={getStatusCode(row)} /> },
+  ];
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
         title={title}
         breadcrumbs={[{ label: 'Additional Work' }]}
-        // actions={canCreateAdditionalWork ? (
-        //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(createRoute)}>
-        //     New Request
-        //   </Button>
-        // ) : null}
       />
 
-      <div className={styles.panel}>
-        <div className={styles.panelHeader}>
-          <div>
-            <h4 className={styles.title}>Recent Requests</h4>
-            <p className={styles.subtitle}>One card represents one customer approval batch.</p>
-          </div>
-          <Button variant="secondary" size="sm" leftIcon={Clock} onClick={() => refetch()} disabled={isFetching}>
-            Refresh
-          </Button>
-        </div>
 
-        {isLoading ? (
-          <Loader text="Loading additional work requests..." />
-        ) : isError ? (
-          <div className={styles.emptyState}>
-            <SearchX size={48} className={styles.emptyIcon} />
-            <p>Unable to load additional work requests.</p>
-          </div>
-        ) : requests.length === 0 ? (
-          <div className={styles.emptyState}>
-            <FileText size={48} className={styles.emptyIcon} />
-            <p>No additional work requests found.</p>
-          </div>
-        ) : (
-          <div className={styles.requestList}>
-            {requests.map((request) => {
-              const statusClass = getStatusClass(request);
-              const serviceNames = getServiceNames(request);
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ width: { xs: '100%', md: 350 } }}>
+          <SearchBar
+            placeholder="Search vehicle, job ID..."
+            value={search}
+            onChange={(val) => { setSearch(val); setPage(0); }}
+          />
+        </Box>
+        <Select
+          size="small"
+          displayEmpty
+          value={statusFilter}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+          sx={{
+            width: { xs: '100%', sm: 200 },
+            bgcolor: 'background.paper',
+            borderRadius: '24px',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+          }}
+        >
+          <MenuItem value="">All Statuses</MenuItem>
+          <MenuItem value="PENDING">Pending Approval</MenuItem>
+          <MenuItem value="APPROVED">Approved</MenuItem>
+          <MenuItem value="REJECTED">Rejected</MenuItem>
+        </Select>
+      </Box>
 
-              return (
-                <div key={request.approvalId || request.id} className={styles.requestCard}>
-                  <div className={styles.requestContent}>
-                    <div className={`${styles.iconBox} ${statusClass}`}>
-                      {getStatusIcon(request)}
-                    </div>
-                    <div className={styles.requestDetails}>
-                      <h5 className={styles.vehicleTitle}>
-                        {request.vehicleNumber || 'Vehicle'} <span className={styles.requestId}>#{request.approvalCode || request.approvalId}</span>
-                      </h5>
-                      <div className={styles.jobLine}>
-                        <span>{request.jobCardNo || `Job Card ${request.jobCardId}`}</span>
-                        {request.customerName && <span>{request.customerName}</span>}
-                        {request.makeModel && <span>{request.makeModel}</span>}
-                      </div>
-                      <p className={styles.description}>{request.description || 'Additional work requested'}</p>
-                      <div className={styles.serviceFlow}>
-                        <span className={styles.parentService}>{request.linkedServiceLabel || 'Original service'}</span>
-                        <span className={styles.arrow}>-&gt;</span>
-                        <span className={styles.additionalServices}>{serviceNames || 'Additional work'}</span>
-                      </div>
-                      <div className={styles.meta}>
-                        <span><strong>Requested:</strong> {formatDateTime(request.requestedAt)}</span>
-                        <span><strong>Amount:</strong> {formatCurrency(request.totalAmount || 0)}</span>
-                        {request.respondedAt && <span><strong>Responded:</strong> {formatDateTime(request.respondedAt)}</span>}
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.statusCell}>
-                    <span className={`${styles.statusBadge} ${statusClass}`}>
-                      {getStatusLabel(request)}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      <Card sx={{ borderRadius: 0 }}>
+        <DataTable
+          columns={columns}
+          data={requests}
+          loading={isLoading || isFetching}
+          emptyMessage="No additional work requests found."
+          serverSide={true}
+          totalCount={totalCount}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={setRowsPerPage}
+        />
+      </Card>
     </Box>
   );
 }

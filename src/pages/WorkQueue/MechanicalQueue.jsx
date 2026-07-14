@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Grid, Box, Typography, Card, CardContent, Chip, CircularProgress } from '@mui/material';
+import { Grid, Box, Typography, Card, CardContent, Chip, CircularProgress, Tooltip } from '@mui/material';
 import { Clock, Wrench, CheckCircle2, User, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DataTable from '../../components/common/DataTable';
@@ -78,7 +78,20 @@ export default function MechanicalQueue() {
     {
       header: 'SERVICES',
       render: (row) => (
-        <Typography sx={{ fontSize: '0.875rem', color: '#374151' }}>{row.services}</Typography>
+        <Tooltip title={row.services || ''} placement="bottom" arrow>
+          <Typography sx={{
+            fontSize: '0.875rem',
+            color: '#374151',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '250px'
+          }}>
+            {row.services}
+          </Typography>
+        </Tooltip>
       ),
     },
     {
@@ -180,64 +193,64 @@ export default function MechanicalQueue() {
       ) : (
         <>
           <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
-        {COLS.map((col, i) => {
-          const Icon = col.icon;
-          const count = summaryCounts[col.key] || 0;
-          return (
-            <Grid item xs={12} sm={6} md={3} key={i}>
-              <Card
-                sx={{
-                  borderRadius: 3,
-                  boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
-                  borderTop: `4px solid ${col.color}`,
-                  height: '100%',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+            {COLS.map((col, i) => {
+              const Icon = col.icon;
+              const count = summaryCounts[col.key] || 0;
+              return (
+                <Grid item xs={12} sm={6} md={3} key={i}>
+                  <Card
+                    sx={{
+                      borderRadius: 3,
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+                      borderTop: `4px solid ${col.color}`,
+                      height: '100%',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
 
-                }}
-              >
-                <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h3" fontWeight={800} sx={{ color: col.color, lineHeight: 1 }}>
-                      {count}
+                    }}
+                  >
+                    <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h3" fontWeight={800} sx={{ color: col.color, lineHeight: 1 }}>
+                          {count}
+                        </Typography>
+                        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${col.color}15`, color: col.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon size={20} />
+                        </Box>
+                      </Box>
+                      <Typography variant="body1" color="text.secondary" fontWeight={600}>
+                        {col.label}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+
+          {/* Data Tables Row */}
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
+                <CardContent sx={{ p: 3, pb: '24px !important' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                    <Wrench size={20} color="#6b7280" />
+                    <Typography variant="h6" fontWeight={800} sx={{ color: '#6b7280', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      RECENT MECHANICAL QUEUE
                     </Typography>
-                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${col.color}15`, color: col.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon size={20} />
-                    </Box>
                   </Box>
-                  <Typography variant="body1" color="text.secondary" fontWeight={600}>
-                    {col.label}
-                  </Typography>
+
+                  <DataTable
+                    columns={columns}
+                    data={queue}
+                    emptyMessage="No jobs in queue"
+                    showPagination={true}
+                    defaultItemsPerPage={5}
+                    rowsPerPageOptions={[5, 10, 25, 50]}
+                  />
                 </CardContent>
               </Card>
             </Grid>
-          );
-        })}
-      </Grid>
-
-      {/* Data Tables Row */}
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
-            <CardContent sx={{ p: 3, pb: '24px !important' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <Wrench size={20} color="#6b7280" />
-                <Typography variant="h6" fontWeight={800} sx={{ color: '#6b7280', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  RECENT MECHANICAL QUEUE
-                </Typography>
-              </Box>
-
-              <DataTable
-                columns={columns}
-                data={queue}
-                emptyMessage="No jobs in queue"
-                showPagination={true}
-                defaultItemsPerPage={5}
-                rowsPerPageOptions={[5, 10, 25, 50]}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+          </Grid>
         </>
       )}
     </Box>

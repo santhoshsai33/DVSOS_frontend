@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Box, Card, CardContent, Chip, Grid, Typography } from '@mui/material';
+import { Box, Card, CardContent, Chip, Grid, Typography, Tooltip } from '@mui/material';
 import {
   AlertTriangle,
   ArrowRight,
@@ -163,14 +163,25 @@ export default function WaterWashQueue() {
         </Box>
       ),
     },
-    // {
-    //   header: 'WASH DETAILS',
-    //   render: (row) => (
-    //     <Typography sx={{ fontSize: '0.875rem', color: '#374151' }}>
-    //       {row.washService}
-    //     </Typography>
-    //   ),
-    // },
+    {
+      header: 'SERVICES',
+      render: (row) => (
+        <Tooltip title={row.washService || ''} placement="bottom" arrow>
+          <Typography sx={{
+            fontSize: '0.875rem',
+            color: '#374151',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '250px'
+          }}>
+            {row.washService}
+          </Typography>
+        </Tooltip>
+      ),
+    },
     {
       header: 'PREVIOUS STAGES',
       render: (row) => (
@@ -316,7 +327,7 @@ export default function WaterWashQueue() {
                 showPagination={true}
                 defaultItemsPerPage={5}
                 rowsPerPageOptions={[5, 10, 25, 50]}
-                onRowClick={openJob}
+                // onRowClick={openJob}
                 emptyMessage="No vehicles in water wash queue"
               />
             </CardContent>

@@ -79,11 +79,11 @@ export default function JobCardList() {
 
   const columns = [
     {
-      header: 'Job Card #',
+      header: 'Job Card',
       accessor: 'jobCardNo',
       render: (row) => (
         <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
-          #{row.jobCardNo}
+          {row.jobCardNo}
         </Typography>
       ),
     },
@@ -164,11 +164,11 @@ export default function JobCardList() {
       <PageHeader
         title="Job Cards"
         breadcrumbs={[{ label: 'Job Cards' }]}
-        // actions={canCreateJobCard ? (
-        //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
-        //     Create Job Card
-        //   </Button>
-        // ) : null}
+      // actions={canCreateJobCard ? (
+      //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CRM_CREATE_JOB_CARD)}>
+      //     Create Job Card
+      //   </Button>
+      // ) : null}
       />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -215,7 +215,6 @@ export default function JobCardList() {
           columns={columns}
           data={tableData}
           loading={isLoading}
-          onRowClick={(row) => navigate(`${ROUTES.JOB_CARDS}/view/${row.slug || row.id}`)}
           emptyMessage="No job cards found"
           serverSide={true}
           totalCount={data?.meta?.total || 0}
@@ -246,20 +245,35 @@ export default function JobCardList() {
             Edit
           </MenuItem>
         )}
-        {(canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork) && (
-          <MenuItem onClick={() => {
-            handleMenuClose();
-            const jobCardIdentifier = selectedJob?.slug || selectedJob?.jobCardNo || selectedJob?.id;
-            if (department === 'body-shop' || (!canCreateFloorAdditionalWork && canCreateBodyShopAdditionalWork)) {
-              navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}`);
-            } else {
-              navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}`);
-            }
-          }}>
-            <PlusCircle size={16} className="mr-3 text-body-shop" />
-            Add Additional Work
-          </MenuItem>
-        )}
+        {(canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork) &&
+          !['COMPLETED', 'READY_FOR_DELIVERY', 'DELIVERED', 'REJECTED'].includes(selectedJob?.currentStatus?.statusCode) && (
+            (() => {
+              const targetDepartment = (department === 'body-shop' || (!canCreateFloorAdditionalWork && canCreateBodyShopAdditionalWork)) ? 'body-shop' : 'mechanical';
+              const assignments = selectedJob?.workAssignments || [];
+
+              if (assignments.length > 0) {
+                return assignments.some(a => {
+                  const cat = a.service?.category?.slug || a.service?.category?.name || '';
+                  return String(cat).toLowerCase().replace(/[\s_]+/g, '-') === targetDepartment;
+                });
+              }
+
+              return Boolean(selectedJob?.technician && selectedJob.technician !== 'Unassigned' && String(selectedJob.technician).trim() !== '');
+            })()
+          ) && (
+            <MenuItem onClick={() => {
+              handleMenuClose();
+              const jobCardIdentifier = selectedJob?.slug || selectedJob?.jobCardNo || selectedJob?.id;
+              if (department === 'body-shop' || (!canCreateFloorAdditionalWork && canCreateBodyShopAdditionalWork)) {
+                navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}`);
+              } else {
+                navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}`);
+              }
+            }}>
+              <PlusCircle size={16} className="mr-3 text-body-shop" />
+              Add Additional Work
+            </MenuItem>
+          )}
         {/* <MenuItem onClick={() => {
           handleMenuClose();
           const message = `Hello ${selectedJob?.ownerName || 'Customer'}, your vehicle service card #${selectedJob?.id} estimate is ready. Please reply YES to approve work.`;

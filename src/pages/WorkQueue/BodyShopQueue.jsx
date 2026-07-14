@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Grid, Box, Typography, Card, CardContent, Chip } from '@mui/material';
+import { Grid, Box, Typography, Card, CardContent, Chip, Tooltip } from '@mui/material';
 import { Clock, CheckCircle2, User, AlertTriangle, ArrowRight, Paintbrush } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import { useNavigate } from 'react-router-dom';
@@ -136,7 +136,20 @@ export default function BodyShopQueue() {
     {
       header: 'SERVICES',
       render: (row) => (
-        <Typography sx={{ fontSize: '0.875rem', color: '#374151' }}>{row.services}</Typography>
+        <Tooltip title={row.services || ''} placement="bottom" arrow>
+          <Typography sx={{
+            fontSize: '0.875rem',
+            color: '#374151',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: '250px'
+          }}>
+            {row.services}
+          </Typography>
+        </Tooltip>
       ),
     },
     {

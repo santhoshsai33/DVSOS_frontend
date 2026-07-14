@@ -129,9 +129,12 @@ export function AdditionalWorkRequestScreen({
   const eligibleParentServices = useMemo(() => serviceRows({ services: context?.eligibleParentServices || [] }), [context?.eligibleParentServices]);
   const availableServices = useMemo(() => {
     const services = Array.isArray(context?.availableServices) ? context.availableServices : [];
-    if (!defaultCategory || defaultCategory === 'ALL') return services;
-    return services.filter((service) => service.category?.toLowerCase() === defaultCategory.toLowerCase());
-  }, [context?.availableServices, defaultCategory]);
+    const currentServiceNames = new Set(currentServices.map((s) => s.name?.toLowerCase().trim()));
+    let filtered = services.filter((service) => !currentServiceNames.has(service.name?.toLowerCase().trim()));
+    
+    if (!defaultCategory || defaultCategory === 'ALL') return filtered;
+    return filtered.filter((service) => service.category?.toLowerCase() === defaultCategory.toLowerCase());
+  }, [context?.availableServices, defaultCategory, currentServices]);
   const pendingApproval = context?.pendingApproval || null;
   const jobCardTaxRate = Number(jobCard.taxRate ?? jobCard.billing?.taxRate ?? TAX_RATE);
   const baseSubtotal = currentServices.reduce((sum, service) => sum + Number(service.price || 0) * Number(service.qty || 1), 0);

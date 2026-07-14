@@ -21,8 +21,8 @@ const schema = z.object({
   categoryId: commonValidations.requiredNumber('Category Group'),
   name: commonValidations.alphaNumeric('Service Item Name'),
   description: commonValidations.optionalDescription,
-  defaultPrice: commonValidations.positiveAmount('Base Price'),
-  estimatedMinutes: commonValidations.optionalAmount
+  defaultPrice: z.coerce.number({ required_error: 'Base Price is required', invalid_type_error: 'Base Price is required' }).gt(0, 'Base Price must be greater than 0'),
+  estimatedMinutes: z.union([z.coerce.number().gt(0, 'Duration must be greater than 0'), z.literal('')]).optional()
 });
 
 export default function ServiceItemForm() {

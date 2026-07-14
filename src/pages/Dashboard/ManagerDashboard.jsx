@@ -78,11 +78,11 @@ export default function ManagerDashboard() {
   }, [page, limit]);
   const jobCardColumns = [
     {
-      header: 'Job Card #',
+      header: 'Job Card',
       accessor: 'id',
       render: (row) => (
         <Typography variant="body2" sx={{ fontWeight: 800, color: '#334155' }}>
-          #{row.id}
+          {row.id}
         </Typography>
       ),
     },

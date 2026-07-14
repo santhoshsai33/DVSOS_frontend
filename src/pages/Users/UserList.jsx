@@ -18,10 +18,13 @@ import DateFilter from '../../components/common/DateFilter';
 import StatusFilter from '../../components/common/StatusFilter';
 import ResetFiltersButton from '../../components/common/ResetFiltersButton';
 import { usePermissions } from '../../hooks/usePermissions';
+import useAuthStore from '../../store/useAuthStore';
 
 export default function UserList() {
   const navigate = useNavigate();
   const { canRead, canCreate, canUpdate } = usePermissions();
+  const { role } = useAuthStore();
+  const isAdmin = role === 'admin';
   const canCreateUsers = canCreate('/users');
   const canUpdateUsers = canUpdate('/users');
   const canReadLocations = canRead('/locations');
@@ -192,7 +195,7 @@ export default function UserList() {
         </Typography>
       ),
     },
-    {
+    ...(isAdmin ? [{
       header: 'Location',
       accessor: 'locationName',
       render: (row) => {
@@ -204,7 +207,7 @@ export default function UserList() {
           </Typography>
         );
       },
-    },
+    }] : []),
     {
       header: 'Status',
       accessor: 'isActive',
