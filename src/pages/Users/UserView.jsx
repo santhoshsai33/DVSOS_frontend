@@ -32,7 +32,7 @@ const DetailRow = ({ icon: Icon, label, value, isLast = false }) => (
       justifyContent: 'space-between',
       py: 2.25,
       borderBottom: isLast ? 'none' : '1px solid',
-      borderColor: '#eff6ff',
+      borderColor: '#cbd5e1',
     }}
   >
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -121,7 +121,7 @@ export default function UserView() {
             xs={12}
             md={6}
             sx={{
-              borderRight: { md: '1px solid #eff6ff' },
+              borderRight: { md: '1px solid #cbd5e1' },
               pr: { md: 4 },
             }}
           >

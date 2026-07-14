@@ -146,15 +146,23 @@ export default function Sidebar() {
       return (
         <Box
           key={item.label}
-          onMouseEnter={(e) => handlePopoverOpen(e, item.label)}
-          onMouseLeave={handlePopoverClose}
           sx={{
             position: 'relative',
           }}
         >
           <Tooltip title={item.label} placement="right" arrow disableHoverListener={!isCollapsedState}>
             <ListItemButton
-              onClick={() => !isDesktopFlyout && toggleGroup(item.label)}
+              onClick={(e) => {
+                if (isDesktopFlyout) {
+                  if (isMenuOpen) {
+                    handlePopoverClose();
+                  } else {
+                    handlePopoverOpen(e, item.label);
+                  }
+                } else {
+                  toggleGroup(item.label);
+                }
+              }}
               sx={{
                 borderRadius: 0,
                 mb: 0.5,
@@ -199,7 +207,7 @@ export default function Sidebar() {
               </List>
             </Collapse>
           ) : (
-            /* Desktop view: right-side hover Popover (via React Portal) */
+            /* Desktop view: right-side click Popover (via React Portal) */
             <Popover
               open={isMenuOpen}
               anchorEl={hoverAnchorEl}
@@ -214,12 +222,6 @@ export default function Sidebar() {
               onClose={handlePopoverClose}
               marginThreshold={0}
               PaperProps={{
-                onMouseEnter: () => {
-                  if (isDesktopFlyout) {
-                    setHoveredMenuLabel(item.label);
-                  }
-                },
-                onMouseLeave: handlePopoverClose,
                 sx: {
                   minWidth: 220,
                   maxHeight: 'calc(100vh - 80px)',
@@ -234,9 +236,6 @@ export default function Sidebar() {
                   py: 1,
                   pointerEvents: 'auto',
                 }
-              }}
-              sx={{
-                pointerEvents: 'none',
               }}
             >
               <List component="div" disablePadding>
@@ -254,7 +253,12 @@ export default function Sidebar() {
           <ListItemButton
             component={Link}
             to={item.path || '#'}
-            onClick={() => isMobile && setSidebarMobileOpen(false)}
+            onClick={() => {
+              if (isMobile) {
+                setSidebarMobileOpen(false);
+              }
+              handlePopoverClose();
+            }}
             sx={{
               borderRadius: 0,
               pl: isCollapsedState ? 'auto' : (isDesktopFlyout && depth > 0 ? 2 : (depth > 0 ? 4 : 2)),
