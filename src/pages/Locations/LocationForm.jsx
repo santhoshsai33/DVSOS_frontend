@@ -199,7 +199,6 @@ export default function LocationForm() {
                   options={availableDistricts.filter(d => d.isActive !== false).map(d => ({ value: d.id, label: d.districtName }))}
                   placeholder="Select a District"
                   required
-                  disabled={!selectedStateId}
                 />
               </Grid>
               <Grid item xs={12} md={6}>

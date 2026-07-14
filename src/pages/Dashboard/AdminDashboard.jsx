@@ -139,8 +139,8 @@ export default function AdminDashboard() {
           return (
             <Grid item xs={12} sm={6} md={3} key={i}>
               <Card
-                sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', borderTop: `4px solid ${kpi.color}`, height: '100%', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', }}
-                onClick={kpi.action}
+                sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', borderTop: `4px solid ${kpi.color}`, height: '100%', transition: 'transform 0.2s, box-shadow 0.2s', }}
+              // onClick={kpi.action}
               >
                 <CardContent sx={{ p: 3, pb: '24px !important' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

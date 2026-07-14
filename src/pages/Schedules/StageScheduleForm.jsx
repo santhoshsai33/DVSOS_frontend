@@ -33,28 +33,26 @@ const requiredPositiveInt = (label) => z.preprocess(
     .positive(`${label} is required`)
 );
 
-const schema = z.object({
+const baseSchema = z.object({
   moduleId: requiredPositiveInt('Module'),
   statusId: requiredPositiveInt('Status / Stage'),
   stageCode: z.string().trim().min(1, 'Stage Code is required'),
   allowedMinutes: requiredPositiveInt('Alert Interval Time'),
-  notifyBy: z.enum(['ROLE', 'USER'], { required_error: 'Notify By is required' }),
-  notifyRoleId: optionalPositiveInt,
-  notifyUserId: optionalPositiveInt,
   isActive: z.boolean()
-}).superRefine((data, ctx) => {
-  if (data.notifyBy === 'ROLE' && !data.notifyRoleId) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['notifyRoleId'], message: 'Notify Role is required' });
-  }
-
-  if (data.notifyBy === 'USER' && !data.notifyUserId) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['notifyUserId'], message: 'Notify User is required' });
-  }
-
-  if (data.notifyRoleId && data.notifyUserId) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['notifyBy'], message: 'Choose either notify role or notify user, not both.' });
-  }
 });
+
+const schema = z.discriminatedUnion('notifyBy', [
+  baseSchema.extend({
+    notifyBy: z.literal('ROLE'),
+    notifyRoleId: requiredPositiveInt('Notify Role'),
+    notifyUserId: optionalPositiveInt
+  }),
+  baseSchema.extend({
+    notifyBy: z.literal('USER'),
+    notifyRoleId: optionalPositiveInt,
+    notifyUserId: requiredPositiveInt('Notify User')
+  })
+]);
 
 const defaultValues = {
   moduleId: '',
@@ -275,7 +273,7 @@ export default function StageScheduleForm() {
                 options={statusOptions}
                 placeholder={moduleId ? 'Select Status / Stage' : 'Select module first'}
                 required
-                disabled={loading || !moduleId}
+                disabled={loading}
               />
             </Grid>
 

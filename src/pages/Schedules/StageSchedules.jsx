@@ -6,6 +6,7 @@ import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import SearchBar from '../../components/common/SearchBar';
+import StatusFilter from '../../components/common/StatusFilter';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import { ROUTES } from '../../config/routes';
 import { toastError, toastSuccess } from '../../notifications/toast';
@@ -19,6 +20,7 @@ export default function StageSchedules() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [statusFilter, setStatusFilter] = useState('');
   const [schedules, setSchedules] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -29,11 +31,15 @@ export default function StageSchedules() {
   const fetchSchedules = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await getStageTimeLimitsApi({
+      const params = {
         page: page + 1,
         limit: rowsPerPage,
         search: search.trim() || undefined
-      });
+      };
+      if (statusFilter === 'ACTIVE') params.isActive = true;
+      if (statusFilter === 'INACTIVE') params.isActive = false;
+
+      const res = await getStageTimeLimitsApi(params);
 
       setSchedules(res?.data?.schedules || []);
       setTotalCount(res?.meta?.total || 0);
@@ -42,7 +48,7 @@ export default function StageSchedules() {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, search]);
+  }, [page, rowsPerPage, search, statusFilter]);
 
   useEffect(() => {
     fetchSchedules();
@@ -148,7 +154,7 @@ export default function StageSchedules() {
         )}
       />
 
-      <Box sx={{ display: 'flex', mb: 3 }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
             placeholder="Search schedules..."
@@ -159,6 +165,10 @@ export default function StageSchedules() {
             }}
           />
         </Box>
+        <StatusFilter
+          value={statusFilter}
+          onChange={(val) => { setStatusFilter(val); setPage(0); }}
+        />
       </Box>
 
       <Card sx={{ borderRadius: 0 }}>

@@ -118,7 +118,7 @@ export default function AssignMechanicList() {
     }
   });
 
-  const filteredJobs = localJobs.filter(job => 
+  const filteredJobs = localJobs.filter(job =>
     (job?.vehicleNo || job?.vehicleNumber || '')?.toLowerCase().includes(search.toLowerCase()) ||
     (job?.customerName || job?.ownerName || '')?.toLowerCase().includes(search.toLowerCase()) ||
     (job?.jobCardNo || job?.id || '')?.toString().toLowerCase().includes(search.toLowerCase())
@@ -144,7 +144,6 @@ export default function AssignMechanicList() {
       render: (row) => (
         <Box>
           <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.customerName || row.ownerName || '—'}</Typography>
-          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.vehicleModel || row.makeModel || '—'}</Typography>
         </Box>
       ),
     },
@@ -155,17 +154,6 @@ export default function AssignMechanicList() {
           {row.serviceNames?.length ? row.serviceNames.join(', ') : (row.serviceType || '—')}
         </Typography>
       ),
-    },
-    {
-      header: 'BAY',
-      render: (row) => {
-        const bay = row.bay || row.assignedBay;
-        return (
-          <Typography sx={{ fontSize: '0.875rem', color: bay ? '#374151' : '#94a3b8', fontWeight: bay ? 600 : 500 }}>
-            {bay?.bayName || bay?.bayCode || '—'}
-          </Typography>
-        );
-      },
     },
     // {
     //   header: 'PRIORITY',
@@ -268,7 +256,7 @@ export default function AssignMechanicList() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, mt: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
-            placeholder="Search vehicle, owner, job ID..."
+            placeholder="Search vehicle, owner"
             value={search}
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
@@ -412,7 +400,7 @@ export default function AssignMechanicList() {
                 })}
               </Select>
             </FormControl>
-{/* 
+            {/* 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#6b7280', fontSize: '0.875rem', mt: 1 }}>
               <Printer size={14} />
               <span>Assigning will automatically print a hard copy of the job card.</span>

@@ -61,12 +61,13 @@ export const commonValidations = {
   // Contact & Auth
   email: z.string().trim().min(1, 'Email is required').max(100, 'Email cannot exceed 100 characters').email('Invalid email format').refine(val => /[a-zA-Z]/.test(val.split('@')[0]), 'Email must contain at least one letter before @'),
   optionalEmail: z.string().trim().max(100, 'Email cannot exceed 100 characters').email('Invalid email format').refine(val => /[a-zA-Z]/.test(val.split('@')[0]), 'Email must contain at least one letter before @').optional().or(z.literal('')),
-  mobile: z.string().trim().min(1, 'Mobile Number is required').regex(/^[0-9]{10}$/, 'Mobile Number must be exactly 10 digits').refine(val => !/^0+$/.test(val), 'Mobile Number cannot be all zeros'),
-  optionalMobile: z.literal('').or(z.string().trim().regex(/^[0-9]{10}$/, 'Mobile Number must be exactly 10 digits').refine(val => !/^0+$/.test(val), 'Mobile Number cannot be all zeros')).optional(),
+  mobile: z.string().trim().min(1, 'Mobile Number is required').regex(/^[0-9]{10}$/, 'Mobile Number must be exactly 10 digits').regex(/^[6-9]/, 'Mobile Number must start with 6, 7, 8, or 9'),
+  optionalMobile: z.literal('').or(z.string().trim().regex(/^[0-9]{10}$/, 'Mobile Number must be exactly 10 digits').regex(/^[6-9]/, 'Mobile Number must start with 6, 7, 8, or 9')).optional(),
   password: (minLength = 6) => z.string().min(minLength, `Password must be at least ${minLength} characters`),
   optionalPassword: z.string().optional(),
   
   // Specialized formats
+  vehicleNumber: z.string().trim().toUpperCase().regex(/^[A-Z]{2}[-\s]?[0-9]{1,2}[-\s]?[A-Z]{1,3}[-\s]?[0-9]{4}$/i, 'Invalid Vehicle Number format (e.g., TN12AK8776 or MH 12 AB 1234)'),
   gstNumber: z.string().trim().toUpperCase().length(15, 'GST Number must be exactly 15 characters').regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i, 'Invalid GST Number format (e.g., 29ABCDE1234F1Z5)'),
   optionalUrl: z.string().trim().refine(val => {
     if (!val) return true;

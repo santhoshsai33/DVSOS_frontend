@@ -67,8 +67,7 @@ export default function VehicleList() {
     { header: 'Owner Name', render: (row) => row.customer?.fullName || 'N/A' },
     { header: 'Mobile', render: (row) => row.customer?.mobileNo || 'N/A' },
     { header: 'Make & Model', render: (row) => `${row.brand?.name || ''} ${row.model || ''}`.trim() || 'N/A' },
-    { header: 'Type', render: (row) => row.variant || 'N/A' },
-    { header: 'Fuel', accessor: 'fuelType' },
+
     {
       header: 'Status',
       render: (row) => <StatusBadge status={row.isActive === false ? 'INACTIVE' : 'ACTIVE'} />
