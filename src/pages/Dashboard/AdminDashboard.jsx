@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
 import { useAdminDashboard } from '../../queries/useDashboardQueries';
 import DataTable from '../../components/common/DataTable';
+import Loader from '../../components/common/Loader';
 
 const formatDate = (dateValue) => {
   if (!dateValue) {
@@ -105,6 +106,14 @@ export default function AdminDashboard() {
 
   ];
 
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <Loader size="lg" text="Loading dashboard..." />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f0f4ff', minHeight: '100%' }}>
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 4, bgcolor: '#FFFFFF', p: 3, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB' }}>
@@ -162,7 +171,7 @@ export default function AdminDashboard() {
                 Recently Added Users
               </Typography>
               <Box sx={{ p: '20px' }}>
-                <DataTable columns={columns} data={recentUsers} loading={isLoading} emptyMessage="No users found" showPagination={false} />
+                <DataTable columns={columns} data={recentUsers} loading={false} emptyMessage="No users found" showPagination={false} />
               </Box>
             </CardContent>
           </Card>

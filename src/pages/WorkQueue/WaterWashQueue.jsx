@@ -16,6 +16,7 @@ import PageHeader from '../../components/shared/PageHeader';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { ROUTES } from '../../config/routes';
 import { getWaterWashDashboardApi } from '../../api/dashboardApi';
+import Loader from '../../components/common/Loader';
 
 const SLA_MINUTES = 20;
 const COLS = [
@@ -273,6 +274,14 @@ export default function WaterWashQueue() {
     },
   ];
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <Loader size="lg" text="Loading dashboard..." />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F0F4FF', minHeight: '100%' }}>
       <Grid container spacing={3} sx={{ mb: 3, mt: 0 }}>
@@ -323,7 +332,7 @@ export default function WaterWashQueue() {
               <DataTable
                 columns={columns}
                 data={displayedJobs}
-                loading={loading}
+                loading={false}
                 showPagination={true}
                 defaultItemsPerPage={5}
                 rowsPerPageOptions={[5, 10, 25, 50]}

@@ -9,6 +9,7 @@ import { ROUTES } from '../../config/routes';
 import { useQuery } from '@tanstack/react-query';
 import useAuthStore from '../../store/useAuthStore';
 import { getBodyShopDashboardApi } from '../../api/dashboardApi';
+import Loader from '../../components/common/Loader';
 
 // mock data for body shop
 const QUEUE_DATA = [
@@ -240,6 +241,14 @@ export default function BodyShopQueue() {
     },
   ];
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <Loader size="lg" text="Loading dashboard..." />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F0F4FF', minHeight: '100%' }}>
 
@@ -294,7 +303,7 @@ export default function BodyShopQueue() {
               <DataTable
                 columns={columns}
                 data={queue}
-                loading={loading}
+                loading={false}
                 emptyMessage="No jobs in queue"
                 showPagination={true}
                 defaultItemsPerPage={5}

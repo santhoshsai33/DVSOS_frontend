@@ -13,7 +13,7 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import { getUsersApi, updateUserStatusApi } from '../../api/userApi';
 import { getRolesApi } from '../../api/roleApi';
 import { getLocationsApi } from '../../api/adminLocationApi';
-import { formatDateTime } from '../../utils/formatters';
+import { formatDateTime, formatDate } from '../../utils/formatters';
 import DateFilter from '../../components/common/DateFilter';
 import StatusFilter from '../../components/common/StatusFilter';
 import ResetFiltersButton from '../../components/common/ResetFiltersButton';
@@ -225,7 +225,14 @@ export default function UserList() {
     {
       header: 'Last Login',
       accessor: 'lastLogin',
-      render: (row) => <Typography variant="body2">{row.lastLogin ? formatDateTime(row.lastLogin) : '-'}</Typography>,
+      render: (row) => row.lastLogin ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="body2">{formatDate(row.lastLogin, 'dd MMM yyyy')}</Typography>
+          <Typography variant="caption" color="text.secondary">{formatDate(row.lastLogin, 'hh:mm a')}</Typography>
+        </Box>
+      ) : (
+        <Typography variant="body2">-</Typography>
+      ),
     },
     {
       header: 'Actions',

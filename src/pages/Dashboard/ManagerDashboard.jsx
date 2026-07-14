@@ -15,6 +15,7 @@ import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import { ROUTES } from '../../config/routes';
 import { getManagerDashboardApi } from '../../api/dashboardApi';
 import useAuthStore from '../../store/useAuthStore';
+import Loader from '../../components/common/Loader';
 
 // Mappings to standard icons if needed
 const ICON_MAP = {
@@ -129,8 +130,8 @@ export default function ManagerDashboard() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100%' }}>
       {initialLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
-          <CircularProgress />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+          <Loader size="lg" text="Loading dashboard..." />
         </Box>
       ) : (
         <>

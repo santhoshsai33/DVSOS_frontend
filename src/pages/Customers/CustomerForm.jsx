@@ -20,10 +20,10 @@ import { commonValidations } from '../../validations/commonSchema';
 
 const schema = z.object({
   fullName: commonValidations.requiredString('Customer Full Name', 50),
-  emailId: commonValidations.email,
+  emailId: commonValidations.optionalEmail,
   mobileNo: commonValidations.mobile,
   alternateMobileNo: commonValidations.optionalMobile,
-  address: commonValidations.address
+  address: commonValidations.requiredString('Billing Address', 200)
 });
 
 export default function CustomerForm() {
@@ -117,7 +117,6 @@ export default function CustomerForm() {
                 label="Email Address"
                 type="email"
                 placeholder="Enter email address"
-                required
               />
             </Grid>
           </Grid>
@@ -150,7 +149,7 @@ export default function CustomerForm() {
 
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12}>
-              <RHFTextarea name="address" label="Billing Address" placeholder="Enter address details" rows={3} />
+              <RHFTextarea name="address" label="Billing Address" placeholder="Enter address details" rows={3} required />
             </Grid>
           </Grid>
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>

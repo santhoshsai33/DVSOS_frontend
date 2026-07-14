@@ -123,7 +123,6 @@ export default function VehicleList() {
           columns={columns}
           data={tableData}
           loading={isLoading}
-          onRowClick={(row) => navigate(`${ROUTES.VEHICLES}/view/${row.slug || row.id}`)}
           emptyMessage="No vehicles found"
           serverSide={true}
           totalCount={data?.meta?.total || 0}

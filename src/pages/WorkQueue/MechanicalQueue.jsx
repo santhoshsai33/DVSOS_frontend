@@ -7,6 +7,7 @@ import Button from '../../components/common/Button';
 import { ROUTES } from '../../config/routes';
 import { getSupervisorDashboardApi } from '../../api/dashboardApi';
 import useAuthStore from '../../store/useAuthStore';
+import Loader from '../../components/common/Loader';
 
 const COLS = [
   { key: 'PENDING', label: 'Pending Mechanical', icon: Clock, color: '#F59E0B' },
@@ -187,8 +188,8 @@ export default function MechanicalQueue() {
 
       {/* KPI Cards Row */}
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
-          <CircularProgress />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+          <Loader size="lg" text="Loading dashboard..." />
         </Box>
       ) : (
         <>

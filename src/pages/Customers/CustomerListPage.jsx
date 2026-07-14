@@ -35,11 +35,11 @@ export default function CustomerListPage() {
   const canCreateCustomers = canCreate('/customers');
   const canUpdateCustomers = canUpdate('/customers');
 
-  const { data: customerData, isLoading } = useCustomers({ 
-    page, 
-    limit, 
-    search, 
-    status: statusFilter ? statusFilter.toLowerCase() : undefined 
+  const { data: customerData, isLoading } = useCustomers({
+    page,
+    limit,
+    search,
+    status: statusFilter ? statusFilter.toLowerCase() : undefined
   });
   const statusMutation = useUpdateCustomerStatus();
 
@@ -77,21 +77,28 @@ export default function CustomerListPage() {
     {
       header: 'Email',
       accessor: 'emailId',
-      render: (row) => (
-        <a href={`mailto:${row.emailId}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
-          <Mail size={12} /> {row.emailId}
+      render: (row) => row.emailId ? (
+        <a href={`mailto:${row.emailId}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none', color: '#000', fontSize: '0.85rem' }}>
+          {row.emailId}
         </a>
+      ) : (
+        <span style={{ color: '#000', fontSize: '0.85rem' }}>-</span>
       )
     },
     {
       header: 'Mobile',
       accessor: 'mobileNo',
+      render: (row) => (
+        <span style={{ color: '#000', fontSize: '0.85rem' }}>
+          {row.mobileNo || '-'}
+        </span>
+      )
     },
     {
       header: 'Address',
       accessor: 'address',
       render: (row) => (
-        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <span style={{ color: '#000', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
           <MapPin size={12} /> {row.address || '-'}
         </span>
       )
@@ -129,11 +136,11 @@ export default function CustomerListPage() {
       <PageHeader
         title="Customer Directory"
         breadcrumbs={[{ label: 'Customers' }]}
-        // actions={canCreateCustomers ? (
-        //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CUSTOMERS_NEW || '/customers/new')}>
-        //     Add Customer
-        //   </Button>
-        // ) : null}
+      // actions={canCreateCustomers ? (
+      //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CUSTOMERS_NEW || '/customers/new')}>
+      //     Add Customer
+      //   </Button>
+      // ) : null}
       />
 
       <Box sx={{ display: 'flex', mb: 3, gap: 2, flexWrap: 'wrap' }}>

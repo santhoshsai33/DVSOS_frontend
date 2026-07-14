@@ -20,7 +20,7 @@
 
 .spinner {
   animation: spin 0.7s linear infinite;
-  color: var(--color-accent);
+  color: var(--color-primary);
 }
 
 .sm { width: 20px; height: 20px; }
