@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Grid } from '@mui/material';
-import { Car, Clock, Wrench, CheckCircle2, LogOut, Maximize } from 'lucide-react';
+import { Car, Clock, Wrench, CheckCircle2, LogOut, Maximize, ClipboardList, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Kiosk.module.css';
 import { ROUTES } from '../../config/routes';
@@ -70,18 +70,31 @@ function DisplaySection({ title, icon: Icon, items, statusClass }) {
         {animatedItems.map((item) => (
           <div key={item.id} className={styles.listItem}>
             <div className={styles.cardHeader}>
-              <span className={styles.jobId}>{item.id}</span>
+              <span className={styles.jobId}><ClipboardList size={14} /> {item.id}</span>
               <span className={styles.timeBadge}><Clock size={14} /> {item.waitTime || item.time}</span>
             </div>
 
             <div className={styles.cardBody}>
               <div className={styles.licensePlate}>
-                <div className={styles.plateInd}>IND</div>
+                <div className={styles.plateInd}>
+                  <div className={styles.indFlag}>
+                    <span></span><span></span><span></span>
+                  </div>
+                  IND
+                </div>
                 <span className={styles.plateText}>{item.vehicle}</span>
               </div>
-              <div className={styles.customerDetails}>
-                <h3 className={styles.customerName}>{item.customerName}</h3>
-                {/* <p className={styles.modelName}>{item.model}</p> */}
+              
+              <div className={styles.bottomRow}>
+                <div className={styles.customerDetails}>
+                  <div className={styles.userAvatar}>
+                    <User size={18} />
+                  </div>
+                  <h3 className={styles.customerName}>{item.customerName}</h3>
+                </div>
+                <div className={styles.carBadge}>
+                  <Car size={20} />
+                </div>
               </div>
             </div>
           </div>
@@ -195,20 +208,33 @@ export default function KioskDisplay() {
               </div>
               <div className={styles.list} ref={readyParent}>
                 {animatedReady.map((item) => (
-                  <div key={item.id} className={`${styles.listItem} ${styles.readyItem}`}>
+                  <div key={item.id} className={styles.listItem}>
                     <div className={styles.cardHeader}>
-                      <span className={styles.jobId}>{item.id}</span>
-                      <span className={`${styles.timeBadge} ${styles.readyTimeBadge}`}><CheckCircle2 size={14} /> Since {item.time}</span>
+                      <span className={styles.jobId}><ClipboardList size={14} /> {item.id}</span>
+                      <span className={styles.timeBadge}><Clock size={14} /> Since {item.time}</span>
                     </div>
 
                     <div className={styles.cardBody}>
                       <div className={styles.licensePlate}>
-                        <div className={styles.plateInd}>IND</div>
+                        <div className={styles.plateInd}>
+                          <div className={styles.indFlag}>
+                            <span></span><span></span><span></span>
+                          </div>
+                          IND
+                        </div>
                         <span className={styles.plateText}>{item.vehicle}</span>
                       </div>
-                      <div className={styles.customerDetails}>
-                        <h3 className={`${styles.customerName} ${styles.readyCustomer}`}>{item.customerName}</h3>
-                        {/* <p className={styles.modelName}>{item.model}</p> */}
+                      
+                      <div className={styles.bottomRow}>
+                        <div className={styles.customerDetails}>
+                          <div className={styles.userAvatar}>
+                            <User size={18} />
+                          </div>
+                          <h3 className={styles.customerName}>{item.customerName}</h3>
+                        </div>
+                        <div className={styles.carBadge}>
+                          <Car size={20} />
+                        </div>
                       </div>
                     </div>
                   </div>
