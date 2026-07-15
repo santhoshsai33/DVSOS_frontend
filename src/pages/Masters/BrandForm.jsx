@@ -41,7 +41,7 @@ export default function BrandForm() {
       
       setLoading(true);
       
-      // Try to get from location state first (passed from list view)
+      
       if (location.state?.brand) {
         reset({ name: location.state.brand.name });
         setBrandId(location.state.brand.id);
@@ -49,7 +49,7 @@ export default function BrandForm() {
         return;
       }
       
-      // If no state, we have to search for it using the list API since detail API is omitted
+      
       try {
         const res = await adminBrandApi.getBrands({ limit: 100 });
         const brands = res.data?.brands || [];

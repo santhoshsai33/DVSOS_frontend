@@ -69,6 +69,6 @@ export const useTvKioskDashboard = () => {
       const response = await getTvKioskDashboardApi();
       return response.data || response;
     },
-    staleTime: 0, // We want fresh data when socket tells us to fetch
+    staleTime: 0,
   });
 };

@@ -1,7 +1,5 @@
-import React from 'react';
-import styles from './PageHeader.module.css';
-
-// eslint-disable-next-line react/prop-types
+import React from "react";
+import styles from "./PageHeader.module.css";
 export default function PageHeader({ title, subtitle, actions }) {
   return (
     <div className={styles.header}>
@@ -9,22 +7,12 @@ export default function PageHeader({ title, subtitle, actions }) {
         <div className={styles.titleContainer}>
           <div className={styles.accentBar} />
           <div className={styles.titleBox}>
-            <h1 className={styles.title}>
-              {title}
-            </h1>
-            {subtitle && (
-              <p className={styles.subtitle}>
-                {subtitle}
-              </p>
-            )}
+            <h1 className={styles.title}>{title}</h1>
+            {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
           </div>
         </div>
 
-        {actions && (
-          <div className={styles.actions}>
-            {actions}
-          </div>
-        )}
+        {actions && <div className={styles.actions}>{actions}</div>}
       </div>
     </div>
   );

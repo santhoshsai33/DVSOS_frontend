@@ -103,7 +103,6 @@ export default function StateList() {
     }
   };
 
-  // Filtering is now handled by the backend API via the search parameter
   const filteredStates = states;
 
   const columns = [

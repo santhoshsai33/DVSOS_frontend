@@ -19,25 +19,19 @@ const SOCKET_EVENTS = {
  */
 export const useSocket = (handlers = {}) => {
   const { isAuthenticated } = useAuthStore();
-
   useEffect(() => {
     if (!isAuthenticated) return;
-
     connectSocket();
-
-    // Register all event handlers
     Object.entries(handlers).forEach(([event, handler]) => {
       socket.on(event, handler);
     });
 
     return () => {
-      // Clean up event handlers
       Object.entries(handlers).forEach(([event, handler]) => {
         socket.off(event, handler);
       });
       disconnectSocket();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   const emit = useCallback((event, data) => {

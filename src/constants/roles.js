@@ -47,7 +47,6 @@ export const mapSlugToRole = (slug) => {
 
   const matchedRole = Object.values(ROLES).find(r => {
     const rNorm = r.toLowerCase().replace(/[-_]/g, '');
-    // Allow fuzzy match, so "bodyshop" matches "bodyshopsupervisor"
     return rNorm === normalized || rNorm.includes(normalized) || normalized.includes(rNorm);
   });
 

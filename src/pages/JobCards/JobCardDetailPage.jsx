@@ -84,7 +84,7 @@ export default function JobCardDetailPage() {
   const additionalNotesText = String(jobCard.additionalNotes || '').trim();
   const legacyNotesText = !complaintText && !additionalNotesText ? String(jobCard.notes || '').trim() : '';
 
-  // Map API fields to UI fields
+
   const displayJobCard = {
     ...jobCard,
     id: jobCard.jobCardNo || jobCard.id,
@@ -110,7 +110,6 @@ export default function JobCardDetailPage() {
       })) || [])
   };
 
-  // Split services into default and additional
   const allServices = displayJobCard.services || [];
   const defaultServices = allServices.filter(s => !s.isAdditional);
   const additionalServices = allServices.filter(s => s.isAdditional);

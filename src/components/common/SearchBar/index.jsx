@@ -1,16 +1,15 @@
-import { Search, X } from 'lucide-react';
-import { useState } from 'react';
-import styles from './SearchBar.module.css';
+import { Search, X } from "lucide-react";
+import { useState } from "react";
+import styles from "./SearchBar.module.css";
 
-// eslint-disable-next-line react/prop-types
 export default function SearchBar({
-  placeholder = 'Search...',
+  placeholder = "Search...",
   value,
   onChange,
   onClear,
-  className = '',
+  className = "",
 }) {
-  const [internalValue, setInternalValue] = useState('');
+  const [internalValue, setInternalValue] = useState("");
   const isControlled = value !== undefined;
   const displayValue = isControlled ? value : internalValue;
 
@@ -21,13 +20,13 @@ export default function SearchBar({
   };
 
   const handleClear = () => {
-    if (!isControlled) setInternalValue('');
+    if (!isControlled) setInternalValue("");
     if (onClear) onClear();
-    if (onChange) onChange('');
+    if (onChange) onChange("");
   };
 
   return (
-    <div className={[styles.wrapper, className].join(' ')}>
+    <div className={[styles.wrapper, className].join(" ")}>
       <Search size={16} className={styles.icon} />
       <input
         type="text"

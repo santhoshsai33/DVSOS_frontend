@@ -28,7 +28,7 @@ const formatReadyTime = (dateString) => {
 function useAutoScroll(items, maxVisible = 4, intervalMs = 3000) {
   const [displayItems, setDisplayItems] = useState(items);
 
-  // Only reset display items if the actual data from the backend changes
+
   const itemsKey = items.map(i => i.id).join(',');
 
   useEffect(() => {

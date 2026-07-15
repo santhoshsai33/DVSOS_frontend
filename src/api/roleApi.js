@@ -10,4 +10,3 @@ export const updateRoleStatusApi = (id, data) => axiosInstance.patch(ENDPOINTS.R
 export const getRoleMenuPermissionsApi = (roleId) => axiosInstance.get(ENDPOINTS.ROLES.MENU_PERMISSIONS.LIST(roleId));
 export const saveRoleMenuPermissionsApi = (roleId, data) => axiosInstance.post(ENDPOINTS.ROLES.MENU_PERMISSIONS.SAVE(roleId), data);
 export const updateRoleMenuPermissionsApi = (roleId, data) => axiosInstance.put(ENDPOINTS.ROLES.MENU_PERMISSIONS.UPDATE(roleId), data);
-// Using POST/PUT for arrays instead of DELETE for individual menus because validatePermissionPayload takes array of menus.

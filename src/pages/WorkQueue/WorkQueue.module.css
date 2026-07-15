@@ -36,7 +36,6 @@
   line-height: 1;
 }
 
-/* Kanban Board */
 .board {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -96,7 +95,7 @@
   overflow-y: auto;
 }
 
-/* Cards */
+
 .card {
   background: var(--color-bg-surface);
   border-radius: var(--radius-md);
@@ -214,7 +213,7 @@
   font-style: italic;
 }
 
-/* Table Styles for Mechanical Queue */
+
 .tableContainer {
   background: var(--color-bg-surface, #ffffff);
   border-radius: var(--radius-lg, 8px);

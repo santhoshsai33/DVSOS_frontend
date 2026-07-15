@@ -33,7 +33,6 @@ export default function BrandList() {
     const fetchBrands = async () => {
       try {
         setLoading(true);
-        // Still pass params in case backend gets updated to support them later
         const params = { page: page + 1, limit: rowsPerPage };
         if (search) params.search = search;
         if (statusFilter === 'ACTIVE') params.isActive = true;
@@ -44,8 +43,7 @@ export default function BrandList() {
           let fetchedBrands = res?.data?.brands || res?.data || res || [];
           if (!Array.isArray(fetchedBrands)) fetchedBrands = [];
 
-          // --- Client-side Fallback Filtering ---
-          // If backend didn't filter, we filter here
+          
           if (search) {
             const lowerSearch = search.toLowerCase();
             fetchedBrands = fetchedBrands.filter(b => b.name?.toLowerCase().includes(lowerSearch));
@@ -59,8 +57,7 @@ export default function BrandList() {
           const hasMetaTotal = res?.meta?.total !== undefined;
           setTotalCount(hasMetaTotal ? res.meta.total : fetchedBrands.length);
 
-          // --- Client-side Fallback Pagination ---
-          // If backend didn't paginate (returned all), we slice it here
+         
           if (!hasMetaTotal && fetchedBrands.length > rowsPerPage) {
             const start = page * rowsPerPage;
             fetchedBrands = fetchedBrands.slice(start, start + rowsPerPage);
@@ -100,8 +97,7 @@ export default function BrandList() {
   const handleStatusChange = async (id, newStatus) => {
     try {
       const res = await adminBrandApi.updateBrandStatus(id, newStatus);
-      // If the API call didn't throw an error, we consider it a success.
-      // Some APIs might not return { success: true }, so we shouldn't strictly require it.
+      
       if (res?.success !== false) {
         toastSuccess('Brand status updated successfully!');
         setBrands(prev => prev.map(b => b.id === id ? { ...b, isActive: newStatus } : b));

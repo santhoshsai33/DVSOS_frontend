@@ -10,13 +10,10 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 let messaging = null;
 try {
-  // getMessaging only runs in browser environments that support it
   messaging = getMessaging(app);
 } catch (err) {
   console.warn('Firebase Messaging not supported or failed to initialize:', err);
@@ -37,17 +34,12 @@ function getWebDeviceId() {
 
   return deviceId;
 }
-
-/**
- * Request notification permission and register FCM device token.
- */
 export async function requestNotificationPermissionAndRegister() {
   if (!messaging) return;
 
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      // Get registration token
       const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
       if (!vapidKey) {
         console.warn('VITE_FIREBASE_VAPID_KEY is missing in your frontend .env file. Skipping token generation.');
@@ -85,10 +77,6 @@ export async function removeRegisteredDeviceToken() {
     localStorage.removeItem(FCM_TOKEN_STORAGE_KEY);
   }
 }
-
-/**
- * Set up foreground push notification listener.
- */
 export function setupForegroundMessageListener(onNotificationReceived) {
   if (!messaging) return;
 
