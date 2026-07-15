@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Box, Grid, Card, Typography, Divider, Chip } from '@mui/material';
-import { ArrowLeft, Car, User, Shield, FileText, AlertTriangle, PlusCircle } from 'lucide-react';
+import { Box, Grid, Card, Typography, Divider, Chip, IconButton } from '@mui/material';
+import { ArrowLeft, Car, User, Shield, FileText, AlertTriangle, PlusCircle, Clock, ChevronDown, ChevronUp, ClipboardList, Wrench, Play, Filter } from 'lucide-react';
 import { useJobCard } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Loader from '../../components/common/Loader';
@@ -16,6 +16,7 @@ export default function JobCardDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { data: jobCard, isLoading } = useJobCard(jobCardIdentifier);
+  const [expandedAssignmentId, setExpandedAssignmentId] = useState(null);
 
   const handleBack = () => {
     if (location.state?.fromVehicleHistory) {
@@ -328,86 +329,226 @@ export default function JobCardDetailPage() {
               </Box>
             </Card>
 
-            <Card sx={{ borderRadius: 0 }}>
-              <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
-                <Typography variant="subtitle1" fontWeight={700}>Assigned Mechanical Work</Typography>
-                <Chip
-                  label={`${assignmentDetails.length} Assignment${assignmentDetails.length === 1 ? '' : 's'}`}
-                  size="small"
-                  sx={{ fontWeight: 700 }}
-                />
+            <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+              <Box sx={{ p: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="subtitle1" fontWeight={700} sx={{ color: '#0f172a' }}>Assigned Mechanical Work</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Chip
+                    label={`${assignmentDetails.length} Assignment${assignmentDetails.length === 1 ? '' : 's'}`}
+                    size="small"
+                    sx={{
+                      fontWeight: 700,
+                      bgcolor: '#e0e7ff',
+                      color: '#4338ca',
+                      fontSize: '0.75rem',
+                      px: 0.5
+                    }}
+                  />
+                  <IconButton size="small" sx={{ color: '#475569' }}>
+                    <Filter size={18} />
+                  </IconButton>
+                </Box>
               </Box>
-              <Box sx={{ p: 2 }}>
+              <Box sx={{ p: 2.5 }}>
                 {assignmentDetails.length === 0 ? (
-                  <Box sx={{ border: '1px dashed', borderColor: 'divider', borderRadius: 1, p: 2, textAlign: 'center' }}>
+                  <Box sx={{ border: '1px dashed', borderColor: 'divider', borderRadius: 2, p: 3, textAlign: 'center' }}>
                     <Typography variant="body2" color="text.secondary">
                       No mechanical assignment added for this job card yet.
                     </Typography>
                   </Box>
                 ) : (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {assignmentDetails.map((assignment) => {
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                    {assignmentDetails.map((assignment, index) => {
                       const assignedUser = assignment.assignedUser || {};
                       const serviceName = assignment.jobCardService?.serviceName || assignment.service?.serviceName || 'Assigned Service';
+                      const assignmentId = assignment.id || `assignment-${index}`;
+                      const defaultExpandedId = assignmentDetails[0]?.id || `assignment-0`;
+                      const activeId = expandedAssignmentId !== null ? expandedAssignmentId : defaultExpandedId;
+                      const isExpanded = activeId === assignmentId;
+
+                      const toggleExpanded = () => {
+                        setExpandedAssignmentId(isExpanded ? '' : assignmentId);
+                      };
+
+                      const statusLabel = getAssignmentStatusLabel(assignment);
 
                       return (
                         <Box
-                          key={assignment.id}
+                          key={assignmentId}
                           sx={{
                             border: '1px solid',
-                            borderColor: 'divider',
-                            borderRadius: 1,
-                            p: 2,
+                            borderColor: '#e2e8f0',
+                            borderRadius: '12px',
+                            p: 2.5,
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: 1.5
+                            gap: 2,
+                            boxShadow: isExpanded ? '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.025)' : 'none',
+                            bgcolor: '#ffffff',
+                            transition: 'all 0.2s ease-in-out'
                           }}
                         >
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                              Assigned User
-                            </Typography>
-                            <Typography variant="body2" fontWeight={700}>
-                              {assignedUser.fullName || 'Unassigned'}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {serviceName}
-                              {assignedUser.employeeCode ? ` - ${assignedUser.employeeCode}` : ''}
-                            </Typography>
+                          {/* Top Header Row */}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              {/* Avatar Icon */}
+                              <Box sx={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: '50%',
+                                bgcolor: '#eff6ff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#2563eb'
+                              }}>
+                                <User size={20} />
+                              </Box>
+                              {/* Name & Task */}
+                              <Box>
+                                <Typography variant="body2" fontWeight={700} sx={{ color: '#1e293b', fontSize: '0.95rem' }}>
+                                  {assignedUser.fullName || 'Unassigned'}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.25 }}>
+                                  {serviceName}
+                                  {assignedUser.employeeCode ? ` - ${assignedUser.employeeCode}` : ''}
+                                </Typography>
+                              </Box>
+                            </Box>
+
+                            {/* Status Dot & Chevron */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              {/* Dot Badge */}
+                              <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.75,
+                                bgcolor: '#ffedd5',
+                                color: '#c2410c',
+                                px: 1.5,
+                                py: 0.5,
+                                borderRadius: '12px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700
+                              }}>
+                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#ea580c' }} />
+                                {statusLabel}
+                              </Box>
+
+                              {/* Collapse/Expand toggle */}
+                              <IconButton
+                                size="small"
+                                onClick={toggleExpanded}
+                                sx={{
+                                  border: '1px solid',
+                                  borderColor: '#e2e8f0',
+                                  borderRadius: '8px',
+                                  p: 0.5,
+                                  color: '#64748b'
+                                }}
+                              >
+                                {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                              </IconButton>
+                            </Box>
                           </Box>
 
-                          <Divider />
+                          {/* Collapsible Content */}
+                          {isExpanded && (
+                            <>
+                              {/* Start Time & End Time Box */}
+                              <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                border: '1px solid',
+                                borderColor: '#f1f5f9',
+                                bgcolor: '#f8fafc',
+                                borderRadius: '12px',
+                                overflow: 'hidden'
+                              }}>
+                                {/* Start Time */}
+                                <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5, borderRight: '1px solid', borderColor: '#f1f5f9' }}>
+                                  <Box sx={{ color: '#3b82f6', display: 'flex', alignItems: 'center' }}>
+                                    <Clock size={20} />
+                                  </Box>
+                                  <Box>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase' }}>
+                                      Start Time
+                                    </Typography>
+                                    <Typography variant="body2" fontWeight={700} sx={{ color: '#1e293b', mt: 0.25 }}>
+                                      {assignment.startedAt ? formatDateTime(assignment.startedAt) : 'Not Started'}
+                                    </Typography>
+                                  </Box>
+                                </Box>
 
-                          <Grid container spacing={1.5}>
-                            <Grid item xs={6}>
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                Start Time
-                              </Typography>
-                              <Typography variant="body2" fontWeight={600}>
-                                {assignment.startedAt ? formatDateTime(assignment.startedAt) : '-'}
-                              </Typography>
-                            </Grid>
-                            <Grid item xs={6}>
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                End Time
-                              </Typography>
-                              <Typography variant="body2" fontWeight={600}>
-                                {assignment.completedAt ? formatDateTime(assignment.completedAt) : '-'}
-                              </Typography>
-                            </Grid>
-                          </Grid>
+                                {/* End Time */}
+                                <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                  <Box sx={{ color: '#8b5cf6', display: 'flex', alignItems: 'center' }}>
+                                    <Clock size={20} />
+                                  </Box>
+                                  <Box>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase' }}>
+                                      End Time
+                                    </Typography>
+                                    <Typography variant="body2" fontWeight={700} sx={{ color: '#1e293b', mt: 0.25 }}>
+                                      {assignment.completedAt ? formatDateTime(assignment.completedAt) : 'Not Started'}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
 
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                              Status
-                            </Typography>
-                            <Chip
-                              label={getAssignmentStatusLabel(assignment)}
-                              color={getAssignmentStatusColor(assignment)}
-                              size="small"
-                              sx={{ fontWeight: 700 }}
-                            />
-                          </Box>
+                              {/* Status Display */}
+                              <Box>
+                                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mb: 0.5, fontSize: '0.75rem', fontWeight: 600 }}>
+                                  Status
+                                </Typography>
+                                <Box sx={{
+                                  display: 'inline-block',
+                                  bgcolor: '#ea580c',
+                                  color: '#ffffff',
+                                  px: 2,
+                                  py: 0.75,
+                                  borderRadius: '8px',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 700
+                                }}>
+                                  {statusLabel}
+                                </Box>
+                              </Box>
+
+                              <Divider sx={{ borderColor: '#f1f5f9' }} />
+
+                              {/* Footer Action and Details */}
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                                <Box sx={{ display: 'flex', gap: 4 }}>
+                                  {/* Work Order */}
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <ClipboardList size={18} color="#6366f1" />
+                                    <Box>
+                                      <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem' }}>
+                                        Work Order
+                                      </Typography>
+                                      <Typography variant="body2" fontWeight={700} sx={{ color: '#334155' }}>
+                                        {assignedUser.employeeCode || '—'}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+
+                                  {/* Task */}
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Wrench size={18} color="#6366f1" />
+                                    <Box>
+                                      <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontSize: '0.7rem' }}>
+                                        Task
+                                      </Typography>
+                                      <Typography variant="body2" fontWeight={700} sx={{ color: '#334155' }}>
+                                        {serviceName}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                </Box>
+                              </Box>
+                            </>
+                          )}
                         </Box>
                       );
                     })}
