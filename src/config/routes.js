@@ -14,9 +14,6 @@ export const ROUTES = {
   ADMIN_MASTER_CATEGORIES: '/master-categories',
   ADMIN_MASTER_CATEGORIES_NEW: '/master-categories/new',
   ADMIN_MASTER_CATEGORIES_EDIT: '/master-categories/edit/:slug',
-  ADMIN_MASTER_ITEMS: '/master-items',
-  ADMIN_MASTER_ITEMS_NEW: '/master-items/new',
-  ADMIN_MASTER_ITEMS_EDIT: '/master-items/edit/:slug',
   ADMIN_MASTER_STATES: '/master-states',
   ADMIN_MASTER_STATES_NEW: '/master-states/new',
   ADMIN_MASTER_STATES_EDIT: '/master-states/edit/:slug',
@@ -34,7 +31,6 @@ export const ROUTES = {
   ADMIN_LOCATIONS_NEW: '/locations/new',
   ADMIN_LOCATIONS_EDIT: '/locations/edit/:slug',
   ADMIN_LOCATIONS_VIEW: '/locations/view/:slug',
-  ADMIN_SETTINGS: '/system-settings',
   ADMIN_AUDIT_LOGS: '/audit-logs',
   ADMIN_AUDIT_LOG_DETAILS: '/audit-logs/:id',
 
@@ -46,24 +42,17 @@ export const ROUTES = {
   ADMIN_MASTER_STATUSES_NEW: '/master-statuses/new',
   ADMIN_MASTER_STATUSES_EDIT: '/master-statuses/edit/:slug',
 
-  GATE_DASHBOARD: '/gate-dashboard',
   GATE_ENTRY: '/gate-entry',
-  GATE_EXIT: '/gate-exit',
-  GATE_PENDING_SYNC: '/pending-sync',
 
-  CRM_DASHBOARD: '/crm-dashboard',
   CRM_CREATE_JOB_CARD: '/job-cards/create',
   CRM_PENDING_JOB_CARDS: '/job-cards/pending',
   CRM_APPROVAL_FOLLOWUP: '/approval-followup',
-  CRM_DELIVERY_READY: '/delivery-ready',
-  CRM_ADDITIONAL_WORK: '/crm-additional-work',
 
   FLOOR_DASHBOARD: '/floor-dashboard',
   FLOOR_MECHANICAL_QUEUE: '/mechanical-queue',
   FLOOR_ASSIGN_MECHANIC: '/assign-mechanic',
   FLOOR_ADDITIONAL_WORK: '/additional-work',
   FLOOR_ADDITIONAL_WORK_NEW: '/additional-work/new',
-  FLOOR_WORK_STATUS: '/work-status',
 
   BODY_SHOP_DASHBOARD: '/body-shop-dashboard',
   BODY_SHOP_QUEUE: '/body-shop-queue',
@@ -71,7 +60,6 @@ export const ROUTES = {
   BODY_SHOP_ASSIGN_MECHANIC: '/body-shop-assign-mechanic',
   BODY_SHOP_ADDITIONAL_WORK: '/body-shop-additional-work',
   BODY_SHOP_ADDITIONAL_WORK_NEW: '/body-shop-additional-work/new',
-  BODY_SHOP_WORK_STATUS: '/body-shop-work-status',
 
   WATER_WASH_DASHBOARD: '/water-wash-dashboard',
   WATER_WASH_QUEUE: '/water-wash-queue',
@@ -79,15 +67,9 @@ export const ROUTES = {
   WATER_WASH_JOB: '/water-wash-jobs',
 
   MANAGER_DASHBOARD: '/manager-dashboard',
-  MANAGER_DELAYED_JOBS: '/delayed-jobs',
   MANAGER_PENDING_APPROVALS: '/pending-approvals',
-  MANAGER_REPORTS: '/reports',
-  MANAGER_JOB_CARDS: '/manager-job-cards',
 
   MD_DASHBOARD: '/md-dashboard',
-  MD_EXECUTIVE_OVERVIEW: '/executive-overview',
-  MD_PERFORMANCE_REPORT: '/performance-report',
-  MD_SERVICE_KPI: '/service-kpi',
   MD_BAYS: '/md-bays',
   MD_BAYS_NEW: '/md-bays/new',
   MD_BAYS_EDIT: '/md-bays/edit/:slug',

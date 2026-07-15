@@ -141,11 +141,8 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
           }}
         >
           <MenuItem value="">All Statuses</MenuItem>
-          <MenuItem value="PENDING">Pending</MenuItem>
-          <MenuItem value="IN_PROGRESS">In Progress</MenuItem>
-          <MenuItem value="COMPLETED">Completed</MenuItem>
-          <MenuItem value="DELAYED">Delayed</MenuItem>
-          <MenuItem value="BODY_SHOP">Body Shop</MenuItem>
+          <MenuItem value="ENTRY_CREATED">Entry Created</MenuItem>
+          <MenuItem value="EXITED">Exited</MenuItem>
         </Select>
 
 

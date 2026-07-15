@@ -49,11 +49,6 @@ export default function VehicleHistory() {
               border: '1px solid #e2e8f0',
               boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
               transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 12px 30px rgba(37, 99, 235, 0.08)',
-                borderColor: '#bfdbfe',
-              }
             }}
           >
             {/* Header info */}

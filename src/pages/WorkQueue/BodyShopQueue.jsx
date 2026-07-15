@@ -11,69 +11,6 @@ import useAuthStore from '../../store/useAuthStore';
 import { getBodyShopDashboardApi } from '../../api/dashboardApi';
 import Loader from '../../components/common/Loader';
 
-// mock data for body shop
-const QUEUE_DATA = [
-  {
-    id: 'B001',
-    vehicleNumber: 'TN 09 LM 8899',
-    customerName: 'Deepa Menon',
-    phone: '+91 98765 43210',
-    vehicleInfo: 'Mahindra XUV500',
-    vehicleSpec: 'White - Diesel',
-    services: 'Body Repair + Paint',
-    mechanic: 'Unassigned',
-    status: 'In Queue',
-    delivery: '5:00 PM',
-  },
-  {
-    id: 'B002',
-    vehicleNumber: 'TN 05 CD 3322',
-    customerName: 'Murugan A.',
-    phone: '+91 87654 32109',
-    vehicleInfo: 'Maruti Ertiga',
-    vehicleSpec: 'Silver - Petrol',
-    services: 'Dent Removal',
-    mechanic: 'Ramesh K.',
-    status: 'Approval',
-    delivery: '3:00 PM',
-  },
-  {
-    id: 'B003',
-    vehicleNumber: 'KA 11 PQ 6677',
-    customerName: 'Ravi S.',
-    phone: '+91 76543 21098',
-    vehicleInfo: 'Toyota Innova',
-    vehicleSpec: 'White - Diesel',
-    services: 'Full Body Repaint',
-    mechanic: 'Suresh M.',
-    status: 'In Progress',
-    delivery: 'Tomorrow 10 AM',
-  },
-  {
-    id: 'B004',
-    vehicleNumber: 'MH 08 XX 9900',
-    customerName: 'Srinivas R.',
-    phone: '+91 65432 10987',
-    vehicleInfo: 'Hyundai Venue',
-    vehicleSpec: 'Blue - Petrol',
-    services: 'Panel Beating',
-    mechanic: 'Unassigned',
-    status: 'In Queue',
-    delivery: '4:00 PM',
-  },
-  {
-    id: 'B005',
-    vehicleNumber: 'TN 33 PQ 7788',
-    customerName: 'Vikram Rajan',
-    phone: '+91 54321 09876',
-    vehicleInfo: 'Maruti Baleno 2023',
-    vehicleSpec: 'Grey - Petrol',
-    services: 'Bumper Replacement',
-    mechanic: 'Manoj T.',
-    status: 'Done',
-    delivery: '12:00 PM ✓',
-  }
-];
 
 const COLS = [
   { key: 'pending', label: 'Pending Body Work', icon: Clock, color: '#F59E0B' },

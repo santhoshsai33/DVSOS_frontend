@@ -13,18 +13,13 @@ import NotFound from '../pages/NotFound/NotFound';
 import KioskDisplay from '../pages/Kiosk/KioskDisplay';
 import TVKiosk from '../pages/TVKiosk/TVKiosk';
 import GateEntryList from '../pages/GateEntry/GateEntryList';
-import GateEntryForm from '../pages/GateEntry/GateEntryForm';
 import GateEntryDetails from '../pages/GateEntry/GateEntryDetails';
 import JobCardCreate from '../pages/JobCards/JobCardCreate';
 import JobCardList from '../pages/JobCards/JobCardList';
 import MechanicalQueue from '../pages/WorkQueue/MechanicalQueue';
 import BodyShopQueue from '../pages/WorkQueue/BodyShopQueue';
 import WaterWashQueue from '../pages/WorkQueue/WaterWashQueue';
-import ApprovalQueue from '../pages/Approvals/ApprovalQueue';
-import ReportsPage from '../pages/Reports/ReportsPage';
 import UserList from '../pages/Users/UserList';
-import CompanySettings from '../pages/SuperAdmin/CompanySettings';
-import MasterServiceList from '../pages/SuperAdmin/MasterServiceList';
 
 // eslint-disable-next-line react/prop-types
 const ProtectedRoute = ({ children }) => {
@@ -51,7 +46,6 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
         <Route path="/" element={<ManagerDashboard />} />
         <Route path="/gate-entry" element={<GateEntryList />} />
-        <Route path="/gate-entry/new" element={<GateEntryForm />} />
         <Route path="/gate-entry/view/:slug" element={<GateEntryDetails />} />
 
         {/* CRM Routes */}
@@ -72,14 +66,9 @@ export default function AppRoutes() {
         <Route path="/water-wash/dashboard" element={<Navigate to="/work-queue/water-wash" replace />} />
         <Route path="/work-queue/water-wash" element={<WaterWashQueue />} />
 
-        <Route path="/approvals" element={<ApprovalQueue />} />
-        <Route path="/reports" element={<ReportsPage />} />
         <Route path="/users" element={<UserList />} />
 
         {/* Super Admin Routes */}
-        <Route path="/admin/dashboard" element={<Navigate to="/admin/service-items" replace />} />
-        <Route path="/admin/settings" element={<CompanySettings />} />
-        <Route path="/admin/service-items" element={<MasterServiceList />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

@@ -16,11 +16,7 @@ import { adminBayApi } from '../../api/adminBayApi';
 import { getDepartmentFromModules } from '../../utils/authAccess';
 import { usePermissions } from '../../hooks/usePermissions';
 
-const PENDING_JOBS = [
-  { id: 'Q1', vehicleNumber: 'TN 01 AB 1234', ownerName: 'Ramesh Kumar', makeModel: 'Hyundai i20', serviceType: 'General Service', priority: 'HIGH', waitTime: '1 hr 20 min', deliveryDate: new Date(Date.now() + 2 * 3600000).toISOString(), requiredServices: ['Water Wash'] },
-  { id: 'Q2', vehicleNumber: 'KA 05 XY 9876', ownerName: 'Priya Singh', makeModel: 'Maruti Swift', serviceType: 'Oil Change', priority: 'NORMAL', waitTime: '45 min', deliveryDate: new Date(Date.now() + 4 * 3600000).toISOString(), requiredServices: [] },
-  { id: 'Q3', vehicleNumber: 'AP 16 ZZ 7700', ownerName: 'Kiran Reddy', makeModel: 'Tata Nexon', serviceType: 'Brake Service', priority: 'URGENT', waitTime: '10 min', deliveryDate: new Date(Date.now() + 1 * 3600000).toISOString(), requiredServices: ['Body Shop'] },
-];
+
 
 const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', URGENT: '#EF4444' };
 const BAY_TYPE_BY_CATEGORY = {
@@ -77,7 +73,7 @@ export default function AssignMechanicList() {
     staleTime: 30000
   });
 
-  const apiJobs = jobsResponse?.data?.data || jobsResponse?.data || PENDING_JOBS;
+  const apiJobs = jobsResponse?.data?.data || jobsResponse?.data || [];
   const mechanics = mechanicsResponse?.data?.users || mechanicsResponse?.users || [];
   const bays = baysResponse?.data?.bays || baysResponse?.data?.data?.bays || baysResponse?.bays || [];
 
@@ -109,16 +105,14 @@ export default function AssignMechanicList() {
 
       toastSuccess(`Assigned to ${selectedMechanicUser?.fullName || assigneeLabel.toLowerCase()}${selectedBayItem ? ` in ${selectedBayItem.bayName || selectedBayItem.bayCode}` : ''}. Job Card sent to printer!`);
 
-      // setTimeout(() => {
-      //   toastInfo('Job Card printed successfully. Please attach it to the vehicle.');
-      // }, 1500);
+
     },
     onError: (error) => {
       toastError(error?.message || `Failed to assign ${assigneeLabel.toLowerCase()}`);
     }
   });
 
-  const filteredJobs = localJobs.filter(job => 
+  const filteredJobs = localJobs.filter(job =>
     (job?.vehicleNo || job?.vehicleNumber || '')?.toLowerCase().includes(search.toLowerCase()) ||
     (job?.customerName || job?.ownerName || '')?.toLowerCase().includes(search.toLowerCase()) ||
     (job?.jobCardNo || job?.id || '')?.toString().toLowerCase().includes(search.toLowerCase())
@@ -144,7 +138,6 @@ export default function AssignMechanicList() {
       render: (row) => (
         <Box>
           <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem' }}>{row.customerName || row.ownerName || '—'}</Typography>
-          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>{row.vehicleModel || row.makeModel || '—'}</Typography>
         </Box>
       ),
     },
@@ -155,17 +148,6 @@ export default function AssignMechanicList() {
           {row.serviceNames?.length ? row.serviceNames.join(', ') : (row.serviceType || '—')}
         </Typography>
       ),
-    },
-    {
-      header: 'BAY',
-      render: (row) => {
-        const bay = row.bay || row.assignedBay;
-        return (
-          <Typography sx={{ fontSize: '0.875rem', color: bay ? '#374151' : '#94a3b8', fontWeight: bay ? 600 : 500 }}>
-            {bay?.bayName || bay?.bayCode || '—'}
-          </Typography>
-        );
-      },
     },
     // {
     //   header: 'PRIORITY',
@@ -268,7 +250,7 @@ export default function AssignMechanicList() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, mt: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
-            placeholder="Search vehicle, owner, job ID..."
+            placeholder="Search vehicle, owner"
             value={search}
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
@@ -412,7 +394,7 @@ export default function AssignMechanicList() {
                 })}
               </Select>
             </FormControl>
-{/* 
+            {/* 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#6b7280', fontSize: '0.875rem', mt: 1 }}>
               <Printer size={14} />
               <span>Assigning will automatically print a hard copy of the job card.</span>

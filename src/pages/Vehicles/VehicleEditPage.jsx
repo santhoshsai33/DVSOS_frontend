@@ -12,6 +12,21 @@ import { toastSuccess } from '../../notifications/toast';
 import { useVehicle, useBrandDropdown } from '../../queries/useDataQueries';
 import { useUpdateVehicle } from '../../mutations/useDataMutations';
 import { ROUTES } from '../../config/routes';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { commonValidations } from '../../validations/commonSchema';
+
+const schema = z.object({
+  vehicleNumber: commonValidations.vehicleNumber,
+  brand: commonValidations.requiredUnionId('Brand'),
+  makeModel: commonValidations.alphaNumeric('Model', 50),
+  type: commonValidations.optionalString,
+  fuelType: commonValidations.alphaNumeric('Fuel Type'),
+  status: commonValidations.requiredString('Status'),
+  ownerName: commonValidations.lettersOnly('Owner Name', 50),
+  mobile: commonValidations.mobile,
+});
+
 export default function VehicleEditPage() {
   const { slug, id } = useParams();
   const identifier = slug || id;
@@ -22,6 +37,8 @@ export default function VehicleEditPage() {
   const brandOptions = brandsResponse?.brands?.map(b => ({ value: b.id, label: b.name })) || [];
 
   const methods = useForm({
+    mode: 'onChange',
+    resolver: zodResolver(schema),
     defaultValues: {
       vehicleNumber: '',
       ownerName: '',
@@ -85,7 +102,14 @@ export default function VehicleEditPage() {
             <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 3 }}>Vehicle Information</Typography>
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <RHFTextField name="vehicleNumber" label="Registration Number" required />
+                <RHFTextField
+                  name="vehicleNumber"
+                  label="Registration Number"
+                  required
+                  onInput={(e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                  }}
+                />
               </Grid>
               <Grid item xs={12} md={6}>
                 <RHFSelect name="brand" label="Brand" options={brandOptions} required />
@@ -97,7 +121,7 @@ export default function VehicleEditPage() {
                 <RHFTextField name="type" label="Vehicle Type" placeholder="Enter vehicle type" />
               </Grid>
               <Grid item xs={12} md={6}>
-                <RHFTextField name="fuelType" label="Fuel Type" placeholder="Enter fuel type" />
+                <RHFTextField name="fuelType" label="Fuel Type" placeholder="Enter fuel type" required />
               </Grid>
               <Grid item xs={12} md={6}>
                 <RHFSelect name="status" label="Status" options={[
@@ -113,7 +137,15 @@ export default function VehicleEditPage() {
                 <RHFTextField name="ownerName" label="Owner Name" required />
               </Grid>
               <Grid item xs={12} md={6}>
-                <RHFTextField name="mobile" label="Mobile Number" required />
+                <RHFTextField
+                  name="mobile"
+                  label="Mobile Number"
+                  required
+                  inputProps={{ maxLength: 10 }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                  }}
+                />
               </Grid>
             </Grid>
 

@@ -14,7 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { commonValidations } from '../../validations/commonSchema';
 
 const schema = z.object({
-  name: commonValidations.requiredString('Full Name', 50),
+  name: commonValidations.lettersOnly('Full Name', 50),
   email: commonValidations.email,
   phone: commonValidations.mobile
 });
