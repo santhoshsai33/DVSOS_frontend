@@ -469,12 +469,8 @@ export default function JobCardCreate() {
     ? Number(jobCard?.discountAmount ?? jobCard?.billing?.discountAmount ?? 0)
     : 0;
   const taxableAmount = Math.max(0, billSubtotal - billDiscountAmount);
-  const billTaxAmount = isEditMode
-    ? Number(jobCard?.taxAmount ?? jobCard?.billing?.taxAmount ?? ((taxableAmount * billTaxRate) / 100))
-    : (taxableAmount * (billTaxRate / 100));
-  const grandTotal = isEditMode
-    ? Number(jobCard?.finalAmount ?? jobCard?.billing?.finalAmount ?? jobCard?.totalEstimate ?? (taxableAmount + billTaxAmount))
-    : taxableAmount + billTaxAmount;
+  const billTaxAmount = (taxableAmount * (billTaxRate / 100));
+  const grandTotal = taxableAmount + billTaxAmount;
 
   const handleWhatsAppApproval = async () => {
     if (selectedServices.length === 0) {
@@ -883,16 +879,16 @@ export default function JobCardCreate() {
                       <Typography variant="body2" color="text.secondary">Subtotal</Typography>
                       <Typography variant="body2" fontWeight={500}>{formatCurrency(billSubtotal)}</Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">Tax ({billTaxRate}%)</Typography>
-                      <Typography variant="body2" fontWeight={500}>{formatCurrency(billTaxAmount)}</Typography>
-                    </Box>
                     {billDiscountAmount > 0 && (
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="body2" color="text.secondary">Discount</Typography>
                         <Typography variant="body2" fontWeight={500}>-{formatCurrency(billDiscountAmount)}</Typography>
                       </Box>
                     )}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="body2" color="text.secondary">Tax ({billTaxRate}%)</Typography>
+                      <Typography variant="body2" fontWeight={500}>{formatCurrency(billTaxAmount)}</Typography>
+                    </Box>
                     <Divider sx={{ my: 1, borderStyle: 'dashed' }} />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="subtitle1" fontWeight={700} color="primary.main">Grand Total</Typography>

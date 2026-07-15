@@ -137,11 +137,13 @@ export function AdditionalWorkRequestScreen({
   }, [context?.availableServices, defaultCategory, currentServices]);
   const pendingApproval = context?.pendingApproval || null;
   const jobCardTaxRate = Number(jobCard.taxRate ?? jobCard.billing?.taxRate ?? TAX_RATE);
+  const jobCardDiscountAmount = Number(jobCard.discountAmount ?? jobCard.billing?.discountAmount ?? 0);
   const baseSubtotal = currentServices.reduce((sum, service) => sum + Number(service.price || 0) * Number(service.qty || 1), 0);
   const additionalSubtotal = selectedAdditionalServices.reduce((sum, service) => sum + Number(service.price || 0), 0);
   const subtotal = baseSubtotal + additionalSubtotal;
-  const tax = subtotal * (jobCardTaxRate / 100);
-  const total = subtotal + tax;
+  const taxableAmount = Math.max(0, subtotal - jobCardDiscountAmount);
+  const tax = taxableAmount * (jobCardTaxRate / 100);
+  const total = taxableAmount + tax;
 
   useEffect(() => {
     if (!parentJobCardServiceId && eligibleParentServices.length) {
@@ -423,6 +425,12 @@ export function AdditionalWorkRequestScreen({
                   <Typography variant="body2" color="text.secondary">Subtotal</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>{formatCurrency(subtotal)}</Typography>
                 </Box>
+                {jobCardDiscountAmount > 0 && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2" color="text.secondary">Discount</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>-{formatCurrency(jobCardDiscountAmount)}</Typography>
+                  </Box>
+                )}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2" color="text.secondary">Tax ({jobCardTaxRate}%)</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>{formatCurrency(tax)}</Typography>

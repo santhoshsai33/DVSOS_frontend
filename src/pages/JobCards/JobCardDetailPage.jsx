@@ -128,8 +128,8 @@ export default function JobCardDetailPage() {
 
   const discountAmount = jobCard.billing?.discountAmount ?? jobCard.discountAmount ?? 0;
   const taxableAmount = Math.max(0, totalSubtotal - discountAmount);
-  const totalTaxAmount = jobCard.billing?.taxAmount ?? jobCard.taxAmount ?? (taxableAmount * (taxRate / 100));
-  const totalGrandTotal = jobCard.billing?.finalAmount ?? jobCard.finalAmount ?? (taxableAmount + totalTaxAmount);
+  const totalTaxAmount = (taxableAmount * (taxRate / 100));
+  const totalGrandTotal = taxableAmount + totalTaxAmount;
 
   return (
     <Box sx={{ minHeight: '100%', p: { xs: 2, md: 4 } }}>
