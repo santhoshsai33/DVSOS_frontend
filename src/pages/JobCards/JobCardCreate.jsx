@@ -303,6 +303,11 @@ export default function JobCardCreate() {
   }, [assignmentDetails]);
 
   const assignmentCategory = useMemo(() => {
+    const isRestricted = !hasReadableModule(menus, ['admin', 'manager', 'managing-director']);
+    if (isRestricted && moduleDepartment) {
+      return moduleDepartment;
+    }
+
     const activeAssignmentCategory = activeAssignmentDetails.map(getAssignmentDepartment).find(Boolean);
     if (activeAssignmentCategory) return activeAssignmentCategory;
 
@@ -311,7 +316,7 @@ export default function JobCardCreate() {
 
     if (moduleDepartment) return moduleDepartment;
     return 'mechanical';
-  }, [activeAssignmentDetails, selectedServices, moduleDepartment]);
+  }, [activeAssignmentDetails, selectedServices, moduleDepartment, menus]);
 
   const canReassignExistingWork = activeAssignmentDetails.some((assignment) => getAssignmentDepartment(assignment) === assignmentCategory);
   const assignButtonLabel = canReassignExistingWork ? 'Reassign Mechanic & Bay' : 'Assign Mechanic & Bay';
@@ -505,6 +510,7 @@ export default function JobCardCreate() {
       } else {
         await new Promise((r) => setTimeout(r, 800));
       }
+      await queryClient.invalidateQueries({ queryKey: ['job-cards'] });
       toastSuccess(isEditMode ? 'Job Card updated successfully!' : 'Job Card created successfully!');
       navigate(ROUTES.JOB_CARDS);
     } catch (error) {
@@ -598,7 +604,7 @@ export default function JobCardCreate() {
                   <Grid item xs={12} md={6}>
                     <RHFTextField name="deliveryDate" label="Expected Delivery" type="datetime-local" required readOnly={isEditMode} />
                   </Grid>
-                  {isEditMode && (
+                  {isEditMode && !hasReadableModule(menus, ['manager', 'managing-director']) && (
                     <Grid item xs={12} md={6}>
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75, fontWeight: 600 }}>
                         Mechanic & Bay

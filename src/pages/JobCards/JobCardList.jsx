@@ -248,17 +248,38 @@ export default function JobCardList() {
         {(canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork) &&
           !['COMPLETED', 'READY_FOR_DELIVERY', 'DELIVERED', 'REJECTED'].includes(selectedJob?.currentStatus?.statusCode) && (
             (() => {
+              const isRestricted = ['body-shop', 'water-wash', 'mechanical'].includes(department);
               const targetDepartment = (department === 'body-shop' || (!canCreateFloorAdditionalWork && canCreateBodyShopAdditionalWork)) ? 'body-shop' : 'mechanical';
+              
+              const jcStatus = String(selectedJob?.currentStatus?.statusCode || '').toUpperCase();
+
+              if (isRestricted) {
+                if (targetDepartment === 'mechanical' && (jcStatus.includes('BODY_SHOP') || jcStatus.includes('WATER_WASH'))) return false;
+                if (targetDepartment === 'body-shop' && !jcStatus.includes('BODY_SHOP')) return false;
+                if (targetDepartment === 'water-wash' && !jcStatus.includes('WATER_WASH')) return false;
+              }
+
               const assignments = selectedJob?.workAssignments || [];
 
               if (assignments.length > 0) {
-                return assignments.some(a => {
-                  const cat = a.service?.category?.slug || a.service?.category?.name || '';
-                  return String(cat).toLowerCase().replace(/[\s_]+/g, '-') === targetDepartment;
+                const relevantAssignments = isRestricted 
+                  ? assignments.filter(a => {
+                      const cat = a.jobCardService?.serviceItem?.category?.slug || a.jobCardService?.serviceItem?.category?.name || a.service?.category?.slug || a.service?.category?.name || '';
+                      return String(cat).toLowerCase().replace(/[\s_]+/g, '-') === targetDepartment;
+                    })
+                  : assignments;
+
+                if (relevantAssignments.length === 0) return false;
+
+                return relevantAssignments.some(a => {
+                  const statusCode = String(a.status?.statusCode || a.status?.code || '').toUpperCase();
+                  if (statusCode.includes('COMPLETED') || a.completedAt) return false;
+                  return statusCode.includes('ASSIGNED') || statusCode.includes('IN_PROGRESS') || !statusCode;
                 });
               }
 
-              return Boolean(selectedJob?.technician && selectedJob.technician !== 'Unassigned' && String(selectedJob.technician).trim() !== '');
+              const isJcActive = jcStatus.includes('ASSIGNED') || jcStatus.includes('IN_PROGRESS');
+              return isJcActive && Boolean(selectedJob?.technician && selectedJob.technician !== 'Unassigned' && String(selectedJob.technician).trim() !== '');
             })()
           ) && (
             <MenuItem onClick={() => {
