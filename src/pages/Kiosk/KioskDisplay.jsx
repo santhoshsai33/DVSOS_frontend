@@ -84,7 +84,7 @@ function DisplaySection({ title, icon: Icon, items, statusClass }) {
                 </div>
                 <span className={styles.plateText}>{item.vehicle}</span>
               </div>
-              
+
               <div className={styles.bottomRow}>
                 <div className={styles.customerDetails}>
                   <div className={styles.userAvatar}>
@@ -224,7 +224,7 @@ export default function KioskDisplay() {
                         </div>
                         <span className={styles.plateText}>{item.vehicle}</span>
                       </div>
-                      
+
                       <div className={styles.bottomRow}>
                         <div className={styles.customerDetails}>
                           <div className={styles.userAvatar}>

@@ -102,10 +102,10 @@ export default function VehicleEditPage() {
             <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 3 }}>Vehicle Information</Typography>
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <RHFTextField 
-                  name="vehicleNumber" 
-                  label="Registration Number" 
-                  required 
+                <RHFTextField
+                  name="vehicleNumber"
+                  label="Registration Number"
+                  required
                   onInput={(e) => {
                     e.target.value = e.target.value.toUpperCase();
                   }}
@@ -137,10 +137,10 @@ export default function VehicleEditPage() {
                 <RHFTextField name="ownerName" label="Owner Name" required />
               </Grid>
               <Grid item xs={12} md={6}>
-                <RHFTextField 
-                  name="mobile" 
-                  label="Mobile Number" 
-                  required 
+                <RHFTextField
+                  name="mobile"
+                  label="Mobile Number"
+                  required
                   inputProps={{ maxLength: 10 }}
                   onInput={(e) => {
                     e.target.value = e.target.value.replace(/[^0-9]/g, '');
