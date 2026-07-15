@@ -1,7 +1,5 @@
-import { useFormContext, Controller } from 'react-hook-form';
-import { TextField, Box, Typography } from '@mui/material';
-
-// eslint-disable-next-line react/prop-types
+import { useFormContext, Controller } from "react-hook-form";
+import { TextField, Box, Typography } from "@mui/material";
 export default function RHFTextarea({
   name,
   label,
@@ -10,7 +8,7 @@ export default function RHFTextarea({
   required = false,
   disabled = false,
   hint,
-  className = '',
+  className = "",
   sx = {},
   ...props
 }) {
@@ -23,8 +21,11 @@ export default function RHFTextarea({
       render={({ field, fieldState: { error } }) => (
         <Box sx={{ mb: 2 }}>
           {label && (
-            <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', mb: 0.75 }}>
-              {label} {required && <span style={{ color: '#E11D48' }}>*</span>}
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 600, color: "#334155", mb: 0.75 }}
+            >
+              {label} {required && <span style={{ color: "#E11D48" }}>*</span>}
             </Typography>
           )}
           <TextField
@@ -37,12 +38,12 @@ export default function RHFTextarea({
             helperText={error ? error.message : hint}
             fullWidth
             className={className}
-            sx={{ 
+            sx={{
               ...sx,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '8px',
-                bgcolor: '#FFFFFF'
-              }
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                bgcolor: "#FFFFFF",
+              },
             }}
             {...props}
           />

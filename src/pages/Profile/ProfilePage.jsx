@@ -116,7 +116,7 @@ export default function ProfilePage() {
                 required
                 inputProps={{ maxLength: 10 }}
                 onInput={(e) => {
-                  // Allow only digits and remove leading zero
+                 
                   e.target.value = e.target.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
                 }}
               />

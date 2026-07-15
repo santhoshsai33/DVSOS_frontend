@@ -1,8 +1,4 @@
 import { useState, useEffect } from 'react';
-
-/**
- * useDebounce — returns debounced value after delay
- */
 export const useDebounce = (value, delay = 300) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 

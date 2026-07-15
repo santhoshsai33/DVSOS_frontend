@@ -103,7 +103,6 @@ export default function DistrictList() {
     }
   };
 
-  // Filtering is now handled by the backend API via the search parameter
   const filteredDistricts = districts;
 
   const columns = [

@@ -1,20 +1,32 @@
-import { useFormContext, Controller } from 'react-hook-form';
-import { FormControlLabel, FormControl, FormHelperText, Switch } from '@mui/material';
-
-// eslint-disable-next-line react/prop-types
-export default function RHFSwitch({ name, label, hint, disabled = false, className = '', sx = {}, value, onChange, ...props }) {
+import { useFormContext, Controller } from "react-hook-form";
+import {
+  FormControlLabel,
+  FormControl,
+  FormHelperText,
+  Switch,
+} from "@mui/material";
+export default function RHFSwitch({
+  name,
+  label,
+  hint,
+  disabled = false,
+  className = "",
+  sx = {},
+  value,
+  onChange,
+  ...props
+}) {
   const context = useFormContext();
-
-  // Hybrid Mode: If no RHF context is available or name is omitted, act as a standard standalone switch
   if (!context || !name) {
-    const isStringStatus = typeof value === 'string' && (value === 'ACTIVE' || value === 'INACTIVE');
-    const checked = isStringStatus ? value === 'ACTIVE' : !!value;
+    const isStringStatus =
+      typeof value === "string" && (value === "ACTIVE" || value === "INACTIVE");
+    const checked = isStringStatus ? value === "ACTIVE" : !!value;
 
     const handleChange = (event) => {
       if (onChange) {
         const checkedValue = event.target.checked;
         if (isStringStatus) {
-          onChange(checkedValue ? 'ACTIVE' : 'INACTIVE');
+          onChange(checkedValue ? "ACTIVE" : "INACTIVE");
         } else {
           onChange(checkedValue);
         }
@@ -36,7 +48,13 @@ export default function RHFSwitch({ name, label, hint, disabled = false, classNa
               />
             }
             label={label}
-            sx={{ '& .MuiFormControlLabel-label': { minWidth: '65px', display: 'inline-block' }, margin: 0 }}
+            sx={{
+              "& .MuiFormControlLabel-label": {
+                minWidth: "65px",
+                display: "inline-block",
+              },
+              margin: 0,
+            }}
           />
         ) : (
           <Switch
@@ -61,23 +79,30 @@ export default function RHFSwitch({ name, label, hint, disabled = false, classNa
       control={control}
       render={({ field, fieldState: { error } }) => {
         const fieldValue = field.value;
-        const isStringStatus = typeof fieldValue === 'string' && (fieldValue === 'ACTIVE' || fieldValue === 'INACTIVE');
-        const checked = isStringStatus ? fieldValue === 'ACTIVE' : !!fieldValue;
+        const isStringStatus =
+          typeof fieldValue === "string" &&
+          (fieldValue === "ACTIVE" || fieldValue === "INACTIVE");
+        const checked = isStringStatus ? fieldValue === "ACTIVE" : !!fieldValue;
 
         const handleChange = (event) => {
           const checkedValue = event.target.checked;
           if (isStringStatus) {
-            field.onChange(checkedValue ? 'ACTIVE' : 'INACTIVE');
+            field.onChange(checkedValue ? "ACTIVE" : "INACTIVE");
           } else {
             field.onChange(checkedValue);
           }
           if (onChange) {
-            onChange(checkedValue ? 'ACTIVE' : 'INACTIVE');
+            onChange(checkedValue ? "ACTIVE" : "INACTIVE");
           }
         };
 
         return (
-          <FormControl error={!!error} component="fieldset" className={className} sx={{ mb: 2, ...sx }}>
+          <FormControl
+            error={!!error}
+            component="fieldset"
+            className={className}
+            sx={{ mb: 2, ...sx }}
+          >
             <FormControlLabel
               control={
                 <Switch

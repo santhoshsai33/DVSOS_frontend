@@ -4,18 +4,13 @@ import { persist } from 'zustand/middleware';
 const useUIStore = create(
   persist(
     (set) => ({
-      // Sidebar
       sidebarCollapsed: false,
       sidebarMobileOpen: false,
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setSidebarMobileOpen: (open) => set({ sidebarMobileOpen: open }),
-
-      // Theme
       theme: 'light', // 'light' | 'dark'
       toggleTheme: () =>
         set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
-
-      // Filters (per module)
       filters: {},
       setFilter: (module, filterData) =>
         set((s) => ({ filters: { ...s.filters, [module]: filterData } })),
@@ -24,13 +19,9 @@ const useUIStore = create(
           const { [module]: _, ...rest } = s.filters;
           return { filters: rest };
         }),
-
-      // Search
       searchTerms: {},
       setSearch: (key, term) =>
         set((s) => ({ searchTerms: { ...s.searchTerms, [key]: term } })),
-
-      // Preferences
       preferences: {
         pageSize: 10,
         dateFormat: 'dd MMM yyyy',

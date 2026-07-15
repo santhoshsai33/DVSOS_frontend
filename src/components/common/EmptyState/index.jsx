@@ -1,12 +1,11 @@
-import { Inbox } from 'lucide-react';
-import styles from './EmptyState.module.css';
-import Button from '../Button';
+import { Inbox } from "lucide-react";
+import styles from "./EmptyState.module.css";
+import Button from "../Button";
 
-// eslint-disable-next-line react/prop-types
 export default function EmptyState({
   icon: Icon = Inbox,
-  title = 'No Data',
-  message = 'No records found.',
+  title = "No Data",
+  message = "No records found.",
   actionLabel,
   onAction,
 }) {

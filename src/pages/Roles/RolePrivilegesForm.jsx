@@ -114,7 +114,7 @@ export default function RolePrivilegesForm() {
               navigate(ROUTES.ADMIN_ROLE_PRIVILEGES_EDIT.replace(':slug', role.slug), { replace: true });
             }
 
-            // Prefer the module that already has saved permissions, then role-name match.
+          
             if (modules.length > 0) {
               const moduleWithPermissions = modules.find(m =>
                 (m.menus || []).some(menu =>
@@ -333,7 +333,7 @@ export default function RolePrivilegesForm() {
                   <TableCell colSpan={6} align="center" sx={{ py: 3, color: '#64748B' }}>Please select a module to view its permissions</TableCell>
                 </TableRow>
               ) : displayedModules.map((mod) => {
-                // Find original index to update state correctly
+               
                 const moduleIndex = modulesList.findIndex(m => m.module === mod.module);
 
                 return mod.menus.map((menu, menuIndex) => {

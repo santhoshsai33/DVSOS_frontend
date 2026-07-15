@@ -1,26 +1,30 @@
-import { useState } from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
-import { TextField, Box, Typography, InputAdornment, IconButton } from '@mui/material';
-import { Eye, EyeOff } from 'lucide-react';
-
-// eslint-disable-next-line react/prop-types
+import { useState } from "react";
+import { useFormContext, Controller } from "react-hook-form";
+import {
+  TextField,
+  Box,
+  Typography,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
+import { Eye, EyeOff } from "lucide-react";
 export default function RHFTextField({
   name,
   label,
   placeholder,
-  type = 'text',
+  type = "text",
   hint,
   required = false,
   disabled = false,
   readOnly = false,
-  className = '',
+  className = "",
   sx = {},
   rules = {},
   ...props
 }) {
   const { control } = useFormContext();
   const [showPassword, setShowPassword] = useState(false);
-  const isPasswordType = type === 'password';
+  const isPasswordType = type === "password";
 
   return (
     <Controller
@@ -30,20 +34,27 @@ export default function RHFTextField({
       render={({ field, fieldState: { error } }) => (
         <Box sx={{ mb: 2 }}>
           {label && (
-            <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', mb: 0.75 }}>
-              {label} {required && <span style={{ color: '#E11D48' }}>*</span>}
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 600, color: "#334155", mb: 0.75 }}
+            >
+              {label} {required && <span style={{ color: "#E11D48" }}>*</span>}
             </Typography>
           )}
           <TextField
             {...field}
-            type={isPasswordType && showPassword ? 'text' : type}
+            type={isPasswordType && showPassword ? "text" : type}
             placeholder={placeholder}
             disabled={disabled}
             InputProps={{
               readOnly: readOnly,
               endAdornment: isPasswordType ? (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                    size="small"
+                  >
                     {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                   </IconButton>
                 </InputAdornment>
@@ -55,10 +66,10 @@ export default function RHFTextField({
             className={className}
             sx={{
               ...sx,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '8px',
-                bgcolor: '#FFFFFF'
-              }
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                bgcolor: "#FFFFFF",
+              },
             }}
             {...props}
           />

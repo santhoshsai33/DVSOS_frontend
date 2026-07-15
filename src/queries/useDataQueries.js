@@ -7,7 +7,7 @@ import { getServicesApi, getBrandsApi, getModelsApi, getPricingApi, getBrandDrop
 import { customerApi } from '../api/customerApi';
 import { getMDDashboardApi } from '../api/dashboardApi';
 
-// ─── VEHICLE QUERIES ─────────────────────────────────────
+
 export const useVehicles = (params = {}) => {
   return useQuery({
     queryKey: ['vehicles', params],
@@ -40,7 +40,7 @@ export const useVehicleHistory = (id) => {
   });
 };
 
-// ─── JOB CARD QUERIES ────────────────────────────────────
+
 export const useJobCards = (params = {}) => {
   return useQuery({
     queryKey: ['job-cards', params],
@@ -62,7 +62,7 @@ export const useJobCard = (id) => {
   });
 };
 
-// ─── APPROVAL QUERIES ────────────────────────────────────
+
 export const useApprovals = (params = {}) => {
   return useQuery({
     queryKey: ['approvals', params],
@@ -74,7 +74,7 @@ export const useApprovals = (params = {}) => {
   });
 };
 
-// ─── USER QUERIES ────────────────────────────────────────
+
 export const useUsers = (params = {}) => {
   return useQuery({
     queryKey: ['users', params],
@@ -85,7 +85,7 @@ export const useUsers = (params = {}) => {
   });
 };
 
-// ─── CUSTOMER QUERIES ────────────────────────────────────
+
 export const useCustomers = (params = {}) => {
   return useQuery({
     queryKey: ['customers', params],
@@ -102,7 +102,6 @@ export const useCustomerDetails = (id) => {
   });
 };
 
-// ─── MASTER QUERIES ──────────────────────────────────────
 export const useServices = () => {
   return useQuery({
     queryKey: ['masters', 'services'],

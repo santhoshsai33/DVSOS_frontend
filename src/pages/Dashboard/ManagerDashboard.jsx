@@ -17,7 +17,7 @@ import { getManagerDashboardApi } from '../../api/dashboardApi';
 import useAuthStore from '../../store/useAuthStore';
 import Loader from '../../components/common/Loader';
 
-// Mappings to standard icons if needed
+
 const ICON_MAP = {
   'Total Today': Car,
   'Completed': CheckCircle2,

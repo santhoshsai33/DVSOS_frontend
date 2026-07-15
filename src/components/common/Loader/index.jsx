@@ -1,11 +1,14 @@
-import { Loader2 } from 'lucide-react';
-import styles from './Loader.module.css';
+import { Loader2 } from "lucide-react";
+import styles from "./Loader.module.css";
 
-// eslint-disable-next-line react/prop-types
-export default function Loader({ size = 'md', text = 'Loading...', fullPage = false }) {
+export default function Loader({
+  size = "md",
+  text = "Loading...",
+  fullPage = false,
+}) {
   const inner = (
     <div className={styles.wrapper}>
-      <Loader2 className={[styles.spinner, styles[size]].join(' ')} />
+      <Loader2 className={[styles.spinner, styles[size]].join(" ")} />
       {text && <p className={styles.text}>{text}</p>}
     </div>
   );

@@ -91,7 +91,7 @@ export default function NotificationsPage({ title = 'Notifications' }) {
     if (notif.readAt === null) {
       await markAsRead(notif.id);
     }
-    // Dynamic navigation based on relation ids
+    
     if (notif.jobCard?.slug) {
       navigate(`/job-cards/view/${notif.jobCard.slug}`);
     } else if (notif.gateEntry?.slug) {

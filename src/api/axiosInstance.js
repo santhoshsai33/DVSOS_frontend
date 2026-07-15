@@ -9,7 +9,6 @@ const axiosInstance = axios.create({
   },
 });
 
-// Request interceptor — attach auth token
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -21,7 +20,6 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor — handle errors globally
 axiosInstance.interceptors.response.use(
   (response) => response.data,
   (error) => {

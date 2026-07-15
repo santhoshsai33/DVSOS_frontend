@@ -1,12 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 
-// Layouts
+
 import AuthLayout from '../layouts/AuthLayout/AuthLayout';
 import DashboardLayout from '../layouts/DashboardLayout/DashboardLayout';
 import KioskLayout from '../layouts/KioskLayout/KioskLayout';
 
-// Pages
+
 import Login from '../pages/Auth/Login';
 import ManagerDashboard from '../pages/Dashboard/ManagerDashboard';
 import NotFound from '../pages/NotFound/NotFound';
@@ -21,7 +21,7 @@ import BodyShopQueue from '../pages/WorkQueue/BodyShopQueue';
 import WaterWashQueue from '../pages/WorkQueue/WaterWashQueue';
 import UserList from '../pages/Users/UserList';
 
-// eslint-disable-next-line react/prop-types
+
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
