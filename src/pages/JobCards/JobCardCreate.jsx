@@ -465,15 +465,16 @@ export default function JobCardCreate() {
   const billTaxRate = isEditMode
     ? Number(jobCard?.taxRate ?? jobCard?.billing?.taxRate ?? companySettings.defaultTaxRate ?? 0)
     : Number(companySettings.defaultTaxRate ?? 0);
-  const billTaxAmount = isEditMode
-    ? Number(jobCard?.taxAmount ?? jobCard?.billing?.taxAmount ?? ((billSubtotal * billTaxRate) / 100))
-    : (billSubtotal * (billTaxRate / 100));
   const billDiscountAmount = isEditMode
     ? Number(jobCard?.discountAmount ?? jobCard?.billing?.discountAmount ?? 0)
     : 0;
+  const taxableAmount = Math.max(0, billSubtotal - billDiscountAmount);
+  const billTaxAmount = isEditMode
+    ? Number(jobCard?.taxAmount ?? jobCard?.billing?.taxAmount ?? ((taxableAmount * billTaxRate) / 100))
+    : (taxableAmount * (billTaxRate / 100));
   const grandTotal = isEditMode
-    ? Number(jobCard?.finalAmount ?? jobCard?.billing?.finalAmount ?? jobCard?.totalEstimate ?? (billSubtotal + billTaxAmount - billDiscountAmount))
-    : billSubtotal + billTaxAmount - billDiscountAmount;
+    ? Number(jobCard?.finalAmount ?? jobCard?.billing?.finalAmount ?? jobCard?.totalEstimate ?? (taxableAmount + billTaxAmount))
+    : taxableAmount + billTaxAmount;
 
   const handleWhatsAppApproval = async () => {
     if (selectedServices.length === 0) {
