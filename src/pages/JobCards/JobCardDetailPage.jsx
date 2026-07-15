@@ -120,15 +120,15 @@ export default function JobCardDetailPage() {
   ].filter(Boolean);
 
   const taxRate = jobCard.billing?.taxRate ?? jobCard.taxRate ?? 18;
-  const subtotal = displayJobCard.estimatedCost / (1 + taxRate / 100);
-
+  const totalSubtotal = jobCard.billing?.serviceSubtotal ?? jobCard.serviceSubtotal ?? (displayJobCard.estimatedCost / (1 + taxRate / 100));
   const approvedAdditionalTotal = additionalServices
-    .filter(s => s.status === 'APPROVED')
+    .filter(s => s.status !== 'REJECTED')
     .reduce((sum, s) => sum + s.price, 0);
 
-  const totalSubtotal = subtotal + approvedAdditionalTotal;
-  const totalTaxAmount = totalSubtotal * (taxRate / 100);
-  const totalGrandTotal = totalSubtotal + totalTaxAmount;
+  const discountAmount = jobCard.billing?.discountAmount ?? jobCard.discountAmount ?? 0;
+  const taxableAmount = Math.max(0, totalSubtotal - discountAmount);
+  const totalTaxAmount = jobCard.billing?.taxAmount ?? jobCard.taxAmount ?? (taxableAmount * (taxRate / 100));
+  const totalGrandTotal = jobCard.billing?.finalAmount ?? jobCard.finalAmount ?? (taxableAmount + totalTaxAmount);
 
   return (
     <Box sx={{ minHeight: '100%', p: { xs: 2, md: 4 } }}>
@@ -216,7 +216,7 @@ export default function JobCardDetailPage() {
                           <Box component="td" sx={{ p: 2, fontWeight: 500 }}>{service.name}</Box>
                           <Box component="td" sx={{ p: 2, textAlign: 'right', color: 'text.secondary' }}>x{service.quantity || 1}</Box>
                           <Box component="td" sx={{ p: 2, textAlign: 'right', fontWeight: 600 }}>
-                            {formatCurrency(service.price > 0 ? service.price : (index === 0 ? subtotal * 0.6 : subtotal * 0.4 / (defaultServices.length - 1 || 1)))}
+                            {formatCurrency(service.price > 0 ? service.price : (index === 0 ? totalSubtotal * 0.6 : totalSubtotal * 0.4 / (defaultServices.length - 1 || 1)))}
                           </Box>
                         </Box>
                       ))
@@ -307,12 +307,18 @@ export default function JobCardDetailPage() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="body2" color="text.secondary">Base Subtotal</Typography>
-                    <Typography variant="body2">{formatCurrency(subtotal)}</Typography>
+                    <Typography variant="body2">{formatCurrency(Math.max(0, totalSubtotal - approvedAdditionalTotal))}</Typography>
                   </Box>
                   {approvedAdditionalTotal > 0 && (
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">Additional Work (Approved)</Typography>
+                      <Typography variant="body2" color="text.secondary">Additional Work</Typography>
                       <Typography variant="body2">{formatCurrency(approvedAdditionalTotal)}</Typography>
+                    </Box>
+                  )}
+                  {discountAmount > 0 && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="body2" color="text.secondary">Discount</Typography>
+                      <Typography variant="body2" color="success.main">-{formatCurrency(discountAmount)}</Typography>
                     </Box>
                   )}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>

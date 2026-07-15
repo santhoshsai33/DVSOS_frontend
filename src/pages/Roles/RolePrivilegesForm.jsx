@@ -96,6 +96,9 @@ export default function RolePrivilegesForm() {
   const [loading, setLoading] = useState(true);
 
   const [modulesList, setModulesList] = useState([]);
+  
+  const mobileModules = ['crm-team', 'gate-security'];
+  const isMobileModule = mobileModules.includes(selectedModule);
 
   useEffect(() => {
     const loadData = async () => {
@@ -204,19 +207,21 @@ export default function RolePrivilegesForm() {
     }
 
     // Flatten payload
-    const permissionsPayload = [];
-    const modulesToSave = selectedModule 
-      ? modulesList.filter(m => m.module === selectedModule) 
+    let permissionsPayload = [];
+
+    const modulesToSave = selectedModule
+      ? modulesList.filter(m => m.module === selectedModule)
       : modulesList;
 
     modulesToSave.forEach(mod => {
+      const isMobile = mobileModules.includes(mod.module);
       mod.menus.forEach(menu => {
         permissionsPayload.push({
           menuId: menu.menuId,
-          canRead: menu.canRead,
-          canCreate: supportsPermissionAction(menu, 'canCreate') ? menu.canCreate : false,
-          canUpdate: supportsPermissionAction(menu, 'canUpdate') ? menu.canUpdate : false,
-          canDelete: supportsPermissionAction(menu, 'canDelete') ? menu.canDelete : false
+          canRead: isMobile ? true : menu.canRead,
+          canCreate: isMobile ? true : (supportsPermissionAction(menu, 'canCreate') ? menu.canCreate : false),
+          canUpdate: isMobile ? true : (supportsPermissionAction(menu, 'canUpdate') ? menu.canUpdate : false),
+          canDelete: isMobile ? true : (supportsPermissionAction(menu, 'canDelete') ? menu.canDelete : false)
         });
       });
     });
@@ -229,7 +234,7 @@ export default function RolePrivilegesForm() {
     try {
       setSaving(true);
       let roleId = roleIdentifier;
-      
+
       if (isEdit) {
         const roleRes = await updateRoleApi(roleId, { name: designation.trim() });
         roleId = roleRes?.data?.role?.id || roleId;
@@ -282,99 +287,107 @@ export default function RolePrivilegesForm() {
             />
           </Grid>
           <Grid item xs={12} md={6}>
-            <Box sx={{ mb: 2, width: '100%' }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', mb: 0.75 }}>
-                Module
-              </Typography>
-              <Select
-                value={selectedModule}
-                onChange={(e) => setSelectedModule(e.target.value)}
-                fullWidth
-                size="small"
-                disabled={loading}
-                displayEmpty
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '8px',
-                    bgcolor: '#FFFFFF'
-                  }
-                }}
-              >
-                <MenuItem value="" disabled>Select Module</MenuItem>
-                {availableModuleNames.map(m => (
-                  <MenuItem key={m} value={m}>{m}</MenuItem>
-                ))}
-              </Select>
-            </Box>
-          </Grid>
+              <Box sx={{ mb: 2, width: '100%' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155', mb: 0.75 }}>
+                  Module
+                </Typography>
+                <Select
+                  value={selectedModule}
+                  onChange={(e) => setSelectedModule(e.target.value)}
+                  fullWidth
+                  size="small"
+                  disabled={loading}
+                  displayEmpty
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '8px',
+                      bgcolor: '#FFFFFF'
+                    }
+                  }}
+                >
+                  <MenuItem value="" disabled>Select Module</MenuItem>
+                  {availableModuleNames.map(m => (
+                    <MenuItem key={m} value={m}>{m}</MenuItem>
+                  ))}
+                </Select>
+              </Box>
+            </Grid>
         </Grid>
       </Card>
 
-      <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
-        <TableContainer>
-          <Table sx={{ minWidth: 650 }}>
-            <TableHead>
-              <TableRow sx={{ bgcolor: '#F8FAFC' }}>
-                <TableCell sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Module Name</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Read</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Create</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Update</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Delete</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Select All</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 3 }}>Loading...</TableCell>
+      {isMobileModule ? (
+        <Card sx={{ p: 4, mb: 4, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E2E8F0', bgcolor: '#F8FAFC', textAlign: 'center' }}>
+          <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600 }}>
+            This module uses default Mobile application permissions. Permissions are assigned automatically.
+          </Typography>
+        </Card>
+      ) : (
+        <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+          <TableContainer>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#F8FAFC' }}>
+                  <TableCell sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Module Name</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Read</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Create</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Update</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Delete</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, color: '#475569', borderBottom: '2px solid #E2E8F0' }}>Select All</TableCell>
                 </TableRow>
-              ) : displayedModules.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 3, color: '#64748B' }}>Please select a module to view its permissions</TableCell>
-                </TableRow>
-              ) : displayedModules.map((mod) => {
-                // Find original index to update state correctly
-                const moduleIndex = modulesList.findIndex(m => m.module === mod.module);
+              </TableHead>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 3 }}>Loading...</TableCell>
+                  </TableRow>
+                ) : displayedModules.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 3, color: '#64748B' }}>Please select a module to view its permissions</TableCell>
+                  </TableRow>
+                ) : displayedModules.map((mod) => {
+                  // Find original index to update state correctly
+                  const moduleIndex = modulesList.findIndex(m => m.module === mod.module);
 
-                return mod.menus.map((menu, menuIndex) => {
-                  const selectableActions = ['canRead', 'canCreate', 'canUpdate', 'canDelete']
-                    .filter((type) => supportsPermissionAction(menu, type));
-                  const allChecked = selectableActions.every((type) => menu[type]);
-                  return (
-                    <TableRow key={menu.menuId} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                      <TableCell sx={{ fontWeight: 600, color: '#334155' }}>
-                        <Typography variant="body2" component="span" sx={{ color: '#94A3B8', mr: 1, fontSize: '0.75rem' }}>
-                          {mod.module} /
-                        </Typography>
-                        {menu.name}
-                      </TableCell>
-                      <TableCell align="center">
-                        {renderPermissionCell(menu, moduleIndex, menuIndex, 'canRead')}
-                      </TableCell>
-                      <TableCell align="center">
-                        {renderPermissionCell(menu, moduleIndex, menuIndex, 'canCreate')}
-                      </TableCell>
-                      <TableCell align="center">
-                        {renderPermissionCell(menu, moduleIndex, menuIndex, 'canUpdate')}
-                      </TableCell>
-                      <TableCell align="center">
-                        {renderPermissionCell(menu, moduleIndex, menuIndex, 'canDelete')}
-                      </TableCell>
-                      <TableCell align="center">
-                        <Checkbox
-                          checked={allChecked}
-                          onChange={() => handleSelectAllChange(moduleIndex, menuIndex)}
-                          sx={{ color: '#94A3B8', '&.Mui-checked': { color: 'primary.main' } }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  );
-                });
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Card>
+                  return mod.menus.map((menu, menuIndex) => {
+                    const selectableActions = ['canRead', 'canCreate', 'canUpdate', 'canDelete']
+                      .filter((type) => supportsPermissionAction(menu, type));
+                    const allChecked = selectableActions.every((type) => menu[type]);
+                    return (
+                      <TableRow key={menu.menuId} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell sx={{ fontWeight: 600, color: '#334155' }}>
+                          <Typography variant="body2" component="span" sx={{ color: '#94A3B8', mr: 1, fontSize: '0.75rem' }}>
+                            {mod.module} /
+                          </Typography>
+                          {menu.name}
+                        </TableCell>
+                        <TableCell align="center">
+                          {renderPermissionCell(menu, moduleIndex, menuIndex, 'canRead')}
+                        </TableCell>
+                        <TableCell align="center">
+                          {renderPermissionCell(menu, moduleIndex, menuIndex, 'canCreate')}
+                        </TableCell>
+                        <TableCell align="center">
+                          {renderPermissionCell(menu, moduleIndex, menuIndex, 'canUpdate')}
+                        </TableCell>
+                        <TableCell align="center">
+                          {renderPermissionCell(menu, moduleIndex, menuIndex, 'canDelete')}
+                        </TableCell>
+                        <TableCell align="center">
+                          <Checkbox
+                            checked={allChecked}
+                            onChange={() => handleSelectAllChange(moduleIndex, menuIndex)}
+                            sx={{ color: '#94A3B8', '&.Mui-checked': { color: 'primary.main' } }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  });
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Card>
+      )}
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
         <Button
