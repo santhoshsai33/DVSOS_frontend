@@ -201,6 +201,11 @@ export default function LocationList() {
           rowsPerPage={rowsPerPage}
           onPageChange={setPage}
           onRowsPerPageChange={setRowsPerPage}
+          onRowDoubleClick={(row) => {
+            if (getLocationIdentifier(row)) {
+              navigate(getLocationViewPath(row));
+            }
+          }}
         />
       </Card>
 

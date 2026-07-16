@@ -2,6 +2,10 @@ import axiosInstance from './axiosInstance';
 import { ENDPOINTS } from './endpoints';
 
 export const getJobCardsApi = (params) => axiosInstance.get(ENDPOINTS.JOB_CARDS.LIST, { params });
+export const exportJobCardsExcelApi = (params) => axiosInstance.get(ENDPOINTS.JOB_CARDS.LIST, {
+  params: { ...params, export: 'true' },
+  responseType: 'blob'
+});
 export const getJobCardApi = (id) => axiosInstance.get(ENDPOINTS.JOB_CARDS.DETAIL(id));
 export const getJobCardStatusesApi = () => axiosInstance.get(ENDPOINTS.JOB_CARDS.STATUSES);
 export const getJobCardServiceStatusesApi = () => axiosInstance.get(ENDPOINTS.JOB_CARDS.SERVICE_STATUSES);

@@ -177,6 +177,11 @@ export default function ServiceCenterList() {
           rowsPerPage={rowsPerPage}
           onPageChange={setPage}
           onRowsPerPageChange={setRowsPerPage}
+          onRowDoubleClick={(row) => {
+            if (row.id) {
+              navigate(ROUTES.ADMIN_SERVICE_CENTERS_VIEW.replace(':id', row.id));
+            }
+          }}
         />
       </Card>
 

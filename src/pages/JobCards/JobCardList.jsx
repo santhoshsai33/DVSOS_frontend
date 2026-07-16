@@ -17,6 +17,7 @@ import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAcc
 import DateFilter from '../../components/common/DateFilter';
 import ResetFiltersButton from '../../components/common/ResetFiltersButton';
 import { usePermissions } from '../../hooks/usePermissions';
+import { exportJobCardsExcelApi } from '../../api/jobCardApi';
 
 const PRIORITY_COLORS = {
   LOW: '#10B981',
@@ -182,16 +183,6 @@ export default function JobCardList() {
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
         </Box>
-        <DateFilter
-          fromDate={fromDate}
-          toDate={toDate}
-          onChange={(type, val) => {
-            if (type === 'from') setFromDate(val);
-            if (type === 'to') setToDate(val);
-            if (type === 'clear') { setFromDate(''); setToDate(''); }
-            setPage(0);
-          }}
-        />
         <Select
           size="small"
           displayEmpty
@@ -220,6 +211,33 @@ export default function JobCardList() {
             </MenuItem>
           ))}
         </Select>
+        <DateFilter
+          fromDate={fromDate}
+          toDate={toDate}
+          onChange={(type, val) => {
+            if (type === 'from') setFromDate(val);
+            if (type === 'to') setToDate(val);
+            if (type === 'clear') { setFromDate(''); setToDate(''); }
+            setPage(0);
+          }}
+          onExport={async () => {
+            try {
+              const params = {
+                search: debouncedSearch,
+                status: statusFilter,
+                department: departmentFilter,
+                fromDate,
+                toDate
+              };
+
+              const res = await exportJobCardsExcelApi(params);
+              const { downloadExcelFile } = await import('../../utils/excelExport');
+              downloadExcelFile(res, 'Job_Cards.xlsx');
+            } catch (err) {
+              console.error(err);
+            }
+          }}
+        />
         <ResetFiltersButton onReset={handleResetFilters} />
       </Box>
 
@@ -235,6 +253,11 @@ export default function JobCardList() {
           rowsPerPage={rowsPerPage}
           onPageChange={setPage}
           onRowsPerPageChange={setRowsPerPage}
+          onRowDoubleClick={(row) => {
+            if (canReadJobCards) {
+              navigate(`${ROUTES.JOB_CARDS}/view/${row.slug || row.id}`);
+            }
+          }}
         />
       </Card>
 

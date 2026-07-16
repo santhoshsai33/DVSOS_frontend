@@ -8,3 +8,7 @@ export const updateVehicleApi = (id, data) => axiosInstance.put(ENDPOINTS.VEHICL
 export const deleteVehicleApi = (id) => axiosInstance.delete(ENDPOINTS.VEHICLES.DELETE(id));
 export const getVehicleHistoryApi = (id) => axiosInstance.get(ENDPOINTS.VEHICLES.HISTORY(id));
 export const searchVehiclesApi = (query) => axiosInstance.get(ENDPOINTS.VEHICLES.SEARCH, { params: { q: query } });
+export const exportVehiclesExcelApi = (params) => axiosInstance.get(ENDPOINTS.VEHICLES.LIST, {
+  params: { ...params, export: 'true' },
+  responseType: 'blob'
+});

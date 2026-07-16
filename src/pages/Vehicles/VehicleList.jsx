@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Edit3, MoreVertical, Eye, Clock } from 'lucide-react';
 import { Box, Card, IconButton, Menu, MenuItem, Select, Typography } from '@mui/material';
 import { useVehicles } from '../../queries/useDataQueries';
+import { exportVehiclesExcelApi } from '../../api/vehicleApi';
 import DateFilter from '../../components/common/DateFilter';
 import SearchBar from '../../components/common/SearchBar';
 import ResetFiltersButton from '../../components/common/ResetFiltersButton';
@@ -113,6 +114,20 @@ export default function VehicleList() {
             if (type === 'clear') { setFromDate(''); setToDate(''); }
             setPage(0);
           }}
+          onExport={async () => {
+            try {
+              const params = {};
+              if (search) params.search = search;
+              if (fromDate) params.startDate = fromDate;
+              if (toDate) params.endDate = toDate;
+
+              const res = await exportVehiclesExcelApi(params);
+              const { downloadExcelFile } = await import('../../utils/excelExport');
+              downloadExcelFile(res, 'Vehicles.xlsx');
+            } catch (err) {
+              console.error(err);
+            }
+          }}
         />
         <ResetFiltersButton onReset={handleResetFilters} />
       </Box>
@@ -129,6 +144,11 @@ export default function VehicleList() {
           rowsPerPage={rowsPerPage}
           onPageChange={setPage}
           onRowsPerPageChange={setRowsPerPage}
+          onRowDoubleClick={(row) => {
+            if (canReadVehicles) {
+              navigate(`${ROUTES.VEHICLES}/view/${row.slug || row.id}`);
+            }
+          }}
         />
       </Card>
 

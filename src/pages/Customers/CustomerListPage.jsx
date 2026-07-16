@@ -168,6 +168,11 @@ export default function CustomerListPage() {
             setLimit(newLimit);
             setPage(1);
           }}
+          onRowDoubleClick={(row) => {
+            if (canReadCustomers) {
+              navigate(`/customers/view/${row.slug || row.id}`);
+            }
+          }}
         />
       </Card>
       <Menu

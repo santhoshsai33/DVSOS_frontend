@@ -9,3 +9,7 @@ export const updateUserApi = (id, data) => axiosInstance.put(ENDPOINTS.USERS.UPD
 export const deleteUserApi = (id) => axiosInstance.delete(ENDPOINTS.USERS.DELETE(id));
 export const changePasswordApi = (data) => axiosInstance.post(ENDPOINTS.USERS.CHANGE_PASSWORD, data);
 export const updateUserStatusApi = (id, data) => axiosInstance.patch(`/users/status/${id}`, data);
+export const exportUsersExcelApi = (params) => axiosInstance.get(ENDPOINTS.USERS.LIST, {
+  params: { ...params, export: 'true' },
+  responseType: 'blob'
+});

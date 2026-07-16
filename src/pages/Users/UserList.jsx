@@ -10,7 +10,7 @@ import ConfirmDeleteDialog from '../../components/common/ConfirmDeleteDialog';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastError } from '../../notifications/toast';
-import { getUsersApi, updateUserStatusApi } from '../../api/userApi';
+import { getUsersApi, updateUserStatusApi, exportUsersExcelApi } from '../../api/userApi';
 import { getRolesApi } from '../../api/roleApi';
 import { getLocationsApi } from '../../api/adminLocationApi';
 import { formatDateTime, formatDate } from '../../utils/formatters';
@@ -272,15 +272,6 @@ export default function UserList() {
           value={statusFilter}
           onChange={(val) => { setStatusFilter(val); setPage(0); }}
         />
-        <DateFilter
-          fromDate={fromDate}
-          toDate={toDate}
-          onChange={(type, val) => {
-            if (type === 'from') setFromDate(val);
-            if (type === 'to') setToDate(val);
-            setPage(0);
-          }}
-        />
         <Select
           size="small"
           displayEmpty
@@ -300,6 +291,33 @@ export default function UserList() {
             <MenuItem key={role.id} value={role.id}>{role.name}</MenuItem>
           ))}
         </Select>
+        <DateFilter
+          fromDate={fromDate}
+          toDate={toDate}
+          onChange={(type, val) => {
+            if (type === 'from') setFromDate(val);
+            if (type === 'to') setToDate(val);
+            setPage(0);
+          }}
+          onExport={async () => {
+            try {
+              const params = {};
+              if (search) params.search = search;
+              if (roleFilter) params.roleId = roleFilter;
+              if (locationFilter) params.locationId = locationFilter;
+              if (statusFilter === 'ACTIVE') params.isActive = true;
+              if (statusFilter === 'INACTIVE') params.isActive = false;
+              if (fromDate) params.startDate = fromDate;
+              if (toDate) params.endDate = toDate;
+
+              const res = await exportUsersExcelApi(params);
+              const { downloadExcelFile } = await import('../../utils/excelExport');
+              downloadExcelFile(res, 'Users.xlsx');
+            } catch (err) {
+              console.error(err);
+            }
+          }}
+        />
         {canReadLocations && (
           <Select
             size="small"
@@ -337,6 +355,11 @@ export default function UserList() {
           rowsPerPage={rowsPerPage}
           onPageChange={setPage}
           onRowsPerPageChange={setRowsPerPage}
+          onRowDoubleClick={(row) => {
+            if (getUserIdentifier(row)) {
+              navigate(getUserViewPath(row));
+            }
+          }}
         />
       </Card>
 

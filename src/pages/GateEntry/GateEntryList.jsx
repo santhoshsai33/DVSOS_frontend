@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Box, Card, IconButton, Menu, MenuItem, Modal, Typography, TextField, Grid, Select } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
+import DateFilter from '../../components/common/DateFilter';
 import { Plus, LogIn, Eye, LogOut, MoreVertical } from 'lucide-react';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
@@ -27,6 +28,8 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
   const [serviceTypeFilter, setServiceTypeFilter] = useState('');
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [total, setTotal] = useState(0);
 
   const [showExitModal, setShowExitModal] = useState(false);
@@ -64,7 +67,9 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
         limit,
         search: debSearch,
         status: statusFilter,
-        serviceType: serviceTypeFilter
+        serviceType: serviceTypeFilter,
+        startDate: fromDate,
+        endDate: toDate
       });
       setEntries(res.data || []);
       setTotal(res.meta?.total || 0);
@@ -77,7 +82,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
 
   useEffect(() => {
     fetchEntries();
-  }, [page, limit, debSearch, statusFilter, serviceTypeFilter]);
+  }, [page, limit, debSearch, statusFilter, serviceTypeFilter, fromDate, toDate]);
 
   const columns = [
     {
@@ -146,6 +151,30 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
         </Select>
 
 
+        <DateFilter
+          fromDate={fromDate}
+          toDate={toDate}
+          onChange={(type, val) => {
+            if (type === 'from') setFromDate(val);
+            if (type === 'to') setToDate(val);
+            setPage(0);
+          }}
+          onExport={async () => {
+            try {
+              const res = await gateEntryApi.exportExcel({
+                search: debSearch,
+                status: statusFilter,
+                serviceType: serviceTypeFilter,
+                startDate: fromDate,
+                endDate: toDate
+              });
+              const { downloadExcelFile } = await import('../../utils/excelExport');
+              downloadExcelFile(res, 'Gate_Entries.xlsx');
+            } catch (err) {
+              console.error(err);
+            }
+          }}
+        />
       </Box>
 
       <Card sx={{ borderRadius: 0, }}>
@@ -165,6 +194,11 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
           onRowsPerPageChange={(newLimit) => {
             setLimit(newLimit);
             setPage(0);
+          }}
+          onRowDoubleClick={(row) => {
+            if (canReadGateEntry) {
+              navigate(`/gate-entry/view/${row.slug || row.id}`);
+            }
           }}
         />
       </Card>

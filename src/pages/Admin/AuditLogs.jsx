@@ -8,6 +8,7 @@ import { formatDateTime } from '../../utils/formatters';
 import SearchBar from '../../components/common/SearchBar';
 import DateFilter from '../../components/common/DateFilter';
 import { useAuditLogs } from '../../queries/useAuditLogQueries';
+import { exportAuditLogsExcelApi } from '../../api/auditLogApi';
 import { useDebounce } from '../../hooks/useDebounce';
 import ResetFiltersButton from '../../components/common/ResetFiltersButton';
 
@@ -162,6 +163,21 @@ export default function AuditLogs() {
             if (type === 'clear') { setFromDate(''); setToDate(''); }
             setPage(1);
           }}
+          onExport={async () => {
+            try {
+              const params = {
+                search: debouncedSearch,
+                fromDate,
+                toDate
+              };
+
+              const res = await exportAuditLogsExcelApi(params);
+              const { downloadExcelFile } = await import('../../utils/excelExport');
+              downloadExcelFile(res, 'Audit_Logs.xlsx');
+            } catch (err) {
+              console.error(err);
+            }
+          }}
         />
         <ResetFiltersButton onReset={handleResetFilters} />
       </Box>
@@ -189,6 +205,9 @@ export default function AuditLogs() {
               setPage(1);
             }}
             emptyMessage="No audit logs found"
+            onRowDoubleClick={(row) => {
+              navigate(`/audit-logs/${row.id}`);
+            }}
           />
         )}
       </Card>

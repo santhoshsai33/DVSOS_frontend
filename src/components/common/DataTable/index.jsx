@@ -24,6 +24,7 @@ export default function DataTable({
   isLoading = false,
   emptyMessage = "No records found",
   onRowClick,
+  onRowDoubleClick,
   showPagination = true,
   defaultItemsPerPage = 10,
   serverSide = false,
@@ -153,9 +154,10 @@ export default function DataTable({
                   <TableRow
                     key={row.id || index}
                     onClick={() => onRowClick && onRowClick(row)}
+                    onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
                     sx={{
                       bgcolor: "#FFFFFF",
-                      cursor: onRowClick ? "pointer" : "default",
+                      cursor: (onRowClick || onRowDoubleClick) ? "pointer" : "default",
                       transition: "background-color 0.2s",
                     }}
                   >
