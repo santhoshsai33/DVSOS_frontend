@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Card, Typography, IconButton, Menu, MenuItem, Select, Chip } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import { Plus, Eye, Edit, MoreVertical, PlusCircle, MessageCircle } from 'lucide-react';
-import { useJobCards } from '../../queries/useDataQueries';
+import { useJobCards, useJobCardStatuses } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
 import SearchBar from '../../components/common/SearchBar';
@@ -44,6 +44,9 @@ export default function JobCardList() {
   const department = getDepartmentFromModules(menus);
   const canCreateJobCard = canCreateJobCards && !['body-shop', 'water-wash'].includes(department);
   const departmentFilter = ['body-shop', 'water-wash'].includes(department) ? department : undefined;
+
+  const { data: statusesData } = useJobCardStatuses();
+  const jobCardStatuses = statusesData || [];
 
   const { data, isLoading } = useJobCards({
     search: debouncedSearch,
@@ -194,6 +197,13 @@ export default function JobCardList() {
           displayEmpty
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}
+          MenuProps={{
+            PaperProps: {
+              style: {
+                maxHeight: 250,
+              },
+            },
+          }}
           sx={{
             width: { xs: '100%', sm: 200 },
             bgcolor: 'background.paper',
@@ -203,8 +213,11 @@ export default function JobCardList() {
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
           }}
         >
-          {['', 'PENDING', 'IN_PROGRESS', 'BODY_SHOP', 'WATER_WASH', 'COMPLETED', 'DELAYED'].map((s) => (
-            <MenuItem key={s} value={s}>{s || 'All Statuses'}</MenuItem>
+          <MenuItem value="">All Statuses</MenuItem>
+          {jobCardStatuses.map((status) => (
+            <MenuItem key={status.statusCode || status.id} value={status.statusCode}>
+              {status.statusName}
+            </MenuItem>
           ))}
         </Select>
         <ResetFiltersButton onReset={handleResetFilters} />

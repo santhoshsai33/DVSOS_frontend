@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getVehiclesApi, getVehicleApi, getVehicleHistoryApi, searchVehiclesApi } from '../api/vehicleApi';
-import { getJobCardsApi, getJobCardApi } from '../api/jobCardApi';
+import { getJobCardsApi, getJobCardApi, getJobCardStatusesApi } from '../api/jobCardApi';
 import { getApprovalsApi } from '../api/approvalApi';
 import { getUsersApi } from '../api/userApi';
 import { getServicesApi, getBrandsApi, getModelsApi, getPricingApi, getBrandDropdownApi } from '../api/masterApi';
@@ -59,6 +59,17 @@ export const useJobCard = (id) => {
       return res?.data || res;
     },
     enabled: !!id,
+  });
+};
+
+export const useJobCardStatuses = () => {
+  return useQuery({
+    queryKey: ['job-cards-statuses'],
+    queryFn: async () => {
+      const res = await getJobCardStatusesApi();
+      return res?.data || [];
+    },
+    staleTime: 300000,
   });
 };
 

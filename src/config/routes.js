@@ -33,6 +33,9 @@ export const ROUTES = {
   ADMIN_LOCATIONS_VIEW: '/locations/view/:slug',
   ADMIN_AUDIT_LOGS: '/audit-logs',
   ADMIN_AUDIT_LOG_DETAILS: '/audit-logs/:id',
+  ADMIN_MASTER_ITEMS: '/master-items',
+  ADMIN_MASTER_ITEMS_NEW: '/master-items/new',
+  ADMIN_MASTER_ITEMS_EDIT: '/master-items/edit/:slug',
 
   ADMIN_MODULES: '/modules',
   ADMIN_MODULES_NEW: '/modules/new',
