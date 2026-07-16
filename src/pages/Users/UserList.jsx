@@ -291,6 +291,27 @@ export default function UserList() {
             <MenuItem key={role.id} value={role.id}>{role.name}</MenuItem>
           ))}
         </Select>
+        {canReadLocations && (
+          <Select
+            size="small"
+            displayEmpty
+            value={locationFilter}
+            onChange={(e) => { setLocationFilter(e.target.value); setPage(0); }}
+            sx={{
+              width: { xs: '100%', sm: 180 },
+              bgcolor: 'background.paper',
+              borderRadius: '24px',
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
+            }}
+          >
+            <MenuItem value="">All Locations</MenuItem>
+            {locations.map((loc) => (
+              <MenuItem key={loc.id} value={loc.id}>{loc.locationName}</MenuItem>
+            ))}
+          </Select>
+        )}
         <DateFilter
           fromDate={fromDate}
           toDate={toDate}
@@ -318,28 +339,6 @@ export default function UserList() {
             }
           }}
         />
-        {canReadLocations && (
-          <Select
-            size="small"
-            displayEmpty
-            value={locationFilter}
-            onChange={(e) => { setLocationFilter(e.target.value); setPage(0); }}
-            sx={{
-              width: { xs: '100%', sm: 180 },
-              bgcolor: 'background.paper',
-              borderRadius: '24px',
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main', borderWidth: '1px' },
-            }}
-          >
-            <MenuItem value="">All Locations</MenuItem>
-            {locations.map((loc) => (
-              <MenuItem key={loc.id} value={loc.id}>{loc.locationName}</MenuItem>
-            ))}
-          </Select>
-        )}
-
         <ResetFiltersButton onReset={handleResetFilters} />
       </Box>
 
