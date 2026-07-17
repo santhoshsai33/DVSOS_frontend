@@ -349,9 +349,6 @@ export default function JobCardDetailPage() {
                       px: 0.5
                     }}
                   />
-                  <IconButton size="small" sx={{ color: '#475569' }}>
-                    <Filter size={18} />
-                  </IconButton>
                 </Box>
               </Box>
               <Box sx={{ p: 2.5 }}>
@@ -498,25 +495,6 @@ export default function JobCardDetailPage() {
                                       {assignment.completedAt ? formatDateTime(assignment.completedAt) : 'Not Started'}
                                     </Typography>
                                   </Box>
-                                </Box>
-                              </Box>
-
-                              {/* Status Display */}
-                              <Box>
-                                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mb: 0.5, fontSize: '0.75rem', fontWeight: 600 }}>
-                                  Status
-                                </Typography>
-                                <Box sx={{
-                                  display: 'inline-block',
-                                  bgcolor: '#ea580c',
-                                  color: '#ffffff',
-                                  px: 2,
-                                  py: 0.75,
-                                  borderRadius: '8px',
-                                  fontSize: '0.8rem',
-                                  fontWeight: 700
-                                }}>
-                                  {statusLabel}
                                 </Box>
                               </Box>
 
