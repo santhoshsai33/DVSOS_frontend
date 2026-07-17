@@ -43,7 +43,7 @@ export default function ForgotPassword() {
       </div>
 
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <form onSubmit={methods.handleSubmit(onSubmit)} noValidate>
           <RHFTextField name="email" label="Email Address" placeholder="Enter your registered email" type="email" required />
           <Button type="submit" variant="primary" fullWidth isLoading={methods.formState.isSubmitting} > Send Reset Link </Button>
         </form>

@@ -78,7 +78,7 @@ export default function Login() {
 
       {/* Form */}
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <form onSubmit={methods.handleSubmit(onSubmit)} noValidate>
           <Stack spacing={2.5}>
             <RHFTextField name="email" label="Email Address" placeholder="Enter your email" type="email" required />
             <RHFTextField

@@ -244,7 +244,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
           <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
             <Typography variant="h6" fontWeight={700}>Vehicle Exit Registration</Typography>
           </Box>
-          <form onSubmit={handleExitSubmit}>
+          <form onSubmit={handleExitSubmit} noValidate>
             <Box sx={{ p: 3 }}>
               {exitVehicle && (
                 <Box sx={{ mb: 3, p: 2, bgcolor: '#F9FAFB', borderRadius: 2, border: '1px solid #E5E7EB' }}>

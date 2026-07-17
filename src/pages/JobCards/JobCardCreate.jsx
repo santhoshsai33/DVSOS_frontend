@@ -554,7 +554,7 @@ export default function JobCardCreate() {
       </Box>
 
       <FormProvider {...methods}>
-        <form id="jobCardForm" onSubmit={handleSubmit(onSubmit)}>
+        <form id="jobCardForm" onSubmit={handleSubmit(onSubmit)} noValidate>
           <Grid container spacing={4}>
             {/* LEFT COLUMN: FORM */}
             <Grid item xs={12} lg={8}>

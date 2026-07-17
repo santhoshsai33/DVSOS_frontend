@@ -115,7 +115,7 @@ export default function ServiceCenterForm() {
         <Typography>Loading...</Typography>
       ) : (
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
                 <RHFTextField

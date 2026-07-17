@@ -87,7 +87,7 @@ export default function ProfilePage() {
 
       {/* Combined Form */}
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
 
           <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
             Personal Information

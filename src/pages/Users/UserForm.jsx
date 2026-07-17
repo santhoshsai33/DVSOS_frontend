@@ -198,7 +198,7 @@ export default function UserForm() {
         <Typography>Loading...</Typography>
       ) : (
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2, color: 'text.primary' }}>
               User Information
             </Typography>

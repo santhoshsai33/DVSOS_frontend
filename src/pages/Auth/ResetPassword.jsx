@@ -50,7 +50,7 @@ export default function ResetPassword() {
       </div>
 
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <form onSubmit={methods.handleSubmit(onSubmit)} noValidate>
           <RHFTextField name="password" label="New Password" placeholder="Enter new password" type="password" required />
           <RHFTextField name="confirmPassword" label="Confirm Password" placeholder="Confirm your new password" type="password" required />
           <Button type="submit" variant="primary" fullWidth isLoading={methods.formState.isSubmitting}>

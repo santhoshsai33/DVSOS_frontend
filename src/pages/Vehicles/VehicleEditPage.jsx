@@ -98,7 +98,7 @@ export default function VehicleEditPage() {
 
       <Card sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 3 }}>Vehicle Information</Typography>
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>

@@ -37,7 +37,12 @@ const baseSchema = z.object({
   moduleId: requiredPositiveInt('Module'),
   statusId: requiredPositiveInt('Status / Stage'),
   stageCode: z.string().trim().min(1, 'Stage Code is required'),
-  allowedMinutes: requiredPositiveInt('Alert Interval Time'),
+  allowedMinutes: z.preprocess(
+    (value) => (value === '' || value === null || value === undefined ? undefined : Number(value)),
+    z.number({ required_error: 'Alert Interval Time is required', invalid_type_error: 'Alert Interval Time is required' })
+      .int('Alert Interval Time must be a valid number')
+      .min(1, 'Value must be greater than or equal to 1.')
+  ),
   isActive: z.boolean()
 });
 
@@ -253,7 +258,7 @@ export default function StageScheduleForm() {
       </Box>
 
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <RHFSelect
