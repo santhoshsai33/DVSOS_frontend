@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import DataTable from '../../components/common/DataTable';
 import { Eye } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
-import { Box, Card, IconButton, CircularProgress, Typography } from '@mui/material';
+import { Box, Card, IconButton, CircularProgress, Typography, FormControl, Select, MenuItem, InputLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '../../utils/formatters';
 import SearchBar from '../../components/common/SearchBar';
@@ -11,6 +11,7 @@ import { useAuditLogs } from '../../queries/useAuditLogQueries';
 import { exportAuditLogsExcelApi } from '../../api/auditLogApi';
 import { useDebounce } from '../../hooks/useDebounce';
 import ResetFiltersButton from '../../components/common/ResetFiltersButton';
+import { getLocationsApi } from '../../api/adminLocationApi';
 
 const DARK_COLORS = [
   '#1E40AF', // dark blue
@@ -43,13 +44,30 @@ export default function AuditLogs() {
   const [limit, setLimit] = useState(10);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [locationId, setLocationId] = useState('');
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await getLocationsApi({ limit: 100 });
+        if (res?.success) {
+          setLocations(res.data.locations || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch locations', err);
+      }
+    };
+    fetchLocations();
+  }, []);
 
   const { data, isLoading, isError, error } = useAuditLogs({
     page,
     limit,
     search: debouncedSearch,
     fromDate,
-    toDate
+    toDate,
+    locationId
   });
 
   const auditLogsData = data?.data?.auditLogs || [];
@@ -59,6 +77,7 @@ export default function AuditLogs() {
     setSearch('');
     setFromDate('');
     setToDate('');
+    setLocationId('');
     setPage(1);
   };
 
@@ -92,6 +111,11 @@ export default function AuditLogs() {
           </Box>
         );
       }
+    },
+    {
+      header: 'Location',
+      width: '12%',
+      render: (row) => row.location?.locationName || '-'
     },
     { header: 'Action', accessor: 'actionType', width: '16.66%' },
     {
@@ -154,6 +178,24 @@ export default function AuditLogs() {
             onChange={(val) => { setSearch(val); setPage(1); }}
           />
         </Box>
+        <Box sx={{ width: { xs: '100%', md: 200 } }}>
+          <FormControl fullWidth size="small" sx={{ bgcolor: 'white' }}>
+            <InputLabel>Location</InputLabel>
+            <Select
+              value={locationId}
+              label="Location"
+              onChange={(e) => {
+                setLocationId(e.target.value);
+                setPage(1);
+              }}
+            >
+              <MenuItem value="">All Locations</MenuItem>
+              {locations.map((loc) => (
+                <MenuItem key={loc.id} value={loc.id}>{loc.locationName}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
         <DateFilter
           fromDate={fromDate}
           toDate={toDate}
@@ -168,7 +210,8 @@ export default function AuditLogs() {
               const params = {
                 search: debouncedSearch,
                 fromDate,
-                toDate
+                toDate,
+                locationId
               };
 
               const res = await exportAuditLogsExcelApi(params);
