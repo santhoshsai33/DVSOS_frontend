@@ -77,11 +77,11 @@ export default function ServiceCenterForm() {
     try {
       const payload = {
         serviceCenterName: data.name,
-        gstNumber: data.gstNumber || undefined,
+        gstNumber: data.gstNumber,
         contactPhone: data.contactNumber,
         contactEmail: data.email,
-        logoUrl: data.logoUrl || undefined,
-        websiteUrl: data.websiteUrl || undefined,
+        logoUrl: data.logoUrl,
+        websiteUrl: data.websiteUrl,
         tax: data.tax,
       };
       if (isEdit) {

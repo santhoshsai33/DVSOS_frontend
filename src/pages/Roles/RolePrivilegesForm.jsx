@@ -226,6 +226,23 @@ export default function RolePrivilegesForm() {
       return;
     }
 
+    if (!selectedModule) {
+      toastError("Module is required");
+      return;
+    }
+
+    const isMobile = mobileModules.includes(selectedModule);
+    if (!isMobile) {
+      const selectedMod = modulesList.find((m) => m.module === selectedModule);
+      const hasPrivilege = selectedMod?.menus?.some(
+        (menu) => menu.canRead || menu.canCreate || menu.canUpdate || menu.canDelete
+      );
+      if (!hasPrivilege) {
+        toastError("At least one privilege must be assigned.");
+        return;
+      }
+    }
+
     // Flatten payload
     let permissionsPayload = [];
 

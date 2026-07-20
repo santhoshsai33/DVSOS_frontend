@@ -5,6 +5,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import RHFTextField from '../../components/form/RHFTextField';
+import RHFTextarea from '../../components/form/RHFTextarea';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
 import { toastSuccess, toastError } from '../../notifications/toast';
@@ -113,10 +114,11 @@ export default function ModuleForm() {
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <RHFTextField
+                <RHFTextarea
                   name="description"
                   label="Description"
                   placeholder="Module description"
+                  rows={3}
                 />
               </Grid>
             </Grid>

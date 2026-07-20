@@ -21,8 +21,13 @@ const schema = z.object({
   categoryId: commonValidations.requiredNumber('Category Group'),
   name: commonValidations.alphaNumeric('Service Item Name'),
   description: commonValidations.optionalDescription,
-  defaultPrice: z.coerce.number({ required_error: 'Base Price is required', invalid_type_error: 'Base Price is required' }).gt(0, 'Base Price must be greater than 0'),
-  estimatedMinutes: z.union([z.coerce.number().gt(0, 'Duration must be greater than 0'), z.literal('')]).optional()
+  defaultPrice: z.coerce.number({ required_error: 'Base Price is required', invalid_type_error: 'Base Price is required' })
+    .gt(0, 'Base Price must be greater than 0')
+    .max(99999999.99, 'Base Price cannot exceed 99999999.99'),
+  estimatedMinutes: z.union([
+    z.coerce.number().gt(0, 'Duration must be greater than 0').max(2147483647, 'Duration cannot exceed 2147483647'),
+    z.literal('')
+  ]).optional()
 });
 
 export default function ServiceItemForm() {
@@ -96,9 +101,9 @@ export default function ServiceItemForm() {
       const payload = {
         categoryId: data.categoryId,
         name: data.name,
-        description: data.description || undefined,
+        description: data.description,
         defaultPrice: data.defaultPrice,
-        estimatedMinutes: data.estimatedMinutes || undefined
+        estimatedMinutes: data.estimatedMinutes
       };
 
       if (isEdit) {

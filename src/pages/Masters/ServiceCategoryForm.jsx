@@ -69,7 +69,7 @@ export default function ServiceCategoryForm() {
     try {
       const payload = {
         name: data.name,
-        description: data.description || undefined
+        description: data.description
       };
 
       if (isEdit) {

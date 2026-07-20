@@ -42,6 +42,7 @@ const baseSchema = z.object({
     z.number({ required_error: 'Alert Interval Time is required', invalid_type_error: 'Alert Interval Time is required' })
       .int('Alert Interval Time must be a valid number')
       .min(1, 'Value must be greater than or equal to 1.')
+      .max(2147483647, 'Alert Interval Time cannot exceed 2147483647')
   ),
   isActive: z.boolean()
 });

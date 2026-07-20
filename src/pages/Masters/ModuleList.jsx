@@ -89,11 +89,6 @@ export default function ModuleList() {
       render: (row) => <Typography variant="body2" fontWeight={600}>{row.moduleName}</Typography>
     },
     {
-      header: 'Module Code',
-      accessor: 'moduleCode',
-      render: (row) => <Typography variant="body2" color="text.secondary">{row.moduleCode}</Typography>
-    },
-    {
       header: 'Description',
       accessor: 'description',
       render: (row) => (
