@@ -24,8 +24,14 @@ axiosInstance.interceptors.response.use(
   (response) => response.data,
   (error) => {
     const status = error?.response?.status;
-    const message =
+    let message =
       error?.response?.data?.message || error?.message || 'Something went wrong';
+
+    if (error.code === 'ECONNABORTED' || message.toLowerCase().includes('timeout')) {
+      message = 'The server is taking too long to respond. Please try again.';
+    } else if (message.toLowerCase().includes('network error')) {
+      message = 'Failed to connect to the server. Please check your internet connection.';
+    }
 
     if (status === 401 && window.location.pathname !== '/login') {
       localStorage.removeItem('token');

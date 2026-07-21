@@ -150,16 +150,16 @@ export default function UserForm() {
       const payload = {
         fullName: data.fullName,
         email: data.email,
-        mobile: data.mobile || undefined,
+        mobile: data.mobile,
         roleId: data.roleId,
         locationId: canAssignLocation ? data.locationId : (currentUser?.locationId || currentUser?.location?.id),
         password: isEdit ? undefined : (data.password || undefined),
         isActive: data.status === 'ACTIVE',
-        dob: data.dob || undefined,
-        licenceNumber: data.licenceNumber || undefined,
-        emergencyContact: data.emergencyContact || undefined,
-        gender: data.gender || undefined,
-        address: data.address || undefined
+        dob: data.dob,
+        licenceNumber: data.licenceNumber,
+        emergencyContact: data.emergencyContact,
+        gender: data.gender,
+        address: data.address
       };
 
       if (isEdit) {

@@ -127,10 +127,10 @@ export default function LocationForm() {
         districtId: data.districtId,
         locationName: data.name,
         locationType: 'BRANCH',
-        address: data.address || undefined,
-        pincode: data.pincode || undefined,
-        contactPhone: data.phoneNo || undefined,
-        contactEmail: data.email || undefined,
+        address: data.address,
+        pincode: data.pincode,
+        contactPhone: data.phoneNo,
+        contactEmail: data.email,
       };
 
       if (isEdit) {

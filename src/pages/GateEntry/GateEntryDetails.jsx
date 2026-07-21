@@ -92,6 +92,18 @@ export default function GateEntryDetails() {
           </Grid>
         </Box>
 
+        {/* Remarks Section */}
+        {vehicle.remarks && (
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700} color="primary.main" sx={{ mb: 2, borderBottom: '1.5px solid', borderColor: 'divider', pb: 0.5 }}>
+              Remarks
+            </Typography>
+            <Typography variant="body1" sx={{ mt: 0.5, whiteSpace: 'pre-line', color: 'text.primary' }}>
+              {vehicle.remarks}
+            </Typography>
+          </Box>
+        )}
+
         {/* Operations Logs Section */}
         <Box>
           <Typography variant="subtitle1" fontWeight={700} color="primary.main" sx={{ mb: 2, borderBottom: '1.5px solid', borderColor: 'divider', pb: 0.5 }}>

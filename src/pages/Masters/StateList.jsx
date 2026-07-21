@@ -112,11 +112,6 @@ export default function StateList() {
       render: (row) => <Typography variant="body2" fontWeight={600}>{row.stateName}</Typography>
     },
     {
-      header: 'State Code',
-      accessor: 'stateCode',
-      render: (row) => <Typography variant="body2" color="text.secondary">{row.stateCode}</Typography>
-    },
-    {
       header: 'Status',
       accessor: 'isActive',
       render: (row) => (
@@ -151,7 +146,7 @@ export default function StateList() {
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
           <SearchBar
-            placeholder="Search state, code"
+            placeholder="Search state"
             value={search}
             onChange={(val) => { setSearch(val); setPage(0); }}
           />
