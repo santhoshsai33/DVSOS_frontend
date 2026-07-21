@@ -38,7 +38,8 @@ export default function ServiceCategories() {
         const params = { page: page + 1, limit: rowsPerPage };
         if (search) params.search = search;
         if (statusFilter === 'ACTIVE') params.isActive = true;
-        if (statusFilter === 'INACTIVE') params.isActive = false;
+        else if (statusFilter === 'INACTIVE') params.isActive = false;
+        else params.isActive = 'all';
 
         const res = await getServiceCategoriesApi(params);
         if (res?.success) {

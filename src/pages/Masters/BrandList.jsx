@@ -36,14 +36,15 @@ export default function BrandList() {
         const params = { page: page + 1, limit: rowsPerPage };
         if (search) params.search = search;
         if (statusFilter === 'ACTIVE') params.isActive = true;
-        if (statusFilter === 'INACTIVE') params.isActive = false;
+        else if (statusFilter === 'INACTIVE') params.isActive = false;
+        else params.isActive = 'all';
 
         const res = await adminBrandApi.getBrands(params);
         if (res?.success || Array.isArray(res?.data?.brands) || Array.isArray(res?.data) || Array.isArray(res)) {
           let fetchedBrands = res?.data?.brands || res?.data || res || [];
           if (!Array.isArray(fetchedBrands)) fetchedBrands = [];
 
-          
+
           if (search) {
             const lowerSearch = search.toLowerCase();
             fetchedBrands = fetchedBrands.filter(b => b.name?.toLowerCase().includes(lowerSearch));
@@ -57,7 +58,7 @@ export default function BrandList() {
           const hasMetaTotal = res?.meta?.total !== undefined;
           setTotalCount(hasMetaTotal ? res.meta.total : fetchedBrands.length);
 
-         
+
           if (!hasMetaTotal && fetchedBrands.length > rowsPerPage) {
             const start = page * rowsPerPage;
             fetchedBrands = fetchedBrands.slice(start, start + rowsPerPage);
@@ -97,7 +98,7 @@ export default function BrandList() {
   const handleStatusChange = async (id, newStatus) => {
     try {
       const res = await adminBrandApi.updateBrandStatus(id, newStatus);
-      
+
       if (res?.success !== false) {
         toastSuccess('Brand status updated successfully!');
         setBrands(prev => prev.map(b => b.id === id ? { ...b, isActive: newStatus } : b));
