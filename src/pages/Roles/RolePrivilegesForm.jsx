@@ -49,6 +49,14 @@ const flattenMenus = (menus) => {
   return flat;
 };
 
+const formatModuleName = (slug) => {
+  if (!slug) return "";
+  return slug
+    .split(/[-_]/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
+
 const validateDesignation = (value) => {
   if (!value.trim()) {
     return "Role Name is required";
@@ -385,7 +393,7 @@ export default function RolePrivilegesForm() {
                 </MenuItem>
                 {availableModuleNames.map((m) => (
                   <MenuItem key={m} value={m}>
-                    {m}
+                    {formatModuleName(m)}
                   </MenuItem>
                 ))}
               </Select>
@@ -541,7 +549,7 @@ export default function RolePrivilegesForm() {
                                 fontSize: "0.75rem",
                               }}
                             >
-                              {mod.module} /
+                              {formatModuleName(mod.module)} /
                             </Typography>
                             {menu.name}
                           </TableCell>
