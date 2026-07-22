@@ -137,11 +137,6 @@ export default function ServiceCenterView() {
                 value={serviceCenter?.serviceCenterName || '-'}
               />
               <DetailRow
-                icon={Tag}
-                label="Service Center Code"
-                value={serviceCenter?.serviceCenterCode || '-'}
-              />
-              <DetailRow
                 icon={Hash}
                 label="GST Number"
                 value={serviceCenter?.gstNumber || '-'}

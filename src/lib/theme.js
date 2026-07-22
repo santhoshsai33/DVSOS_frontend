@@ -3,17 +3,17 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#2563eb', // --blue
-      light: '#3b82f6', // --blue-light
+      main: '#000F7E', // --blue
+      light: '#000F7E', // --blue-light
       dark: '#1e3a8a', // --navy
     },
     secondary: {
       main: '#0891b2', // --cyan
-      light: '#3b82f6',
+      light: '#000F7E',
       dark: '#1e3a8a',
     },
     success: {
-      main: '#2563eb', // --success
+      main: '#000F7E', // --success
     },
     error: {
       main: '#dc2626', // --danger
@@ -22,7 +22,7 @@ const theme = createTheme({
       main: '#d97706', // --warn
     },
     info: {
-      main: '#2563eb', // --blue
+      main: '#000F7E', // --blue
     },
     background: {
       default: '#f0f4ff', // --bg
@@ -62,7 +62,7 @@ const theme = createTheme({
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         },
         containedPrimary: {
-          background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+          background: 'linear-gradient(135deg, #000F7E 0%, #000F7E 100%)',
           boxShadow: '0 1px 3px rgba(37, 99, 235, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06)',
           '&:hover': {
             background: '#1e3a8a',
@@ -111,7 +111,7 @@ const theme = createTheme({
               borderColor: '#c3d4ee', // --border2
             },
             '&.Mui-focused fieldset': {
-              borderColor: '#2563eb', // --blue
+              borderColor: '#000F7E', // --blue
               borderWidth: '1px',
             },
             '&.Mui-focused': {
@@ -133,7 +133,7 @@ const theme = createTheme({
             borderColor: '#c3d4ee', // --border2
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#2563eb', // --blue
+            borderColor: '#000F7E', // --blue
             borderWidth: '1px',
           },
           '&.Mui-focused': {

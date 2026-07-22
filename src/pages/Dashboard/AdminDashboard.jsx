@@ -1,6 +1,6 @@
 import { Grid, Box, Typography, Card, CardContent, Chip } from '@mui/material';
 import {
-  Users, Crown, ShieldCheck, Wrench, ClipboardList
+  Users, ShieldCheck, Wrench, ClipboardList
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';

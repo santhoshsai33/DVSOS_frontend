@@ -48,6 +48,7 @@ import {
 import useAuthStore from "../../../store/useAuthStore";
 import useUIStore from "../../../store/useUIStore";
 import { buildSidebarMenus } from "../../../utils/authAccess";
+import logoImg from "../../../assets/img/logo.jpg";
 
 const ICON_MAP = {
   AlertCircle,
@@ -381,36 +382,25 @@ export default function Sidebar() {
           height: 64,
           display: "flex",
           alignItems: "center",
-          px: effectiveCollapsed && !isMobile ? 0 : 3,
-          justifyContent:
-            effectiveCollapsed && !isMobile ? "center" : "flex-start",
+          justifyContent: "center",
+          px: 0,
+          width: "100%",
+          overflow: "hidden",
           flexShrink: 0,
         }}
       >
         <Box
+          component="img"
+          src={logoImg}
+          alt="Logo"
           sx={{
-            width: 32,
-            height: 32,
-            borderRadius: 0,
-            bgcolor: "primary.main",
-            color: "white",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mr: effectiveCollapsed && !isMobile ? 0 : 1.5,
+            width: "100%",
+            height: "100%",
+            maxHeight: "64px",
+            maxWidth: "100%",
+            transition: "all 0.2s ease-in-out",
           }}
-        >
-          <Car size={18} />
-        </Box>
-        {(!effectiveCollapsed || isMobile) && (
-          <Typography
-            variant="h6"
-            fontWeight={700}
-            sx={{ letterSpacing: "-0.02em", color: "text.primary" }}
-          >
-            DVSOS
-          </Typography>
-        )}
+        />
       </Box>
 
       <Divider />

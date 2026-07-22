@@ -52,37 +52,6 @@ export default function MDDashboard() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F0F4FF', minHeight: '100%' }}>
-      <Box sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        gap: { xs: 2, sm: 0 },
-        justifyContent: 'space-between',
-        alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3,
-        bgcolor: '#FFFFFF', p: 2, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
-        border: '1px solid #E5E7EB'
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444' }}>
-            <Briefcase size={22} />
-          </Box>
-          <Box>
-            <Typography variant="h6" fontWeight={800} color="#000" sx={{ lineHeight: 1.2 }}>
-              Managing Director (MD)
-            </Typography>
-          </Box>
-        </Box>
-        <Select
-          size="small"
-          value={timeRange}
-          onChange={(e) => setTimeRange(e.target.value)}
-          sx={{ minWidth: 120, borderRadius: 2, bgcolor: '#FFFFFF' }}
-        >
-          <MenuItem value="Today">Today</MenuItem>
-          <MenuItem value="This Week">This Week</MenuItem>
-          <MenuItem value="This Month">This Month</MenuItem>
-          <MenuItem value="All Time">All Time</MenuItem>
-        </Select>
-      </Box>
 
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
