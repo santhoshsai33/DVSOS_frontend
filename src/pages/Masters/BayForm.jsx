@@ -12,10 +12,13 @@ import { toastSuccess, toastError } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
 import { adminBayApi } from '../../api/adminBayApi';
 import { commonValidations } from '../../validations/commonSchema';
+import { usePermissions } from '../../hooks/usePermissions';
+import { getLocationsApi } from '../../api/adminLocationApi';
 
-const schema = z.object({
+const getValidationSchema = (canAssignLocation) => z.object({
   bayName: commonValidations.alphaNumeric('Bay name'),
-  bayType: z.string().min(1, 'Bay type is required')
+  bayType: z.string().min(1, 'Bay type is required'),
+  locationId: canAssignLocation ? commonValidations.requiredNumber('Location') : commonValidations.optionalAny
 });
 
 const BAY_TYPES = [
@@ -33,15 +36,36 @@ export default function BayForm() {
   const [loading, setLoading] = useState(isEdit);
   const [bayId, setBayId] = useState(null);
 
+  const { canRead } = usePermissions();
+  const canAssignLocation = canRead('/locations');
+  const [locations, setLocations] = useState([]);
+
   const methods = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(getValidationSchema(canAssignLocation)),
     defaultValues: {
       bayName: '',
-      bayType: ''
+      bayType: '',
+      locationId: ''
     }
   });
 
   const { handleSubmit, reset } = methods;
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      if (!canAssignLocation) return;
+      try {
+        const res = await getLocationsApi({ limit: 100 });
+        if (res?.success) {
+          const fetchedLocations = res.data.locations || [];
+          setLocations(fetchedLocations.filter(l => l.isActive !== false).map(l => ({ value: l.id, label: l.locationName })));
+        }
+      } catch (error) {
+        toastError('Failed to fetch locations');
+      }
+    };
+    fetchLocations();
+  }, [canAssignLocation]);
 
   useEffect(() => {
     const loadBayData = async () => {
@@ -52,7 +76,8 @@ export default function BayForm() {
       if (location.state?.bay) {
         reset({ 
           bayName: location.state.bay.bayName,
-          bayType: location.state.bay.bayType
+          bayType: location.state.bay.bayType,
+          locationId: location.state.bay.locationId || ''
         });
         setBayId(location.state.bay.id);
         setLoading(false);
@@ -67,7 +92,8 @@ export default function BayForm() {
         if (found) {
           reset({ 
             bayName: found.bayName,
-            bayType: found.bayType
+            bayType: found.bayType,
+            locationId: found.locationId || ''
           });
           setBayId(found.id);
         } else {
@@ -89,15 +115,24 @@ export default function BayForm() {
     try {
       setSaving(true);
       
+      const payload = {
+        bayName: data.bayName,
+        bayType: data.bayType,
+      };
+
+      if (canAssignLocation && data.locationId) {
+        payload.locationId = data.locationId;
+      }
+      
       if (isEdit) {
         if (!bayId) {
             toastError('Bay ID not found for update');
             return;
         }
-        await adminBayApi.updateBay(bayId, data);
+        await adminBayApi.updateBay(bayId, payload);
         toastSuccess(`Bay "${data.bayName}" updated successfully.`);
       } else {
-        await adminBayApi.createBay(data);
+        await adminBayApi.createBay(payload);
         toastSuccess(`Bay "${data.bayName}" added successfully.`);
       }
       
@@ -145,6 +180,14 @@ export default function BayForm() {
                 />
               </Grid>
             </Grid>
+
+            {canAssignLocation && (
+              <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid item xs={12} md={6}>
+                  <RHFSelect name="locationId" label="Location" options={locations} placeholder="Select location" required />
+                </Grid>
+              </Grid>
+            )}
 
             <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mt: 4, pt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
               <Button

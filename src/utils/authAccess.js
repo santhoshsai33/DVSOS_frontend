@@ -85,7 +85,7 @@ export const getDepartmentFromModules = (modules = []) => {
 export const buildSidebarMenus = (modules = [], iconMap = {}) => {
   return modules
     .map((moduleItem) => {
-      const sourceMenus = (moduleItem.menus || []).filter((menu) => menu.canRead !== false);
+      const sourceMenus = (moduleItem.menus || []).filter((menu) => menu.canRead !== false && menu.path !== '/master-categories')
       const menuMap = new Map();
 
       sourceMenus.forEach((menu) => {
