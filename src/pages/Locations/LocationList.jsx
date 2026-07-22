@@ -110,11 +110,6 @@ export default function LocationList() {
 
   const columns = [
     {
-      header: 'Location ID',
-      accessor: 'locationCode',
-      render: (row) => <Typography variant="body2" fontWeight={600} color="primary.main">{row.locationCode}</Typography>,
-    },
-    {
       header: 'Location Name',
       accessor: 'locationName',
       render: (row) => (

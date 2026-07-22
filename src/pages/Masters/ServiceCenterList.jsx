@@ -100,11 +100,6 @@ export default function ServiceCenterList() {
 
   const columns = [
     {
-      header: 'Code',
-      accessor: 'serviceCenterCode',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.serviceCenterCode}</Typography>
-    },
-    {
       header: 'Service Center Name',
       accessor: 'serviceCenterName',
       render: (row) => <Typography variant="body2" fontWeight={600}>{row.serviceCenterName}</Typography>

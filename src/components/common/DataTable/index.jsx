@@ -154,10 +154,13 @@ export default function DataTable({
                   <TableRow
                     key={row.id || index}
                     onClick={() => onRowClick && onRowClick(row)}
-                    onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
+                    onDoubleClick={() =>
+                      onRowDoubleClick && onRowDoubleClick(row)
+                    }
                     sx={{
                       bgcolor: "#FFFFFF",
-                      cursor: (onRowClick || onRowDoubleClick) ? "pointer" : "default",
+                      cursor:
+                        onRowClick || onRowDoubleClick ? "pointer" : "default",
                       transition: "background-color 0.2s",
                     }}
                   >
@@ -260,12 +263,12 @@ export default function DataTable({
                   },
                 },
                 "& .Mui-selected": {
-                  bgcolor: "#2563eb!important",
+                  bgcolor: "#000f7e!important",
                   color: "#FFFFFF !important",
                   border: "none",
                   boxShadow: "0 2px 4px rgba(37, 99, 235, 0.2)",
                   "&:hover": {
-                    bgcolor: "#2563eb !important",
+                    bgcolor: "#000f7e !important",
                   },
                 },
               }}

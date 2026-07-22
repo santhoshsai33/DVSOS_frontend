@@ -1,6 +1,6 @@
 import { Grid, Box, Typography, Card, CardContent, Chip } from '@mui/material';
 import {
-  Users, Crown, ShieldCheck, Wrench, ClipboardList
+  Users, ShieldCheck, Wrench, ClipboardList
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../config/routes';
@@ -116,21 +116,6 @@ export default function AdminDashboard() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f0f4ff', minHeight: '100%' }}>
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 4, bgcolor: '#FFFFFF', p: 3, borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: 'rgba(45, 212, 191, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1a434d' }}>
-            <Crown size={24} />
-          </Box>
-          <Box>
-            <Typography variant="h5" fontWeight={800} color="#000" sx={{ lineHeight: 1.2 }}>
-              Super Admin Dashboard
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Overview of platform users, roles, and service masters
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
 
       {/* KPI Cards Row */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
