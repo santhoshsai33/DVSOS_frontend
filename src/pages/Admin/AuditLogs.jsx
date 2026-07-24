@@ -4,7 +4,7 @@ import { Eye } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
 import { Box, Card, IconButton, CircularProgress, Typography, FormControl, Select, MenuItem, InputLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { formatDateTime } from '../../utils/formatters';
+import { formatDateTime, formatDate } from '../../utils/formatters';
 import SearchBar from '../../components/common/SearchBar';
 import DateFilter from '../../components/common/DateFilter';
 import { useAuditLogs } from '../../queries/useAuditLogQueries';
@@ -84,7 +84,7 @@ export default function AuditLogs() {
   const columns = [
     {
       header: 'User',
-      width: '16.66%',
+      width: '18%',
       render: (row) => {
         const userName = row.performedBy?.fullName || 'System';
         const color = getHashColor(userName);
@@ -114,37 +114,38 @@ export default function AuditLogs() {
     },
     {
       header: 'Location',
-      width: '12%',
+      width: '10%',
       render: (row) => row.location?.locationName || '-'
     },
-    { header: 'Action', accessor: 'actionType', width: '16.66%' },
+    { header: 'Action', accessor: 'actionType', width: '18%' },
     {
       header: 'Table Name',
-      width: '16.66%',
+      width: '18%',
       render: (row) => row.tableName
     },
-    { header: 'Record', accessor: 'recordName', width: '16.66%' },
-    { header: 'Comments', accessor: 'comments', width: '16.66%' },
+    { header: 'Comments', accessor: 'comments', width: '18%' },
     {
       header: 'Timestamp',
-      width: '16.66%',
+      width: '18%',
       render: (row) => {
-        const formatted = formatDateTime(row.performedAt);
-        const color = getHashColor(formatted);
+        const datePart = formatDate(row.performedAt, 'dd MMM yyyy');
+        const timePart = formatDate(row.performedAt, 'hh:mm a');
+        const color = getHashColor(datePart);
         return (
           <Box
-            component="span"
             sx={{
+              display: 'flex',
+              flexDirection: 'column',
               fontFamily: "'Inter', sans-serif",
               fontWeight: 800,
               fontSize: '0.8rem',
               color: color,
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
-              whiteSpace: 'nowrap'
             }}
           >
-            {formatted}
+            <Box component="span" sx={{ whiteSpace: 'nowrap' }}>{datePart}</Box>
+            <Box component="span" sx={{ fontSize: '0.75rem', opacity: 0.8, mt: 0.5, whiteSpace: 'nowrap' }}>{timePart}</Box>
           </Box>
         );
       }
