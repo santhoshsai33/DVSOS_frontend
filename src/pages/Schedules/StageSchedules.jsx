@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Box, Card, Typography, IconButton, Menu, MenuItem, Chip } from '@mui/material';
+import { Box, Card, Typography, IconButton, Menu, MenuItem, Chip, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, MoreVertical } from 'lucide-react';
 import DataTable from '../../components/common/DataTable';
@@ -111,13 +111,34 @@ export default function StageSchedules() {
     },
     {
       header: 'Notify',
-      render: (row) => (
-        <Chip
-          size="small"
-          variant="outlined"
-          label={row.notifyRoleName ? `Role: ${row.notifyRoleName}` : `User: ${row.notifyUserName || '-'}`}
-        />
-      )
+      render: (row) => {
+        const hasRoles = row.notifyRoles?.length > 0;
+        const hasUsers = row.notifyUsers?.length > 0;
+        
+        let label = '-';
+        let tooltipText = '';
+
+        if (hasRoles) {
+          label = `${row.notifyRoles.length} Role(s)`;
+          tooltipText = row.notifyRoles.map(r => r.name).join(', ');
+        } else if (hasUsers) {
+          label = `${row.notifyUsers.length} User(s)`;
+          tooltipText = row.notifyUsers.map(u => u.fullName).join(', ');
+        }
+
+        return tooltipText ? (
+          <Tooltip title={tooltipText} placement="top" arrow>
+            <Chip
+              size="small"
+              variant="outlined"
+              label={label}
+              sx={{ cursor: 'help' }}
+            />
+          </Tooltip>
+        ) : (
+          <Chip size="small" variant="outlined" label={label} />
+        );
+      }
     },
     {
       header: 'Status',

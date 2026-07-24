@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import Button from '../../components/common/Button';
 import RHFTextField from '../../components/form/RHFTextField';
 import RHFSelect from '../../components/form/RHFSelect';
+import RHFMultiSelect from '../../components/form/RHFMultiSelect';
 import RHFSwitch from '../../components/form/RHFSwitch';
 import { ROUTES } from '../../config/routes';
 import { toastError, toastSuccess } from '../../notifications/toast';
@@ -50,13 +51,13 @@ const baseSchema = z.object({
 const schema = z.discriminatedUnion('notifyBy', [
   baseSchema.extend({
     notifyBy: z.literal('ROLE'),
-    notifyRoleId: requiredPositiveInt('Notify Role'),
-    notifyUserId: optionalPositiveInt
+    notifyRoleIds: z.array(z.number()).min(1, 'Select at least one notify role'),
+    notifyUserIds: z.array(z.number()).default([])
   }),
   baseSchema.extend({
     notifyBy: z.literal('USER'),
-    notifyRoleId: optionalPositiveInt,
-    notifyUserId: requiredPositiveInt('Notify User')
+    notifyRoleIds: z.array(z.number()).default([]),
+    notifyUserIds: z.array(z.number()).min(1, 'Select at least one notify user')
   })
 ]);
 
@@ -66,8 +67,8 @@ const defaultValues = {
   stageCode: '',
   allowedMinutes: '',
   notifyBy: 'ROLE',
-  notifyRoleId: '',
-  notifyUserId: '',
+  notifyRoleIds: [],
+  notifyUserIds: [],
   isActive: true
 };
 
@@ -156,9 +157,9 @@ export default function StageScheduleForm() {
             statusId: schedule.statusId,
             stageCode: schedule.stageCode || '',
             allowedMinutes: schedule.allowedMinutes,
-            notifyBy: schedule.notifyUserId ? 'USER' : 'ROLE',
-            notifyRoleId: schedule.notifyRoleId || '',
-            notifyUserId: schedule.notifyUserId || '',
+            notifyBy: schedule.notifyUserIds?.length > 0 && !schedule.notifyRoleIds?.length ? 'USER' : 'ROLE',
+            notifyRoleIds: schedule.notifyRoleIds || [],
+            notifyUserIds: schedule.notifyUserIds || [],
             isActive: Boolean(schedule.isActive)
           });
         }
@@ -210,9 +211,9 @@ export default function StageScheduleForm() {
 
   useEffect(() => {
     if (notifyBy === 'ROLE') {
-      setValue('notifyUserId', '');
+      setValue('notifyUserIds', []);
     } else if (notifyBy === 'USER') {
-      setValue('notifyRoleId', '');
+      setValue('notifyRoleIds', []);
     }
   }, [notifyBy, setValue]);
 
@@ -222,8 +223,8 @@ export default function StageScheduleForm() {
       statusId: data.statusId,
       stageCode: data.stageCode,
       allowedMinutes: data.allowedMinutes,
-      notifyRoleId: data.notifyBy === 'ROLE' ? data.notifyRoleId : null,
-      notifyUserId: data.notifyBy === 'USER' ? data.notifyUserId : null,
+      notifyRoleIds: data.notifyBy === 'ROLE' ? data.notifyRoleIds : [],
+      notifyUserIds: data.notifyBy === 'USER' ? data.notifyUserIds : [],
       isActive: data.isActive
     };
 
@@ -318,20 +319,20 @@ export default function StageScheduleForm() {
 
             <Grid item xs={12} md={6}>
               {notifyBy === 'USER' ? (
-                <RHFSelect
-                  name="notifyUserId"
-                  label="Notify User"
+                <RHFMultiSelect
+                  name="notifyUserIds"
+                  label="Notify Users"
                   options={userOptions}
-                  placeholder="Select User"
+                  placeholder="Select Users"
                   required
                   disabled={loading}
                 />
               ) : (
-                <RHFSelect
-                  name="notifyRoleId"
-                  label="Notify Role"
+                <RHFMultiSelect
+                  name="notifyRoleIds"
+                  label="Notify Roles"
                   options={roleOptions}
-                  placeholder="Select Role"
+                  placeholder="Select Roles"
                   required
                   disabled={loading}
                 />
