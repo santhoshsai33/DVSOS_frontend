@@ -22,9 +22,10 @@ export default function BayList() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [statusFilter, setStatusFilter] = useState('');
   const [totalCount, setTotalCount] = useState(0);
-  const { canCreate, canUpdate } = usePermissions();
+  const { canCreate, canUpdate, role } = usePermissions();
   const canCreateBays = canCreate('/md-bays');
   const canUpdateBays = canUpdate('/md-bays');
+  const isAdmin = role === 'admin' || role === 'super-admin' || role === 'super_admin';
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedBay, setSelectedBay] = useState(null);
@@ -107,6 +108,11 @@ export default function BayList() {
   };
 
   const columns = [
+    ...(isAdmin ? [{
+      header: 'Location',
+      accessor: 'locationName',
+      render: (row) => <Typography variant="body2">{row.location?.locationName || row.locationName || '-'}</Typography>
+    }] : []),
     {
       header: 'Bay Name',
       accessor: 'bayName',

@@ -85,11 +85,11 @@ export default function StageSchedules() {
   };
 
   const columns = [
-    {
-      header: 'Location',
-      accessor: 'locationName',
-      render: (row) => <Typography variant="body2" fontWeight={600}>{row.locationName || 'All Locations'}</Typography>
-    },
+    // {
+    //   header: 'Location',
+    //   accessor: 'locationName',
+    //   render: (row) => <Typography variant="body2" fontWeight={600}>{row.locationName || 'All Locations'}</Typography>
+    // },
     {
       header: 'Module',
       accessor: 'moduleName'
@@ -114,7 +114,7 @@ export default function StageSchedules() {
       render: (row) => {
         const hasRoles = row.notifyRoles?.length > 0;
         const hasUsers = row.notifyUsers?.length > 0;
-        
+
         let label = '-';
         let tooltipText = '';
 

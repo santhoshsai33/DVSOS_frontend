@@ -1,7 +1,7 @@
 import React from 'react';
-import { ShieldCheck, Edit, Trash2, Plus, MoreVertical } from 'lucide-react';
+import { Edit, Plus, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Menu, MenuItem, IconButton, Typography, Select } from '@mui/material';
+import { Box, Menu, MenuItem, IconButton, Typography } from '@mui/material';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import DataTable from '../../components/common/DataTable';
@@ -39,7 +39,7 @@ export default function RoleList() {
       if (search) params.search = search;
       if (statusFilter === 'ACTIVE') params.isActive = true;
       if (statusFilter === 'INACTIVE') params.isActive = false;
-      
+
       const res = await getRolesApi(params);
       if (res?.success) {
         setRoles(res.data.roles || []);
@@ -118,11 +118,11 @@ export default function RoleList() {
         <Typography variant="body2" fontWeight={600} color="text.primary">{row.name}</Typography>
       )
     },
-    {
-      header: 'Role Code',
-      accessor: 'slug',
-      render: (row) => <Typography variant="body2" fontWeight={500} color="text.primary">{row.slug.replace(/-/g, ' ').toUpperCase()}</Typography>
-    },
+    // {
+    //   header: 'Role Code',
+    //   accessor: 'slug',
+    //   render: (row) => <Typography variant="body2" fontWeight={500} color="text.primary">{row.slug.replace(/-/g, ' ').toUpperCase()}</Typography>
+    // },
     {
       header: 'Status',
       render: (row) => (

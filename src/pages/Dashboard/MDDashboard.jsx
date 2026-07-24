@@ -52,6 +52,28 @@ export default function MDDashboard() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F0F4FF', minHeight: '100%' }}>
+      {/* Header Bar */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" fontWeight={800} color="#1E293B">
+          Managing Director Dashboard
+        </Typography>
+        <Select
+          size="small"
+          value={timeRange}
+          onChange={(e) => setTimeRange(e.target.value)}
+          sx={{
+            minWidth: 150,
+            bgcolor: 'white',
+            borderRadius: 2,
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' }
+          }}
+        >
+          {Object.keys(timeFrameMap).map((key) => (
+            <MenuItem key={key} value={key}>{key}</MenuItem>
+          ))}
+        </Select>
+      </Box>
 
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>

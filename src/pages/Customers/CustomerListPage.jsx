@@ -94,15 +94,15 @@ export default function CustomerListPage() {
         </span>
       )
     },
-    {
-      header: 'Address',
-      accessor: 'address',
-      render: (row) => (
-        <span style={{ color: '#000', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <MapPin size={12} /> {row.address || '-'}
-        </span>
-      )
-    },
+    // {
+    //   header: 'Address',
+    //   accessor: 'address',
+    //   render: (row) => (
+    //     <span style={{ color: '#000', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+    //       <MapPin size={12} /> {row.address || '-'}
+    //     </span>
+    //   )
+    // },
     {
       header: 'Total Visits',
       accessor: 'visits',
@@ -134,7 +134,7 @@ export default function CustomerListPage() {
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
-        title="Customer Directory"
+        title="Customer Management"
         breadcrumbs={[{ label: 'Customers' }]}
       // actions={canCreateCustomers ? (
       //   <Button variant="primary" leftIcon={Plus} onClick={() => navigate(ROUTES.CUSTOMERS_NEW || '/customers/new')}>

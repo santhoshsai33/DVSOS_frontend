@@ -96,7 +96,7 @@ export default function GateEntryList({ onAddClick, onViewClick, onEntryClick })
     },
     { header: 'Owner Name', accessor: 'ownerName', sortable: false },
     { header: 'Mobile', accessor: 'mobile', sortable: false },
-    { header: 'Make & Model', accessor: 'makeModel', sortable: false },
+    { header: 'Brand & Model', accessor: 'makeModel', sortable: false },
     { header: 'Status', sortable: false, render: (row) => <StatusBadge status={row.status} /> },
     ...(canReadGateEntry || canCreateGateEntry || canUpdateGateEntry ? [{
       header: 'Action',
