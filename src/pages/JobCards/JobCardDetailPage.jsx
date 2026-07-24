@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Grid, Card, Typography, Divider, Chip, IconButton } from '@mui/material';
-import { ArrowLeft, Car, User, Shield, FileText, AlertTriangle, PlusCircle, Clock, ChevronDown, ChevronUp, ClipboardList, Wrench, Play, Filter } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Car, User, Shield, FileText, AlertTriangle, PlusCircle, Clock, ChevronDown, ChevronUp, ClipboardList, Wrench, Play, Filter } from 'lucide-react';
 import { useJobCard } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Loader from '../../components/common/Loader';
@@ -9,6 +9,8 @@ import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { ROUTES } from '../../config/routes';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toastSuccess, toastError } from '../../notifications/toast';
 
 export default function JobCardDetailPage() {
   const { id, slug } = useParams();
@@ -17,6 +19,7 @@ export default function JobCardDetailPage() {
   const location = useLocation();
   const { data: jobCard, isLoading } = useJobCard(jobCardIdentifier);
   const [expandedAssignmentId, setExpandedAssignmentId] = useState(null);
+
 
   const handleBack = () => {
     if (location.state?.fromVehicleHistory) {
@@ -139,6 +142,7 @@ export default function JobCardDetailPage() {
         breadcrumbs={[{ label: 'Job Cards', path: ROUTES.JOB_CARDS }, { label: 'View Details' }]}
         actions={
           <Box sx={{ display: 'flex', gap: 1 }}>
+
             <Button variant="back" leftIcon={ArrowLeft} onClick={handleBack}>
               Back
             </Button>
@@ -543,6 +547,7 @@ export default function JobCardDetailPage() {
           </Box>
         </Grid>
       </Grid>
+
     </Box>
   );
 }

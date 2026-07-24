@@ -112,6 +112,8 @@ export default function AssignMechanicList() {
     }
   });
 
+
+
   const filteredJobs = localJobs.filter(job =>
     (job?.vehicleNo || job?.vehicleNumber || '')?.toLowerCase().includes(search.toLowerCase()) ||
     (job?.customerName || job?.ownerName || '')?.toLowerCase().includes(search.toLowerCase()) ||
@@ -402,6 +404,8 @@ export default function AssignMechanicList() {
           </Box>
         )}
       </Modal>
+
+
     </Box>
   );
 }

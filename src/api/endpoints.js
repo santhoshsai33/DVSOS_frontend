@@ -65,7 +65,7 @@ export const ENDPOINTS = {
     WATER_WASH: '/queues/water-wash/list',
     UPDATE_STATUS: (id) => `/queues/status/${id}`,
     ASSIGN: (id) => `/queues/assign/${id}`,
-    REASSIGN: (id) => `/queues/reassign/${id}`,
+    REASSIGN: (id) => `/queues/reassign/${id}`
   },
 
   // Dashboard
