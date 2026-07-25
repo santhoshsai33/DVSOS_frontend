@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, Printer, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
-import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Card, Chip } from '@mui/material';
+import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Card, Chip, TextField } from '@mui/material';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import PageHeader from '../../components/shared/PageHeader';
@@ -11,6 +11,7 @@ import { formatDateTime } from '../../utils/formatters';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '../../store/useAuthStore';
 import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi, assignQueueWorkApi } from '../../api/queueApi';
+import { skipJobCardDepartmentApi } from '../../api/jobCardApi';
 import { getMechanicsDropdownApi } from '../../api/userApi';
 import { adminBayApi } from '../../api/adminBayApi';
 import { getDepartmentFromModules } from '../../utils/authAccess';
@@ -84,6 +85,20 @@ export default function AssignMechanicList() {
       setLocalJobs(apiJobs);
     }
   }, [apiJobs]);
+
+  const [skipModal, setSkipModal] = useState({ isOpen: false, item: null });
+  const [skipReason, setSkipReason] = useState('');
+
+  const skipMutation = useMutation({
+    mutationFn: ({ jobCardId, payload }) => skipJobCardDepartmentApi(jobCardId, queueCategory, payload),
+    onSuccess: async () => {
+      toastSuccess('Department skipped successfully');
+      setSkipModal({ isOpen: false, item: null });
+      setSkipReason('');
+      await queryClient.invalidateQueries({ queryKey: ['assign-mechanic-queue'] });
+    },
+    onError: (error) => toastError(error?.response?.data?.message || error?.message || 'Failed to skip department')
+  });
 
   const [assignModal, setAssignModal] = useState({ isOpen: false, item: null });
   const [selectedMechanic, setSelectedMechanic] = useState('');
@@ -189,23 +204,48 @@ export default function AssignMechanicList() {
     },
     ...(canAssignWork ? [{
       header: 'ACTION',
-      render: (row) => (
-        <Button
-          variant="primary"
-          size="sm"
-          rightIcon={ArrowRight}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleAssignClick(row);
-          }}
-          sx={{
-            fontWeight: 600,
-            textTransform: 'none',
-          }}
-        >
-          Assign
-        </Button>
-      ),
+      render: (row) => {
+        const canSkip = queueCategory !== 'water-wash';
+        return (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {canSkip && (
+              <Button
+                variant="outlined"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSkipModal({ isOpen: true, item: row });
+                  setSkipReason('');
+                }}
+                sx={{
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  borderColor: '#f59e0b',
+                  color: '#f59e0b',
+                  '&:hover': { bgcolor: '#f59e0b', color: 'white' }
+                }}
+              >
+                Skip Dept
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              rightIcon={ArrowRight}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAssignClick(row);
+              }}
+              sx={{
+                fontWeight: 600,
+                textTransform: 'none',
+              }}
+            >
+              Assign
+            </Button>
+          </Box>
+        );
+      },
     }] : []),
   ];
 
@@ -405,6 +445,45 @@ export default function AssignMechanicList() {
         )}
       </Modal>
 
+      <Modal
+        show={skipModal.isOpen && canAssignWork}
+        onHide={() => {
+          setSkipModal({ isOpen: false, item: null });
+          setSkipReason('');
+        }}
+        title={`Skip ${queueCategory === 'mechanical' ? 'Mechanical' : queueCategory === 'body-shop' ? 'Body Shop' : ''} Department`}
+        confirmLabel="Confirm Skip"
+        onConfirm={() => {
+          if (!skipReason.trim()) {
+            toastError("Reason is required to skip the department");
+            return;
+          }
+          const jobCardId = skipModal.item?.jobCardId || skipModal.item?.id;
+          skipMutation.mutate({
+            jobCardId,
+            payload: { reason: skipReason }
+          });
+        }}
+        isConfirming={skipMutation.isPending}
+      >
+        {skipModal.item && (
+          <Box sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Skipping this department will postpone all remaining services for this job card in this queue and route it to the next department.
+            </Typography>
+            <TextField
+              label="Reason for skipping"
+              multiline
+              rows={3}
+              fullWidth
+              value={skipReason}
+              onChange={(e) => setSkipReason(e.target.value)}
+              placeholder="e.g. Waiting for spare parts..."
+              required
+            />
+          </Box>
+        )}
+      </Modal>
 
     </Box>
   );

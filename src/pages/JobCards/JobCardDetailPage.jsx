@@ -1,16 +1,21 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Box, Grid, Card, Typography, Divider, Chip, IconButton } from '@mui/material';
-import { ArrowLeft, ArrowRight, Car, User, Shield, FileText, AlertTriangle, PlusCircle, Clock, ChevronDown, ChevronUp, ClipboardList, Wrench, Play, Filter } from 'lucide-react';
+import { Box, Grid, Card, Typography, Divider, Chip, IconButton, FormControl, InputLabel, Select, MenuItem, TextField } from '@mui/material';
+import { ArrowLeft, ArrowRight, Car, User, Shield, FileText, AlertTriangle, PlusCircle, Clock, ChevronDown, ChevronUp, ClipboardList, Wrench, Play, Filter, PauseCircle, PlayCircle } from 'lucide-react';
 import { useJobCard } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Loader from '../../components/common/Loader';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
+import Modal from '../../components/common/Modal';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { ROUTES } from '../../config/routes';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { toastSuccess, toastError } from '../../notifications/toast';
+import { postponeJobCardServiceApi, resumeJobCardServiceApi } from '../../api/jobCardApi';
+import { getMechanicsDropdownApi } from '../../api/userApi';
+import { adminBayApi } from '../../api/adminBayApi';
+import useAuthStore from '../../store/useAuthStore';
 
 export default function JobCardDetailPage() {
   const { id, slug } = useParams();
@@ -20,6 +25,61 @@ export default function JobCardDetailPage() {
   const { data: jobCard, isLoading } = useJobCard(jobCardIdentifier);
   const [expandedAssignmentId, setExpandedAssignmentId] = useState(null);
 
+  const { user, role } = useAuthStore();
+  const locationId = user?.locationId || user?.location_id || user?.branchId || '';
+  const queryClient = useQueryClient();
+
+  const [postponeModal, setPostponeModal] = useState({ isOpen: false, item: null });
+  const [postponeReason, setPostponeReason] = useState('');
+
+  const [resumeModal, setResumeModal] = useState({ isOpen: false, item: null });
+  const [selectedMechanic, setSelectedMechanic] = useState('');
+  const [selectedBay, setSelectedBay] = useState('');
+  
+  const resumeQueueCategory = resumeModal.item?.category || 'mechanical';
+
+  const { data: mechanicsResponse, isLoading: isMechanicsLoading } = useQuery({
+    queryKey: ['mechanics-dropdown', role, locationId, resumeQueueCategory],
+    queryFn: () => getMechanicsDropdownApi({ locationId, category: resumeQueueCategory }),
+    enabled: !!resumeModal.isOpen,
+    staleTime: 60000
+  });
+
+  const { data: baysResponse, isLoading: isBaysLoading } = useQuery({
+    queryKey: ['assignment-bays', role, locationId, resumeQueueCategory],
+    queryFn: () => adminBayApi.getBayDropdown({
+      locationId,
+      bayType: resumeQueueCategory === 'body-shop' ? 'Body Shop' : resumeQueueCategory === 'water-wash' ? 'Water Wash' : 'Mechanical'
+    }),
+    enabled: !!resumeModal.isOpen,
+    staleTime: 30000
+  });
+
+  const mechanics = mechanicsResponse?.data?.users || mechanicsResponse?.users || [];
+  const bays = baysResponse?.data?.bays || baysResponse?.data?.data?.bays || baysResponse?.bays || [];
+
+  const postponeMutation = useMutation({
+    mutationFn: ({ serviceId, payload }) => postponeJobCardServiceApi(jobCard.id, serviceId, payload),
+    onSuccess: () => {
+      toastSuccess('Service postponed successfully');
+      setPostponeModal({ isOpen: false, item: null });
+      setPostponeReason('');
+      queryClient.invalidateQueries({ queryKey: ['jobCard', jobCardIdentifier] });
+    },
+    onError: (error) => toastError(error?.response?.data?.message || error?.message || 'Failed to postpone service')
+  });
+
+  const resumeMutation = useMutation({
+    mutationFn: ({ serviceId, payload }) => resumeJobCardServiceApi(jobCard.id, serviceId, payload),
+    onSuccess: () => {
+      toastSuccess('Service resumed successfully');
+      setResumeModal({ isOpen: false, item: null });
+      setSelectedMechanic('');
+      setSelectedBay('');
+      queryClient.invalidateQueries({ queryKey: ['jobCard', jobCardIdentifier] });
+    },
+    onError: (error) => toastError(error?.response?.data?.message || error?.message || 'Failed to resume service')
+  });
 
   const handleBack = () => {
     if (location.state?.fromVehicleHistory) {
@@ -40,6 +100,7 @@ export default function JobCardDetailPage() {
 
   const getAssignmentStatusValue = (assignment) => {
     const statusCode = getAssignmentStatusCode(assignment);
+    if (statusCode.includes('ON_HOLD') || statusCode.includes('POSTPONED')) return 'ON_HOLD';
     if (statusCode.includes('COMPLETED')) return 'COMPLETED';
     if (statusCode.includes('IN_PROGRESS')) return 'IN_PROGRESS';
     return 'ASSIGNED';
@@ -47,6 +108,7 @@ export default function JobCardDetailPage() {
 
   const getAssignmentStatusLabel = (assignment) => {
     const statusValue = getAssignmentStatusValue(assignment);
+    if (statusValue === 'ON_HOLD') return 'On Hold';
     if (statusValue === 'COMPLETED') return 'Completed';
     if (statusValue === 'IN_PROGRESS') return 'In Progress';
     return 'Assigned';
@@ -54,6 +116,7 @@ export default function JobCardDetailPage() {
 
   const getAssignmentStatusColor = (assignment) => {
     const statusValue = getAssignmentStatusValue(assignment);
+    if (statusValue === 'ON_HOLD') return 'error';
     if (statusValue === 'COMPLETED') return 'success';
     if (statusValue === 'IN_PROGRESS') return 'info';
     return 'warning';
@@ -377,6 +440,7 @@ export default function JobCardDetailPage() {
                       };
 
                       const statusLabel = getAssignmentStatusLabel(assignment);
+                      const statusValue = getAssignmentStatusValue(assignment);
 
                       return (
                         <Box
@@ -429,15 +493,15 @@ export default function JobCardDetailPage() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 0.75,
-                                bgcolor: '#ffedd5',
-                                color: '#c2410c',
+                                bgcolor: statusValue === 'ON_HOLD' ? '#fee2e2' : statusValue === 'COMPLETED' ? '#dcfce7' : statusValue === 'IN_PROGRESS' ? '#eff6ff' : '#ffedd5',
+                                color: statusValue === 'ON_HOLD' ? '#991b1b' : statusValue === 'COMPLETED' ? '#166534' : statusValue === 'IN_PROGRESS' ? '#1e40af' : '#c2410c',
                                 px: 1.5,
                                 py: 0.5,
                                 borderRadius: '12px',
                                 fontSize: '0.75rem',
                                 fontWeight: 700
                               }}>
-                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#ea580c' }} />
+                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: statusValue === 'ON_HOLD' ? '#b91c1c' : statusValue === 'COMPLETED' ? '#15803d' : statusValue === 'IN_PROGRESS' ? '#1d4ed8' : '#ea580c' }} />
                                 {statusLabel}
                               </Box>
 
@@ -533,6 +597,38 @@ export default function JobCardDetailPage() {
                                     </Box>
                                   </Box>
                                 </Box>
+
+                                {/* Action Buttons */}
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                  {statusValue === 'ON_HOLD' ? (
+                                    <Button
+                                      size="sm"
+                                      variant="outlined"
+                                      leftIcon={PlayCircle}
+                                      onClick={() => {
+                                        setResumeModal({ isOpen: true, item: { ...assignment, category: assignment.jobCardService?.serviceItem?.category?.slug || assignment.service?.category?.slug || 'mechanical' } });
+                                        setSelectedMechanic('');
+                                        setSelectedBay('');
+                                      }}
+                                      sx={{ borderColor: '#10b981', color: '#10b981', '&:hover': { bgcolor: '#10b981', color: 'white' } }}
+                                    >
+                                      Resume
+                                    </Button>
+                                  ) : (statusValue === 'ASSIGNED' || statusValue === 'IN_PROGRESS') ? (
+                                    <Button
+                                      size="sm"
+                                      variant="outlined"
+                                      leftIcon={PauseCircle}
+                                      onClick={() => {
+                                        setPostponeModal({ isOpen: true, item: assignment });
+                                        setPostponeReason('');
+                                      }}
+                                      sx={{ borderColor: '#f59e0b', color: '#f59e0b', '&:hover': { bgcolor: '#f59e0b', color: 'white' } }}
+                                    >
+                                      Postpone
+                                    </Button>
+                                  ) : null}
+                                </Box>
                               </Box>
                             </>
                           )}
@@ -547,6 +643,129 @@ export default function JobCardDetailPage() {
           </Box>
         </Grid>
       </Grid>
+
+      <Modal
+        show={postponeModal.isOpen}
+        onHide={() => setPostponeModal({ isOpen: false, item: null })}
+        title="Postpone Service"
+        confirmLabel="Confirm Postpone"
+        onConfirm={() => {
+          if (!postponeReason.trim()) {
+            toastError("Reason is required to postpone a service");
+            return;
+          }
+          postponeMutation.mutate({
+            serviceId: postponeModal.item?.jobCardServiceId || postponeModal.item?.serviceId,
+            payload: { reason: postponeReason }
+          });
+        }}
+        isConfirming={postponeMutation.isPending}
+      >
+        <Box sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Postponing this service will release the currently assigned bay. Please provide a reason for the delay.
+          </Typography>
+          <TextField
+            label="Reason for postponement"
+            multiline
+            rows={3}
+            fullWidth
+            value={postponeReason}
+            onChange={(e) => setPostponeReason(e.target.value)}
+            placeholder="e.g. Waiting for spare parts..."
+            required
+          />
+        </Box>
+      </Modal>
+
+      <Modal
+        show={resumeModal.isOpen}
+        onHide={() => setResumeModal({ isOpen: false, item: null })}
+        title="Resume Service"
+        confirmLabel="Confirm Resume"
+        onConfirm={() => {
+          if (!selectedMechanic || !selectedBay) {
+            toastError("Please select a mechanic and a bay");
+            return;
+          }
+          resumeMutation.mutate({
+            serviceId: resumeModal.item?.jobCardServiceId || resumeModal.item?.serviceId,
+            payload: { bayId: Number(selectedBay), mechanicId: Number(selectedMechanic) }
+          });
+        }}
+        isConfirming={resumeMutation.isPending}
+      >
+        <Box sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            Resuming this service will reassign it and lock the bay.
+          </Typography>
+          
+          <FormControl fullWidth size="small">
+            <InputLabel>Select Mechanic</InputLabel>
+            <Select
+              value={selectedMechanic}
+              label="Select Mechanic"
+              onChange={(e) => setSelectedMechanic(e.target.value)}
+              sx={{ borderRadius: 2 }}
+            >
+              {isMechanicsLoading && <MenuItem disabled value="">Loading mechanics...</MenuItem>}
+              {!isMechanicsLoading && mechanics.length === 0 && <MenuItem disabled value="">No active mechanics found</MenuItem>}
+              {mechanics.map((mechanic) => (
+                <MenuItem key={mechanic.id} value={mechanic.id}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
+                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                      {mechanic.fullName}{mechanic.employeeCode ? ` (${mechanic.employeeCode})` : ''}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      label={mechanic.availabilityLabel || (mechanic.activeJobCount > 0 ? `Busy (${mechanic.activeJobCount})` : 'Available')}
+                      sx={{
+                        height: 22, fontSize: '0.68rem', fontWeight: 800,
+                        bgcolor: mechanic.activeJobCount > 0 ? '#FEF3C7' : '#DCFCE7',
+                        color: mechanic.activeJobCount > 0 ? '#B45309' : '#15803D'
+                      }}
+                    />
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth size="small">
+            <InputLabel>Bay Number</InputLabel>
+            <Select
+              value={selectedBay}
+              label="Bay Number"
+              onChange={(e) => setSelectedBay(e.target.value)}
+              sx={{ borderRadius: 2 }}
+            >
+              {isBaysLoading && <MenuItem disabled value="">Loading bays...</MenuItem>}
+              {!isBaysLoading && bays.length === 0 && <MenuItem disabled value="">No active bays found</MenuItem>}
+              {bays.map((bay) => {
+                const isBusy = bay.availability === 'BUSY';
+                return (
+                  <MenuItem key={bay.id} value={bay.id} disabled={isBusy}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
+                      <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                        {bay.bayName || bay.bayCode}
+                      </Typography>
+                      <Chip
+                        size="small"
+                        label={bay.availabilityLabel || (isBusy ? 'Busy' : 'Available')}
+                        sx={{
+                          height: 22, fontSize: '0.68rem', fontWeight: 800,
+                          bgcolor: isBusy ? '#FEF3C7' : '#DCFCE7',
+                          color: isBusy ? '#B45309' : '#15803D'
+                        }}
+                      />
+                    </Box>
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        </Box>
+      </Modal>
 
     </Box>
   );

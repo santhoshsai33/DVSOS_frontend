@@ -15,3 +15,6 @@ export const createAdditionalWorkRequestApi = (id, data) => axiosInstance.post(E
 export const createJobCardApi = (data) => axiosInstance.post(ENDPOINTS.JOB_CARDS.CREATE, data);
 export const updateJobCardApi = (id, data) => axiosInstance.put(ENDPOINTS.JOB_CARDS.UPDATE(id), data);
 export const deleteJobCardApi = (id) => axiosInstance.delete(ENDPOINTS.JOB_CARDS.DELETE(id));
+export const postponeJobCardServiceApi = (id, serviceId, data) => axiosInstance.post(ENDPOINTS.JOB_CARDS.POSTPONE(id, serviceId), data);
+export const resumeJobCardServiceApi = (id, serviceId, data) => axiosInstance.post(ENDPOINTS.JOB_CARDS.RESUME(id, serviceId), data);
+export const skipJobCardDepartmentApi = (id, department, data) => axiosInstance.post(ENDPOINTS.JOB_CARDS.SKIP_DEPARTMENT(id, department), data);

@@ -267,6 +267,11 @@ export default function JobCardCreate() {
     return code === 'COMPLETED' || code.endsWith('_COMPLETED');
   };
 
+  const isServiceCompletedOrPostponed = (service) => {
+    const code = getServiceStatusCode(service);
+    return code === 'COMPLETED' || code.endsWith('_COMPLETED') || code === 'POSTPONED';
+  };
+
   const arePreviousDepartmentsCompleted = (department) => {
     const order = ['mechanical', 'body-shop', 'water-wash'];
     const departmentIndex = order.indexOf(department);
@@ -274,7 +279,7 @@ export default function JobCardCreate() {
 
     return previousDepartments.every((previousDepartment) => {
       const services = selectedServices.filter((service) => getServiceDepartment(service) === previousDepartment);
-      return services.length === 0 || services.every(isServiceCompleted);
+      return services.length === 0 || services.every(isServiceCompletedOrPostponed);
     });
   };
 

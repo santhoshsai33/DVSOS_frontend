@@ -47,6 +47,10 @@ export const ENDPOINTS = {
     UPDATE: (id) => `/job-cards/update/${id}`,
     DELETE: (id) => `/job-cards/delete/${id}`,
     PENDING: '/job-cards/list?status=PENDING',
+    POSTPONE: (id, serviceId) => `/job-cards/${id}/services/${serviceId}/postpone`,
+    RESUME: (id, serviceId) => `/job-cards/${id}/services/${serviceId}/resume`,
+    SKIP_DEPARTMENT: (id, department) => `/job-cards/${id}/departments/${department}/skip`,
+    PENDING: '/job-cards/list?status=PENDING',
   },
 
   // Approvals
