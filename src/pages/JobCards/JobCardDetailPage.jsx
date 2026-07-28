@@ -251,6 +251,19 @@ export default function JobCardDetailPage() {
                       {displayJobCard.vehicleBrandModel}
                     </Typography>
                   </Grid>
+                  <Grid item xs={12} md={6} sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2, mt: 2 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Expected Delivery Date</Typography>
+                    <Typography variant="body2" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#0d9488' }}>
+                      <Clock size={15} color="#0d9488" />
+                      {displayJobCard.expectedDeliveryAt ? formatDateTime(displayJobCard.expectedDeliveryAt) : displayJobCard.expectedDeliveryDate ? formatDateTime(displayJobCard.expectedDeliveryDate) : '—'}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6} sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2, mt: 2 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>Service Type</Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {displayJobCard.serviceType || 'Regular Service'}
+                    </Typography>
+                  </Grid>
                 </Grid>
               </Box>
             </Card>

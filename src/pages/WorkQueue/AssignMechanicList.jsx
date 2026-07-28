@@ -3,6 +3,7 @@ import { User, Printer, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
 import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Card, Chip, TextField } from '@mui/material';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
+import JobCardDetailModal from '../../components/common/JobCardDetailModal';
 import PageHeader from '../../components/shared/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchBar from '../../components/common/SearchBar';
@@ -86,6 +87,7 @@ export default function AssignMechanicList() {
     }
   }, [apiJobs]);
 
+  const [detailModal, setDetailModal] = useState({ isOpen: false, jobCardId: null, item: null });
   const [skipModal, setSkipModal] = useState({ isOpen: false, item: null });
   const [skipReason, setSkipReason] = useState('');
 
@@ -303,11 +305,13 @@ export default function AssignMechanicList() {
       <Box sx={{ mt: 1 }}>
         <Card sx={{ borderRadius: 0, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
           <Box sx={{ p: 3, pb: '24px !important' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-              <User size={20} color="#6b7280" />
-              <Typography variant="h6" fontWeight={800} sx={{ color: '#6b7280', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Pending Allocation
-              </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <User size={20} color="#6b7280" />
+                <Typography variant="h6" fontWeight={800} sx={{ color: '#6b7280', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Pending Allocation
+                </Typography>
+              </Box>
             </Box>
 
             <DataTable
@@ -323,6 +327,12 @@ export default function AssignMechanicList() {
               onRowsPerPageChange={(newLimit) => {
                 setRowsPerPage(newLimit);
                 setPage(0);
+              }}
+              onRowDoubleClick={(row) => {
+                const jobCardId = row.jobCardId || row.id || row.jobCardNo;
+                if (jobCardId) {
+                  setDetailModal({ isOpen: true, jobCardId, item: row });
+                }
               }}
             />
           </Box>
@@ -484,6 +494,17 @@ export default function AssignMechanicList() {
           </Box>
         )}
       </Modal>
+
+      <JobCardDetailModal
+        isOpen={detailModal.isOpen}
+        jobCardId={detailModal.jobCardId}
+        onClose={() => setDetailModal({ isOpen: false, jobCardId: null, item: null })}
+        onAssign={canAssignWork ? () => {
+          const itemToAssign = detailModal.item;
+          setDetailModal({ isOpen: false, jobCardId: null, item: null });
+          if (itemToAssign) handleAssignClick(itemToAssign);
+        } : undefined}
+      />
 
     </Box>
   );

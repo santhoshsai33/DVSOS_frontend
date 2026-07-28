@@ -41,6 +41,19 @@ export default function VehicleDetailPage() {
     fuelType: vehicle.fuelType || 'Unknown Fuel'
   };
 
+  const vehiclePhotos = (displayVehicle.images || []).filter((img) => {
+    const cat = String(img.category || '').toUpperCase();
+    const fname = String(img.fileName || img.originalName || '').toLowerCase();
+    const url = String(img.fileUrl || '').toLowerCase();
+    return (
+      cat !== 'SIGNATURE' &&
+      !fname.includes('signature') &&
+      !fname.includes('sign_') &&
+      !fname.includes('sign-') &&
+      !url.includes('signature')
+    );
+  });
+
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
       <PageHeader
@@ -197,7 +210,7 @@ export default function VehicleDetailPage() {
             }} />
 
             <Box sx={{ position: 'absolute', inset: 0 }}>
-              <VehicleImageSlider images={displayVehicle.images || []} />
+              <VehicleImageSlider images={vehiclePhotos} />
             </Box>
           </Grid>
         </Grid>

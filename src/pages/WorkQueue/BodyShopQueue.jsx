@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import useAuthStore from '../../store/useAuthStore';
 import { getBodyShopDashboardApi } from '../../api/dashboardApi';
 import Loader from '../../components/common/Loader';
+import JobCardDetailModal from '../../components/common/JobCardDetailModal';
 
 
 const COLS = [
@@ -25,6 +26,7 @@ export default function BodyShopQueue() {
   const [loading, setLoading] = useState(true);
   const [queue, setQueue] = useState([]);
   const [kpis, setKpis] = useState({ pending: 0, assigned: 0, inProgress: 0, completed: 0 });
+  const [detailModal, setDetailModal] = useState({ isOpen: false, jobCardId: null });
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -230,11 +232,13 @@ export default function BodyShopQueue() {
         <Grid item xs={12}>
           <Card sx={{ borderRadius: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.02)', border: '1px solid #E5E7EB', height: '100%' }}>
             <CardContent sx={{ p: 3, pb: '24px !important' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                <Paintbrush size={20} color="#6b7280" />
-                <Typography variant="h6" fontWeight={800} sx={{ color: '#6b7280', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  RECENT BODY SHOP QUEUE
-                </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Paintbrush size={20} color="#6b7280" />
+                  <Typography variant="h6" fontWeight={800} sx={{ color: '#6b7280', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    RECENT BODY SHOP QUEUE
+                  </Typography>
+                </Box>
               </Box>
 
               <DataTable
@@ -245,11 +249,23 @@ export default function BodyShopQueue() {
                 showPagination={true}
                 defaultItemsPerPage={5}
                 rowsPerPageOptions={[5, 10, 25, 50]}
+                onRowDoubleClick={(row) => {
+                  const jobCardId = row.jobCardId || row.id || row.slug || row.jobCardNo;
+                  if (jobCardId) {
+                    setDetailModal({ isOpen: true, jobCardId });
+                  }
+                }}
               />
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+      <JobCardDetailModal
+        isOpen={detailModal.isOpen}
+        jobCardId={detailModal.jobCardId}
+        onClose={() => setDetailModal({ isOpen: false, jobCardId: null })}
+      />
     </Box>
   );
 }

@@ -275,12 +275,15 @@ export default function JobCardList() {
             View
           </MenuItem>
         )}
-        {canUpdateJobCards && (
-          <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/edit/${selectedJob?.slug || selectedJob?.id}`); }}>
-            <Edit size={16} className="mr-3 text-warning" />
-            Edit
-          </MenuItem>
-        )}
+        {canUpdateJobCards &&
+          !['READY_FOR_DELIVERY', 'DELIVERED', 'READY_FOR_DELIVERED', 'VEHICLE_DELIVERED'].includes(
+            String(selectedJob?.currentStatus?.statusCode || selectedJob?.currentStatus?.code || '').toUpperCase()
+          ) && (
+            <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/edit/${selectedJob?.slug || selectedJob?.id}`); }}>
+              <Edit size={16} className="mr-3 text-warning" />
+              Edit
+            </MenuItem>
+          )}
         {(canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork) &&
           !['COMPLETED', 'READY_FOR_DELIVERY', 'DELIVERED', 'REJECTED'].includes(selectedJob?.currentStatus?.statusCode) && (
             (() => {

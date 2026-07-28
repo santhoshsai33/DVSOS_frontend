@@ -10,8 +10,8 @@ import RHFSelect from '../../components/form/RHFSelect';
 import RHFTextarea from '../../components/form/RHFTextarea';
 import { toastSuccess, toastError, toastInfo } from '../../notifications/toast';
 import { ROUTES } from '../../config/routes';
-import { formatCurrency, formatDateTime } from '../../utils/formatters';
-import { useState, useMemo, useEffect } from 'react';
+import { formatCurrency, formatDateTime, formatDate } from '../../utils/formatters';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import useMasterDataStore from '../../store/useMasterDataStore';
 import { useJobCard } from '../../queries/useDataQueries';
 import useAuthStore from '../../store/useAuthStore';
@@ -161,7 +161,7 @@ export default function JobCardCreate() {
       setValue('notes', jobCard.notes || jobCard.customerComplaint || jobCard.additionalNotes || '');
       if (jobCard.expectedDeliveryAt || jobCard.createdAt) {
         const date = new Date(jobCard.expectedDeliveryAt || jobCard.createdAt);
-        const formattedDate = date.toISOString().slice(0, 16);
+        const formattedDate = formatDate(date, 'dd - MM - yyyy hh:mm a');
         setValue('deliveryDate', formattedDate);
       }
 
@@ -198,7 +198,22 @@ export default function JobCardCreate() {
     }
   }, [jobCard, isEditMode, setValue, masterServices]);
 
-  const subtotal = useMemo(() => selectedServices.reduce((sum, s) => sum + s.price, 0), [selectedServices]);
+  const isServiceRejectedOrCancelled = useCallback((service) => {
+    const statusId = service.jobCardServiceId ? serviceStatusValues[service.jobCardServiceId] : null;
+    if (statusId) {
+      const currentStatus = serviceStatusOptions.find((status) => String(status.value) === String(statusId));
+      const code = String(currentStatus?.code || '').trim().toUpperCase();
+      if (code === 'REJECTED' || code === 'CANCELLED') return true;
+    }
+    const fallbackCode = String(service?.serviceStatusCode || '').trim().toUpperCase();
+    return fallbackCode === 'REJECTED' || fallbackCode === 'CANCELLED';
+  }, [serviceStatusValues, serviceStatusOptions]);
+
+  const activeBillServices = useMemo(() => {
+    return selectedServices.filter((service) => !isServiceRejectedOrCancelled(service));
+  }, [selectedServices, isServiceRejectedOrCancelled]);
+
+  const subtotal = useMemo(() => activeBillServices.reduce((sum, s) => sum + s.price, 0), [activeBillServices]);
 
   const CATEGORY_OPTS = useMemo(() => {
     let categories = serviceCategories;
@@ -264,12 +279,12 @@ export default function JobCardCreate() {
 
   const isServiceCompleted = (service) => {
     const code = getServiceStatusCode(service);
-    return code === 'COMPLETED' || code.endsWith('_COMPLETED');
+    return ['COMPLETED', 'REJECTED', 'CANCELLED'].some((status) => code.includes(status));
   };
 
   const isServiceCompletedOrPostponed = (service) => {
     const code = getServiceStatusCode(service);
-    return code === 'COMPLETED' || code.endsWith('_COMPLETED') || code === 'POSTPONED';
+    return ['COMPLETED', 'POSTPONED', 'REJECTED', 'CANCELLED'].some((status) => code.includes(status));
   };
 
   const arePreviousDepartmentsCompleted = (department) => {
@@ -464,9 +479,7 @@ export default function JobCardCreate() {
     }
   };
 
-  const billSubtotal = isEditMode
-    ? Number(jobCard?.serviceSubtotal ?? jobCard?.billing?.serviceSubtotal ?? subtotal)
-    : subtotal;
+  const billSubtotal = subtotal;
   const billTaxRate = isEditMode
     ? Number(jobCard?.taxRate ?? jobCard?.billing?.taxRate ?? companySettings.defaultTaxRate ?? 0)
     : Number(companySettings.defaultTaxRate ?? 0);
@@ -604,7 +617,7 @@ export default function JobCardCreate() {
 
                 <Grid container spacing={3} sx={{ mt: 0 }}>
                   <Grid item xs={12} md={6}>
-                    <RHFTextField name="deliveryDate" label="Expected Delivery" type="datetime-local" required readOnly={isEditMode} />
+                    <RHFTextField name="deliveryDate" label="Expected Delivery" type={isEditMode ? 'text' : 'datetime-local'} required readOnly={isEditMode} />
                   </Grid>
                   {isEditMode && !hasReadableModule(menus, ['manager', 'managing-director']) && (
                     <Grid item xs={12} md={6}>
@@ -858,12 +871,12 @@ export default function JobCardCreate() {
                   </Box>
 
                   <Box sx={{ minHeight: 150, maxHeight: 300, overflowY: 'auto', mb: 3 }}>
-                    {selectedServices.length === 0 ? (
+                    {activeBillServices.length === 0 ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 100 }}>
-                        <Typography color="text.secondary" variant="body2" fontStyle="italic">No services selected</Typography>
+                        <Typography color="text.secondary" variant="body2" fontStyle="italic">No billable services</Typography>
                       </Box>
                     ) : (
-                      selectedServices.map((item) => (
+                      activeBillServices.map((item) => (
                         <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             {!isEditMode && (
