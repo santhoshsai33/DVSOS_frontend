@@ -14,6 +14,7 @@ import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
 import StatusBadge from '../../components/common/StatusBadge';
 import SearchBar from '../../components/common/SearchBar';
 import { useDebounce } from '../../hooks/useDebounce';
+import JobCardDetailModal from '../../components/common/JobCardDetailModal';
 
 const normalizePayload = (payload) => payload?.data || payload || {};
 
@@ -39,6 +40,7 @@ export function AdditionalWorkRequestListScreen({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const debouncedSearch = useDebounce(search, 300);
+  const [detailModal, setDetailModal] = useState({ isOpen: false, jobCardId: null });
 
   const { data: payload, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['additional-work-requests', category, debouncedSearch, statusFilter, page, rowsPerPage],
@@ -166,8 +168,20 @@ export function AdditionalWorkRequestListScreen({
           rowsPerPage={rowsPerPage}
           onPageChange={setPage}
           onRowsPerPageChange={setRowsPerPage}
+          onRowDoubleClick={(row) => {
+            const jobCardId = row.jobCardId || row.id || row.jobCardNo;
+            if (jobCardId) {
+              setDetailModal({ isOpen: true, jobCardId });
+            }
+          }}
         />
       </Card>
+
+      <JobCardDetailModal
+        isOpen={detailModal.isOpen}
+        jobCardId={detailModal.jobCardId}
+        onClose={() => setDetailModal({ isOpen: false, jobCardId: null })}
+      />
     </Box>
   );
 }

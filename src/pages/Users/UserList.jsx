@@ -42,6 +42,7 @@ export default function UserList() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -320,8 +321,10 @@ export default function UserList() {
             if (type === 'to') setToDate(val);
             setPage(0);
           }}
+          isExporting={isExporting}
           onExport={async () => {
             try {
+              setIsExporting(true);
               const params = {};
               if (search) params.search = search;
               if (roleFilter) params.roleId = roleFilter;
@@ -336,6 +339,9 @@ export default function UserList() {
               downloadExcelFile(res, 'Users.xlsx');
             } catch (err) {
               console.error(err);
+              toastError(err?.response?.data?.message || 'Failed to export users');
+            } finally {
+              setIsExporting(false);
             }
           }}
         />
