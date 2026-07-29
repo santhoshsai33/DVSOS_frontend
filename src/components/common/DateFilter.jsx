@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, TextField, Typography, Button } from "@mui/material";
+import { Box, TextField, Typography, Button, CircularProgress } from "@mui/material";
 import { Download } from "lucide-react";
 
 export default function DateFilter({
@@ -7,6 +7,7 @@ export default function DateFilter({
   toDate,
   onChange,
   onExport,
+  isExporting = false,
   sx = {},
 }) {
   return (
@@ -70,7 +71,8 @@ export default function DateFilter({
         <Button
           variant="contained"
           onClick={onExport}
-          startIcon={<Download size={16} />}
+          disabled={isExporting}
+          startIcon={isExporting ? <CircularProgress size={16} color="inherit" /> : <Download size={16} />}
           sx={{
             bgcolor: "primary.main",
             color: "white",
@@ -82,9 +84,14 @@ export default function DateFilter({
             px: 2,
             ml: 0.5,
             boxShadow: "none",
+            "&.Mui-disabled": {
+              bgcolor: "primary.main",
+              color: "white",
+              opacity: 0.7
+            }
           }}
         >
-          Export
+          {isExporting ? "Exporting..." : "Export"}
         </Button>
       )}
     </Box>
