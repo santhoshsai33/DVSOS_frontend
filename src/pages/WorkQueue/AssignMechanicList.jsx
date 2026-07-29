@@ -207,7 +207,7 @@ export default function AssignMechanicList() {
     ...(canAssignWork ? [{
       header: 'ACTION',
       render: (row) => {
-        const canSkip = queueCategory !== 'water-wash';
+        const canSkip = row.canSkip ?? (queueCategory !== 'water-wash');
         return (
           <Box sx={{ display: 'flex', gap: 1 }}>
             {canSkip && (

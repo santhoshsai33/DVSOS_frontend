@@ -275,13 +275,14 @@ export default function JobCardDetailModal({
                   <TableRow sx={{ bgcolor: '#F8FAFC' }}>
                     <TableCell sx={{ fontWeight: 600, color: '#64748B', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', py: 1.5 }}>Service Description</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600, color: '#64748B', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', py: 1.5 }}>Qty</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600, color: '#64748B', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', py: 1.5 }}>Status</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600, color: '#64748B', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', py: 1.5 }}>Rate</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {defaultServices.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={3} align="center" sx={{ py: 4, color: '#94A3B8', fontStyle: 'italic' }}>
+                      <TableCell colSpan={4} align="center" sx={{ py: 4, color: '#94A3B8', fontStyle: 'italic' }}>
                         No standard service items registered.
                       </TableCell>
                     </TableRow>
@@ -290,6 +291,9 @@ export default function JobCardDetailModal({
                       <TableRow key={idx} sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { bgcolor: '#F8FAFC' }, transition: 'background-color 0.2s' }}>
                         <TableCell sx={{ fontWeight: 600, color: '#1E293B', py: 1.5 }}>{service.name}</TableCell>
                         <TableCell align="right" sx={{ color: '#64748B', py: 1.5 }}>x{service.quantity || 1}</TableCell>
+                        <TableCell align="center" sx={{ py: 1.5 }}>
+                          <StatusBadge status={service.status} />
+                        </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 700, color: '#0F172A', py: 1.5 }}>
                           {formatCurrency(service.price)}
                         </TableCell>
@@ -337,14 +341,43 @@ export default function JobCardDetailModal({
             )}
 
             {/* Estimate Summary Box */}
-            <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: '#FFFFFF', p: 3, boxShadow: '0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.1)', border: 'none' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body1" fontWeight={600} sx={{ color: '#94A3B8' }}>
-                  Estimated Total
-                </Typography>
-                <Typography variant="h5" fontWeight={800} sx={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-                  {formatCurrency(totalGrandTotal || jobCard?.totalEstimate || 0)}
-                </Typography>
+            <Card sx={{ borderRadius: 3, background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: '#FFFFFF', p: 2.5, boxShadow: '0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.1)', border: 'none' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 500 }}>
+                    Subtotal
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#E2E8F0', fontWeight: 600 }}>
+                    {formatCurrency(totalSubtotal || 0)}
+                  </Typography>
+                </Box>
+                {discountAmount > 0 && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 500 }}>
+                      Discount
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#34D399', fontWeight: 600 }}>
+                      -{formatCurrency(discountAmount)}
+                    </Typography>
+                  </Box>
+                )}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 500 }}>
+                    GST ({taxRate}%)
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#E2E8F0', fontWeight: 600 }}>
+                    +{formatCurrency(totalTaxAmount || 0)}
+                  </Typography>
+                </Box>
+                <Divider sx={{ my: 0.5, borderColor: 'rgba(255, 255, 255, 0.15)', borderStyle: 'dashed' }} />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="body1" fontWeight={700} sx={{ color: '#FFFFFF' }}>
+                    Estimated Total
+                  </Typography>
+                  <Typography variant="h5" fontWeight={800} sx={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+                    {formatCurrency(totalGrandTotal || jobCard?.totalEstimate || 0)}
+                  </Typography>
+                </Box>
               </Box>
             </Card>
           </Box>
