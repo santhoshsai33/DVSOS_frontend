@@ -305,7 +305,7 @@ export default function StageScheduleForm() {
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            {/* <Grid item xs={12} md={6}>
               <RHFSelect
                 name="notifyBy"
                 label="Notify By"
@@ -315,9 +315,9 @@ export default function StageScheduleForm() {
                 ]}
                 required
               />
-            </Grid>
+            </Grid> */}
 
-            <Grid item xs={12} md={6}>
+            {/* <Grid item xs={12} md={6}>
               {notifyBy === 'USER' ? (
                 <RHFMultiSelect
                   name="notifyUserIds"
@@ -337,6 +337,19 @@ export default function StageScheduleForm() {
                   disabled={loading}
                 />
               )}
+            </Grid> */}
+
+            <Grid item xs={12} md={6}>
+
+              <RHFMultiSelect
+                name="notifyRoleIds"
+                label="Notify Roles"
+                options={roleOptions}
+                placeholder="Select Roles"
+                required
+                disabled={loading}
+              />
+
             </Grid>
 
           </Grid>

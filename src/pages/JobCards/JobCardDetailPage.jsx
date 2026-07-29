@@ -35,7 +35,7 @@ export default function JobCardDetailPage() {
   const [resumeModal, setResumeModal] = useState({ isOpen: false, item: null });
   const [selectedMechanic, setSelectedMechanic] = useState('');
   const [selectedBay, setSelectedBay] = useState('');
-  
+
   const resumeQueueCategory = resumeModal.item?.category || 'mechanical';
 
   const { data: mechanicsResponse, isLoading: isMechanicsLoading } = useQuery({
@@ -279,14 +279,15 @@ export default function JobCardDetailPage() {
                   <Box component="thead">
                     <Box component="tr" sx={{ bgcolor: 'rgba(18, 52, 59, 0.02)', borderBottom: '1px solid', borderColor: 'divider' }}>
                       <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'left', color: 'text.secondary' }}>Service Description</Box>
-                      <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'right', color: 'text.secondary', width: 120 }}>Quantity</Box>
+                      <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'right', color: 'text.secondary', width: 100 }}>Quantity</Box>
+                      <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'center', color: 'text.secondary', width: 130 }}>Status</Box>
                       <Box component="th" sx={{ p: 2, fontWeight: 600, textAlign: 'right', color: 'text.secondary', width: 150 }}>Rate</Box>
                     </Box>
                   </Box>
                   <Box component="tbody">
                     {defaultServices.length === 0 ? (
                       <Box component="tr">
-                        <Box component="td" colSpan="3" sx={{ p: 3, textAlign: 'center', fontStyle: 'italic', color: 'text.disabled' }}>
+                        <Box component="td" colSpan="4" sx={{ p: 3, textAlign: 'center', fontStyle: 'italic', color: 'text.disabled' }}>
                           No service items registered.
                         </Box>
                       </Box>
@@ -295,6 +296,9 @@ export default function JobCardDetailPage() {
                         <Box component="tr" key={index} sx={{ borderBottom: index < defaultServices.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
                           <Box component="td" sx={{ p: 2, fontWeight: 500 }}>{service.name}</Box>
                           <Box component="td" sx={{ p: 2, textAlign: 'right', color: 'text.secondary' }}>x{service.quantity || 1}</Box>
+                          <Box component="td" sx={{ p: 2, textAlign: 'center' }}>
+                            <StatusBadge status={service.status} />
+                          </Box>
                           <Box component="td" sx={{ p: 2, textAlign: 'right', fontWeight: 600 }}>
                             {formatCurrency(service.price > 0 ? service.price : (index === 0 ? totalSubtotal * 0.6 : totalSubtotal * 0.4 / (defaultServices.length - 1 || 1)))}
                           </Box>
@@ -490,11 +494,10 @@ export default function JobCardDetailPage() {
                               {/* Name & Task */}
                               <Box>
                                 <Typography variant="body2" fontWeight={700} sx={{ color: '#1e293b', fontSize: '0.95rem' }}>
-                                  {assignedUser.fullName || 'Unassigned'}
+                                  {serviceName}
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.25 }}>
-                                  {serviceName}
-                                  {assignedUser.employeeCode ? ` - ${assignedUser.employeeCode}` : ''}
+                                  {assignedUser.fullName || 'Unassigned'} {assignedUser.employeeCode ? ` - ${assignedUser.employeeCode}` : ''}
                                 </Typography>
                               </Box>
                             </Box>
@@ -582,9 +585,8 @@ export default function JobCardDetailPage() {
                               <Divider sx={{ borderColor: '#f1f5f9' }} />
 
                               {/* Footer Action and Details */}
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                              {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                                 <Box sx={{ display: 'flex', gap: 4 }}>
-                                  {/* Work Order */}
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <ClipboardList size={18} color="#6366f1" />
                                     <Box>
@@ -596,8 +598,6 @@ export default function JobCardDetailPage() {
                                       </Typography>
                                     </Box>
                                   </Box>
-
-                                  {/* Task */}
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <Wrench size={18} color="#6366f1" />
                                     <Box>
@@ -611,7 +611,6 @@ export default function JobCardDetailPage() {
                                   </Box>
                                 </Box>
 
-                                {/* Action Buttons */}
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                   {statusValue === 'ON_HOLD' ? (
                                     <Button
@@ -642,7 +641,7 @@ export default function JobCardDetailPage() {
                                     </Button>
                                   ) : null}
                                 </Box>
-                              </Box>
+                              </Box> */}
                             </>
                           )}
                         </Box>
@@ -712,7 +711,7 @@ export default function JobCardDetailPage() {
           <Typography variant="body2" color="text.secondary">
             Resuming this service will reassign it and lock the bay.
           </Typography>
-          
+
           <FormControl fullWidth size="small">
             <InputLabel>Select Mechanic</InputLabel>
             <Select

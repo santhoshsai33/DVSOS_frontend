@@ -193,33 +193,33 @@ export default function WaterWashQueue() {
         </Box>
       ),
     },
-    {
-      header: 'EMPLOYEE',
-      render: (row) => (
-        <Chip
-          label={row.assignee || 'Unassigned'}
-          size="small"
-          sx={{
-            bgcolor: row.assignee ? '#eff6ff' : 'transparent',
-            color: row.assignee ? '#2563eb' : '#d97706',
-            border: `1px solid ${row.assignee ? '#bfdbfe' : '#fcd34d'}`,
-            fontWeight: 600,
-            borderRadius: '9999px',
-          }}
-        />
-      ),
-    },
-    {
-      header: 'BAY',
-      render: (row) => {
-        const bay = row.bay || row.assignedBay;
-        return (
-          <Typography sx={{ fontSize: '0.875rem', color: bay || row.bayName ? '#374151' : '#94a3b8', fontWeight: bay || row.bayName ? 600 : 500 }}>
-            {bay?.bayName || bay?.bayCode || row.bayName || '—'}
-          </Typography>
-        );
-      },
-    },
+    // {
+    //   header: 'EMPLOYEE',
+    //   render: (row) => (
+    //     <Chip
+    //       label={row.assignee || 'Unassigned'}
+    //       size="small"
+    //       sx={{
+    //         bgcolor: row.assignee ? '#eff6ff' : 'transparent',
+    //         color: row.assignee ? '#2563eb' : '#d97706',
+    //         border: `1px solid ${row.assignee ? '#bfdbfe' : '#fcd34d'}`,
+    //         fontWeight: 600,
+    //         borderRadius: '9999px',
+    //       }}
+    //     />
+    //   ),
+    // },
+    // {
+    //   header: 'BAY',
+    //   render: (row) => {
+    //     const bay = row.bay || row.assignedBay;
+    //     return (
+    //       <Typography sx={{ fontSize: '0.875rem', color: bay || row.bayName ? '#374151' : '#94a3b8', fontWeight: bay || row.bayName ? 600 : 500 }}>
+    //         {bay?.bayName || bay?.bayCode || row.bayName || '—'}
+    //       </Typography>
+    //     );
+    //   },
+    // },
     {
       header: 'WAIT TIME',
       render: (row) => {
