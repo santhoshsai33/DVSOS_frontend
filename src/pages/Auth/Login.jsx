@@ -12,6 +12,7 @@ import { ROUTES } from '../../config/routes';
 import { toastSuccess, toastError } from '../../notifications/toast';
 import { loginApi } from '../../api/authApi';
 import { getFirstReadablePath, hasAnyReadableMenu } from '../../utils/authAccess';
+import logoImg from '../../assets/img/logo.jpg';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -67,17 +68,21 @@ export default function Login() {
     <Box>
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography
-          variant="h4"
+        <Box
+          component="img"
+          src={logoImg}
+          alt="Susee Logo"
           sx={{
-            fontWeight: 700,
-            letterSpacing: '1px',
-            color: 'primary.main',
-            mb: 1.5,
+            width: '100%',
+            maxWidth: 280,
+            height: 'auto',
+            maxHeight: 76,
+            objectFit: 'contain',
+            mx: 'auto',
+            mb: 2,
+            display: 'block',
           }}
-        >
-          SUSEE
-        </Typography>
+        />
         <Typography variant="body2" color="text.secondary">
           Sign in to your account to continue
         </Typography>
