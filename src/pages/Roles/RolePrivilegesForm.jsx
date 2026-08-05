@@ -88,6 +88,7 @@ const isReadOnlyMenu = (menu) => {
 };
 
 const supportsPermissionAction = (menu, type) => {
+  if (type === "canDelete") return false;
   return type === "canRead" || !isReadOnlyMenu(menu);
 };
 
@@ -274,11 +275,7 @@ export default function RolePrivilegesForm() {
             : supportsPermissionAction(menu, "canUpdate")
               ? menu.canUpdate
               : false,
-          canDelete: isMobile
-            ? true
-            : supportsPermissionAction(menu, "canDelete")
-              ? menu.canDelete
-              : false,
+          canDelete: false,
         });
       });
     });

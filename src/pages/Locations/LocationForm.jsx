@@ -26,6 +26,7 @@ const schema = z.object({
   phoneNo: commonValidations.optionalMobile,
   email: commonValidations.optionalEmail,
   pincode: commonValidations.pincode,
+  kioskKey: z.string().max(100, 'Max 100 characters').optional().or(z.literal('')),
   address: commonValidations.address,
 });
 
@@ -52,6 +53,7 @@ export default function LocationForm() {
       name: '',
       address: '',
       pincode: '',
+      kioskKey: '',
       phoneNo: '',
       email: '',
     }
@@ -100,6 +102,7 @@ export default function LocationForm() {
               name: loc.locationName || '',
               address: loc.address || '',
               pincode: loc.pincode || '',
+              kioskKey: loc.kioskKey || '',
               phoneNo: loc.contactPhone || '',
               email: loc.contactEmail || '',
             });
@@ -129,6 +132,7 @@ export default function LocationForm() {
         locationType: 'BRANCH',
         address: data.address,
         pincode: data.pincode,
+        kioskKey: data.kioskKey || null,
         contactPhone: data.phoneNo,
         contactEmail: data.email,
       };
@@ -247,6 +251,13 @@ export default function LocationForm() {
                     const cleanVal = e.target.value.replace(/[^0-9]/g, '');
                     methods.setValue('pincode', cleanVal, { shouldValidate: true });
                   }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <RHFTextField
+                  name="kioskKey"
+                  label="TV Kiosk Passkey"
+                  placeholder="e.g. kiosk_mdr_a1b2c3"
                 />
               </Grid>
               <Grid item xs={12}>

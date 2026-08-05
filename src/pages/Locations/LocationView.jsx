@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Card, Typography, Grid, Skeleton } from '@mui/material';
-import { Building2, User, Tag, ToggleRight, ToggleLeft, Monitor, Calendar, Clock } from 'lucide-react';
+import { Box, Card, Typography, Grid, Skeleton, IconButton, Tooltip } from '@mui/material';
+import { Building2, User, Tag, ToggleRight, ToggleLeft, Monitor, Calendar, Clock, Key, Copy, ExternalLink } from 'lucide-react';
 import BackButton from '../../components/common/BackButton';
 import { ROUTES } from '../../config/routes';
 import { getLocationApi } from '../../api/adminLocationApi';
-import { toastError } from '../../notifications/toast';
+import { toastError, toastSuccess } from '../../notifications/toast';
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -140,6 +140,66 @@ export default function LocationView() {
                 icon={Tag}
                 label="Location Code"
                 value={location?.locationCode || '-'}
+              />
+              <DetailRow
+                icon={Key}
+                label="TV Kiosk Passkey"
+                value={location?.kioskKey || 'Not configured'}
+              />
+              <DetailRow
+                icon={Monitor}
+                label="TV Display URL"
+                value={
+                  location?.kioskKey ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                      <Typography
+                        variant="body2"
+                        component="span"
+                        sx={{
+                          fontFamily: 'monospace',
+                          bgcolor: '#f8fafc',
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: 1,
+                          border: '1px solid #e2e8f0',
+                          color: '#0f172a',
+                          wordBreak: 'break-all',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        {`${window.location.origin}/kiosk/tv?kioskKey=${location.kioskKey}`}
+                      </Typography>
+                      <Tooltip title="Copy TV URL">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/kiosk/tv?kioskKey=${location.kioskKey}`);
+                            toastSuccess('TV Kiosk URL copied to clipboard');
+                          }}
+                          sx={{ color: '#2563eb', bgcolor: '#eff6ff', '&:hover': { bgcolor: '#dbeafe' } }}
+                        >
+                          <Copy size={16} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Open TV Display in New Tab">
+                        <IconButton
+                          size="small"
+                          component="a"
+                          href={`${window.location.origin}/kiosk/tv?kioskKey=${location.kioskKey}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{ color: '#059669', bgcolor: '#ecfdf5', '&:hover': { bgcolor: '#d1fae5' } }}
+                        >
+                          <ExternalLink size={16} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Configure a passkey to generate URL
+                    </Typography>
+                  )
+                }
               />
               <DetailRow
                 icon={location?.isActive ? ToggleRight : ToggleLeft}

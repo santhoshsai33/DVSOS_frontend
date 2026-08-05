@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { Grid } from '@mui/material';
 import { Car, Clock, Wrench, CheckCircle2, LogOut, Maximize, ClipboardList, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import styles from './Kiosk.module.css';
 import { ROUTES } from '../../config/routes';
 import useAuthStore from '../../store/useAuthStore';
 import { getFirstReadablePath } from '../../utils/authAccess';
-
 import { useTvKioskDashboard } from '../../queries/useDashboardQueries';
 import { useSocket } from '../../hooks/useSocket';
 
@@ -111,7 +110,9 @@ export default function KioskDisplay() {
   const [time, setTime] = useState(new Date());
   const [readyParent] = useAutoAnimate({ duration: 800, easing: 'ease-in-out' });
 
-  const { data: rawJobs, refetch } = useTvKioskDashboard();
+  const [searchParams] = useSearchParams();
+  const kioskKey = searchParams.get('kioskKey') || undefined;
+  const { data: rawJobs, refetch, isError, error } = useTvKioskDashboard({ kioskKey });
   const jobs = Array.isArray(rawJobs?.data || rawJobs) ? (rawJobs?.data || rawJobs || []) : [];
 
   useSocket({
@@ -160,6 +161,22 @@ export default function KioskDisplay() {
     }
     navigate(isAuthenticated ? getFirstReadablePath(menus, ROUTES.PROFILE) : ROUTES.LOGIN);
   };
+
+  if (isError && (error?.response?.status === 401 || error?.response?.status === 403 || !kioskKey)) {
+    return (
+      <div className={styles.container} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#0f172a' }}>
+        <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: '#1e293b', borderRadius: '24px', maxWidth: '600px', color: '#fff', border: '1px solid #334155' }}>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#ef4444', fontWeight: 800 }}>⚠️ TV Display Unauthorized</h1>
+          <p style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: '#e2e8f0' }}>
+            {error?.response?.data?.message || 'TV Kiosk API Key is missing, expired, or revoked.'}
+          </p>
+          <p style={{ fontSize: '1rem', opacity: 0.7 }}>
+            Please contact the IT Admin team for the updated Location URL bookmark (e.g. <code>?kioskKey=...</code>).
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

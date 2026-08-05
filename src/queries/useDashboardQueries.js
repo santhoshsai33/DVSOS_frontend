@@ -1,12 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  getAdminDashboardApi,
-  getManagerDashboardApi,
-  getMDDashboardApi,
-  getSupervisorDashboardApi,
-  getQueueSummaryApi,
-  getTvKioskDashboardApi
-} from '../api/dashboardApi';
+import { getAdminDashboardApi, getManagerDashboardApi, getMDDashboardApi, getSupervisorDashboardApi, getQueueSummaryApi, getTvKioskDashboardApi } from '../api/dashboardApi';
 
 export const useAdminDashboard = () => {
   return useQuery({
@@ -62,13 +55,14 @@ export const useQueueSummary = () => {
   });
 };
 
-export const useTvKioskDashboard = () => {
+export const useTvKioskDashboard = (params) => {
   return useQuery({
-    queryKey: ['dashboard', 'tv-kiosk'],
+    queryKey: ['dashboard', 'tv-kiosk', params],
     queryFn: async () => {
-      const response = await getTvKioskDashboardApi();
+      const response = await getTvKioskDashboardApi(params);
       return response.data || response;
     },
     staleTime: 0,
+    retry: false,
   });
 };
