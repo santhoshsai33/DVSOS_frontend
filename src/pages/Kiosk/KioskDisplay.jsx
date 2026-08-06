@@ -9,14 +9,9 @@ import useAuthStore from '../../store/useAuthStore';
 import { getFirstReadablePath } from '../../utils/authAccess';
 import { useTvKioskDashboard } from '../../queries/useDashboardQueries';
 import { useSocket } from '../../hooks/useSocket';
+import { formatWaitTime } from '../../utils/formatters';
 
-const formatWaitTime = (minutes) => {
-  if (!minutes && minutes !== 0) return 'Just now';
-  if (minutes < 60) return `${minutes} mins`;
-  const hrs = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return mins > 0 ? `${hrs} hr ${mins} min` : `${hrs} hrs`;
-};
+
 
 const formatReadyTime = (dateString) => {
   if (!dateString) return 'Just now';

@@ -8,7 +8,7 @@ import PageHeader from '../../components/shared/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastInfo, toastError } from '../../notifications/toast';
-import { formatDateTime } from '../../utils/formatters';
+import { formatDateTime, formatWaitTime } from '../../utils/formatters';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '../../store/useAuthStore';
 import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi, assignQueueWorkApi } from '../../api/queueApi';
@@ -145,6 +145,14 @@ export default function AssignMechanicList() {
 
   const columns = [
     {
+      header: 'JOB CARD',
+      render: (row) => (
+        <Typography sx={{ fontWeight: 600, color: '#475569', fontSize: '0.875rem' }}>
+          {row.jobCardNo || '—'}
+        </Typography>
+      ),
+    },
+    {
       header: 'VEHICLE NO.',
       render: (row) => (
         <Typography sx={{ color: '#3b82f6', fontFamily: 'monospace', fontWeight: 600, fontSize: '0.875rem' }}>
@@ -188,7 +196,7 @@ export default function AssignMechanicList() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Clock size={14} color="#6b7280" />
           <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>
-            {row.waitMinutes !== undefined ? `${row.waitMinutes} min` : (row.waitTime || '—')}
+            {row.waitMinutes !== undefined ? formatWaitTime(row.waitMinutes) : (row.waitTime || '—')}
           </Typography>
         </Box>
       ),

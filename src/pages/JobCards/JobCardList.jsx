@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Card, Typography, IconButton, Menu, MenuItem, Select, Chip } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
-import { Plus, Eye, Edit, MoreVertical, PlusCircle, MessageCircle } from 'lucide-react';
+import { Plus, Eye, Edit, MoreVertical, PlusCircle, MessageCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import { useJobCards, useJobCardStatuses } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
@@ -35,6 +35,7 @@ export default function JobCardList() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc');
   const debouncedSearch = useDebounce(search, 300);
   const { canRead, canCreate, canUpdate } = usePermissions();
   const canReadJobCards = canRead('/job-cards');
@@ -56,7 +57,8 @@ export default function JobCardList() {
     page: page + 1,
     limit: rowsPerPage,
     fromDate,
-    toDate
+    toDate,
+    sortOrder
   });
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -150,7 +152,18 @@ export default function JobCardList() {
       }
     },
     { header: 'Est. Cost', render: (row) => <Typography variant="body2" fontWeight={600}>{formatCurrency(row.totalEstimate)}</Typography> },
-    { header: 'Created', render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography> },
+    {
+      header: (
+        <Box
+          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', userSelect: 'none' }}
+          onClick={() => { setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc'); setPage(0); }}
+        >
+          Created
+          {sortOrder === 'desc' ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
+        </Box>
+      ),
+      render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography>
+    },
     ...(canReadJobCards || canUpdateJobCards || canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork ? [{
       header: 'Actions',
       render: (row) => (

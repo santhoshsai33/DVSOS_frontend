@@ -1,14 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Box, Card, CardContent, Chip, Grid, Typography, Tooltip } from '@mui/material';
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  Droplets,
-  Truck,
-  UserPlus,
-} from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle2, Clock, Droplets, Truck, UserPlus, } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import DataTable from '../../components/common/DataTable';
@@ -18,6 +10,7 @@ import { ROUTES } from '../../config/routes';
 import { getWaterWashDashboardApi } from '../../api/dashboardApi';
 import Loader from '../../components/common/Loader';
 import JobCardDetailModal from '../../components/common/JobCardDetailModal';
+import { formatWaitTime } from '../../utils/formatters';
 
 const SLA_MINUTES = 20;
 const COLS = [
@@ -137,6 +130,14 @@ export default function WaterWashQueue() {
 
   const columns = [
     {
+      header: 'JOB CARD',
+      render: (row) => (
+        <Typography sx={{ fontWeight: 600, color: '#475569', fontSize: '0.875rem' }}>
+          {row.jobCardNo || '—'}
+        </Typography>
+      ),
+    },
+    {
       header: 'VEHICLE NO.',
       render: (row) => <VehicleNumberPlate vehicleNumber={row.vehicleNumber} />,
     },
@@ -166,25 +167,25 @@ export default function WaterWashQueue() {
         </Box>
       ),
     },
-    {
-      header: 'SERVICES',
-      render: (row) => (
-        <Tooltip title={row.washService || ''} placement="bottom" arrow>
-          <Typography sx={{
-            fontSize: '0.875rem',
-            color: '#374151',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            maxWidth: '250px'
-          }}>
-            {row.washService}
-          </Typography>
-        </Tooltip>
-      ),
-    },
+    // {
+    //   header: 'SERVICES',
+    //   render: (row) => (
+    //     <Tooltip title={row.washService || ''} placement="bottom" arrow>
+    //       <Typography sx={{
+    //         fontSize: '0.875rem',
+    //         color: '#374151',
+    //         display: '-webkit-box',
+    //         WebkitLineClamp: 2,
+    //         WebkitBoxOrient: 'vertical',
+    //         overflow: 'hidden',
+    //         textOverflow: 'ellipsis',
+    //         maxWidth: '250px'
+    //       }}>
+    //         {row.washService}
+    //       </Typography>
+    //     </Tooltip>
+    //   ),
+    // },
     {
       header: 'PREVIOUS STAGES',
       render: (row) => (
@@ -230,7 +231,7 @@ export default function WaterWashQueue() {
         const overdue = row.waitMinutes > SLA_MINUTES;
         return (
           <StatusChip tone={overdue ? 'danger' : 'info'} icon={overdue ? <AlertTriangle size={14} /> : undefined}>
-            {overdue ? `${row.waitMinutes} min - overdue` : `${row.waitMinutes} min`}
+            {overdue ? `${formatWaitTime(row.waitMinutes)} - overdue` : formatWaitTime(row.waitMinutes)}
           </StatusChip>
         );
       },

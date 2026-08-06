@@ -53,6 +53,14 @@ export default function MechanicalQueue() {
 
   const columns = [
     {
+      header: 'JOB CARD',
+      render: (row) => (
+        <Typography sx={{ fontWeight: 600, color: '#475569', fontSize: '0.875rem' }}>
+          {row.jobCardNo || '—'}
+        </Typography>
+      ),
+    },
+    {
       header: 'VEHICLE NO.',
       render: (row) => (
         <Typography sx={{ color: '#3b82f6', fontFamily: 'monospace', fontWeight: 600, fontSize: '0.875rem' }}>

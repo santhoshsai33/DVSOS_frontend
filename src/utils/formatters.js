@@ -67,3 +67,11 @@ export const snakeToLabel = (str) => {
   if (!str) return '';
   return str.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 };
+export const formatWaitTime = (minutes) => {
+  if (minutes === null || minutes === undefined) return '—';
+  if (minutes === 0) return 'Just now';
+  if (minutes < 60) return `${minutes} min${minutes !== 1 ? 's' : ''}`;
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hrs} hr ${mins} min${mins !== 1 ? 's' : ''}` : `${hrs} hr${hrs !== 1 ? 's' : ''}`;
+};
