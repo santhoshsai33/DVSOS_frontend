@@ -1,6 +1,6 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Box, Grid, Typography, Divider, Card, CardContent, Checkbox, FormControlLabel, IconButton, Chip, TextField, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
+import { Box, Grid, Typography, Divider, Card, CardContent, Checkbox, FormControlLabel, IconButton, Chip, TextField, MenuItem, FormControl, InputLabel, Select, Tooltip } from '@mui/material';
 import { Save, Search, MessageCircle, ArrowLeft, X, Plus, UserPlus, PlusCircle, Car, MessageSquare } from 'lucide-react';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
@@ -1580,35 +1580,51 @@ export default function JobCardCreate() {
       {isEditMode && jobCard && (
         <>
           <Box sx={{ position: 'fixed', bottom: 28, right: 28, zIndex: 1000 }}>
-            <Box
-              component="button"
-              type="button"
-              onClick={() => setIsChatOpen(true)}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.25,
-                bgcolor: '#25D366',
-                color: '#ffffff',
-                px: 2.25,
-                py: 1.25,
-                borderRadius: 999,
-                border: 'none',
-                boxShadow: '0 8px 24px rgba(37, 211, 102, 0.45)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out',
-                fontWeight: 700,
-                fontSize: '0.875rem',
-                '&:hover': {
-                  bgcolor: '#128C7E',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 28px rgba(18, 140, 126, 0.5)'
-                }
-              }}
-            >
-              <MessageSquare size={18} />
-              Customer WhatsApp
-            </Box>
+            <Tooltip title="WhatsApp Chat" placement="left" arrow>
+              <Box
+                component="button"
+                type="button"
+                onClick={() => setIsChatOpen(true)}
+                aria-label="WhatsApp Chat"
+                sx={{
+                  width: 58,
+                  height: 58,
+                  borderRadius: '50%',
+                  bgcolor: '#25D366',
+                  p: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: 'none',
+                  boxShadow: '0 8px 24px rgba(37, 211, 102, 0.45)',
+                  cursor: 'pointer',
+                  transition: 'all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                  '&:hover': {
+                    bgcolor: '#1ebc59',
+                    transform: 'scale(1.1) translateY(-2px)',
+                    boxShadow: '0 12px 28px rgba(37, 211, 102, 0.6)'
+                  },
+                  '&:active': {
+                    transform: 'scale(0.96)'
+                  }
+                }}
+              >
+                <svg width="38" height="38" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M24 4C12.954 4 4 12.954 4 24c0 3.842 1.083 7.433 2.96 10.485L4 44l9.764-2.887A19.92 19.92 0 0024 44c11.046 0 20-8.954 20-20S35.046 4 24 4z"
+                    fill="#FFFFFF"
+                  />
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M33.47 28.53c-.5-.25-2.95-1.45-3.41-1.62-.46-.17-.79-.25-1.12.25-.33.5-1.29 1.62-1.58 1.95-.29.33-.58.37-1.08.12-.5-.25-2.11-.78-4.01-2.48-1.48-1.32-2.48-2.95-2.77-3.45-.29-.5-.03-.77.22-1.02.22-.22.5-.58.75-.87.25-.29.33-.5.5-.83.17-.33.08-.62-.04-.87-.12-.25-1.12-2.71-1.54-3.71-.41-.97-.82-.84-1.12-.86l-.96-.02c-.33 0-.87.12-1.33.62-.46.5-1.75 1.71-1.75 4.17 0 2.46 1.79 4.83 2.04 5.17.25.33 3.52 5.37 8.52 7.54 1.19.52 2.12.83 2.85 1.06 1.2.38 2.29.33 3.15.2 0.96-.14 2.95-1.21 3.37-2.37.42-1.17.42-2.17.29-2.37-.12-.21-.46-.33-.96-.58z"
+                    fill="#25D366"
+                  />
+                </svg>
+              </Box>
+            </Tooltip>
           </Box>
 
           <CustomerWhatsAppChatModal
