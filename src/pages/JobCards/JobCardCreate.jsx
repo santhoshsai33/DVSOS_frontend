@@ -1,7 +1,7 @@
 import { useForm, FormProvider } from 'react-hook-form';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Box, Grid, Typography, Divider, Card, CardContent, Checkbox, FormControlLabel, IconButton, Chip, TextField, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
-import { Save, Search, MessageCircle, ArrowLeft, X, Plus, UserPlus, PlusCircle, Car } from 'lucide-react';
+import { Save, Search, MessageCircle, ArrowLeft, X, Plus, UserPlus, PlusCircle, Car, MessageSquare } from 'lucide-react';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
 import Modal from '../../components/common/Modal';
@@ -22,6 +22,7 @@ import { adminBayApi } from '../../api/adminBayApi';
 import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAccess';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Loader from '../../components/common/Loader';
+import CustomerWhatsAppChatModal from '../../components/chat/CustomerWhatsAppChatModal';
 
 const PRIORITY_OPTIONS = [
   { value: 'LOW', label: 'Low' },
@@ -53,6 +54,7 @@ export default function JobCardCreate() {
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedAssignUser, setSelectedAssignUser] = useState('');
   const [selectedAssignBay, setSelectedAssignBay] = useState('');
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { menus, user } = useAuthStore();
   const locationId = user?.locationId || user?.location_id || user?.branchId || '';
@@ -1573,6 +1575,53 @@ export default function JobCardCreate() {
           </Modal>
         </form>
       </FormProvider>
+
+      {/* Floating Customer WhatsApp Chat Trigger Button (Edit Mode Only) */}
+      {isEditMode && jobCard && (
+        <>
+          <Box sx={{ position: 'fixed', bottom: 28, right: 28, zIndex: 1000 }}>
+            <Box
+              component="button"
+              type="button"
+              onClick={() => setIsChatOpen(true)}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.25,
+                bgcolor: '#25D366',
+                color: '#ffffff',
+                px: 2.25,
+                py: 1.25,
+                borderRadius: 999,
+                border: 'none',
+                boxShadow: '0 8px 24px rgba(37, 211, 102, 0.45)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                fontWeight: 700,
+                fontSize: '0.875rem',
+                '&:hover': {
+                  bgcolor: '#128C7E',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 28px rgba(18, 140, 126, 0.5)'
+                }
+              }}
+            >
+              <MessageSquare size={18} />
+              Customer WhatsApp
+            </Box>
+          </Box>
+
+          <CustomerWhatsAppChatModal
+            isOpen={isChatOpen}
+            onClose={() => setIsChatOpen(false)}
+            jobCardId={jobCard.id}
+            customerName={jobCard.customer?.fullName || jobCard.ownerName || 'Customer'}
+            customerMobile={jobCard.customer?.mobileNo || jobCard.ownerMobile || jobCard.mobile || ''}
+            vehicleNo={jobCard.vehicle?.registrationNo || jobCard.vehicleNumber || ''}
+            jobCardNo={jobCard.jobCardNo || jobCard.id}
+          />
+        </>
+      )}
     </Box>
   );
 }

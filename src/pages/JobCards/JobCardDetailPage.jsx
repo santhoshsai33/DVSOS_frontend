@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Grid, Card, Typography, Divider, Chip, IconButton, FormControl, InputLabel, Select, MenuItem, TextField, Skeleton } from '@mui/material';
-import { ArrowLeft, ArrowRight, Car, User, Shield, FileText, AlertTriangle, PlusCircle, Clock, ChevronDown, ChevronUp, Wrench, Play, Filter, PauseCircle, PlayCircle, Mic, Plus, Minus, MapPin, Maximize2, X, ChevronLeft, ChevronRight, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Car, User, Shield, FileText, AlertTriangle, PlusCircle, Clock, ChevronDown, ChevronUp, Wrench, Play, Filter, PauseCircle, PlayCircle, Mic, Plus, Minus, MapPin, Maximize2, X, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
 import { useJobCard } from '../../queries/useDataQueries';
 import StatusBadge from '../../components/common/StatusBadge';
 import Loader from '../../components/common/Loader';
@@ -17,14 +17,12 @@ import { postponeJobCardServiceApi, resumeJobCardServiceApi } from '../../api/jo
 import { getMechanicsDropdownApi } from '../../api/userApi';
 import { adminBayApi } from '../../api/adminBayApi';
 import useAuthStore from '../../store/useAuthStore';
-import CustomerWhatsAppChatModal from '../../components/chat/CustomerWhatsAppChatModal';
 
 export default function JobCardDetailPage() {
   const { id, slug } = useParams();
   const jobCardIdentifier = slug || id;
   const navigate = useNavigate();
   const location = useLocation();
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const { data: jobCard, isLoading } = useJobCard(jobCardIdentifier);
   const [expandedApprovalIds, setExpandedApprovalIds] = useState({});
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
@@ -863,56 +861,29 @@ export default function JobCardDetailPage() {
                       CUSTOMER
                     </Typography>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5, flexWrap: 'wrap', gap: 1.5 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box sx={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: '50%',
-                          bgcolor: '#2563eb',
-                          color: '#ffffff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 800,
-                          fontSize: '1rem',
-                          flexShrink: 0
-                        }}>
-                          {getInitials(displayJobCard.ownerName)}
-                        </Box>
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={700} sx={{ color: '#0f172a', lineHeight: 1.2 }}>
-                            {displayJobCard.ownerName}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mt: 0.25 }}>
-                            {displayJobCard.ownerMobile}
-                          </Typography>
-                        </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
+                      <Box sx={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: '50%',
+                        bgcolor: '#2563eb',
+                        color: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '1rem',
+                        flexShrink: 0
+                      }}>
+                        {getInitials(displayJobCard.ownerName)}
                       </Box>
-
-                      <Box
-                        component="button"
-                        onClick={() => setIsChatOpen(true)}
-                        sx={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          bgcolor: '#25D366',
-                          color: '#ffffff',
-                          border: 'none',
-                          borderRadius: 2,
-                          px: 2,
-                          py: 1,
-                          fontWeight: 700,
-                          fontSize: '0.8rem',
-                          cursor: 'pointer',
-                          boxShadow: '0 2px 6px rgba(37, 211, 102, 0.35)',
-                          transition: 'all 0.15s ease',
-                          '&:hover': { bgcolor: '#128C7E' }
-                        }}
-                      >
-                        <MessageSquare size={16} />
-                        WhatsApp Chat
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={700} sx={{ color: '#0f172a', lineHeight: 1.2 }}>
+                          {displayJobCard.ownerName}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mt: 0.25 }}>
+                          {displayJobCard.ownerMobile}
+                        </Typography>
                       </Box>
                     </Box>
 
@@ -2117,49 +2088,6 @@ export default function JobCardDetailPage() {
           </FormControl>
         </Box>
       </Modal>
-
-      {/* Floating Customer WhatsApp Chat Trigger Button */}
-      <Box sx={{ position: 'fixed', bottom: 28, right: 28, zIndex: 1000 }}>
-        <Box
-          component="button"
-          onClick={() => setIsChatOpen(true)}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.25,
-            bgcolor: '#25D366',
-            color: '#ffffff',
-            px: 2.25,
-            py: 1.25,
-            borderRadius: 999,
-            border: 'none',
-            boxShadow: '0 8px 24px rgba(37, 211, 102, 0.45)',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease-in-out',
-            fontWeight: 700,
-            fontSize: '0.875rem',
-            '&:hover': {
-              bgcolor: '#128C7E',
-              transform: 'translateY(-2px)',
-              boxShadow: '0 12px 28px rgba(18, 140, 126, 0.5)'
-            }
-          }}
-        >
-          <MessageSquare size={18} />
-          Customer WhatsApp
-        </Box>
-      </Box>
-
-      {/* Customer WhatsApp Chat Modal */}
-      <CustomerWhatsAppChatModal
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        jobCardId={jobCard?.id || displayJobCard?.id}
-        customerName={displayJobCard?.ownerName}
-        customerMobile={displayJobCard?.ownerMobile}
-        vehicleNo={displayJobCard?.vehicleNumber}
-        jobCardNo={displayJobCard?.id}
-      />
 
     </Box>
   );

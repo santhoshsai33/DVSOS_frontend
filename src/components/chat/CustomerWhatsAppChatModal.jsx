@@ -60,8 +60,16 @@ export default function CustomerWhatsAppChatModal({
     getJobCardChatApi(jobCardId)
       .then((res) => {
         if (!isMounted) return;
-        const data = res.data?.data || {};
-        setMessages(Array.isArray(data.messages) ? data.messages : []);
+        const payload = res?.data?.data || res?.data || res || {};
+        let rawMessages = payload.messages;
+        if (typeof rawMessages === 'string') {
+          try {
+            rawMessages = JSON.parse(rawMessages);
+          } catch {
+            rawMessages = [];
+          }
+        }
+        setMessages(Array.isArray(rawMessages) ? rawMessages : []);
         // Mark as read
         markJobCardChatReadApi(jobCardId).catch(() => {});
       })
@@ -121,7 +129,7 @@ export default function CustomerWhatsAppChatModal({
 
     try {
       const res = await sendJobCardChatMessageApi(jobCardId, { text: textToSend });
-      const createdMessage = res.data?.data?.message;
+      const createdMessage = res?.data?.data?.message || res?.data?.message || res?.message;
       if (createdMessage) {
         setMessages((prev) => {
           if (prev.some((m) => m.id === createdMessage.id)) return prev;
@@ -129,7 +137,7 @@ export default function CustomerWhatsAppChatModal({
         });
       }
     } catch (err) {
-      toastError(err.response?.data?.message || 'Failed to send WhatsApp message to customer');
+      toastError(err.response?.data?.message || err?.message || 'Failed to send WhatsApp message to customer');
       setInputText(textToSend); // Restore unsent text
     } finally {
       setIsSending(false);
