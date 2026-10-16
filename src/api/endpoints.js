@@ -53,6 +53,13 @@ export const ENDPOINTS = {
     PENDING: '/job-cards/list?status=PENDING',
   },
 
+  // Customer WhatsApp Chat
+  CHAT: {
+    GET: (jobCardId) => `/chat/job-card/${jobCardId}`,
+    SEND: (jobCardId) => `/chat/job-card/${jobCardId}/messages`,
+    MARK_READ: (jobCardId) => `/chat/job-card/${jobCardId}/read`,
+  },
+
   // Approvals
   APPROVALS: {
     LIST: '/approvals/list',
@@ -67,6 +74,8 @@ export const ENDPOINTS = {
     MECHANICAL: '/queues/mechanical/list',
     BODY_SHOP: '/queues/body-shop/list',
     WATER_WASH: '/queues/water-wash/list',
+    WATER_WASH_START: (id) => `/queues/water-wash/start/${id}`,
+    WATER_WASH_COMPLETE: (id) => `/queues/water-wash/complete/${id}`,
     UPDATE_STATUS: (id) => `/queues/status/${id}`,
     ASSIGN: (id) => `/queues/assign/${id}`,
     REASSIGN: (id) => `/queues/reassign/${id}`
@@ -80,7 +89,6 @@ export const ENDPOINTS = {
     MD: '/dashboard/md',
     SUPERVISOR: '/dashboard/supervisor',
     BODY_SHOP: '/dashboard/body-shop',
-    WATER_WASH: '/dashboard/water-wash',
     RECENT_JOBS: '/dashboard/recent-jobs',
     QUEUE_SUMMARY: '/dashboard/queue-summary',
   },
@@ -178,6 +186,8 @@ export const ENDPOINTS = {
       CREATE: '/admin/service-items/create',
       UPDATE: (id) => `/admin/service-items/update/${id}`,
       STATUS: (id) => `/admin/service-items/status/${id}`,
+      IMPORT: '/admin/service-items/import',
+      EXPORT_TEMPLATE: '/admin/service-items/export-template',
     },
     AUDIT_LOGS: {
       LIST: '/audit-logs/list',

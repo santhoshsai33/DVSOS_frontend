@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, Card, Typography, IconButton, Menu, MenuItem, Select, Chip } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Box, Card, Typography, IconButton, Menu, MenuItem, Select, Chip, Tabs, Tab, useMediaQuery } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import { Plus, Eye, Edit, MoreVertical, PlusCircle, MessageCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import { useJobCards, useJobCardStatuses } from '../../queries/useDataQueries';
@@ -9,7 +9,7 @@ import Button from '../../components/common/Button';
 import SearchBar from '../../components/common/SearchBar';
 import PageHeader from '../../components/shared/PageHeader';
 import VehicleNumberPlate from '../../components/common/VehicleNumberPlate';
-import { formatDateTime, formatCurrency } from '../../utils/formatters';
+import { formatDate, formatDateTime, formatCurrency } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
 import { ROUTES } from '../../config/routes';
 import useAuthStore from '../../store/useAuthStore';
@@ -28,9 +28,11 @@ const PRIORITY_COLORS = {
 
 export default function JobCardList() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { menus } = useAuthStore();
+  const isWideScreen = useMediaQuery('(min-width: 1400px)');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(location.state?.statusFilter || '');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [fromDate, setFromDate] = useState('');
@@ -44,22 +46,77 @@ export default function JobCardList() {
   const canCreateFloorAdditionalWork = canCreate('/additional-work');
   const canCreateBodyShopAdditionalWork = canCreate('/body-shop-additional-work');
   const department = getDepartmentFromModules(menus);
-  const canCreateJobCard = canCreateJobCards && !['body-shop', 'water-wash'].includes(department);
-  const departmentFilter = ['body-shop', 'water-wash'].includes(department) ? department : undefined;
+  const canCreateJobCard = canCreateJobCards && department !== 'body-shop';
+  const departmentFilter = department === 'body-shop' ? department : undefined;
+
+  // Tab switch — sends status codes to backend; works correctly with server-side pagination
+  const TAB_STATUS_CODES = {
+    all:       '',   // no filter → returns every job card across all statuses
+    mechanic:  'MECHANICAL_ASSIGNED,MECHANICAL_IN_PROGRESS',
+    bodyshop:  'BODY_SHOP_ASSIGNED,BODY_SHOP_IN_PROGRESS',
+    waterwash: 'WATER_WASH_IN_PROGRESS,WATER_WASH_ASSIGNED',
+    delivery:  'READY_FOR_DELIVERY,READY_FOR_DELIVERED',
+  };
+  // Mechanic & Body Shop tabs sort by most recently assigned; Delivery tab sorts by creation date; All tab sorts by createdAt
+  const TAB_SORT_BY = {
+    all:       'createdAt',
+    mechanic:  'assignedAt',
+    bodyshop:  'assignedAt',
+    waterwash: 'createdAt',
+    delivery:  'createdAt',
+  };
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'all');
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+    if (location.state?.statusFilter !== undefined) {
+      setStatusFilter(location.state.statusFilter);
+    }
+  }, [location.state?.activeTab, location.state?.statusFilter]);
+
+  // When the status dropdown is used, it overrides the tab filter.
+  // For 'all' tab, TAB_STATUS_CODES[activeTab] is '' so no status param is sent.
+  const tabStatusParam = statusFilter ? statusFilter : TAB_STATUS_CODES[activeTab];
+  const tabSortBy = TAB_SORT_BY[activeTab];
 
   const { data: statusesData } = useJobCardStatuses();
   const jobCardStatuses = statusesData || [];
 
+  const effectiveDepartment = activeTab === 'waterwash' ? 'water-wash' : departmentFilter;
+
   const { data, isLoading } = useJobCards({
     search: debouncedSearch,
-    status: statusFilter,
-    department: departmentFilter,
+    status: tabStatusParam,
+    department: effectiveDepartment,
+    tab: activeTab === 'waterwash' ? 'waterwash' : undefined,
     page: page + 1,
     limit: rowsPerPage,
     fromDate,
     toDate,
-    sortOrder
+    sortOrder,
+    sortBy: tabSortBy,
   });
+
+  const [tabCounts, setTabCounts] = useState({
+    all: 0,
+    mechanic: 0,
+    bodyshop: 0,
+    waterwash: 0,
+    delivery: 0,
+  });
+
+  useEffect(() => {
+    if (data?.meta?.tabCounts) {
+      setTabCounts(data.meta.tabCounts);
+    } else if (data?.meta?.total !== undefined) {
+      setTabCounts((prev) => ({
+        ...prev,
+        [activeTab]: data.meta.total,
+      }));
+    }
+  }, [data?.meta?.tabCounts, data?.meta?.total, activeTab]);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -80,6 +137,7 @@ export default function JobCardList() {
     setStatusFilter('');
     setFromDate('');
     setToDate('');
+    setActiveTab('mechanic');
     setPage(0);
   };
 
@@ -88,7 +146,24 @@ export default function JobCardList() {
       header: 'Job Card',
       accessor: 'jobCardNo',
       render: (row) => (
-        <Typography variant="body2" sx={{ fontWeight: 600, color: '#334155' }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 600,
+            color: '#2563eb',
+            cursor: 'pointer',
+            '&:hover': { textDecoration: 'underline' }
+          }}
+          onClick={() => {
+            const statusCode = String(row.currentStatus?.statusCode || row.currentStatus?.code || '').toUpperCase();
+            const rowId = String(row.slug || row.id).toLowerCase();
+            if (canUpdateJobCards && !['READY_FOR_DELIVERY', 'DELIVERED', 'READY_FOR_DELIVERED', 'VEHICLE_DELIVERED'].includes(statusCode)) {
+              navigate(`${ROUTES.JOB_CARDS}/edit/${rowId}`, { state: { activeTab } });
+            } else {
+              navigate(`${ROUTES.JOB_CARDS}/view/${rowId}`, { state: { activeTab } });
+            }
+          }}
+        >
           {row.jobCardNo}
         </Typography>
       ),
@@ -99,58 +174,175 @@ export default function JobCardList() {
         <VehicleNumberPlate vehicleNumber={row.vehicle?.registrationNo} />
       ),
     },
-    { header: 'Owner', render: (row) => row.customer?.fullName || 'N/A' },
-    { header: 'Mobile Number', render: (row) => row.customer?.mobileNo || '-' },
-
-    { header: 'Status', render: (row) => <StatusBadge status={row.currentStatus?.statusCode || 'PENDING'} /> },
     {
-      header: 'MECHANIC',
-      accessor: 'technician',
+      header: 'Owner',
+      render: (row) => (
+        <Box>
+          <Typography variant="body2" fontWeight={600} sx={{ color: '#0f172a' }}>
+            {row.customer?.fullName || row.ownerName || 'N/A'}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 500, mt: 0.25 }}>
+            {row.customer?.mobileNo || row.ownerMobile || row.mobile || '-'}
+          </Typography>
+        </Box>
+      )
+    },
+
+    {
+      header: 'Status',
       render: (row) => {
-        const mechanicStr = row.technician || 'Unassigned';
-        const mechanics = mechanicStr.split(',').map(name => name.trim()).filter(Boolean);
+        const hasAdditionalWork =
+          Boolean(row.hasAdditionalWork) ||
+          (Array.isArray(row.services) && row.services.some(s => s.isAdditional)) ||
+          (Array.isArray(row.workAssignments) && row.workAssignments.some(a => a.jobCardService?.isAdditional || a.isAdditional));
+        const rowId = String(row.slug || row.id).toLowerCase();
+
         return (
-          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-            {mechanics.map((mechanicName, idx) => (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <StatusBadge status={row.currentStatus?.statusCode || 'PENDING'} />
+            {hasAdditionalWork && (
               <Chip
-                key={idx}
-                label={mechanicName}
+                label="Addl. Work"
                 size="small"
+                title="Click to view job card details for additional work"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`${ROUTES.JOB_CARDS}/view/${rowId}`, { state: { activeTab } });
+                }}
                 sx={{
-                  bgcolor: mechanicName === 'Unassigned' ? 'transparent' : '#eff6ff',
-                  color: mechanicName === 'Unassigned' ? '#d97706' : '#2563eb',
-                  border: `1px solid ${mechanicName === 'Unassigned' ? '#fcd34d' : '#bfdbfe'}`,
-                  fontWeight: 600,
-                  borderRadius: '9999px'
+                  bgcolor: '#ef4444',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '0.68rem',
+                  height: 22,
+                  cursor: 'pointer',
+                  animation: 'pulse 1.5s infinite ease-in-out',
+                  '@keyframes pulse': {
+                    '0%': { opacity: 1, transform: 'scale(1)' },
+                    '50%': { opacity: 0.45, transform: 'scale(0.96)' },
+                    '100%': { opacity: 1, transform: 'scale(1)' }
+                  },
+                  '&:hover': { bgcolor: '#dc2626' }
                 }}
               />
-            ))}
+            )}
           </Box>
         );
       }
     },
-    {
-      header: 'BAY',
-      accessor: 'bay',
-      render: (row) => {
-        const bay = row.bay || row.assignedBay;
-        const bayName = bay?.bayName || bay?.bayCode || 'Unassigned';
+    ...(isWideScreen
+      ? [
+          {
+            header: 'WORK TYPE',
+            accessor: 'workType',
+            render: (row) => {
+              const rawType = row.workType || 'Mechanic';
+              const type = rawType === 'Both' ? 'Mech & Body' : rawType;
 
-        return (
-          <Chip
-            label={bayName}
-            size="small"
-            sx={{
-              bgcolor: bay ? '#ecfdf5' : 'transparent',
-              color: bay ? '#047857' : '#64748b',
-              border: `1px solid ${bay ? '#a7f3d0' : '#cbd5e1'}`,
-              fontWeight: 600,
-              borderRadius: '9999px'
-            }}
-          />
-        );
-      }
-    },
+              let chipBg = '#eff6ff';
+              let chipColor = '#1d4ed8';
+              let chipBorder = '#bfdbfe';
+
+              if (type === 'All') {
+                chipBg = '#eef2ff';
+                chipColor = '#4f46e5';
+                chipBorder = '#c7d2fe';
+              } else if (type === 'Mech & Body') {
+                chipBg = '#f3e8ff';
+                chipColor = '#7e22ce';
+                chipBorder = '#d8b4fe';
+              } else if (type === 'Mech & Wash') {
+                chipBg = '#f0fdf4';
+                chipColor = '#15803d';
+                chipBorder = '#bbf7d0';
+              } else if (type === 'Body & Wash') {
+                chipBg = '#fffbeb';
+                chipColor = '#b45309';
+                chipBorder = '#fde68a';
+              } else if (type === 'Body Shop') {
+                chipBg = '#fff7ed';
+                chipColor = '#c2410c';
+                chipBorder = '#ffedd5';
+              } else if (type === 'Water Wash') {
+                chipBg = '#ecfeff';
+                chipColor = '#0891b2';
+                chipBorder = '#a5f3fc';
+              }
+
+              return (
+                <Chip
+                  label={type}
+                  size="small"
+                  sx={{
+                    bgcolor: chipBg,
+                    color: chipColor,
+                    border: `1px solid ${chipBorder}`,
+                    fontWeight: 600,
+                    borderRadius: '9999px',
+                  }}
+                />
+              );
+            },
+          },
+          {
+            header: 'MECHANIC',
+            accessor: 'technician',
+            render: (row) => {
+              const mechanicStr = row.technician || 'Unassigned';
+              const mechanics = mechanicStr
+                .split(',')
+                .map((name) => name.trim())
+                .filter(Boolean);
+              return (
+                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                  {mechanics.map((mechanicName, idx) => (
+                    <Chip
+                      key={idx}
+                      label={mechanicName}
+                      size="small"
+                      sx={{
+                        bgcolor:
+                          mechanicName === 'Unassigned'
+                            ? 'transparent'
+                            : '#eff6ff',
+                        color:
+                          mechanicName === 'Unassigned' ? '#d97706' : '#2563eb',
+                        border: `1px solid ${
+                          mechanicName === 'Unassigned' ? '#fcd34d' : '#bfdbfe'
+                        }`,
+                        fontWeight: 600,
+                        borderRadius: '9999px',
+                      }}
+                    />
+                  ))}
+                </Box>
+              );
+            },
+          },
+          {
+            header: 'BAY',
+            accessor: 'bay',
+            render: (row) => {
+              const bay = row.bay || row.assignedBay;
+              const bayName = bay?.bayName || bay?.bayCode || 'Unassigned';
+
+              return (
+                <Chip
+                  label={bayName}
+                  size="small"
+                  sx={{
+                    bgcolor: bay ? '#ecfdf5' : 'transparent',
+                    color: bay ? '#047857' : '#64748b',
+                    border: `1px solid ${bay ? '#a7f3d0' : '#cbd5e1'}`,
+                    fontWeight: 600,
+                    borderRadius: '9999px',
+                  }}
+                />
+              );
+            },
+          },
+        ]
+      : []),
     { header: 'Est. Cost', render: (row) => <Typography variant="body2" fontWeight={600}>{formatCurrency(row.totalEstimate)}</Typography> },
     {
       header: (
@@ -162,22 +354,54 @@ export default function JobCardList() {
           {sortOrder === 'desc' ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
         </Box>
       ),
-      render: (row) => <Typography variant="body2">{formatDateTime(row.createdAt)}</Typography>
-    },
-    ...(canReadJobCards || canUpdateJobCards || canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork ? [{
-      header: 'Actions',
       render: (row) => (
-        <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
-          <MoreVertical size={18} />
-        </IconButton>
-      ),
-    }] : []),
-  ];
+        <Box>
+          <Typography variant="body2" fontWeight={600} sx={{ color: '#0f172a' }}>
+            {formatDate(row.createdAt, 'dd MMM yyyy')}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 500, mt: 0.25 }}>
+            {formatDate(row.createdAt, 'hh:mm a')}
+          </Typography>
+        </Box>
+      )
+    },
+    {
+      header: 'Actions',
+      render: (row) => {
+        const statusCode = String(row.currentStatus?.statusCode || row.currentStatus?.code || '').toUpperCase();
+        const rowId = String(row.slug || row.id).toLowerCase();
+        const isNonEditable =
+          ['READY_FOR_DELIVERY', 'DELIVERED', 'READY_FOR_DELIVERED', 'VEHICLE_DELIVERED', 'REJECTED'].includes(statusCode) ||
+          statusCode.includes('DELIVERED');
+        const canEditRow = canUpdateJobCards && !isNonEditable;
+
+        if (!canEditRow) return null;
+
+        return (
+          <IconButton
+            size="small"
+            title="Edit Job Card"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`${ROUTES.JOB_CARDS}/edit/${rowId}`, { state: { activeTab } });
+            }}
+            sx={{ color: '#d97706' }}
+          >
+            <Edit size={16} />
+          </IconButton>
+        );
+      }
+    }
+  ].filter((col) => {
+    // Hide the Actions column entirely when on the Ready for Delivery tab
+    if (activeTab === 'delivery' && col?.header === 'Actions') return false;
+    return Boolean(col);
+  });
 
   const tableData = data?.data || [];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <Box sx={{ p: { xs: 2, md: '19px' } }}>
       <PageHeader
         title="Job Cards"
         breadcrumbs={[{ label: 'Job Cards' }]}
@@ -187,6 +411,137 @@ export default function JobCardList() {
       //   </Button>
       // ) : null}
       />
+
+      {/* Tab Switch — server-side status filter, pagination stays correct */}
+      <Box sx={{ borderBottom: '2px solid #E2E8F0', mb: 3 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(e, val) => { setActiveTab(val); setStatusFilter(''); setPage(0); }}
+          textColor="primary"
+          indicatorColor="primary"
+          sx={{
+            '& .MuiTab-root': {
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              textTransform: 'none',
+              minWidth: 140,
+              py: 1.4,
+            },
+            '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' },
+          }}
+        >
+          <Tab
+            value="all"
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                All
+                <Chip
+                  label={tabCounts.all ?? 0}
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    bgcolor: activeTab === 'all' ? '#475569' : '#F1F5F9',
+                    color: activeTab === 'all' ? '#fff' : '#475569',
+                    border: activeTab === 'all' ? 'none' : '1px solid #CBD5E1',
+                    borderRadius: '10px',
+                    transition: 'all 0.2s ease',
+                  }}
+                />
+              </Box>
+            }
+          />
+          <Tab
+            value="mechanic"
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                Mechanic Work
+                <Chip
+                  label={tabCounts.mechanic ?? 0}
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    bgcolor: activeTab === 'mechanic' ? '#2563eb' : '#EFF6FF',
+                    color: activeTab === 'mechanic' ? '#fff' : '#1D4ED8',
+                    border: activeTab === 'mechanic' ? 'none' : '1px solid #BFDBFE',
+                    borderRadius: '10px',
+                    transition: 'all 0.2s ease',
+                  }}
+                />
+              </Box>
+            }
+          />
+          <Tab
+            value="bodyshop"
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                Body Shop Work
+                <Chip
+                  label={tabCounts.bodyshop ?? 0}
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    bgcolor: activeTab === 'bodyshop' ? '#c2410c' : '#FFF7ED',
+                    color: activeTab === 'bodyshop' ? '#fff' : '#C2410C',
+                    border: activeTab === 'bodyshop' ? 'none' : '1px solid #FED7AA',
+                    borderRadius: '10px',
+                    transition: 'all 0.2s ease',
+                  }}
+                />
+              </Box>
+            }
+          />
+          <Tab
+            value="waterwash"
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                Water Wash Work
+                <Chip
+                  label={tabCounts.waterwash ?? 0}
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    bgcolor: activeTab === 'waterwash' ? '#0891b2' : '#ECFEFF',
+                    color: activeTab === 'waterwash' ? '#fff' : '#0E7490',
+                    border: activeTab === 'waterwash' ? 'none' : '1px solid #A5F3FC',
+                    borderRadius: '10px',
+                    transition: 'all 0.2s ease',
+                  }}
+                />
+              </Box>
+            }
+          />
+          <Tab
+            value="delivery"
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                Ready for Delivery
+                <Chip
+                  label={tabCounts.delivery ?? 0}
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    bgcolor: activeTab === 'delivery' ? '#047857' : '#ECFDF5',
+                    color: activeTab === 'delivery' ? '#fff' : '#047857',
+                    border: activeTab === 'delivery' ? 'none' : '1px solid #A7F3D0',
+                    borderRadius: '10px',
+                    transition: 'all 0.2s ease',
+                  }}
+                />
+              </Box>
+            }
+          />
+        </Tabs>
+      </Box>
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
@@ -268,7 +623,7 @@ export default function JobCardList() {
           onRowsPerPageChange={setRowsPerPage}
           onRowDoubleClick={(row) => {
             if (canReadJobCards) {
-              navigate(`${ROUTES.JOB_CARDS}/view/${row.slug || row.id}`);
+              navigate(`${ROUTES.JOB_CARDS}/view/${String(row.slug || row.id).toLowerCase()}`, { state: { activeTab } });
             }
           }}
         />
@@ -283,16 +638,17 @@ export default function JobCardList() {
         PaperProps={{ sx: { width: 220, borderRadius: 2, mt: 0.5 } }}
       >
         {canReadJobCards && (
-          <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/view/${selectedJob?.slug || selectedJob?.id}`); }}>
+          <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/view/${String(selectedJob?.slug || selectedJob?.id).toLowerCase()}`, { state: { activeTab } }); }}>
             <Eye size={16} className="mr-3 text-primary" />
             View
           </MenuItem>
         )}
         {canUpdateJobCards &&
-          !['READY_FOR_DELIVERY', 'DELIVERED', 'READY_FOR_DELIVERED', 'VEHICLE_DELIVERED'].includes(
+          !['READY_FOR_DELIVERY', 'DELIVERED', 'READY_FOR_DELIVERED', 'VEHICLE_DELIVERED', 'REJECTED'].includes(
             String(selectedJob?.currentStatus?.statusCode || selectedJob?.currentStatus?.code || '').toUpperCase()
-          ) && (
-            <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/edit/${selectedJob?.slug || selectedJob?.id}`); }}>
+          ) &&
+          !String(selectedJob?.currentStatus?.statusCode || selectedJob?.currentStatus?.code || '').toUpperCase().includes('DELIVERED') && (
+            <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.JOB_CARDS}/edit/${String(selectedJob?.slug || selectedJob?.id).toLowerCase()}`, { state: { activeTab } }); }}>
               <Edit size={16} className="mr-3 text-warning" />
               Edit
             </MenuItem>
@@ -300,25 +656,24 @@ export default function JobCardList() {
         {(canCreateFloorAdditionalWork || canCreateBodyShopAdditionalWork) &&
           !['COMPLETED', 'READY_FOR_DELIVERY', 'DELIVERED', 'REJECTED'].includes(selectedJob?.currentStatus?.statusCode) && (
             (() => {
-              const isRestricted = ['body-shop', 'water-wash', 'mechanical'].includes(department);
+              const isRestricted = ['body-shop', 'mechanical'].includes(department);
               const targetDepartment = (department === 'body-shop' || (!canCreateFloorAdditionalWork && canCreateBodyShopAdditionalWork)) ? 'body-shop' : 'mechanical';
-              
+
               const jcStatus = String(selectedJob?.currentStatus?.statusCode || '').toUpperCase();
 
               if (isRestricted) {
-                if (targetDepartment === 'mechanical' && (jcStatus.includes('BODY_SHOP') || jcStatus.includes('WATER_WASH'))) return false;
+                if (targetDepartment === 'mechanical' && jcStatus.includes('BODY_SHOP')) return false;
                 if (targetDepartment === 'body-shop' && !jcStatus.includes('BODY_SHOP')) return false;
-                if (targetDepartment === 'water-wash' && !jcStatus.includes('WATER_WASH')) return false;
               }
 
               const assignments = selectedJob?.workAssignments || [];
 
               if (assignments.length > 0) {
-                const relevantAssignments = isRestricted 
+                const relevantAssignments = isRestricted
                   ? assignments.filter(a => {
-                      const cat = a.jobCardService?.serviceItem?.category?.slug || a.jobCardService?.serviceItem?.category?.name || a.service?.category?.slug || a.service?.category?.name || '';
-                      return String(cat).toLowerCase().replace(/[\s_]+/g, '-') === targetDepartment;
-                    })
+                    const cat = a.jobCardService?.serviceItem?.category?.slug || a.jobCardService?.serviceItem?.category?.name || a.service?.category?.slug || a.service?.category?.name || '';
+                    return String(cat).toLowerCase().replace(/[\s_]+/g, '-') === targetDepartment;
+                  })
                   : assignments;
 
                 if (relevantAssignments.length === 0) return false;
@@ -337,10 +692,12 @@ export default function JobCardList() {
             <MenuItem onClick={() => {
               handleMenuClose();
               const jobCardIdentifier = selectedJob?.slug || selectedJob?.jobCardNo || selectedJob?.id;
-              if (department === 'body-shop' || (!canCreateFloorAdditionalWork && canCreateBodyShopAdditionalWork)) {
-                navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}`);
+              if (activeTab === 'waterwash' || department === 'water-wash') {
+                navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}&category=water-wash`);
+              } else if (activeTab === 'bodyshop' || department === 'body-shop' || (!canCreateFloorAdditionalWork && canCreateBodyShopAdditionalWork)) {
+                navigate(`${ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}&category=body-shop`);
               } else {
-                navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}`);
+                navigate(`${ROUTES.FLOOR_ADDITIONAL_WORK_NEW}?jobCardId=${encodeURIComponent(jobCardIdentifier)}&category=mechanical`);
               }
             }}>
               <PlusCircle size={16} className="mr-3 text-body-shop" />

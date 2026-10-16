@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { Box, useTheme, useMediaQuery } from "@mui/material";
 import Sidebar from "../../components/shared/Sidebar";
 import Topbar from "../../components/shared/Topbar";
+import NotificationPopup from "../../components/shared/NotificationPopup";
 import useUIStore from "../../store/useUIStore";
 
 export default function DashboardLayout() {
@@ -43,9 +44,10 @@ export default function DashboardLayout() {
         }}
       >
         <Topbar />
+        <NotificationPopup />
         <Box
           component="main"
-          sx={{ flexGrow: 1, pb: { xs: 2, md: 3 }, pt: 8, overflowY: "auto" }}
+          sx={{ flexGrow: 1, pb: { xs: 2, md: 3 }, pt: { xs: 1, md: 2 }, overflowY: "auto" }}
         >
           <Outlet />
         </Box>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Card, IconButton, Menu, MenuItem, Typography, Select, Avatar } from '@mui/material';
+import { Box, Card, IconButton, Menu, MenuItem, Typography, Select, Avatar, Tooltip } from '@mui/material';
 import DataTable from '../../components/common/DataTable';
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/shared/PageHeader';
@@ -178,24 +178,43 @@ export default function UserList() {
       ),
     },
     {
-      header: 'Email',
+      header: 'Email & Contact',
       accessor: 'email',
       render: (row) => (
-        <Box component="a" href={`mailto:${row.email}`} sx={{ display: 'flex', alignItems: 'center', color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
-          <Mail size={14} className="mr-2" /> {row.email}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+          <Box
+            component="a"
+            href={`mailto:${row.email}`}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              color: 'primary.main',
+              textDecoration: 'none',
+              '&:hover': { textDecoration: 'underline' },
+              fontWeight: 500,
+            }}
+          >
+            <Mail size={14} className="mr-2" /> {row.email}
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ pl: '22px' }}>
+            {row.mobile || '-'}
+          </Typography>
         </Box>
       ),
     },
-    { header: 'Mobile', accessor: 'mobile', render: (row) => row.mobile || '-' },
     {
       header: 'Role',
       accessor: 'role',
-      render: (row) => (
-        <Typography variant="caption" sx={{ bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', py: 0.5, px: 1, borderRadius: 1, fontWeight: 600 }}>
-          {row.role?.name || '-'}
-        </Typography>
-      ),
+      render: (row) => {
+        const roleName = row.role?.name || row.roleName || (typeof row.role === 'string' ? row.role : '');
+        return (
+          <Typography variant="body2" color="text.primary">
+            {roleName || '-'}
+          </Typography>
+        );
+      },
     },
+
     ...(isAdmin ? [{
       header: 'Location',
       accessor: 'locationName',
@@ -235,18 +254,29 @@ export default function UserList() {
         <Typography variant="body2">-</Typography>
       ),
     },
-    {
+    ...(canUpdateUsers ? [{
       header: 'Actions',
       render: (row) => (
-        <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
-          <MoreVertical size={18} />
-        </IconButton>
+        <Tooltip title="Edit">
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (getUserIdentifier(row)) {
+                navigate(getUserEditPath(row));
+              }
+            }}
+          >
+            <Edit size={16} />
+          </IconButton>
+        </Tooltip>
       ),
-    },
+    }] : [])
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <Box sx={{ p: { xs: 2, md: '19px' } }}>
       <PageHeader
         title="User Management"
         // breadcrumbs={[{ label: 'Users' }]}
@@ -375,40 +405,6 @@ export default function UserList() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteItem(null)}
       />
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{ sx: { width: 180, borderRadius: 2, mt: 0.5 } }}
-      >
-        <MenuItem onClick={() => {
-          if (getUserIdentifier(selectedUser)) {
-            navigate(getUserViewPath(selectedUser));
-          }
-          handleMenuClose();
-        }}>
-          <Eye size={16} className="mr-3 text-info" style={{ color: '#0284C7' }} />
-          View
-        </MenuItem>
-        {canUpdateUsers && (
-          <MenuItem onClick={() => {
-            if (getUserIdentifier(selectedUser)) {
-              navigate(getUserEditPath(selectedUser));
-            }
-            handleMenuClose();
-          }}>
-            <Edit size={16} className="mr-3 text-primary" />
-            Edit
-          </MenuItem>
-        )}
-        {/* <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <Trash2 size={16} className="mr-3" />
-          Deactivate
-        </MenuItem> */}
-      </Menu>
     </Box>
   );
 }

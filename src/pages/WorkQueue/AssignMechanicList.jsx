@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Printer, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
 import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Card, Chip, TextField } from '@mui/material';
 import Button from '../../components/common/Button';
@@ -8,34 +9,49 @@ import PageHeader from '../../components/shared/PageHeader';
 import DataTable from '../../components/common/DataTable';
 import SearchBar from '../../components/common/SearchBar';
 import { toastSuccess, toastInfo, toastError } from '../../notifications/toast';
-import { formatDateTime, formatWaitTime } from '../../utils/formatters';
+import { formatDate, formatDateTime, formatWaitTime } from '../../utils/formatters';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '../../store/useAuthStore';
-import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi, assignQueueWorkApi } from '../../api/queueApi';
+import { getMechanicalQueueApi, getBodyShopQueueApi, getWaterWashQueueApi, startWaterWashApi, assignQueueWorkApi } from '../../api/queueApi';
 import { skipJobCardDepartmentApi } from '../../api/jobCardApi';
 import { getMechanicsDropdownApi } from '../../api/userApi';
 import { adminBayApi } from '../../api/adminBayApi';
 import { getDepartmentFromModules } from '../../utils/authAccess';
 import { usePermissions } from '../../hooks/usePermissions';
+import { ROUTES } from '../../config/routes';
 
 
 
 const PRIORITY_COLORS = { LOW: '#10B981', NORMAL: '#3B82F6', HIGH: '#F59E0B', URGENT: '#EF4444' };
 const BAY_TYPE_BY_CATEGORY = {
   mechanical: 'Mechanical',
-  'body-shop': 'Body Shop',
-  'water-wash': 'Water Wash'
+  'body-shop': 'Body Shop'
 };
 
 export default function AssignMechanicList() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { role, user, menus } = useAuthStore();
   const locationId = user?.locationId || user?.location_id || user?.branchId || '';
-  const queueCategory = getDepartmentFromModules(menus) || 'mechanical';
+
+  const detectedDept = getDepartmentFromModules(menus);
+  const showBothTabs = detectedDept !== 'body-shop';
+  const initialTab = location.state?.tab || location.state?.activeTab || 'mechanical';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const targetTab = location.state?.tab || location.state?.activeTab;
+    if (targetTab && ['mechanical', 'body-shop', 'water-wash'].includes(targetTab)) {
+      setActiveTab(targetTab);
+    }
+  }, [location.state?.tab, location.state?.activeTab]);
+
+  const queueCategory = showBothTabs ? activeTab : 'body-shop';
+
   const isBodyShop = queueCategory === 'body-shop';
-  const isWaterWash = queueCategory === 'water-wash';
-  const assigneeLabel = isBodyShop ? 'Technician' : isWaterWash ? 'Member' : 'Mechanic';
-  const pageTitle = isBodyShop ? 'Assign Technician (Body Shop)' : isWaterWash ? 'Assign Water Wash Member' : 'Assign Mechanic';
+  const assigneeLabel = isBodyShop ? 'Technician' : 'Mechanic';
+  const pageTitle = showBothTabs ? 'Assign Work' : (isBodyShop ? 'Assign Technician (Body Shop)' : 'Assign Mechanic');
   const { canUpdate } = usePermissions();
   const canAssignWork = canUpdate('/job-cards');
 
@@ -44,7 +60,7 @@ export default function AssignMechanicList() {
   const [search, setSearch] = useState('');
 
   const { data: jobsResponse, isLoading } = useQuery({
-    queryKey: ['assign-mechanic-queue', role, locationId, page, rowsPerPage, search],
+    queryKey: ['assign-mechanic-queue', role, locationId, queueCategory, page, rowsPerPage, search],
     queryFn: async () => {
       const params = { locationId, page: page + 1, limit: rowsPerPage, search };
       if (queueCategory === 'body-shop') {
@@ -59,7 +75,7 @@ export default function AssignMechanicList() {
   });
 
   const { data: mechanicsResponse, isLoading: isMechanicsLoading } = useQuery({
-    queryKey: ['mechanics-dropdown', role, locationId],
+    queryKey: ['mechanics-dropdown', role, locationId, queueCategory],
     queryFn: () => getMechanicsDropdownApi({ locationId, category: queueCategory }),
     enabled: !!role,
     staleTime: 60000
@@ -98,13 +114,32 @@ export default function AssignMechanicList() {
       setSkipModal({ isOpen: false, item: null });
       setSkipReason('');
       await queryClient.invalidateQueries({ queryKey: ['assign-mechanic-queue'] });
+      if (queueCategory === 'mechanical' && showBothTabs) {
+        setActiveTab('body-shop');
+        setPage(0);
+      }
     },
     onError: (error) => toastError(error?.response?.data?.message || error?.message || 'Failed to skip department')
+  });
+
+  const startWaterWashMutation = useMutation({
+    mutationFn: (jobCardId) => startWaterWashApi(jobCardId),
+    onSuccess: async (_, startedJobCardId) => {
+      toastSuccess('Water wash started successfully');
+      setLocalJobs((currentJobs) => currentJobs.filter((job) => {
+        const currentJobCardId = job.jobCardId || job.id;
+        return String(currentJobCardId) !== String(startedJobCardId);
+      }));
+      await queryClient.invalidateQueries({ queryKey: ['assign-mechanic-queue'] });
+      await queryClient.invalidateQueries({ queryKey: ['job-cards'] });
+    },
+    onError: (error) => toastError(error?.response?.data?.message || error?.message || 'Failed to start water wash')
   });
 
   const [assignModal, setAssignModal] = useState({ isOpen: false, item: null });
   const [selectedMechanic, setSelectedMechanic] = useState('');
   const [selectedBay, setSelectedBay] = useState('');
+
   const selectedMechanicUser = mechanics.find((mechanic) => String(mechanic.id) === String(selectedMechanic));
   const selectedBayItem = bays.find((bay) => String(bay.id) === String(selectedBay));
 
@@ -113,6 +148,7 @@ export default function AssignMechanicList() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['assign-mechanic-queue'] });
       await queryClient.invalidateQueries({ queryKey: ['assignment-bays'] });
+      await queryClient.invalidateQueries({ queryKey: ['job-cards'] });
       setLocalJobs((currentJobs) => currentJobs.filter((job) => {
         const currentJobCardId = job.jobCardId || job.id;
         const assignedJobCardId = assignModal.item?.jobCardId || assignModal.item?.id;
@@ -120,7 +156,7 @@ export default function AssignMechanicList() {
       }));
       setAssignModal({ isOpen: false, item: null });
 
-      toastSuccess(`Assigned to ${selectedMechanicUser?.fullName || assigneeLabel.toLowerCase()}${selectedBayItem ? ` in ${selectedBayItem.bayName || selectedBayItem.bayCode}` : ''}. Job Card sent to printer!`);
+      toastSuccess(`Assigned to ${selectedMechanicUser?.fullName || assigneeLabel.toLowerCase()}${selectedBayItem ? ` in ${selectedBayItem.bayName || selectedBayItem.bayCode}` : ''}.`);
 
 
     },
@@ -128,8 +164,6 @@ export default function AssignMechanicList() {
       toastError(error?.message || `Failed to assign ${assigneeLabel.toLowerCase()}`);
     }
   });
-
-
 
   const filteredJobs = localJobs.filter(job =>
     (job?.vehicleNo || job?.vehicleNumber || '')?.toLowerCase().includes(search.toLowerCase()) ||
@@ -203,24 +237,44 @@ export default function AssignMechanicList() {
     },
     {
       header: 'DELIVERY',
-      render: (row) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <AlertTriangle size={14} color="#f59e0b" />
-          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>
-            {row.expectedDeliveryAt ? formatDateTime(row.expectedDeliveryAt) : (row.deliveryDate ? formatDateTime(row.deliveryDate) : '—')}
-          </Typography>
-        </Box>
-      ),
+      render: (row) => {
+        const deliveryVal = row.expectedDeliveryAt || row.deliveryDate;
+        if (!deliveryVal) {
+          return (
+            <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>
+              —
+            </Typography>
+          );
+        }
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
+            <Box sx={{ mt: '3px', display: 'flex', alignItems: 'center' }}>
+              <AlertTriangle size={14} color="#f59e0b" />
+            </Box>
+            <Box>
+              <Typography variant="body2" fontWeight={600} sx={{ color: '#0f172a', lineHeight: 1.25 }}>
+                {formatDate(deliveryVal, 'dd MMM yyyy')}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 500, mt: 0.25 }}>
+                {formatDate(deliveryVal, 'hh:mm a')}
+              </Typography>
+            </Box>
+          </Box>
+        );
+      },
     },
     ...(canAssignWork ? [{
       header: 'ACTION',
       render: (row) => {
-        const canSkip = row.canSkip ?? (queueCategory !== 'water-wash');
+        const isWaterWash = queueCategory === 'water-wash';
+        const canSkip = !isWaterWash && (row.canSkip ?? false);
+
         return (
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {canSkip && (
               <Button
-                variant="outlined"
+                variant="outline"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -238,21 +292,43 @@ export default function AssignMechanicList() {
                 Skip Dept
               </Button>
             )}
-            <Button
-              variant="primary"
-              size="sm"
-              rightIcon={ArrowRight}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAssignClick(row);
-              }}
-              sx={{
-                fontWeight: 600,
-                textTransform: 'none',
-              }}
-            >
-              Assign
-            </Button>
+            {isWaterWash ? (
+              <Button
+                variant="primary"
+                size="sm"
+                rightIcon={ArrowRight}
+                isLoading={startWaterWashMutation.isPending && String(startWaterWashMutation.variables) === String(row.jobCardId || row.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const jobCardId = row.jobCardId || row.id;
+                  startWaterWashMutation.mutate(jobCardId);
+                }}
+                sx={{
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  bgcolor: '#059669',
+                  '&:hover': { bgcolor: '#047857' }
+                }}
+              >
+                Start Wash
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                rightIcon={ArrowRight}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAssignClick(row);
+                }}
+                sx={{
+                  fontWeight: 600,
+                  textTransform: 'none',
+                }}
+              >
+                Assign
+              </Button>
+            )}
           </Box>
         );
       },
@@ -293,11 +369,53 @@ export default function AssignMechanicList() {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <Box sx={{ p: { xs: 2, md: '19px' } }}>
       <PageHeader
         title={pageTitle}
         breadcrumbs={[{ label: pageTitle }]}
       />
+
+      {/* Department Tabs — shown for floor supervisor */}
+      {showBothTabs && (
+        <Box sx={{ display: 'flex', gap: 1.5, mb: 3, mt: 2 }}>
+          {[
+            { key: 'mechanical', label: 'Mechanical' },
+            { key: 'body-shop', label: 'Body Shop' },
+            { key: 'water-wash', label: 'Water Wash' },
+          ].map((tab) => (
+            <Button
+              key={tab.key}
+              variant={activeTab === tab.key ? 'primary' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setActiveTab(tab.key);
+                setPage(0);
+                setSearch('');
+              }}
+              sx={{
+                fontWeight: 700,
+                textTransform: 'none',
+                borderRadius: '24px',
+                px: 3,
+                py: 0.8,
+                fontSize: '0.875rem',
+                ...(activeTab === tab.key ? {
+                  bgcolor: '#1E40AF',
+                  color: '#FFFFFF',
+                  '&:hover': { bgcolor: '#1E3A8A' }
+                } : {
+                  borderColor: '#ffffff',
+                  color: '#1E3A8A',
+                  bgcolor: '#ffffff',
+                  '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8' }
+                })
+              }}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </Box>
+      )}
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, mt: 3, flexWrap: 'wrap' }}>
         <Box sx={{ width: { xs: '100%', md: 350 } }}>
@@ -366,13 +484,20 @@ export default function AssignMechanicList() {
               Please assign a {assigneeLabel.toLowerCase()} for job <strong>{assignModal.item.jobCardNo || assignModal.item.id}</strong>.
             </Typography>
 
-            <FormControl fullWidth size="small">
-              <InputLabel>{`Select ${assigneeLabel}`}</InputLabel>
+            <FormControl fullWidth size="small" variant="outlined">
+              <InputLabel>{assigneeLabel}</InputLabel>
               <Select
                 value={selectedMechanic}
-                label={`Select ${assigneeLabel}`}
+                label={assigneeLabel}
                 onChange={(e) => setSelectedMechanic(e.target.value)}
                 sx={{ borderRadius: 2 }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 240,
+                    },
+                  },
+                }}
               >
                 {isMechanicsLoading && (
                   <MenuItem disabled value="">
@@ -384,38 +509,49 @@ export default function AssignMechanicList() {
                     No active {assigneeLabel.toLowerCase()}s found
                   </MenuItem>
                 )}
-                {mechanics.map((mechanic) => (
-                  <MenuItem key={mechanic.id} value={mechanic.id}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
-                      <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
-                        {mechanic.fullName}{mechanic.employeeCode ? ` (${mechanic.employeeCode})` : ''}
-                      </Typography>
-                      <Chip
-                        size="small"
-                        label={mechanic.availabilityLabel || (mechanic.activeJobCount > 0 ? `Busy (${mechanic.activeJobCount} jobs)` : 'Available')}
-                        sx={{
-                          height: 22,
-                          fontSize: '0.68rem',
-                          fontWeight: 800,
-                          bgcolor: mechanic.activeJobCount > 0 ? '#FEF3C7' : '#DCFCE7',
-                          color: mechanic.activeJobCount > 0 ? '#B45309' : '#15803D',
-                          border: '1px solid',
-                          borderColor: mechanic.activeJobCount > 0 ? '#FCD34D' : '#86EFAC',
-                        }}
-                      />
-                    </Box>
-                  </MenuItem>
-                ))}
+                {mechanics.map((mechanic) => {
+                  const isBusy = mechanic.activeJobCount > 0;
+                  const statusText = mechanic.availabilityLabel || (isBusy ? `Busy (${mechanic.activeJobCount} job${mechanic.activeJobCount > 1 ? 's' : ''})` : 'Available');
+                  return (
+                    <MenuItem key={mechanic.id} value={mechanic.id}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                          {mechanic.fullName}{mechanic.employeeCode ? ` - ${mechanic.employeeCode}` : ''}
+                        </Typography>
+                        <Chip
+                          size="small"
+                          label={statusText}
+                          sx={{
+                            height: 20,
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            bgcolor: isBusy ? '#FEF3C7' : '#DCFCE7',
+                            color: isBusy ? '#B45309' : '#15803D',
+                            border: '1px solid',
+                            borderColor: isBusy ? '#FCD34D' : '#86EFAC',
+                          }}
+                        />
+                      </Box>
+                    </MenuItem>
+                  );
+                })}
               </Select>
             </FormControl>
 
-            <FormControl fullWidth size="small">
-              <InputLabel>Bay Number</InputLabel>
+            <FormControl fullWidth size="small" variant="outlined">
+              <InputLabel>Bay</InputLabel>
               <Select
                 value={selectedBay}
-                label="Bay Number"
+                label="Bay"
                 onChange={(e) => setSelectedBay(e.target.value)}
                 sx={{ borderRadius: 2 }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 240,
+                    },
+                  },
+                }}
               >
                 {isBaysLoading && (
                   <MenuItem disabled value="">
@@ -429,19 +565,20 @@ export default function AssignMechanicList() {
                 )}
                 {bays.map((bay) => {
                   const isBusy = bay.availability === 'BUSY';
+                  const statusText = bay.availabilityLabel || (isBusy ? 'Busy' : 'Available');
                   return (
                     <MenuItem key={bay.id} value={bay.id} disabled={isBusy}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
-                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
                           {bay.bayName || bay.bayCode}
                         </Typography>
                         <Chip
                           size="small"
-                          label={bay.availabilityLabel || (isBusy ? 'Busy' : 'Available')}
+                          label={statusText}
                           sx={{
-                            height: 22,
+                            height: 20,
                             fontSize: '0.68rem',
-                            fontWeight: 800,
+                            fontWeight: 700,
                             bgcolor: isBusy ? '#FEF3C7' : '#DCFCE7',
                             color: isBusy ? '#B45309' : '#15803D',
                             border: '1px solid',
@@ -454,11 +591,10 @@ export default function AssignMechanicList() {
                 })}
               </Select>
             </FormControl>
-            {/* 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#6b7280', fontSize: '0.875rem', mt: 1 }}>
-              <Printer size={14} />
-              <span>Assigning will automatically print a hard copy of the job card.</span>
-            </Box> */}
+
+            <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 500, mt: -0.5 }}>
+              Category: {isBodyShop ? 'Body Shop' : 'Mechanical'}
+            </Typography>
           </Box>
         )}
       </Modal>

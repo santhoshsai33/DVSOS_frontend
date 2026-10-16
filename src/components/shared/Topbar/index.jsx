@@ -1,53 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Bell,
-  ChevronDown,
-  LogOut,
-  User,
-  Settings as SettingsIcon,
-  Menu as MenuIcon,
-  PanelLeftClose,
-  PanelLeft,
-  FileText,
-  Truck,
-  AlertCircle,
-  Info,
-} from "lucide-react";
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Box,
-  Badge,
-  Avatar,
-  Menu,
-  MenuItem,
-  Divider,
-  ListItemIcon,
-  ListItemText,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
+import { Bell, ChevronDown, LogOut, User, Settings as SettingsIcon, Menu as MenuIcon, PanelLeftClose, PanelLeft, FileText, Truck, AlertCircle, Info, } from "lucide-react";
+import { AppBar, Toolbar, IconButton, Typography, Box, Badge, Menu, MenuItem, Divider, ListItemIcon, ListItemText, useTheme, useMediaQuery, } from "@mui/material";
 import useAuthStore from "../../../store/useAuthStore";
 import useUIStore from "../../../store/useUIStore";
 import { ROUTES } from "../../../config/routes";
-import { getInitials, avatarColor } from "../../../utils/helpers";
 import { getMeApi } from "../../../api/authApi";
-import {
-  getNotificationsApi,
-  getUnreadNotificationCountApi,
-  markNotificationReadApi,
-  markAllNotificationsReadApi,
-} from "../../../api/notificationApi";
-import {
-  removeRegisteredDeviceToken,
-  requestNotificationPermissionAndRegister,
-  setupForegroundMessageListener,
-} from "../../../config/firebase";
+import { getNotificationsApi, getUnreadNotificationCountApi, markNotificationReadApi, markAllNotificationsReadApi, } from "../../../api/notificationApi";
+import { removeRegisteredDeviceToken, requestNotificationPermissionAndRegister, setupForegroundMessageListener, } from "../../../config/firebase";
 import { toastInfo } from "../../../notifications/toast";
 import { usePermissions } from "../../../hooks/usePermissions";
+import { socket, connectSocket } from "../../../socket/socket";
 const getNotificationIcon = (type) => {
   const t = String(type || "").toUpperCase();
   if (t.includes("JOB") || t.includes("ASSIGN") || t.includes("WORK")) {
@@ -148,10 +111,31 @@ export default function Topbar() {
     fetchUserDetails();
   }, [setUser, setMenus]);
 
+  // Refresh notification badge when socket events arrive
+  useEffect(() => {
+    const handleRefresh = () => {
+      if (canReadNotifications) {
+        fetchNotifications();
+      }
+    };
+
+    socket.on("notification-created", handleRefresh);
+    socket.on("notification-read", handleRefresh);
+    socket.on("notification-read-all", handleRefresh);
+
+    return () => {
+      socket.off("notification-created", handleRefresh);
+      socket.off("notification-read", handleRefresh);
+      socket.off("notification-read-all", handleRefresh);
+    };
+  }, [canReadNotifications]);
+
+  // Notification polling + Firebase — only for users who can read notifications
   useEffect(() => {
     if (user && canReadNotifications) {
       fetchNotifications();
       requestNotificationPermissionAndRegister();
+
       const unsubscribe = setupForegroundMessageListener((payload) => {
         console.log(
           "React Application received foreground push payload:",
@@ -159,9 +143,9 @@ export default function Topbar() {
         );
         fetchNotifications();
         if (payload?.notification) {
-          toastInfo(
-            `${payload.notification.title}: ${payload.notification.body}`,
-          );
+          // toastInfo(
+          //   `${payload.notification.title}: ${payload.notification.body}`,
+          // );
           if (Notification.permission === "granted") {
             try {
               new Notification(payload.notification.title, {
@@ -196,9 +180,9 @@ export default function Topbar() {
         fetchNotifications();
         const payload = event.data.payload;
         if (payload?.notification) {
-          toastInfo(
-            `${payload.notification.title}: ${payload.notification.body}`,
-          );
+          // toastInfo(
+          //   `${payload.notification.title}: ${payload.notification.body}`,
+          // );
         }
       }
     };
@@ -253,26 +237,32 @@ export default function Topbar() {
     }
   };
 
-  const pageTitle =
-    location.pathname
-      .split("/")
-      .filter(Boolean)
-      .map((s) => s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()))
-      .join(" / ") || "Dashboard";
+  const getPageTitle = (pathname) => {
+    if (pathname === '/locations') return 'Service Center & Location';
+    if (pathname === '/locations/new') return 'Service Center & Location / Add';
+    if (pathname.startsWith('/locations/edit/')) return 'Service Center & Location / Edit';
+    if (pathname.startsWith('/locations/view/')) return 'Service Center & Location / Details';
+    if (pathname.startsWith('/locations/')) return 'Service Center & Location';
+    return (
+      pathname
+        .split("/")
+        .filter(Boolean)
+        .map((s) => s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()))
+        .join(" / ") || "Dashboard"
+    );
+  };
+
+  const pageTitle = getPageTitle(location.pathname);
 
   return (
     <AppBar
-      position="fixed"
+      position="static"
       color="default"
       elevation={0}
       sx={{
-        width: { lg: `calc(100% - ${effectiveCollapsed ? 80 : 260}px)` },
-        ml: { lg: `${effectiveCollapsed ? 80 : 260}px` },
-        borderBottom: "1px solid",
-        borderColor: "divider",
-        bgcolor: "background.paper",
-        transition: "width 0.3s, margin-left 0.3s",
-        zIndex: (theme) => theme.zIndex.drawer - 1,
+        bgcolor: "transparent",
+        backgroundImage: "none",
+        boxShadow: "none",
       }}
     >
       <Toolbar>
@@ -394,74 +384,6 @@ export default function Topbar() {
                 ))
               )}
             </Box>
-          </Menu>
-
-          <Box
-            onClick={(e) => setUserAnchorEl(e.currentTarget)}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              cursor: "pointer",
-              ml: 1,
-              p: 0.5,
-              pr: 1.5,
-              borderRadius: 0,
-              transition: "background-color 0.2s",
-              "&:hover": { bgcolor: "action.hover" },
-            }}
-          >
-            <Avatar
-              sx={{
-                bgcolor: avatarColor(user?.fullName || user?.name),
-                width: 32,
-                height: 32,
-                fontSize: "0.875rem",
-                mr: 1,
-              }}
-            >
-              {getInitials(user?.fullName || user?.name || "U")}
-            </Avatar>
-            <Box sx={{ display: { xs: "none", sm: "block" } }}>
-              <Typography variant="body2" fontWeight={600} lineHeight={1.2}>
-                {user?.fullName || user?.name || "User"}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {user?.role?.name || role}
-              </Typography>
-            </Box>
-            <ChevronDown
-              size={14}
-              style={{ marginLeft: 8, color: "#64748b" }}
-            />
-          </Box>
-
-          <Menu
-            anchorEl={userAnchorEl}
-            open={Boolean(userAnchorEl)}
-            onClose={() => setUserAnchorEl(null)}
-            PaperProps={{ sx: { width: 200, mt: 1.5, borderRadius: 1 } }}
-            transformOrigin={{ horizontal: "right", vertical: "top" }}
-            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-          >
-            <MenuItem
-              onClick={() => {
-                navigate(ROUTES.PROFILE);
-                setUserAnchorEl(null);
-              }}
-            >
-              <ListItemIcon>
-                <User size={18} />
-              </ListItemIcon>
-              <ListItemText primary="Profile" />
-            </MenuItem>
-
-            <Divider />
-            <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>
-              <ListItemIcon sx={{ color: "inherit" }}>
-                <LogOut size={18} />
-              </ListItemIcon>
-              <ListItemText primary="Sign Out" />
-            </MenuItem>
           </Menu>
         </Box>
       </Toolbar>

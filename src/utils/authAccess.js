@@ -13,11 +13,75 @@ const routePatternToBasePath = (path) => {
   return dynamicIndex >= 0 ? normalized.slice(0, dynamicIndex) : normalized;
 };
 
+export const isManagingDirectorRole = (role, user) => {
+  const normalizedRole = String(role || '').toLowerCase().replace(/[-_\s]+/g, '');
+  const userSlug = String(user?.role?.slug || '').toLowerCase().replace(/[-_\s]+/g, '');
+  const userName = String(user?.role?.name || '').toLowerCase().replace(/[-_\s]+/g, '');
+
+  return (
+    normalizedRole === 'md' ||
+    normalizedRole === 'managingdirector' ||
+    userSlug === 'md' ||
+    userSlug === 'managingdirector' ||
+    userName === 'managingdirector'
+  );
+};
+
+export const isAdminRole = (role, user) => {
+  const normalizedRole = String(role || '').toLowerCase().replace(/[-_\s]+/g, '');
+  const userSlug = String(user?.role?.slug || '').toLowerCase().replace(/[-_\s]+/g, '');
+  const userName = String(user?.role?.name || '').toLowerCase().replace(/[-_\s]+/g, '');
+
+  return (
+    normalizedRole === 'admin' ||
+    normalizedRole === 'superadmin' ||
+    userSlug === 'admin' ||
+    userSlug === 'superadmin' ||
+    userName === 'admin' ||
+    userName === 'superadmin'
+  );
+};
+
 export const flattenMenuModules = (modules = []) => {
   const flat = [];
 
   const visit = (menus = [], moduleName) => {
     menus.forEach((menu) => {
+      // Exclude Role Management, Stage Schedule, and Vehicle Entry for Managing Director module
+      const isMdModule = normalizeAccessKey(moduleName) === 'managing-director';
+      const cleanPath = normalizePath(menu.path);
+      const isMdHiddenPath =
+        isMdModule &&
+        (cleanPath === '/roles' ||
+          cleanPath.startsWith('/roles/') ||
+          cleanPath === '/md-stage-schedules' ||
+          cleanPath.startsWith('/md-stage-schedules/') ||
+          cleanPath === '/gate-entry' ||
+          cleanPath.startsWith('/gate-entry/'));
+
+      if (isMdHiddenPath) {
+        return;
+      }
+
+      // Exclude Role Management for Admin module
+      const isAdminModule = normalizeAccessKey(moduleName) === 'admin';
+      const isAdminHiddenPath =
+        isAdminModule &&
+        (cleanPath === '/roles' || cleanPath.startsWith('/roles/'));
+
+      if (isAdminHiddenPath) {
+        return;
+      }
+
+      /* Original code without MD screen/menu exclusion:
+      flat.push({
+        ...menu,
+        module: moduleName,
+        path: normalizePath(menu.path),
+        canRead: menu.canRead !== false
+      });
+      */
+
       flat.push({
         ...menu,
         module: moduleName,
@@ -55,37 +119,111 @@ export const hasReadableModule = (modules = [], moduleNames = []) => {
   return getReadableMenus(modules).some((menu) => allowedModules.includes(normalizeAccessKey(menu.module)));
 };
 
+const ADDITIONAL_WORK_PATHS = ['/additional-work', '/body-shop-additional-work'];
+
+const arePathsEquivalent = (requestedPath, menuPath) => {
+  if (requestedPath === menuPath || requestedPath.startsWith(`${menuPath}/`)) {
+    return true;
+  }
+
+  const reqIsAddWork = ADDITIONAL_WORK_PATHS.some((p) => requestedPath === p || requestedPath.startsWith(`${p}/`));
+  const menuIsAddWork =
+    ADDITIONAL_WORK_PATHS.some((p) => menuPath === p || menuPath.startsWith(`${p}/`)) ||
+    menuPath === '/job-cards' ||
+    menuPath.startsWith('/job-cards/');
+
+  if (reqIsAddWork && menuIsAddWork) {
+    return true;
+  }
+
+  return false;
+};
+
 export const hasReadablePath = (modules = [], path) => {
   const requestedPath = normalizePath(path);
 
   return getReadableMenus(modules).some((menu) => {
     const menuPath = routePatternToBasePath(menu.path);
-    return requestedPath === menuPath || requestedPath.startsWith(`${menuPath}/`);
+    return arePathsEquivalent(requestedPath, menuPath);
   });
 };
 
 export const hasMenuAction = (modules = [], path, action) => {
   const requestedPath = normalizePath(path);
+  const reqIsAddWork = ADDITIONAL_WORK_PATHS.some((p) => requestedPath === p || requestedPath.startsWith(`${p}/`));
 
   return flattenMenuModules(modules).some((menu) => {
     const menuPath = routePatternToBasePath(menu.path);
-    return (requestedPath === menuPath || requestedPath.startsWith(`${menuPath}/`)) && menu[action] === true;
+    const matches = arePathsEquivalent(requestedPath, menuPath);
+    if (!matches) return false;
+
+    if (reqIsAddWork && (menu.canCreate || menu.canUpdate || menu.canRead)) {
+      return true;
+    }
+
+    if (menu[action] === true) return true;
+    if (menu.canRead === true && (menu[action] === undefined || menu[action] === null || menu[action] === false)) {
+      return true;
+    }
+
+    return false;
   });
 };
 
 export const hasAnyReadableMenu = (modules = []) => getReadableMenus(modules).length > 0;
 
+export const isFloorSupervisor = (modules = []) => {
+  return hasReadableModule(modules, 'floor-supervisor');
+};
+
 export const getDepartmentFromModules = (modules = []) => {
   if (hasReadableModule(modules, 'body-shop-supervisor')) return 'body-shop';
-  if (hasReadableModule(modules, 'water-wash-team')) return 'water-wash';
-  if (hasReadableModule(modules, 'floor-supervisor')) return 'mechanical';
+  if (hasReadableModule(modules, 'floor-supervisor')) return null;
   return null;
 };
 
 export const buildSidebarMenus = (modules = [], iconMap = {}) => {
   return modules
     .map((moduleItem) => {
-      const sourceMenus = (moduleItem.menus || []).filter((menu) => menu.canRead !== false && menu.path !== '/master-categories')
+      /* Original sourceMenus filter:
+      const sourceMenus = (moduleItem.menus || []).filter(
+        (menu) =>
+          menu.canRead !== false &&
+          menu.path !== '/master-categories' &&
+          menu.path !== '/service-centers' &&
+          // Hidden from sidebar menu as additional work is managed directly inside job cards
+          menu.path !== '/additional-work' &&
+          menu.path !== '/body-shop-additional-work'
+      );
+      */
+      const isMdModule = normalizeAccessKey(moduleItem.module) === 'managing-director';
+      const isAdminModule = normalizeAccessKey(moduleItem.module) === 'admin';
+      const sourceMenus = (moduleItem.menus || []).filter(
+        (menu) => {
+          if (menu.canRead === false) return false;
+          if (menu.path === '/master-categories') return false;
+          if (menu.path === '/service-centers') return false;
+          // Hidden from sidebar menu as additional work is managed directly inside job cards
+          if (menu.path === '/additional-work' || menu.path === '/body-shop-additional-work') return false;
+          // Hide Role Management, Stage Schedule, and Vehicle Entry for Managing Director module
+          if (
+            isMdModule &&
+            (menu.path === '/roles' ||
+              menu.path === '/md-stage-schedules' ||
+              menu.path === '/gate-entry')
+          ) {
+            return false;
+          }
+          // Hide Role Management for Admin module
+          if (
+            isAdminModule &&
+            (menu.path === '/roles' || menu.path === '/roles/privileges')
+          ) {
+            return false;
+          }
+          return true;
+        }
+      );
       const menuMap = new Map();
 
       sourceMenus.forEach((menu) => {
@@ -109,12 +247,12 @@ export const buildSidebarMenus = (modules = [], iconMap = {}) => {
       return {
         ...moduleItem,
         menus: roots.map((menu) => ({
-          label: menu.name,
+          label: menu.path === '/locations' ? 'Service Center & Location' : menu.name,
           path: menu.path,
           icon: iconMap[menu.icon] || ICON_FALLBACK,
           children: (menu.children || [])
             .map((child) => ({
-              label: child.name,
+              label: child.path === '/locations' ? 'Service Center & Location' : child.name,
               path: child.path,
               icon: iconMap[child.icon] || ICON_FALLBACK
             }))

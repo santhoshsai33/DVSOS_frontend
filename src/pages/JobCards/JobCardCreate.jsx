@@ -1,7 +1,7 @@
 import { useForm, FormProvider } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Grid, Typography, Divider, Card, CardContent, Checkbox, FormControlLabel, IconButton, Chip, TextField, MenuItem } from '@mui/material';
-import { Save, Search, MessageCircle, ArrowLeft, X, Plus, UserPlus } from 'lucide-react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { Box, Grid, Typography, Divider, Card, CardContent, Checkbox, FormControlLabel, IconButton, Chip, TextField, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
+import { Save, Search, MessageCircle, ArrowLeft, X, Plus, UserPlus, PlusCircle, Car } from 'lucide-react';
 import Button from '../../components/common/Button';
 import BackButton from '../../components/common/BackButton';
 import Modal from '../../components/common/Modal';
@@ -21,7 +21,6 @@ import { getMechanicsDropdownApi } from '../../api/userApi';
 import { adminBayApi } from '../../api/adminBayApi';
 import { getDepartmentFromModules, hasReadableModule } from '../../utils/authAccess';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
 import Loader from '../../components/common/Loader';
 
 const PRIORITY_OPTIONS = [
@@ -33,13 +32,14 @@ const PRIORITY_OPTIONS = [
 
 const BAY_TYPE_BY_CATEGORY = {
   mechanical: 'Mechanical',
-  'body-shop': 'Body Shop',
-  'water-wash': 'Water Wash'
+  'body-shop': 'Body Shop'
+
 };
 
 export default function JobCardCreate() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
   const { id, slug } = useParams();
   const jobCardIdentifier = slug || id;
   const isEditMode = !!jobCardIdentifier;
@@ -85,6 +85,54 @@ export default function JobCardCreate() {
 
   const selectedCategory = watch('serviceType');
   const assignmentDetails = useMemo(() => jobCard?.workAssignments || [], [jobCard]);
+
+  const getServiceAssignment = useCallback((service) => {
+    if (!service || !Array.isArray(assignmentDetails) || assignmentDetails.length === 0) return null;
+    const sJcId = service.jobCardServiceId || service.id;
+    const sItemId = service.serviceItemId || service.id;
+    const sName = (service.name || service.serviceName || '').trim().toLowerCase();
+
+    const matches = assignmentDetails.filter((a) => {
+      const aJcId = a.jobCardServiceId || a.jobCardService?.id;
+      if (sJcId && aJcId && String(sJcId) === String(aJcId)) return true;
+      const aItemId = a.jobCardService?.serviceItemId || a.service?.serviceItemId;
+      if (sItemId && aItemId && String(sItemId) === String(aItemId)) return true;
+      const aName = (a.jobCardService?.serviceName || a.service?.serviceName || '').trim().toLowerCase();
+      if (sName && aName && sName === aName) return true;
+      return false;
+    });
+
+    if (matches.length === 0) return null;
+    return matches.find((a) => !a.completedAt) || matches[matches.length - 1];
+  }, [assignmentDetails]);
+
+  const returnTab = useMemo(() => {
+    if (location.state?.activeTab) return location.state.activeTab;
+    const searchParams = new URLSearchParams(location.search);
+    const categoryQuery = (searchParams.get('category') || searchParams.get('department') || '').toLowerCase();
+    const fromQuery = (searchParams.get('from') || '').toLowerCase();
+    const jcStatus = String(jobCard?.currentStatus?.statusCode || jobCard?.currentStatus?.code || '').toUpperCase();
+    const jcCategory = String(jobCard?.serviceType || jobCard?.category || '').toLowerCase();
+
+    const stateTab = String(location.state?.activeTab || '').toLowerCase();
+    const isWaterWashProcess =
+      stateTab.includes('water') ||
+      categoryQuery.includes('water') ||
+      fromQuery.includes('water') ||
+      moduleDepartment === 'water-wash' ||
+      jcStatus.includes('WATER_WASH') ||
+      jcCategory.includes('water');
+    if (isWaterWashProcess) return 'waterwash';
+
+    const isBodyShopProcess =
+      categoryQuery.includes('body') ||
+      fromQuery.includes('body') ||
+      moduleDepartment === 'body-shop' ||
+      jcStatus.includes('BODY_SHOP') ||
+      jcCategory.includes('body');
+
+    return isBodyShopProcess ? 'bodyshop' : 'mechanic';
+  }, [location.state?.activeTab, location.search, moduleDepartment, jobCard]);
   const hasAdditionalDetails = useMemo(() => {
     if (!isEditMode) return true;
 
@@ -144,6 +192,15 @@ export default function JobCardCreate() {
   }, [isEditMode]);
 
   useEffect(() => {
+    if (!isEditMode || !jobCard) return;
+    const jcStatus = String(jobCard?.currentStatus?.statusCode || jobCard?.currentStatus?.code || '').toUpperCase();
+    if (jcStatus.includes('DELIVERED') || jcStatus === 'REJECTED') {
+      toastInfo('Delivered job cards cannot be edited.');
+      navigate(`${ROUTES.JOB_CARDS}/view/${jobCard?.slug || jobCard?.id || jobCardIdentifier}`, { replace: true });
+    }
+  }, [isEditMode, jobCard, navigate, jobCardIdentifier]);
+
+  useEffect(() => {
     if (isEditMode && jobCard) {
       const vehicle = jobCard.vehicle || {};
       const customer = jobCard.customer || {};
@@ -176,7 +233,10 @@ export default function JobCardCreate() {
           quantity: service.quantity || 1,
           category: service.serviceItem?.category?.name || firstCategory || 'Mechanical',
           serviceStatusId: service.serviceStatusId || service.serviceStatus?.id || '',
-          serviceStatusCode: service.serviceStatus?.statusCode || service.serviceStatus?.code || ''
+          serviceStatusCode: service.serviceStatus?.statusCode || service.serviceStatus?.code || '',
+          isAdditional: Boolean(service.isAdditional),
+          approvalStatusId: service.approvalStatusId || service.approvalStatus?.id || '',
+          approvalStatusCode: service.approvalStatus?.statusCode || service.approvalStatus?.code || service.approvalStatusCode || ''
         }));
         setSelectedServices(mappedServices);
         setValue('services', mappedServices.map(s => s.serviceItemId || s.id));
@@ -191,7 +251,15 @@ export default function JobCardCreate() {
       } else if (jobCard.services && masterServices.length > 0) {
         const mappedServices = masterServices.filter(s =>
           jobCard.services.includes(s.name) || jobCard.services.includes(s.id)
-        );
+        ).map(s => {
+          const matchedService = (jobCard.services || []).find(
+            js => typeof js === 'object' && (js.serviceItemId === s.id || js.id === s.id || js.serviceName === s.name || js.name === s.name)
+          );
+          return {
+            ...s,
+            isAdditional: Boolean(matchedService?.isAdditional)
+          };
+        });
         setSelectedServices(mappedServices);
         setValue('services', mappedServices.map(s => s.id));
       }
@@ -205,6 +273,9 @@ export default function JobCardCreate() {
       const code = String(currentStatus?.code || '').trim().toUpperCase();
       if (code === 'REJECTED' || code === 'CANCELLED') return true;
     }
+    const approvalCode = String(service?.approvalStatusCode || service?.approvalStatus?.statusCode || '').trim().toUpperCase();
+    if (approvalCode === 'REJECTED' || approvalCode === 'CANCELLED') return true;
+
     const fallbackCode = String(service?.serviceStatusCode || '').trim().toUpperCase();
     return fallbackCode === 'REJECTED' || fallbackCode === 'CANCELLED';
   }, [serviceStatusValues, serviceStatusOptions]);
@@ -262,23 +333,50 @@ export default function JobCardCreate() {
     const normalized = normalizeDepartment(service?.category || service?.serviceItem?.category?.name || service?.serviceItem?.category?.slug);
     if (['mechanical', 'mechanic', 'mechnanic', 'floor'].includes(normalized)) return 'mechanical';
     if (['body-shop', 'bodyshop', 'paint', 'denting'].includes(normalized)) return 'body-shop';
-    if (['water-wash', 'wash'].includes(normalized)) return 'water-wash';
+    if (['water-wash', 'water_wash', 'water wash', 'waterwash', 'washing', 'wash'].includes(normalized)) return 'water-wash';
     return '';
   };
 
   const getRoleDepartment = () => {
-    if (hasReadableModule(menus, ['admin', 'manager', 'managing-director'])) return 'all';
+    if (hasReadableModule(menus, ['admin', 'manager', 'managing-director', 'floor-supervisor', 'floor_supervisor'])) return 'all';
     if (moduleDepartment) return moduleDepartment;
-    return '';
+    return 'all';
   };
 
   const getServiceStatusCode = (service) => {
-    const currentStatus = serviceStatusOptions.find((status) => status.value === String(service.serviceStatusId || ''));
+    const selectedValue = service?.jobCardServiceId ? serviceStatusValues[service.jobCardServiceId] : null;
+    const statusId = (selectedValue !== undefined && selectedValue !== null && selectedValue !== '')
+      ? String(selectedValue)
+      : String(service?.serviceStatusId || '');
+    const currentStatus = serviceStatusOptions.find((status) => String(status.value) === String(statusId));
     return String(currentStatus?.code || service?.serviceStatusCode || '').trim().toUpperCase();
   };
 
-  const isServiceCompleted = (service) => {
-    const code = getServiceStatusCode(service);
+  const getSavedServiceStatusCode = (service) => {
+    const initialStatusId = String(service?.serviceStatusId || '');
+    const currentStatus = serviceStatusOptions.find((status) => String(status.value) === initialStatusId);
+    return String(currentStatus?.code || service?.serviceStatusCode || '').trim().toUpperCase();
+  };
+
+  const getServiceStatusOptionsForService = (service) => {
+    const isWaterWash = getServiceDepartment(service) === 'water-wash';
+    if (!isWaterWash) {
+      return serviceStatusOptions;
+    }
+    const currentVal = (service?.jobCardServiceId ? serviceStatusValues[service.jobCardServiceId] : null) || service?.serviceStatusId;
+    // Water wash has no subsequent service stage, so Postponed cannot be selected
+    return serviceStatusOptions.filter((status) => {
+      const code = String(status.code || status.label || '').toUpperCase();
+      if (code === 'POSTPONED') {
+        // Retain only if it was already saved in DB to avoid select component mismatch
+        return currentVal && String(status.value) === String(currentVal);
+      }
+      return true;
+    });
+  };
+
+  const isSavedServiceCompleted = (service) => {
+    const code = getSavedServiceStatusCode(service);
     return ['COMPLETED', 'REJECTED', 'CANCELLED'].some((status) => code.includes(status));
   };
 
@@ -287,8 +385,16 @@ export default function JobCardCreate() {
     return ['COMPLETED', 'POSTPONED', 'REJECTED', 'CANCELLED'].some((status) => code.includes(status));
   };
 
+  const areAllRepairServicesCompleted = () => {
+    const repairServices = selectedServices.filter((service) => {
+      const dept = getServiceDepartment(service);
+      return dept === 'mechanical' || dept === 'body-shop';
+    });
+    return repairServices.length === 0 || repairServices.every(isSavedServiceCompleted);
+  };
+
   const arePreviousDepartmentsCompleted = (department) => {
-    const order = ['mechanical', 'body-shop', 'water-wash'];
+    const order = ['mechanical', 'body-shop'];
     const departmentIndex = order.indexOf(department);
     const previousDepartments = order.slice(0, departmentIndex);
 
@@ -299,14 +405,22 @@ export default function JobCardCreate() {
   };
 
   const canEditServiceStatus = (service) => {
+    if (isSavedServiceCompleted(service)) return false;
+
     const roleDepartment = getRoleDepartment();
+    const serviceDepartment = getServiceDepartment(service);
+
+    // Water Wash status can only be edited once all repair services (mechanical and body-shop) are completed
+    if (serviceDepartment === 'water-wash') {
+      if (!areAllRepairServicesCompleted()) return false;
+      return roleDepartment === 'all' || roleDepartment === 'water-wash';
+    }
+
     if (roleDepartment === 'all') return true;
 
-    const serviceDepartment = getServiceDepartment(service);
     return Boolean(roleDepartment)
       && roleDepartment === serviceDepartment
-      && arePreviousDepartmentsCompleted(serviceDepartment)
-      && !isServiceCompleted(service);
+      && arePreviousDepartmentsCompleted(serviceDepartment);
   };
 
   const getAssignmentDepartment = (assignment) => {
@@ -314,12 +428,12 @@ export default function JobCardCreate() {
     const normalized = normalizeDepartment(category?.slug || category?.name);
     if (['mechanical', 'mechanic', 'mechnanic', 'floor'].includes(normalized)) return 'mechanical';
     if (['body-shop', 'bodyshop', 'paint', 'denting'].includes(normalized)) return 'body-shop';
-    if (['water-wash', 'wash'].includes(normalized)) return 'water-wash';
+    if (['water-wash', 'water_wash', 'water wash', 'waterwash', 'washing', 'wash'].includes(normalized)) return 'water-wash';
     return '';
   };
 
   const activeAssignmentDetails = useMemo(() => {
-    return assignmentDetails.filter((assignment) => !assignment.completedAt);
+    return assignmentDetails.filter((assignment) => !assignment.completedAt && getAssignmentDepartment(assignment) !== 'water-wash');
   }, [assignmentDetails]);
 
   const assignmentCategory = useMemo(() => {
@@ -331,15 +445,29 @@ export default function JobCardCreate() {
     const activeAssignmentCategory = activeAssignmentDetails.map(getAssignmentDepartment).find(Boolean);
     if (activeAssignmentCategory) return activeAssignmentCategory;
 
+    // Check departments in workflow priority order: mechanical -> body-shop -> water-wash
+    for (const dept of ['mechanical', 'body-shop', 'water-wash']) {
+      const uncompletedInDept = selectedServices.find(
+        (s) => getServiceDepartment(s) === dept && !isSavedServiceCompleted(s)
+      );
+      if (uncompletedInDept) {
+        return dept;
+      }
+    }
+
     const selectedServiceCategory = selectedServices.map(getServiceDepartment).find(Boolean);
     if (selectedServiceCategory) return selectedServiceCategory;
 
     if (moduleDepartment) return moduleDepartment;
     return 'mechanical';
-  }, [activeAssignmentDetails, selectedServices, moduleDepartment, menus]);
+  }, [activeAssignmentDetails, selectedServices, moduleDepartment, menus, isSavedServiceCompleted]);
+
+  const isWaterWashContext = assignmentCategory === 'water-wash' ||
+    (selectedServices.length > 0 && selectedServices.every(s => getServiceDepartment(s) === 'water-wash' || isSavedServiceCompleted(s)) && selectedServices.some(s => getServiceDepartment(s) === 'water-wash' && !isSavedServiceCompleted(s)));
 
   const canReassignExistingWork = activeAssignmentDetails.some((assignment) => getAssignmentDepartment(assignment) === assignmentCategory);
-  const assignButtonLabel = canReassignExistingWork ? 'Reassign Mechanic & Bay' : 'Assign Mechanic & Bay';
+  const assigneeLabel = assignmentCategory === 'body-shop' ? 'Technician' : 'Mechanic';
+  const assignButtonLabel = canReassignExistingWork ? `Reassign ${assigneeLabel} & Bay` : `Assign ${assigneeLabel} & Bay`;
 
   const { data: mechanicsResponse, isLoading: isMechanicsLoading } = useQuery({
     queryKey: ['job-card-edit-mechanics', locationId, assignmentCategory],
@@ -516,7 +644,13 @@ export default function JobCardCreate() {
       if (isEditMode) {
         await updateJobCardApi(jobCardIdentifier, {
           serviceStatuses: selectedServices
-            .filter((service) => canEditServiceStatus(service) && service.jobCardServiceId && serviceStatusValues[service.jobCardServiceId])
+            .filter((service) => {
+              if (!service.jobCardServiceId) return false;
+              const currentVal = serviceStatusValues[service.jobCardServiceId];
+              if (!currentVal) return false;
+              const initialVal = service.serviceStatusId ? String(service.serviceStatusId) : '';
+              return String(currentVal) !== initialVal;
+            })
             .map((service) => ({
               jobCardServiceId: service.jobCardServiceId,
               statusId: Number(serviceStatusValues[service.jobCardServiceId])
@@ -527,7 +661,7 @@ export default function JobCardCreate() {
       }
       await queryClient.invalidateQueries({ queryKey: ['job-cards'] });
       toastSuccess(isEditMode ? 'Job Card updated successfully!' : 'Job Card created successfully!');
-      navigate(ROUTES.JOB_CARDS);
+      navigate(ROUTES.JOB_CARDS, { state: { activeTab: returnTab } });
     } catch (error) {
       toastError(error?.message || (isEditMode ? 'Failed to update Job Card.' : 'Failed to create Job Card.'));
     }
@@ -538,16 +672,33 @@ export default function JobCardCreate() {
     const selectedStatus = serviceStatusOptions.find(s => String(s.value) === String(statusId));
     const statusCode = selectedStatus?.code?.toUpperCase() || '';
 
+    // Water wash cannot be postponed as there is no subsequent service stage
+    if (statusCode === 'POSTPONED' && getServiceDepartment(service) === 'water-wash') {
+      toastError('Water wash service cannot be postponed as there is no subsequent service stage');
+      return;
+    }
+
     const progressingStatuses = ['ASSIGNED', 'IN_PROGRESS', 'COMPLETED'];
     const isProgressingStatus = progressingStatuses.some(status => statusCode.includes(status));
 
+    // Without customer approval, additional work cannot be started or progressed, but CAN be rejected
+    const isUnapprovedAdditional = Boolean(service?.isAdditional) &&
+      String(service?.approvalStatusCode || service?.approvalStatus?.statusCode || '').toUpperCase() !== 'APPROVED';
+
+    if (isUnapprovedAdditional && isProgressingStatus) {
+      toastError('Additional work must be customer approved before it can be started');
+      return;
+    }
+
     if (isProgressingStatus) {
       const serviceDept = getServiceDepartment(service);
-      const hasAnyAssignment = assignmentDetails.some(a => getAssignmentDepartment(a) === serviceDept);
+      if (serviceDept !== 'water-wash') {
+        const hasAnyAssignment = assignmentDetails.some(a => getAssignmentDepartment(a) === serviceDept);
 
-      if (!hasAnyAssignment) {
-        toastError(`Please assign a mechanic and bay for ${serviceDept || 'this department'} services first.`);
-        return;
+        if (!hasAnyAssignment) {
+          toastError(`Please assign a mechanic and bay for ${serviceDept || 'this department'} services first.`);
+          return;
+        }
       }
     }
 
@@ -557,8 +708,51 @@ export default function JobCardCreate() {
     }));
   };
 
+  const getInitials = (name) => {
+    if (!name || name === 'Unknown' || name === '—') return 'CU';
+    const parts = String(name).trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return String(name).slice(0, 2).toUpperCase();
+  };
+
+  const computeServiceWorkStatus = () => {
+    const services = selectedServices || [];
+    const assignments = assignmentDetails || [];
+
+    const hasMechanical = services.some(s => {
+      const cat = String(s.category || s.serviceItem?.category?.name || s.name || '').toLowerCase();
+      return cat.includes('mechanic') || cat.includes('floor');
+    }) || assignments.some(a => String(a.jobCardService?.serviceItem?.category?.name || a.service?.category?.name || '').toLowerCase().includes('mechanic'));
+
+    const hasBodyshop = services.some(s => {
+      const cat = String(s.category || s.serviceItem?.category?.name || s.name || '').toLowerCase();
+      return cat.includes('body') || cat.includes('denting') || cat.includes('paint');
+    }) || assignments.some(a => String(a.jobCardService?.serviceItem?.category?.name || a.service?.category?.name || '').toLowerCase().includes('body'));
+
+    const isAllCompleted = services.length > 0 && services.every(s => {
+      const statusVal = s.jobCardServiceId ? serviceStatusValues[s.jobCardServiceId] : null;
+      const opt = serviceStatusOptions.find(o => String(o.value) === String(statusVal));
+      const code = String(opt?.code || s.serviceStatusCode || '').toUpperCase();
+      return code.includes('COMPLETED') || code.includes('REJECTED') || code.includes('CANCELLED');
+    });
+
+    if (isAllCompleted) {
+      if (hasMechanical && hasBodyshop) return 'Completed (Mechanical & Body Shop)';
+      if (hasBodyshop) return 'Completed (Body Shop)';
+      if (hasMechanical) return 'Completed (Mechanical)';
+      return 'Completed';
+    }
+
+    if (hasMechanical && hasBodyshop) return 'Mechanical & Body Shop';
+    if (hasBodyshop) return 'Body Shop Work';
+    if (hasMechanical) return 'Mechanical Work';
+    return watch('serviceType') || jobCard?.serviceType || 'Regular Service';
+  };
+
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100%', p: { xs: 2, md: 4 } }}>
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100%', p: { xs: 2, md: '19px' } }}>
 
       {/* Page Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
@@ -566,7 +760,7 @@ export default function JobCardCreate() {
           {isEditMode ? 'Edit Job Card' : 'Create Job Card'}
         </Typography>
         <BackButton
-          to={ROUTES.JOB_CARDS}
+          onClick={() => navigate(ROUTES.JOB_CARDS, { state: { activeTab: returnTab } })}
           label="Back to List"
         />
       </Box>
@@ -576,72 +770,277 @@ export default function JobCardCreate() {
           <Grid container spacing={4}>
             {/* LEFT COLUMN: FORM */}
             <Grid item xs={12} lg={8}>
-              <Card sx={{ borderRadius: 3, boxShadow: 0, p: 3, mb: 4 }}>
-                <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
-                  Vehicle & Customer Information
-                </Typography>
+              <Card sx={{ borderRadius: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', p: 3, mb: 4 }}>
+                <Box sx={{ pb: 1.5, mb: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Car size={18} color="#dc2626" />
+                  <Typography variant="caption" fontWeight={800} sx={{ color: '#64748b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    VEHICLE & CUSTOMER DETAILS
+                  </Typography>
+                </Box>
 
-                <Grid container spacing={3} sx={{ mb: 3 }}>
-                  <Grid item xs={12} md={6}>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                      <Box sx={{ flexGrow: 1 }}>
-                        <RHFTextField name="vehicleNumber" label="Registration Number" placeholder="TN 01 AB 1234" required readOnly={isEditMode} />
-                      </Box>
-                      {!isEditMode && (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          leftIcon={Search}
-                          isLoading={isSearching}
-                          onClick={handleSearchVehicle}
-                          style={{ height: '40px' }}
-                        >
-                          Search
-                        </Button>
-                      )}
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <RHFTextField name="makeModel" label="Brand & Model" placeholder="e.g. Hyundai Creta" required readOnly={isEditMode} />
-                  </Grid>
-                </Grid>
-
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <RHFTextField name="ownerName" label="Owner Name" placeholder="Full name" required readOnly={isEditMode} />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <RHFTextField name="ownerMobile" label="Mobile Number" placeholder="10-digit mobile" required readOnly={isEditMode} />
-                  </Grid>
-                </Grid>
-
-                <Grid container spacing={3} sx={{ mt: 0 }}>
-                  <Grid item xs={12} md={6}>
-                    <RHFTextField name="deliveryDate" label="Expected Delivery" type={isEditMode ? 'text' : 'datetime-local'} required readOnly={isEditMode} />
-                  </Grid>
-                  {isEditMode && !hasReadableModule(menus, ['manager', 'managing-director']) && (
+                {isEditMode ? (
+                  <Grid container spacing={3}>
+                    {/* CUSTOMER COLUMN */}
                     <Grid item xs={12} md={6}>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75, fontWeight: 600 }}>
-                        Mechanic & Bay
-                      </Typography>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        leftIcon={UserPlus}
-                        onClick={openAssignModal}
-                        fullWidth
-                      >
-                        {assignButtonLabel}
-                      </Button>
+                      <Box sx={{ pr: { md: 2 } }}>
+                        <Typography variant="caption" fontWeight={800} sx={{ color: '#94a3b8', letterSpacing: '0.08em', display: 'block', mb: 2, textTransform: 'uppercase' }}>
+                          CUSTOMER
+                        </Typography>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
+                          <Box sx={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: '50%',
+                            bgcolor: '#2563eb',
+                            color: '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 800,
+                            fontSize: '1rem',
+                            flexShrink: 0
+                          }}>
+                            {getInitials(watch('ownerName') || jobCard?.ownerName || jobCard?.customer?.fullName)}
+                          </Box>
+                          <Box>
+                            <Typography variant="subtitle1" fontWeight={700} sx={{ color: '#0f172a', lineHeight: 1.2 }}>
+                              {watch('ownerName') || jobCard?.ownerName || jobCard?.customer?.fullName || '—'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mt: 0.25 }}>
+                              {watch('ownerMobile') || jobCard?.ownerMobile || jobCard?.customer?.mobileNo || '—'}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+                          <Grid container spacing={1}>
+                            <Grid item xs={5}>
+                              <Typography variant="body2" color="text.secondary" fontWeight={500}>Job Card No.:</Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                              <Typography variant="body2" fontWeight={700} sx={{ color: '#334155' }}>
+                                {jobCard?.jobCardNo || jobCardIdentifier || '—'}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+
+                          <Grid container spacing={1}>
+                            <Grid item xs={5}>
+                              <Typography variant="body2" color="text.secondary" fontWeight={500}>Entry Time:</Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                              <Typography variant="body2" fontWeight={600} sx={{ color: '#334155' }}>
+                                {jobCard?.createdAt ? formatDate(new Date(jobCard.createdAt), 'hh:mm a') : '—'}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+
+                          <Grid container spacing={1}>
+                            <Grid item xs={5}>
+                              <Typography variant="body2" color="text.secondary" fontWeight={500}>Est. Delivery:</Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                              <Typography variant="body2" fontWeight={700} sx={{ color: '#0d9488' }}>
+                                {watch('deliveryDate') || (jobCard?.expectedDeliveryAt ? formatDate(new Date(jobCard.expectedDeliveryAt), 'dd - MM - yyyy hh:mm a') : '—')}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+
+                          <Grid container spacing={1}>
+                            <Grid item xs={5}>
+                              <Typography variant="body2" color="text.secondary" fontWeight={500}>Service Type:</Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                              <Typography variant="body2" fontWeight={600} sx={{ color: '#334155' }}>
+                                {computeServiceWorkStatus()}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </Box>
+                      </Box>
                     </Grid>
-                  )}
-                </Grid>
+
+                    {/* VEHICLE COLUMN */}
+                    <Grid item xs={12} md={6} sx={{ borderLeft: { md: '1px solid #f1f5f9' }, pl: { md: 3 } }}>
+                      <Box>
+                        <Typography variant="caption" fontWeight={800} sx={{ color: '#94a3b8', letterSpacing: '0.08em', display: 'block', mb: 2, textTransform: 'uppercase' }}>
+                          VEHICLE
+                        </Typography>
+
+                        <Typography variant="h4" fontWeight={800} sx={{ color: '#1e40af', letterSpacing: '0.05em', mb: 2, fontFamily: 'monospace, sans-serif' }}>
+                          {watch('vehicleNumber') || jobCard?.vehicleNumber || jobCard?.vehicle?.registrationNo || '—'}
+                        </Typography>
+
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+                          <Grid container spacing={1}>
+                            <Grid item xs={5}>
+                              <Typography variant="body2" color="text.secondary" fontWeight={500}>Make/Model:</Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                              <Typography variant="body2" fontWeight={700} sx={{ color: '#0f172a' }}>
+                                {watch('makeModel') || jobCard?.makeModel || '—'}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+
+                          <Grid container spacing={1}>
+                            <Grid item xs={5}>
+                              <Typography variant="body2" color="text.secondary" fontWeight={500}>Colour:</Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                              <Typography variant="body2" fontWeight={600} sx={{ color: '#334155' }}>
+                                {jobCard?.vehicle?.color || jobCard?.vehicleColor || jobCard?.color || 'White'}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+
+                          <Grid container spacing={1}>
+                            <Grid item xs={5}>
+                              <Typography variant="body2" color="text.secondary" fontWeight={500}>Fuel:</Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                              <Typography variant="body2" fontWeight={600} sx={{ color: '#334155' }}>
+                                {jobCard?.vehicle?.fuelType || jobCard?.fuelType || 'Petrol'}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+
+                          <Grid container spacing={1}>
+                            <Grid item xs={5}>
+                              <Typography variant="body2" color="text.secondary" fontWeight={500}>Mechanic:</Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                              <Typography variant="body2" fontWeight={600} sx={{ color: '#334155' }}>
+                                {(activeAssignmentDetails[0]?.assignedUser?.fullName || assignmentDetails[0]?.assignedUser?.fullName || jobCard?.technician || jobCard?.assignedMechanic?.fullName || 'Unassigned')}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+
+                          <Grid container spacing={1}>
+                            <Grid item xs={5}>
+                              <Typography variant="body2" color="text.secondary" fontWeight={500}>Bay:</Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                              <Typography variant="body2" fontWeight={600} sx={{ color: '#334155' }}>
+                                {(activeAssignmentDetails[0]?.bay?.bayName || activeAssignmentDetails[0]?.bay?.bayCode || activeAssignmentDetails[0]?.bay?.name || assignmentDetails[0]?.bay?.bayName || assignmentDetails[0]?.bay?.bayCode || assignmentDetails[0]?.bay?.name || jobCard?.bay?.bayName || jobCard?.bay?.name || jobCard?.assignedBay?.bayName || jobCard?.assignedBay?.name || '—')}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </Box>
+
+                        {!hasReadableModule(menus, ['manager', 'managing-director']) && !isWaterWashContext && (
+                          <Box sx={{ mt: 2.5 }}>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              leftIcon={UserPlus}
+                              onClick={openAssignModal}
+                              fullWidth
+                            >
+                              {assignButtonLabel}
+                            </Button>
+                          </Box>
+                        )}
+                      </Box>
+                    </Grid>
+                  </Grid>
+                ) : (
+                  <>
+                    <Grid container spacing={3} sx={{ mb: 3 }}>
+                      <Grid item xs={12} md={6}>
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                          <Box sx={{ flexGrow: 1 }}>
+                            <RHFTextField name="vehicleNumber" label="Registration Number" placeholder="TN 01 AB 1234" required />
+                          </Box>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            leftIcon={Search}
+                            isLoading={isSearching}
+                            onClick={handleSearchVehicle}
+                            style={{ height: '40px' }}
+                          >
+                            Search
+                          </Button>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <RHFTextField name="makeModel" label="Brand & Model" placeholder="e.g. Hyundai Creta" required />
+                      </Grid>
+                    </Grid>
+
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} md={6}>
+                        <RHFTextField name="ownerName" label="Owner Name" placeholder="Full name" required />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <RHFTextField name="ownerMobile" label="Mobile Number" placeholder="10-digit mobile" required />
+                      </Grid>
+                    </Grid>
+
+                    <Grid container spacing={3} sx={{ mt: 0 }}>
+                      <Grid item xs={12} md={6}>
+                        <RHFTextField name="deliveryDate" label="Expected Delivery" type="datetime-local" required />
+                      </Grid>
+                    </Grid>
+                  </>
+                )}
               </Card>
 
               <Card sx={{ borderRadius: 3, boxShadow: 0, p: 3, mb: 4 }}>
-                <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
-                  Service Configuration & Master List
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    Service Configuration & Master List
+                  </Typography>
+                  {isEditMode && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="small"
+                      leftIcon={PlusCircle}
+                      onClick={() => {
+                        const searchParams = new URLSearchParams(location.search);
+                        const categoryQuery = (searchParams.get('category') || searchParams.get('department') || '').toLowerCase();
+                        const fromQuery = (searchParams.get('from') || '').toLowerCase();
+                        const stateTab = String(location.state?.activeTab || location.state?.department || location.state?.category || '').toLowerCase();
+                        const jcStatus = String(jobCard?.currentStatus?.statusCode || jobCard?.currentStatus?.code || '').toUpperCase();
+                        const jcCategory = String(jobCard?.serviceType || jobCard?.category || '').toLowerCase();
+                        const hasIncompleteRepair = Array.isArray(selectedServices) && selectedServices.some(s => {
+                          const dept = getServiceDepartment(s);
+                          return (dept === 'mechanical' || dept === 'body-shop') && !isSavedServiceCompleted(s);
+                        });
+                        const isWaterWashProcess = !hasIncompleteRepair && (
+                          stateTab.includes('water') ||
+                          categoryQuery.includes('water') ||
+                          fromQuery.includes('water') ||
+                          moduleDepartment === 'water-wash' ||
+                          jcStatus.includes('WATER_WASH') ||
+                          jcCategory.includes('water') ||
+                          (Array.isArray(selectedServices) && selectedServices.some(s => getServiceDepartment(s) === 'water-wash' && !isSavedServiceCompleted(s)))
+                        );
+                        const isBodyShopProcess =
+                          !isWaterWashProcess && (
+                            stateTab.includes('body') ||
+                            categoryQuery.includes('body') ||
+                            fromQuery.includes('body') ||
+                            moduleDepartment === 'body-shop' ||
+                            jcStatus.includes('BODY_SHOP') ||
+                            jcCategory.includes('body')
+                          );
+                        const categoryParam = isWaterWashProcess ? 'water-wash' : (isBodyShopProcess ? 'body-shop' : 'mechanical');
+                        const jobCardIdParam = encodeURIComponent(jobCard?.slug || jobCard?.jobCardNo || jobCardIdentifier);
+                        const targetRoute = isBodyShopProcess ? ROUTES.BODY_SHOP_ADDITIONAL_WORK_NEW : ROUTES.FLOOR_ADDITIONAL_WORK_NEW;
+                        const fromEditPath = encodeURIComponent(location.pathname + location.search);
+                        navigate(`${targetRoute}?jobCardId=${jobCardIdParam}&category=${categoryParam}&from=${fromEditPath}`, {
+                          state: location.state
+                        });
+                      }}
+                    >
+                      Add Additional Work
+                    </Button>
+                  )}
+                </Box>
 
                 {!isEditMode && (
                   <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -657,65 +1056,233 @@ export default function JobCardCreate() {
 
                 {isEditMode ? (
                   <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', md: '1.7fr 0.8fr 0.8fr 1.2fr' },
-                        gap: 2,
-                        px: 2,
-                        py: 1.5,
-                        bgcolor: '#F1F5F9'
-                      }}
-                    >
-                      <Typography variant="caption" fontWeight={800} color="text.secondary">SERVICE NAME</Typography>
-                      <Typography variant="caption" fontWeight={800} color="text.secondary">ESTIMATE</Typography>
-                      <Typography variant="caption" fontWeight={800} color="text.secondary">PRICE</Typography>
-                      <Typography variant="caption" fontWeight={800} color="text.secondary">STATUS</Typography>
-                    </Box>
-
-                    {selectedServices.length === 0 ? (
-                      <Box sx={{ p: 3, textAlign: 'center' }}>
-                        <Typography variant="body2" color="text.secondary">No services added for this job card.</Typography>
-                      </Box>
-                    ) : (
-                      selectedServices.map((service) => (
+                    <Box sx={{ overflowX: 'auto' }}>
+                      <Box sx={{ minWidth: 860 }}>
                         <Box
-                          key={service.jobCardServiceId || service.serviceItemId || service.id}
                           sx={{
                             display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', md: '1.7fr 0.8fr 0.8fr 1.2fr' },
+                            gridTemplateColumns: '1.8fr 1.3fr 1.8fr 0.7fr 0.8fr 1.2fr',
                             gap: 2,
-                            alignItems: 'center',
                             px: 2,
                             py: 1.5,
-                            borderTop: '1px solid',
-                            borderColor: 'divider'
+                            bgcolor: '#F1F5F9'
                           }}
                         >
-                          <Box>
-                            <Typography variant="body2" fontWeight={700}>{service.name}</Typography>
-                            <Typography variant="caption" color="text.secondary">{service.category}</Typography>
-                          </Box>
-                          <Typography variant="body2" color="text.secondary">
-                            {service.estimateMinutes ? `${service.estimateMinutes} min` : '-'}
-                          </Typography>
-                          <Typography variant="body2" fontWeight={700}>{formatCurrency(service.price)}</Typography>
-                          <TextField
-                            select
-                            fullWidth
-                            size="small"
-                            value={serviceStatusValues[service.jobCardServiceId] || ''}
-                            onChange={(event) => handleServiceStatusChange(service, event.target.value)}
-                            disabled={!canEditServiceStatus(service)}
-                          >
-                            <MenuItem value="" disabled>Select status</MenuItem>
-                            {serviceStatusOptions.map((status) => (
-                              <MenuItem key={status.value} value={status.value}>{status.label}</MenuItem>
-                            ))}
-                          </TextField>
+                          <Typography variant="caption" fontWeight={800} color="text.secondary">SERVICE NAME</Typography>
+                          <Typography variant="caption" fontWeight={800} color="text.secondary">ASSIGNED USER</Typography>
+                          <Typography variant="caption" fontWeight={800} color="text.secondary">START & END TIME</Typography>
+                          <Typography variant="caption" fontWeight={800} color="text.secondary">ESTIMATE</Typography>
+                          <Typography variant="caption" fontWeight={800} color="text.secondary">PRICE</Typography>
+                          <Typography variant="caption" fontWeight={800} color="text.secondary">STATUS</Typography>
                         </Box>
-                      ))
-                    )}
+
+                        {selectedServices.length === 0 ? (
+                          <Box sx={{ p: 3, textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">No services added for this job card.</Typography>
+                          </Box>
+                        ) : (
+                          <>
+                            {/* Regular Services */}
+                            {selectedServices.filter(s => !s.isAdditional).map((service) => {
+                              const assignment = getServiceAssignment(service);
+                              const assignedUser = assignment?.assignedUser;
+                              return (
+                                <Box
+                                  key={service.jobCardServiceId || service.serviceItemId || service.id}
+                                  sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1.8fr 1.3fr 1.8fr 0.7fr 0.8fr 1.2fr',
+                                    gap: 2,
+                                    alignItems: 'center',
+                                    px: 2,
+                                    py: 1.5,
+                                    borderTop: '1px solid',
+                                    borderColor: 'divider'
+                                  }}
+                                >
+                                  <Box>
+                                    <Typography variant="body2" fontWeight={700}>{service.name}</Typography>
+                                    <Typography variant="caption" color="text.secondary">{service.category}</Typography>
+                                  </Box>
+                                  <Box>
+                                    {/* Previously: {(getServiceDepartment(service) !== 'water-wash' && assignedUser) ? ( */}
+                                    {(assignedUser && (getServiceDepartment(service) !== 'water-wash' || assignment?.startedAt || assignment?.completedAt || ['IN_PROGRESS', 'COMPLETED'].includes(service.status?.statusCode || service.status))) ? (
+                                      <>
+                                        <Typography variant="body2" fontWeight={600} sx={{ color: 'text.primary' }}>
+                                          {assignedUser?.fullName || '-'}
+                                        </Typography>
+                                        {assignedUser?.employeeCode && (
+                                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                            {assignedUser.employeeCode}
+                                          </Typography>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <Typography variant="body2" color="text.secondary">-</Typography>
+                                    )}
+                                  </Box>
+                                  {(!assignment?.startedAt && !assignment?.completedAt) ? (
+                                    <Typography variant="body2" color="text.secondary">-</Typography>
+                                  ) : (
+                                    <Box sx={{ whiteSpace: 'nowrap' }}>
+                                      <Typography variant="body2" sx={{ fontSize: '0.8125rem' }}>
+                                        <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 600, mr: 0.5 }}>Start:</Box>
+                                        {assignment?.startedAt ? formatDateTime(assignment.startedAt) : '-'}
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ fontSize: '0.8125rem', mt: 0.25 }}>
+                                        <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 600, mr: 0.5 }}>End:</Box>
+                                        {assignment?.completedAt ? formatDateTime(assignment.completedAt) : '-'}
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                  <Typography variant="body2" color="text.secondary">
+                                    {service.estimateMinutes ? `${service.estimateMinutes} min` : '-'}
+                                  </Typography>
+                                  {/* Previously:
+                                  <Typography variant="body2" fontWeight={700}>{formatCurrency(service.price)}</Typography>
+                                  */}
+                                  <Typography
+                                    variant="body2"
+                                    fontWeight={700}
+                                    title={isServiceRejectedOrCancelled(service) ? 'Deducted from bill because service was rejected' : undefined}
+                                    sx={{ color: isServiceRejectedOrCancelled(service) ? '#DC2626' : 'inherit' }}
+                                  >
+                                    {isServiceRejectedOrCancelled(service) ? `(- ${formatCurrency(service.price)})` : formatCurrency(service.price)}
+                                  </Typography>
+                                  <TextField
+                                    select
+                                    fullWidth
+                                    size="small"
+                                    value={serviceStatusValues[service.jobCardServiceId] || ''}
+                                    onChange={(event) => handleServiceStatusChange(service, event.target.value)}
+                                    disabled={!canEditServiceStatus(service)}
+                                  >
+                                    <MenuItem value="" disabled>Select status</MenuItem>
+                                    {/* Previously: {serviceStatusOptions.map((status) => ( */}
+                                    {getServiceStatusOptionsForService(service).map((status) => (
+                                      <MenuItem key={status.value} value={status.value}>{status.label}</MenuItem>
+                                    ))}
+                                  </TextField>
+                                </Box>
+                              );
+                            })}
+
+                            {/* Additional Work & Services Sub-section */}
+                            {selectedServices.some(s => s.isAdditional) && (
+                              <>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    px: 2,
+                                    py: 1.25,
+                                    bgcolor: '#f0fdf4',
+                                    borderTop: '1px solid #bbf7d0',
+                                    borderBottom: '1px solid #bbf7d0'
+                                  }}
+                                >
+                                  <PlusCircle size={15} color="#16a34a" />
+                                  <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#15803d', fontSize: '0.8125rem' }}>
+                                    Additional Work & Services
+                                  </Typography>
+                                  <Chip
+                                    label={`${selectedServices.filter(s => s.isAdditional).length} Added`}
+                                    size="small"
+                                    sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 700, fontSize: '0.7rem', height: 20 }}
+                                  />
+                                </Box>
+
+                                {selectedServices.filter(s => s.isAdditional).map((service) => {
+                                  const assignment = getServiceAssignment(service);
+                                  const assignedUser = assignment?.assignedUser;
+                                  return (
+                                    <Box
+                                      key={service.jobCardServiceId || service.serviceItemId || service.id}
+                                      sx={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '1.8fr 1.3fr 1.8fr 0.7fr 0.8fr 1.2fr',
+                                        gap: 2,
+                                        alignItems: 'center',
+                                        px: 2,
+                                        py: 1.5,
+                                        borderTop: '1px solid',
+                                        borderColor: 'divider',
+                                        bgcolor: '#fafafa'
+                                      }}
+                                    >
+                                      <Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                          <Typography variant="body2" fontWeight={700}>{service.name}</Typography>
+                                          <Chip label="Additional" size="small" sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 700, fontSize: '0.65rem', height: 18, px: 0.5 }} />
+                                        </Box>
+                                        <Typography variant="caption" color="text.secondary">{service.category}</Typography>
+                                      </Box>
+                                      <Box>
+                                        {/* Previously: {(getServiceDepartment(service) !== 'water-wash' && assignedUser) ? ( */}
+                                        {(assignedUser && (getServiceDepartment(service) !== 'water-wash' || assignment?.startedAt || assignment?.completedAt || ['IN_PROGRESS', 'COMPLETED'].includes(service.status?.statusCode || service.status))) ? (
+                                          <>
+                                            <Typography variant="body2" fontWeight={600} sx={{ color: 'text.primary' }}>
+                                              {assignedUser?.fullName || '-'}
+                                            </Typography>
+                                            {assignedUser?.employeeCode && (
+                                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                                {assignedUser.employeeCode}
+                                              </Typography>
+                                            )}
+                                          </>
+                                        ) : (
+                                          <Typography variant="body2" color="text.secondary">-</Typography>
+                                        )}
+                                      </Box>
+                                      {(!assignment?.startedAt && !assignment?.completedAt) ? (
+                                        <Typography variant="body2" color="text.secondary">-</Typography>
+                                      ) : (
+                                        <Box sx={{ whiteSpace: 'nowrap' }}>
+                                          <Typography variant="body2" sx={{ fontSize: '0.8125rem' }}>
+                                            <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 600, mr: 0.5 }}>Start:</Box>
+                                            {assignment?.startedAt ? formatDateTime(assignment.startedAt) : '-'}
+                                          </Typography>
+                                          <Typography variant="body2" sx={{ fontSize: '0.8125rem', mt: 0.25 }}>
+                                            <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.75rem', fontWeight: 600, mr: 0.5 }}>End:</Box>
+                                            {assignment?.completedAt ? formatDateTime(assignment.completedAt) : '-'}
+                                          </Typography>
+                                        </Box>
+                                      )}
+                                      <Typography variant="body2" color="text.secondary">
+                                        {service.estimateMinutes ? `${service.estimateMinutes} min` : '-'}
+                                      </Typography>
+                                      <Typography
+                                        variant="body2"
+                                        fontWeight={700}
+                                        title={isServiceRejectedOrCancelled(service) ? 'Deducted from bill because service was rejected' : undefined}
+                                        sx={{ color: isServiceRejectedOrCancelled(service) ? '#DC2626' : 'inherit' }}
+                                      >
+                                        {isServiceRejectedOrCancelled(service) ? `(- ${formatCurrency(service.price)})` : formatCurrency(service.price)}
+                                      </Typography>
+                                      <TextField
+                                        select
+                                        fullWidth
+                                        size="small"
+                                        value={serviceStatusValues[service.jobCardServiceId] || ''}
+                                        onChange={(event) => handleServiceStatusChange(service, event.target.value)}
+                                        disabled={!canEditServiceStatus(service)}
+                                      >
+                                        <MenuItem value="" disabled>Select status</MenuItem>
+                                        {/* Previously: {serviceStatusOptions.map((status) => ( */}
+                                        {getServiceStatusOptionsForService(service).map((status) => (
+                                          <MenuItem key={status.value} value={status.value}>{status.label}</MenuItem>
+                                        ))}
+                                      </TextField>
+                                    </Box>
+                                  );
+                                })}
+                              </>
+                            )}
+                          </>
+                        )}
+                      </Box>
+                    </Box>
                   </Box>
                 ) : (
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
@@ -762,95 +1329,6 @@ export default function JobCardCreate() {
                 )}
               </Card>
 
-              {isEditMode && (
-                <Card sx={{ borderRadius: 3, boxShadow: 0, p: 3, mb: 4 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 3 }}>
-                    <Typography variant="subtitle1" fontWeight={700}>
-                      Assign Work Details
-                    </Typography>
-                    <Chip
-                      label={`${assignmentDetails.length} Assignment${assignmentDetails.length === 1 ? '' : 's'}`}
-                      size="small"
-                      sx={{ fontWeight: 600 }}
-                    />
-                  </Box>
-
-                  {assignmentDetails.length === 0 ? (
-                    <Box sx={{ border: '1px dashed', borderColor: 'divider', borderRadius: 2, p: 3, textAlign: 'center' }}>
-                      <Typography variant="body2" color="text.secondary">
-                        No work assignment added for this job card yet.
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {assignmentDetails.map((assignment) => {
-                        const assignedUser = assignment.assignedUser || {};
-                        const serviceName = assignment.jobCardService?.serviceName || assignment.service?.serviceName || 'Assigned Service';
-
-                        return (
-                          <Box
-                            key={assignment.id}
-                            sx={{
-                              border: '1px solid',
-                              borderColor: 'divider',
-                              borderRadius: 2,
-                              p: 2,
-                              display: 'grid',
-                              gridTemplateColumns: { xs: '1fr', md: '1.4fr 1fr 1fr auto' },
-                              gap: 2,
-                              alignItems: 'center'
-                            }}
-                          >
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" fontWeight={700} textTransform="uppercase">
-                                Assigned User
-                              </Typography>
-                              <Typography variant="body2" fontWeight={700}>
-                                {assignedUser.fullName || 'Unassigned'}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {serviceName}
-                                {assignedUser.employeeCode ? ` - ${assignedUser.employeeCode}` : ''}
-                              </Typography>
-                            </Box>
-
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" fontWeight={700} textTransform="uppercase">
-                                Start Time
-                              </Typography>
-                              <Typography variant="body2" fontWeight={600}>
-                                {assignment.startedAt ? formatDateTime(assignment.startedAt) : '-'}
-                              </Typography>
-                            </Box>
-
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" fontWeight={700} textTransform="uppercase">
-                                End Time
-                              </Typography>
-                              <Typography variant="body2" fontWeight={600}>
-                                {assignment.completedAt ? formatDateTime(assignment.completedAt) : '-'}
-                              </Typography>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, whiteSpace: 'nowrap' }}>
-                              <Typography variant="caption" color="text.secondary" fontWeight={700} textTransform="uppercase">
-                                Status
-                              </Typography>
-                              <Chip
-                                label={getAssignmentStatusLabel(assignment)}
-                                color={getAssignmentStatusColor(assignment)}
-                                size="small"
-                                sx={{ fontWeight: 700 }}
-                              />
-                            </Box>
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  )}
-                </Card>
-              )}
-
               {hasAdditionalDetails && (
                 <Card sx={{ borderRadius: 3, boxShadow: 0, p: 3 }}>
                   <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 3 }}>
@@ -876,19 +1354,43 @@ export default function JobCardCreate() {
                         <Typography color="text.secondary" variant="body2" fontStyle="italic">No billable services</Typography>
                       </Box>
                     ) : (
-                      activeBillServices.map((item) => (
-                        <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            {!isEditMode && (
-                              <IconButton size="small" onClick={() => toggleService(item)} sx={{ color: 'error.main', p: 0.5 }}>
-                                <X size={16} />
-                              </IconButton>
-                            )}
-                            <Typography variant="body2" fontWeight={500}>{item.name} <Typography component="span" variant="caption" color="text.secondary">x1</Typography></Typography>
+                      <>
+                        {/* Regular Bill Services */}
+                        {activeBillServices.filter(item => !item.isAdditional).map((item) => (
+                          <Box key={item.jobCardServiceId || item.serviceItemId || item.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              {!isEditMode && (
+                                <IconButton size="small" onClick={() => toggleService(item)} sx={{ color: 'error.main', p: 0.5 }}>
+                                  <X size={16} />
+                                </IconButton>
+                              )}
+                              <Typography variant="body2" fontWeight={500}>{item.name} <Typography component="span" variant="caption" color="text.secondary">x1</Typography></Typography>
+                            </Box>
+                            <Typography variant="body2" fontWeight={600}>{formatCurrency(item.price)}</Typography>
                           </Box>
-                          <Typography variant="body2" fontWeight={600}>{formatCurrency(item.price)}</Typography>
-                        </Box>
-                      ))
+                        ))}
+
+                        {/* Additional Work Bill Services */}
+                        {activeBillServices.some(item => item.isAdditional) && (
+                          <>
+                            <Box sx={{ pt: 2, pb: 0.75, px: 0.5, display: 'flex', alignItems: 'center', gap: 0.75, borderBottom: '1px solid', borderColor: 'divider' }}>
+                              <PlusCircle size={14} color="#16a34a" />
+                              <Typography variant="caption" fontWeight={800} sx={{ color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Additional Work
+                              </Typography>
+                            </Box>
+                            {activeBillServices.filter(item => item.isAdditional).map((item) => (
+                              <Box key={item.jobCardServiceId || item.serviceItemId || item.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: '1px solid', borderColor: 'divider', bgcolor: '#fafafa' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography variant="body2" fontWeight={500}>{item.name} <Typography component="span" variant="caption" color="text.secondary">x1</Typography></Typography>
+                                  <Chip label="Additional" size="small" sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 700, fontSize: '0.65rem', height: 18, px: 0.5 }} />
+                                </Box>
+                                <Typography variant="body2" fontWeight={600}>{formatCurrency(item.price)}</Typography>
+                              </Box>
+                            ))}
+                          </>
+                        )}
+                      </>
                     )}
                   </Box>
 
@@ -952,52 +1454,119 @@ export default function JobCardCreate() {
             onConfirm={handleAssignMechanicBay}
             isConfirming={assignMutation.isPending}
           >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextField
-                select
-                fullWidth
-                label="Mechanic"
-                value={selectedAssignUser}
-                onChange={(event) => setSelectedAssignUser(event.target.value)}
-                disabled={isMechanicsLoading || assignMutation.isPending}
-              >
-                <MenuItem value="" disabled>
-                  {isMechanicsLoading ? 'Loading mechanics...' : 'Select mechanic'}
-                </MenuItem>
-                {mechanics.map((mechanic) => (
-                  <MenuItem key={mechanic.id} value={mechanic.id}>
-                    {mechanic.fullName}
-                    {mechanic.employeeCode ? ` - ${mechanic.employeeCode}` : ''}
-                    {mechanic.availabilityLabel ? ` (${mechanic.availabilityLabel})` : ''}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                fullWidth
-                label="Bay"
-                value={selectedAssignBay}
-                onChange={(event) => setSelectedAssignBay(event.target.value)}
-                disabled={isBaysLoading || assignMutation.isPending}
-              >
-                <MenuItem value="" disabled>
-                  {isBaysLoading ? 'Loading bays...' : 'Select bay'}
-                </MenuItem>
-                {bays.map((bay) => {
-                  const isCurrentJobBay = activeAssignmentDetails.some((assignment) => String(assignment.bayId || assignment.bay?.id) === String(bay.id));
-                  const isBusy = bay.availability === 'BUSY' && !isCurrentJobBay;
-                  return (
-                    <MenuItem key={bay.id} value={bay.id} disabled={isBusy}>
-                      {bay.bayName || bay.bayCode}
-                      {bay.bayCode && bay.bayName ? ` - ${bay.bayCode}` : ''}
-                      {isCurrentJobBay ? ' (Current)' : bay.availabilityLabel ? ` (${bay.availabilityLabel})` : ''}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
+              <FormControl fullWidth size="small" variant="outlined">
+                <InputLabel>{assigneeLabel}</InputLabel>
+                <Select
+                  value={selectedAssignUser}
+                  label={assigneeLabel}
+                  onChange={(event) => setSelectedAssignUser(event.target.value)}
+                  disabled={isMechanicsLoading || assignMutation.isPending}
+                  sx={{ borderRadius: 2 }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: 240,
+                      },
+                    },
+                  }}
+                >
+                  {isMechanicsLoading && (
+                    <MenuItem disabled value="">
+                      Loading {assigneeLabel.toLowerCase()}s...
                     </MenuItem>
-                  );
-                })}
-              </TextField>
+                  )}
+                  {!isMechanicsLoading && mechanics.length === 0 && (
+                    <MenuItem disabled value="">
+                      No active {assigneeLabel.toLowerCase()}s found
+                    </MenuItem>
+                  )}
+                  {mechanics.map((mechanic) => {
+                    const isBusy = mechanic.activeJobCount > 0;
+                    const statusText = mechanic.availabilityLabel || (isBusy ? `Busy (${mechanic.activeJobCount} job${mechanic.activeJobCount > 1 ? 's' : ''})` : 'Available');
+                    return (
+                      <MenuItem key={mechanic.id} value={mechanic.id}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
+                          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                            {mechanic.fullName}{mechanic.employeeCode ? ` - ${mechanic.employeeCode}` : ''}
+                          </Typography>
+                          <Chip
+                            size="small"
+                            label={statusText}
+                            sx={{
+                              height: 20,
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              bgcolor: isBusy ? '#FEF3C7' : '#DCFCE7',
+                              color: isBusy ? '#B45309' : '#15803D',
+                              border: '1px solid',
+                              borderColor: isBusy ? '#FCD34D' : '#86EFAC',
+                            }}
+                          />
+                        </Box>
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
 
-              <Typography variant="caption" color="text.secondary">
+              <FormControl fullWidth size="small" variant="outlined">
+                <InputLabel>Bay</InputLabel>
+                <Select
+                  value={selectedAssignBay}
+                  label="Bay"
+                  onChange={(event) => setSelectedAssignBay(event.target.value)}
+                  disabled={isBaysLoading || assignMutation.isPending}
+                  sx={{ borderRadius: 2 }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxHeight: 240,
+                      },
+                    },
+                  }}
+                >
+                  {isBaysLoading && (
+                    <MenuItem disabled value="">
+                      Loading bays...
+                    </MenuItem>
+                  )}
+                  {!isBaysLoading && bays.length === 0 && (
+                    <MenuItem disabled value="">
+                      No active bays found
+                    </MenuItem>
+                  )}
+                  {bays.map((bay) => {
+                    const isCurrentJobBay = activeAssignmentDetails.some((assignment) => String(assignment.bayId || assignment.bay?.id) === String(bay.id));
+                    const isBusy = bay.availability === 'BUSY' && !isCurrentJobBay;
+                    const statusText = isCurrentJobBay ? 'Current' : (bay.availabilityLabel || (isBusy ? 'Busy' : 'Available'));
+                    return (
+                      <MenuItem key={bay.id} value={bay.id} disabled={isBusy}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
+                          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                            {bay.bayName || bay.bayCode}
+                          </Typography>
+                          <Chip
+                            size="small"
+                            label={statusText}
+                            sx={{
+                              height: 20,
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              bgcolor: isCurrentJobBay ? '#DBEAFE' : isBusy ? '#FEF3C7' : '#DCFCE7',
+                              color: isCurrentJobBay ? '#1E40AF' : isBusy ? '#B45309' : '#15803D',
+                              border: '1px solid',
+                              borderColor: isCurrentJobBay ? '#93C5FD' : isBusy ? '#FCD34D' : '#86EFAC',
+                            }}
+                          />
+                        </Box>
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+
+              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 500, mt: -0.5 }}>
                 Category: {BAY_TYPE_BY_CATEGORY[assignmentCategory] || 'Mechanical'}
               </Typography>
             </Box>

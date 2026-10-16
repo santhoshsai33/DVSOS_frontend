@@ -91,7 +91,7 @@ export default function VehicleList() {
   const tableData = data?.data || [];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <Box sx={{ p: { xs: 2, md: '19px' } }}>
       <PageHeader
         title="Vehicle Management"
         breadcrumbs={[{ label: 'Vehicles' }]}
@@ -160,12 +160,6 @@ export default function VehicleList() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         PaperProps={{ sx: { width: 160, borderRadius: 2, mt: 0.5 } }}
       >
-        {canReadVehicles && (
-          <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/view/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
-            <Eye size={16} className="mr-3 text-primary" />
-            View Details
-          </MenuItem>
-        )}
         {canUpdateVehicles && (
           <MenuItem onClick={() => { handleMenuClose(); navigate(`${ROUTES.VEHICLES}/edit/${selectedVehicle?.slug || selectedVehicle?.id}`); }}>
             <Edit3 size={16} className="mr-3 text-warning" />

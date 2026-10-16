@@ -117,15 +117,24 @@ export default function StatusList() {
     {
       header: 'Actions',
       render: (row) => (
-        <IconButton size="small" onClick={(e) => handleMenuClick(e, row)}>
-          <MoreVertical size={18} />
-        </IconButton>
+        <Tooltip title="Edit Status">
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(getEditPath(row));
+            }}
+          >
+            <Edit size={16} />
+          </IconButton>
+        </Tooltip>
       )
     }
   ];
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <Box sx={{ p: { xs: 2, md: '19px' } }}>
       <PageHeader
         title="Status Master"
         // breadcrumbs={[{ label: 'Statuses' }]}
@@ -164,20 +173,6 @@ export default function StatusList() {
           onRowsPerPageChange={setRowsPerPage}
         />
       </Card>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{ sx: { width: 180, borderRadius: 0, mt: 0.5 } }}
-      >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(getEditPath(selectedStatus)); }}>
-          <Edit size={16} className="mr-3 text-primary" />
-          Edit Status
-        </MenuItem>
-      </Menu>
     </Box>
   );
 }
