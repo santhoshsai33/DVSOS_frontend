@@ -261,5 +261,12 @@ export const ENDPOINTS = {
     ROLES: '/roles',
     USERS: '/users',
     LOCATIONS: '/locations',
+  },
+
+  CHAT: {
+    GET: (id) => `/chat/job-card/${id}`,
+    SEND: (id) => `/chat/job-card/${id}/messages`,
+    MARK_READ: (id) => `/chat/job-card/${id}/read`,
+    RECENT_CHATS: '/chat/recent-chats',
   }
 };
