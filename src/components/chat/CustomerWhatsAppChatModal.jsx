@@ -1,24 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  Box,
-  Typography,
-  IconButton,
-  TextField,
-  Chip,
-  CircularProgress,
-  Tooltip
-} from '@mui/material';
-import {
-  X,
-  Send,
-  MessageSquare,
-  Car,
-  Clock,
-  Sparkles,
-  CheckCheck
-} from 'lucide-react';
+import { Dialog, DialogContent, Box, Typography, IconButton, TextField, Chip, CircularProgress, Tooltip } from '@mui/material';
+import { X, Send, MessageSquare, Car, Clock, Sparkles, CheckCheck } from 'lucide-react';
 import { getJobCardChatApi, sendJobCardChatMessageApi, markJobCardChatReadApi } from '../../api/chatApi';
 import { socket } from '../../socket/socket';
 import { toastError } from '../../notifications/toast';
@@ -71,7 +53,7 @@ export default function CustomerWhatsAppChatModal({
         }
         setMessages(Array.isArray(rawMessages) ? rawMessages : []);
         // Mark as read
-        markJobCardChatReadApi(jobCardId).catch(() => {});
+        markJobCardChatReadApi(jobCardId).catch(() => { });
       })
       .catch((err) => {
         if (!isMounted) return;
@@ -103,7 +85,7 @@ export default function CustomerWhatsAppChatModal({
             return [...prev, payload.message];
           });
           // Mark as read since modal is actively open
-          markJobCardChatReadApi(jobCardId).catch(() => {});
+          markJobCardChatReadApi(jobCardId).catch(() => { });
         }
       };
 
@@ -378,6 +360,12 @@ export default function CustomerWhatsAppChatModal({
                   >
                     {msg.text}
                   </Typography>
+
+                  {msg.mediaUrl && (
+                    <Box sx={{ mt: 1 }}>
+                      <audio controls src={msg.mediaUrl} style={{ width: '100%', maxWidth: 260, height: 36 }} />
+                    </Box>
+                  )}
 
                   <Box
                     sx={{
