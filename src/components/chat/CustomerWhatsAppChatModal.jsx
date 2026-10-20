@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, Box, Typography, IconButton, TextField, Chip, CircularProgress, Tooltip } from '@mui/material';
-import { X, Send, MessageSquare, Car, Clock, Sparkles, CheckCheck } from 'lucide-react';
+import { X, Send, MessageSquare, Car, Clock, Sparkles, CheckCheck, Mic, Trash2 } from 'lucide-react';
 import { getJobCardChatApi, sendJobCardChatMessageApi, markJobCardChatReadApi } from '../../api/chatApi';
 import { socket } from '../../socket/socket';
 import { toastError } from '../../notifications/toast';
@@ -26,10 +26,180 @@ export default function CustomerWhatsAppChatModal({
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+
   const messagesEndRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
+  const timerRef = useRef(null);
+  const isDiscardedRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const cleanupAudioRecording = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    mediaRecorderRef.current = null;
+    audioChunksRef.current = [];
+    setIsRecording(false);
+    setRecordingSeconds(0);
+  };
+
+  const cancelRecording = () => {
+    isDiscardedRef.current = true;
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch { }
+    }
+    cleanupAudioRecording();
+  };
+
+  const startRecording = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toastError('Microphone audio recording is not supported in this browser.');
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      let mimeType = 'audio/webm;codecs=opus';
+      if (typeof MediaRecorder.isTypeSupported === 'function') {
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          mimeType = 'audio/webm;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+          mimeType = 'audio/ogg;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+          mimeType = 'audio/webm';
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        }
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      isDiscardedRef.current = false;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.start(250);
+      setIsRecording(true);
+      setRecordingSeconds(0);
+
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => {
+        setRecordingSeconds((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error('Error starting audio recording:', err);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        toastError('Microphone permission was denied. Please allow microphone access in your browser settings.');
+      } else {
+        toastError('Could not start microphone recording: ' + (err.message || 'Unknown error'));
+      }
+      cleanupAudioRecording();
+    }
+  };
+
+  const stopAndSendRecording = () => {
+    if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
+      cleanupAudioRecording();
+      return;
+    }
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    const currentRecorder = mediaRecorderRef.current;
+    const mimeType = currentRecorder.mimeType || 'audio/webm';
+
+    currentRecorder.onstop = async () => {
+      if (isDiscardedRef.current) {
+        cleanupAudioRecording();
+        return;
+      }
+
+      const chunks = [...audioChunksRef.current];
+      cleanupAudioRecording();
+
+      if (chunks.length === 0) {
+        toastError('No audio recorded.');
+        return;
+      }
+
+      const audioBlob = new Blob(chunks, { type: mimeType });
+      if (audioBlob.size < 100) {
+        toastError('Audio recording was too short.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64DataUrl = reader.result;
+        if (!base64DataUrl) return;
+
+        setIsSending(true);
+        try {
+          const res = await sendJobCardChatMessageApi(jobCardId, { audioData: base64DataUrl });
+          const createdMessage = res?.data?.data?.message || res?.data?.message || res?.message;
+          if (createdMessage) {
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === createdMessage.id)) return prev;
+              return [...prev, createdMessage];
+            });
+          }
+        } catch (err) {
+          toastError(err.response?.data?.message || err?.message || 'Failed to send voice note to customer');
+        } finally {
+          setIsSending(false);
+        }
+      };
+      reader.readAsDataURL(audioBlob);
+    };
+
+    try {
+      currentRecorder.stop();
+    } catch {
+      cleanupAudioRecording();
+    }
+  };
+
+  // Cleanup on modal close or unmount
+  useEffect(() => {
+    return () => {
+      cleanupAudioRecording();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen && isRecording) {
+      cancelRecording();
+    }
+  }, [isOpen]);
+
+  const formatDuration = (sec) => {
+    const mins = Math.floor(sec / 60);
+    const remainingSecs = sec % 60;
+    return `${String(mins).padStart(2, '0')}:${String(remainingSecs).padStart(2, '0')}`;
   };
 
   // Fetch chat history on open
@@ -348,22 +518,24 @@ export default function CustomerWhatsAppChatModal({
                     {msg.senderName || (isCustomer ? customerName : 'Advisor')}
                   </Typography>
 
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: '#0f172a',
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      lineHeight: 1.45,
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    {msg.text}
-                  </Typography>
+                  {msg.text && (msg.text !== '🎤 Voice message' || !msg.mediaUrl) && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#0f172a',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        lineHeight: 1.45,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      {msg.text}
+                    </Typography>
+                  )}
 
                   {msg.mediaUrl && (
-                    <Box sx={{ mt: 1 }}>
-                      <audio controls src={msg.mediaUrl} style={{ width: '100%', maxWidth: 260, height: 36 }} />
+                    <Box sx={{ mt: msg.text && msg.text !== '🎤 Voice message' ? 1 : 0, width: '100%', minWidth: { xs: 200, sm: 260 } }}>
+                      <audio controls src={msg.mediaUrl} preload="metadata" style={{ width: '100%', maxWidth: 280, height: 36, outline: 'none' }} />
                     </Box>
                   )}
 
@@ -448,45 +620,150 @@ export default function CustomerWhatsAppChatModal({
           borderTop: '1px solid #e2e8f0'
         }}
       >
-        <TextField
-          fullWidth
-          size="small"
-          placeholder="Type message to send on customer's WhatsApp..."
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={isSending}
-          multiline
-          maxRows={3}
-          sx={{
-            bgcolor: '#ffffff',
-            borderRadius: 2,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              fontSize: '0.875rem'
-            }
-          }}
-        />
-
-        <Tooltip title="Send WhatsApp Message">
-          <span>
-            <IconButton
-              color="primary"
-              onClick={handleSend}
-              disabled={!inputText.trim() || isSending}
+        {!isRecording ? (
+          <>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Type message to send on customer's WhatsApp..."
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isSending}
+              multiline
+              maxRows={3}
               sx={{
-                bgcolor: '#075E54',
-                color: '#ffffff',
-                width: 44,
-                height: 44,
-                '&:hover': { bgcolor: '#128C7E' },
-                '&.Mui-disabled': { bgcolor: '#cbd5e1', color: '#94a3b8' }
+                bgcolor: '#ffffff',
+                borderRadius: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  fontSize: '0.875rem'
+                }
               }}
-            >
-              {isSending ? <CircularProgress size={20} color="inherit" /> : <Send size={18} />}
-            </IconButton>
-          </span>
-        </Tooltip>
+            />
+
+            {/* Mic button to record voice note */}
+            <Tooltip title="Record Voice Note for Customer">
+              <span>
+                <IconButton
+                  onClick={startRecording}
+                  disabled={isSending}
+                  sx={{
+                    bgcolor: '#f1f5f9',
+                    color: '#075E54',
+                    border: '1px solid #cbd5e1',
+                    width: 44,
+                    height: 44,
+                    '&:hover': { bgcolor: '#e2e8f0', color: '#128C7E' },
+                    '&.Mui-disabled': { bgcolor: '#f1f5f9', color: '#94a3b8' }
+                  }}
+                >
+                  <Mic size={20} />
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            {/* Send text message button */}
+            <Tooltip title="Send WhatsApp Message">
+              <span>
+                <IconButton
+                  color="primary"
+                  onClick={handleSend}
+                  disabled={!inputText.trim() || isSending}
+                  sx={{
+                    bgcolor: '#075E54',
+                    color: '#ffffff',
+                    width: 44,
+                    height: 44,
+                    '&:hover': { bgcolor: '#128C7E' },
+                    '&.Mui-disabled': { bgcolor: '#cbd5e1', color: '#94a3b8' }
+                  }}
+                >
+                  {isSending ? <CircularProgress size={20} color="inherit" /> : <Send size={18} />}
+                </IconButton>
+              </span>
+            </Tooltip>
+          </>
+        ) : (
+          /* Voice note recording active bar */
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              bgcolor: '#ffffff',
+              borderRadius: 2,
+              px: 2,
+              py: 0.8,
+              border: '1px solid #fecaca',
+              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.08)'
+            }}
+          >
+            {/* Live recording indicator & timer */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: '#ef4444',
+                  animation: 'pulseRec 1.2s infinite ease-in-out',
+                  '@keyframes pulseRec': {
+                    '0%': { transform: 'scale(0.85)', opacity: 0.7 },
+                    '50%': { transform: 'scale(1.3)', opacity: 1 },
+                    '100%': { transform: 'scale(0.85)', opacity: 0.7 }
+                  }
+                }}
+              />
+              <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#dc2626', fontFamily: 'monospace' }}>
+                {formatDuration(recordingSeconds)}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', display: { xs: 'none', sm: 'inline' } }}>
+                Recording voice note for WhatsApp...
+              </Typography>
+            </Box>
+
+            {/* Recording Controls: Cancel (Trash) & Send (Stop and Send) */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Tooltip title="Cancel / Discard">
+                <span>
+                  <IconButton
+                    onClick={cancelRecording}
+                    disabled={isSending}
+                    sx={{
+                      color: '#64748b',
+                      width: 40,
+                      height: 40,
+                      '&:hover': { color: '#ef4444', bgcolor: '#fee2e2' }
+                    }}
+                  >
+                    <Trash2 size={18} />
+                  </IconButton>
+                </span>
+              </Tooltip>
+
+              <Tooltip title="Send Voice Note to Customer">
+                <span>
+                  <IconButton
+                    onClick={stopAndSendRecording}
+                    disabled={isSending}
+                    sx={{
+                      bgcolor: '#075E54',
+                      color: '#ffffff',
+                      width: 42,
+                      height: 42,
+                      '&:hover': { bgcolor: '#128C7E' },
+                      '&.Mui-disabled': { bgcolor: '#cbd5e1', color: '#94a3b8' }
+                    }}
+                  >
+                    {isSending ? <CircularProgress size={20} color="inherit" /> : <Send size={18} />}
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          </Box>
+        )}
       </Box>
     </Dialog>
   );
