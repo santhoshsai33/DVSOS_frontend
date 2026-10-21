@@ -4,6 +4,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, 
 import { AlertTriangle, X } from "lucide-react";
 import { socket } from "../../../socket/socket";
 import useAuthStore from "../../../store/useAuthStore";
+import { isAdminRole } from "../../../utils/authAccess";
 import { getNotificationsApi, markNotificationReadApi, } from "../../../api/notificationApi";
 
 export function resolveStageRedirection(rawStatusCode, title = "", message = "") {
@@ -260,6 +261,7 @@ function mergeItemIntoGroups(groupsList, item) {
 export default function NotificationPopup() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const isAdmin = isAdminRole(user?.role?.slug || user?.role, user);
   const [open, setOpen] = useState(false);
   const [queue, setQueue] = useState([]);
   const [current, setCurrent] = useState(null);
@@ -336,10 +338,10 @@ export default function NotificationPopup() {
     }
   }, [current, queue]);
 
-  // On login: Fetch missed notifications from DB and group them by stage
+  // On login: Fetch missed notifications from DB and group them by stage (skipped for Admin)
   useEffect(() => {
     const userId = user?.id || user?.userId;
-    if (!userId) {
+    if (!userId || isAdmin) {
       initialFetchDone.current = false;
       return;
     }
@@ -397,12 +399,12 @@ export default function NotificationPopup() {
     };
 
     fetchMissed();
-  }, [user?.id, user?.userId]);
+  }, [user?.id, user?.userId, isAdmin]);
 
-  // Real-time: socket events push new notifications and merge dynamically into groups
+  // Real-time: socket events push new notifications and merge dynamically into groups (skipped for Admin)
   useEffect(() => {
     const userId = user?.id || user?.userId;
-    if (!userId) return;
+    if (!userId || isAdmin) return;
 
     const joinRoom = () => {
       socket.emit("join_user_room", userId);
@@ -510,9 +512,9 @@ export default function NotificationPopup() {
       socket.off("notification-read", handleNotificationRead);
       socket.off("notification-read-all", handleNotificationReadAll);
     };
-  }, [user?.id, user?.userId]);
+  }, [user?.id, user?.userId, isAdmin]);
 
-  if (!current) return null;
+  if (!current || isAdmin) return null;
 
   const jobCardCount = current.jobCards?.length || 0;
 

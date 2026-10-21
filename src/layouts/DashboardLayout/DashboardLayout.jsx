@@ -5,11 +5,15 @@ import Sidebar from "../../components/shared/Sidebar";
 import Topbar from "../../components/shared/Topbar";
 import NotificationPopup from "../../components/shared/NotificationPopup";
 import useUIStore from "../../store/useUIStore";
+import useAuthStore from "../../store/useAuthStore";
+import { isAdminRole } from "../../utils/authAccess";
 
 export default function DashboardLayout() {
   const theme = useTheme();
   const isLaptop = useMediaQuery("(max-width: 1366px)");
   const { sidebarCollapsed } = useUIStore();
+  const { user } = useAuthStore();
+  const isAdmin = isAdminRole(user?.role?.slug || user?.role, user);
   const [userHasToggled, setUserHasToggled] = useState(false);
   const [lastCollapsedVal, setLastCollapsedVal] = useState(sidebarCollapsed);
 
@@ -44,7 +48,7 @@ export default function DashboardLayout() {
         }}
       >
         <Topbar />
-        <NotificationPopup />
+        {!isAdmin && <NotificationPopup />}
         <Box
           component="main"
           sx={{ flexGrow: 1, pb: { xs: 2, md: 3 }, pt: { xs: 1, md: 2 }, overflowY: "auto" }}
