@@ -12,7 +12,6 @@ import { toastInfo } from "../../../notifications/toast";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { socket, connectSocket } from "../../../socket/socket";
 import WhatsAppChatDrawer from "../../chat/WhatsAppChatDrawer";
-import CustomerWhatsAppChatModal from "../../chat/CustomerWhatsAppChatModal";
 import { getRecentChatsApi } from "../../../api/chatApi";
 const getNotificationIcon = (type) => {
   const t = String(type || "").toUpperCase();
@@ -53,14 +52,22 @@ export default function Topbar() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // User location and Admin role check
+  const roleName = String(role || user?.role?.slug || user?.role?.name || "").toLowerCase().replace(/[-_\s]+/g, "");
+  const isAdmin = roleName === "admin" || roleName === "superadmin";
+  const userLocationId = user?.locationId || user?.location_id || user?.branchId || null;
+
   // WhatsApp Chat Hub state
   const [isWhatsAppDrawerOpen, setIsWhatsAppDrawerOpen] = useState(false);
   const [whatsAppUnreadCount, setWhatsAppUnreadCount] = useState(0);
-  const [activeChatJobCard, setActiveChatJobCard] = useState(null);
 
   const fetchWhatsAppUnreadCount = async () => {
+    if (isAdmin) return;
     try {
-      const res = await getRecentChatsApi({ limit: 1 });
+      const res = await getRecentChatsApi({
+        limit: 1,
+        ...(userLocationId ? { locationId: userLocationId } : {})
+      });
       const data = res?.data?.data || res?.data || {};
       if (typeof data.totalUnreadCount === "number") {
         setWhatsAppUnreadCount(data.totalUnreadCount);
@@ -152,12 +159,16 @@ export default function Topbar() {
 
   // WhatsApp chats unread count sync and live socket events
   useEffect(() => {
-    if (!user) return;
+    if (!user || isAdmin) return;
 
     fetchWhatsAppUnreadCount();
 
     if (socket) {
-      const handleChatSync = () => {
+      const handleChatSync = (payload) => {
+        // If payload has locationId and user has locationId, verify match
+        if (payload?.locationId && userLocationId && String(payload.locationId) !== String(userLocationId)) {
+          return;
+        }
         fetchWhatsAppUnreadCount();
       };
 
@@ -173,7 +184,7 @@ export default function Topbar() {
         socket.off("chat:read", handleChatSync);
       };
     }
-  }, [user]);
+  }, [user, isAdmin, userLocationId]);
 
   // Notification polling + Firebase — only for users who can read notifications
   useEffect(() => {
@@ -352,57 +363,59 @@ export default function Topbar() {
             </IconButton>
           )}
 
-          {/* WhatsApp Direct Chats Hub Button */}
-          <Tooltip title="WhatsApp Chats" arrow>
-            <IconButton
-              onClick={() => setIsWhatsAppDrawerOpen(true)}
-              sx={{
-                p: 1,
-                color: "#25D366",
-                transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-                "&:hover": {
-                  bgcolor: "rgba(37, 211, 102, 0.1)",
-                  transform: "scale(1.1)"
-                }
-              }}
-            >
-              <Badge
-                badgeContent={whatsAppUnreadCount}
-                color="error"
-                max={99}
+          {/* WhatsApp Direct Chats Hub Button (Excluded for Admin role) */}
+          {!isAdmin && (
+            <Tooltip title="WhatsApp Chats" arrow>
+              <IconButton
+                onClick={() => setIsWhatsAppDrawerOpen(true)}
                 sx={{
-                  "& .MuiBadge-badge": {
-                    bgcolor: "#ef4444",
-                    color: "#ffffff",
-                    fontWeight: 700,
-                    fontSize: "0.72rem",
-                    boxShadow: "0 0 8px rgba(239, 68, 68, 0.7)",
-                    animation: whatsAppUnreadCount > 0 ? "pulseRec 1.5s infinite" : "none",
-                    "@keyframes pulseRec": {
-                      "0%": { transform: "scale(0.95)" },
-                      "50%": { transform: "scale(1.18)" },
-                      "100%": { transform: "scale(0.95)" }
-                    }
+                  p: 1,
+                  color: "#25D366",
+                  transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                  "&:hover": {
+                    bgcolor: "rgba(37, 211, 102, 0.1)",
+                    transform: "scale(1.1)"
                   }
                 }}
               >
-                <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M24 4C12.954 4 4 12.954 4 24c0 3.842 1.083 7.433 2.96 10.485L4 44l9.764-2.887A19.92 19.92 0 0024 44c11.046 0 20-8.954 20-20S35.046 4 24 4z"
-                    fill="#25D366"
-                  />
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M33.47 28.53c-.5-.25-2.95-1.45-3.41-1.62-.46-.17-.79-.25-1.12.25-.33.5-1.29 1.62-1.58 1.95-.29.33-.58.37-1.08.12-.5-.25-2.11-.78-4.01-2.48-1.48-1.32-2.48-2.95-2.77-3.45-.29-.5-.03-.77.22-1.02.22-.22.5-.58.75-.87.25-.29.33-.5.5-.83.17-.33.08-.62-.04-.87-.12-.25-1.12-2.71-1.54-3.71-.41-.97-.82-.84-1.12-.86l-.96-.02c-.33 0-.87.12-1.33.62-.46.5-1.75 1.71-1.75 4.17 0 2.46 1.79 4.83 2.04 5.17.25.33 3.52 5.37 8.52 7.54 1.19.52 2.12.83 2.85 1.06 1.2.38 2.29.33 3.15.2 0.96-.14 2.95-1.21 3.37-2.37.42-1.17.42-2.17.29-2.37-.12-.21-.46-.33-.96-.58z"
-                    fill="#FFFFFF"
-                  />
-                </svg>
-              </Badge>
-            </IconButton>
-          </Tooltip>
+                <Badge
+                  badgeContent={whatsAppUnreadCount}
+                  color="error"
+                  max={99}
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      bgcolor: "#ef4444",
+                      color: "#ffffff",
+                      fontWeight: 700,
+                      fontSize: "0.72rem",
+                      boxShadow: "0 0 8px rgba(239, 68, 68, 0.7)",
+                      animation: whatsAppUnreadCount > 0 ? "pulseRec 1.5s infinite" : "none",
+                      "@keyframes pulseRec": {
+                        "0%": { transform: "scale(0.95)" },
+                        "50%": { transform: "scale(1.18)" },
+                        "100%": { transform: "scale(0.95)" }
+                      }
+                    }
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M24 4C12.954 4 4 12.954 4 24c0 3.842 1.083 7.433 2.96 10.485L4 44l9.764-2.887A19.92 19.92 0 0024 44c11.046 0 20-8.954 20-20S35.046 4 24 4z"
+                      fill="#25D366"
+                    />
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M33.47 28.53c-.5-.25-2.95-1.45-3.41-1.62-.46-.17-.79-.25-1.12.25-.33.5-1.29 1.62-1.58 1.95-.29.33-.58.37-1.08.12-.5-.25-2.11-.78-4.01-2.48-1.48-1.32-2.48-2.95-2.77-3.45-.29-.5-.03-.77.22-1.02.22-.22.5-.58.75-.87.25-.29.33-.5.5-.83.17-.33.08-.62-.04-.87-.12-.25-1.12-2.71-1.54-3.71-.41-.97-.82-.84-1.12-.86l-.96-.02c-.33 0-.87.12-1.33.62-.46.5-1.75 1.71-1.75 4.17 0 2.46 1.79 4.83 2.04 5.17.25.33 3.52 5.37 8.52 7.54 1.19.52 2.12.83 2.85 1.06 1.2.38 2.29.33 3.15.2 0.96-.14 2.95-1.21 3.37-2.37.42-1.17.42-2.17.29-2.37-.12-.21-.46-.33-.96-.58z"
+                      fill="#FFFFFF"
+                    />
+                  </svg>
+                </Badge>
+              </IconButton>
+            </Tooltip>
+          )}
 
           <Menu
             anchorEl={notifAnchorEl}
@@ -485,31 +498,17 @@ export default function Topbar() {
         </Box>
       </Toolbar>
 
-      {/* WhatsApp Chats Slide-Over Drawer */}
-      <WhatsAppChatDrawer
-        isOpen={isWhatsAppDrawerOpen}
-        onClose={() => setIsWhatsAppDrawerOpen(false)}
-        onSelectChat={(chat) => {
-          setActiveChatJobCard(chat);
-          setIsWhatsAppDrawerOpen(false);
-        }}
-        unreadCount={whatsAppUnreadCount}
-        onChatsUpdated={(newCount) => setWhatsAppUnreadCount(newCount)}
-      />
-
-      {/* WhatsApp Active Chat Modal */}
-      {activeChatJobCard && (
-        <CustomerWhatsAppChatModal
-          isOpen={Boolean(activeChatJobCard)}
+      {/* WhatsApp Chats Slide-Over Drawer (Excluded for Admin role) */}
+      {!isAdmin && (
+        <WhatsAppChatDrawer
+          isOpen={isWhatsAppDrawerOpen}
           onClose={() => {
-            setActiveChatJobCard(null);
+            setIsWhatsAppDrawerOpen(false);
             fetchWhatsAppUnreadCount();
           }}
-          jobCardId={activeChatJobCard.jobCardId}
-          customerName={activeChatJobCard.customerName}
-          customerMobile={activeChatJobCard.customerMobile}
-          vehicleNo={activeChatJobCard.vehicleNo}
-          jobCardNo={activeChatJobCard.jobCardNo}
+          unreadCount={whatsAppUnreadCount}
+          onChatsUpdated={(newCount) => setWhatsAppUnreadCount(newCount)}
+          locationId={userLocationId}
         />
       )}
     </AppBar>

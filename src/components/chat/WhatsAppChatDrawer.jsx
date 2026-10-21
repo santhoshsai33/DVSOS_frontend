@@ -22,6 +22,7 @@ import {
 import { X, Search, RefreshCw, Car, Mic, CheckCheck } from 'lucide-react';
 import { getRecentChatsApi } from '../../api/chatApi';
 import { socket } from '../../socket/socket';
+import CustomerWhatsAppChatModal from './CustomerWhatsAppChatModal';
 
 const formatChatTime = (timeStr) => {
   if (!timeStr) return '';
@@ -59,13 +60,21 @@ export default function WhatsAppChatDrawer({
   onClose,
   onSelectChat,
   unreadCount = 0,
-  onChatsUpdated
+  onChatsUpdated,
+  locationId
 }) {
   const [chats, setChats] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterTab, setFilterTab] = useState(0); // 0 = All, 1 = Unread
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedChat(null);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -77,7 +86,10 @@ export default function WhatsAppChatDrawer({
   const fetchChats = async () => {
     setIsLoading(true);
     try {
-      const res = await getRecentChatsApi({ search: debouncedSearch });
+      const res = await getRecentChatsApi({
+        search: debouncedSearch,
+        ...(locationId ? { locationId } : {})
+      });
       const data = res?.data?.data || res?.data || {};
       setChats(Array.isArray(data.chats) ? data.chats : []);
       if (typeof onChatsUpdated === 'function' && typeof data.totalUnreadCount === 'number') {
@@ -95,7 +107,10 @@ export default function WhatsAppChatDrawer({
       fetchChats();
 
       if (socket) {
-        const handleRefresh = () => {
+        const handleRefresh = (payload) => {
+          if (payload?.locationId && locationId && String(payload.locationId) !== String(locationId)) {
+            return;
+          }
           fetchChats();
         };
 
@@ -112,7 +127,7 @@ export default function WhatsAppChatDrawer({
         };
       }
     }
-  }, [isOpen, debouncedSearch]);
+  }, [isOpen, debouncedSearch, locationId]);
 
   const filteredChats = useMemo(() => {
     return chats.filter((c) => {
@@ -127,18 +142,53 @@ export default function WhatsAppChatDrawer({
     <Drawer
       anchor="right"
       open={isOpen}
-      onClose={onClose}
+      onClose={() => {
+        setSelectedChat(null);
+        onClose();
+      }}
+      sx={{
+        zIndex: (theme) => (theme.zIndex?.modal || 1300) + 50
+      }}
+      ModalProps={{
+        BackdropProps: {
+          sx: {
+            backgroundColor: 'transparent !important',
+            backdropFilter: 'none !important'
+          }
+        }
+      }}
       PaperProps={{
         sx: {
-          width: { xs: '100%', sm: 390, md: 420 },
+          width: { xs: '100%', sm: 420, md: 450 },
           bgcolor: '#ffffff',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '-8px 0 30px rgba(0,0,0,0.15)'
+          boxShadow: '-8px 0 32px rgba(0,0,0,0.18)',
+          borderLeft: '1px solid #e2e8f0'
         }
       }}
     >
-      {/* Top Header */}
+      {selectedChat ? (
+        <CustomerWhatsAppChatModal
+          isOpen={true}
+          isEmbedded={true}
+          onBack={() => {
+            setSelectedChat(null);
+            fetchChats();
+          }}
+          onClose={() => {
+            setSelectedChat(null);
+            onClose();
+          }}
+          jobCardId={selectedChat.jobCardId}
+          customerName={selectedChat.customerName}
+          customerMobile={selectedChat.customerMobile}
+          vehicleNo={selectedChat.vehicleNo}
+          jobCardNo={selectedChat.jobCardNo}
+        />
+      ) : (
+        <>
+          {/* Top Header */}
       <Box
         sx={{
           bgcolor: '#075E54',
@@ -309,6 +359,7 @@ export default function WhatsAppChatDrawer({
                   <ListItem disablePadding>
                     <ListItemButton
                       onClick={() => {
+                        setSelectedChat(chat);
                         if (typeof onSelectChat === 'function') {
                           onSelectChat(chat);
                         }
@@ -461,6 +512,8 @@ export default function WhatsAppChatDrawer({
           </List>
         )}
       </Box>
+        </>
+      )}
     </Drawer>
   );
 }
