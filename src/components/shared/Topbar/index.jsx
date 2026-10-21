@@ -353,48 +353,91 @@ export default function Topbar() {
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           {canReadNotifications && (
-            <IconButton
-              color="inherit"
-              onClick={(e) => setNotifAnchorEl(e.currentTarget)}
-            >
-              <Badge badgeContent={unreadCount} color="error">
-                <Bell size={20} />
+            <Tooltip title="Notifications" arrow>
+              <Badge
+                badgeContent={unreadCount}
+                color="error"
+                overlap="circular"
+                sx={{
+                  "& .MuiBadge-badge": {
+                    bgcolor: "#ef4444",
+                    color: "#ffffff",
+                    fontWeight: 700,
+                    fontSize: "0.68rem",
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: "9px",
+                    px: "4px",
+                    border: "2px solid #ffffff",
+                    boxShadow: "0 2px 6px rgba(239, 68, 68, 0.35)",
+                    top: 3,
+                    right: 3,
+                    pointerEvents: "none"
+                  }
+                }}
+              >
+                <IconButton
+                  color="inherit"
+                  onClick={(e) => setNotifAnchorEl(e.currentTarget)}
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    bgcolor: "#ffffff",
+                    border: "1px solid #e2e8f0",
+                    color: "#334155",
+                    transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                    "&:hover": {
+                      bgcolor: "#f8fafc",
+                      transform: "scale(1.05)",
+                      borderColor: "#cbd5e1"
+                    }
+                  }}
+                >
+                  <Bell size={20} />
+                </IconButton>
               </Badge>
-            </IconButton>
+            </Tooltip>
           )}
 
           {/* WhatsApp Direct Chats Hub Button (Excluded for Admin role) */}
           {!isAdmin && (
             <Tooltip title="WhatsApp Chats" arrow>
-              <IconButton
-                onClick={() => setIsWhatsAppDrawerOpen(true)}
+              <Badge
+                badgeContent={whatsAppUnreadCount}
+                color="error"
+                max={99}
+                overlap="circular"
                 sx={{
-                  p: 1,
-                  color: "#25D366",
-                  transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-                  "&:hover": {
-                    bgcolor: "rgba(37, 211, 102, 0.1)",
-                    transform: "scale(1.1)"
+                  "& .MuiBadge-badge": {
+                    bgcolor: "#ef4444",
+                    color: "#ffffff",
+                    fontWeight: 700,
+                    fontSize: "0.68rem",
+                    minWidth: 18,
+                    height: 18,
+                    borderRadius: "9px",
+                    px: "4px",
+                    border: "2px solid #ffffff",
+                    boxShadow: "0 2px 6px rgba(239, 68, 68, 0.35)",
+                    top: 3,
+                    right: 3,
+                    pointerEvents: "none"
                   }
                 }}
               >
-                <Badge
-                  badgeContent={whatsAppUnreadCount}
-                  color="error"
-                  max={99}
+                <IconButton
+                  onClick={() => setIsWhatsAppDrawerOpen(true)}
                   sx={{
-                    "& .MuiBadge-badge": {
-                      bgcolor: "#ef4444",
-                      color: "#ffffff",
-                      fontWeight: 700,
-                      fontSize: "0.72rem",
-                      boxShadow: "0 0 8px rgba(239, 68, 68, 0.7)",
-                      animation: whatsAppUnreadCount > 0 ? "pulseRec 1.5s infinite" : "none",
-                      "@keyframes pulseRec": {
-                        "0%": { transform: "scale(0.95)" },
-                        "50%": { transform: "scale(1.18)" },
-                        "100%": { transform: "scale(0.95)" }
-                      }
+                    width: 40,
+                    height: 40,
+                    bgcolor: "#e8f8f0",
+                    border: "1px solid rgba(37, 211, 102, 0.28)",
+                    color: "#25D366",
+                    transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                    "&:hover": {
+                      bgcolor: "#dcfce7",
+                      transform: "scale(1.05)",
+                      borderColor: "rgba(37, 211, 102, 0.45)"
                     }
                   }}
                 >
@@ -412,8 +455,8 @@ export default function Topbar() {
                       fill="#FFFFFF"
                     />
                   </svg>
-                </Badge>
-              </IconButton>
+                </IconButton>
+              </Badge>
             </Tooltip>
           )}
 
