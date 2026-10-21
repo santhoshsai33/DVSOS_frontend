@@ -18,7 +18,9 @@ import {
   MessageSquare,
   Car,
   Clock,
+  Check,
   CheckCheck,
+  AlertCircle,
   Mic,
   Trash2,
   Paperclip,
@@ -347,11 +349,27 @@ export default function CustomerWhatsAppChatModal({
         }
       };
 
+      const handleMessageStatusUpdated = (payload) => {
+        if (!payload || String(payload.jobCardId) !== String(jobCardId)) return;
+        setMessages((prev) =>
+          prev.map((m) => {
+            const isMatch = (payload.messageId && m.id === payload.messageId) ||
+                            (payload.twilioSid && m.twilioSid === payload.twilioSid);
+            if (isMatch) {
+              return { ...m, status: payload.status };
+            }
+            return m;
+          })
+        );
+      };
+
       socket.on('chat:new_message', handleNewMessage);
+      socket.on('chat:message_status_updated', handleMessageStatusUpdated);
 
       return () => {
         socket.emit('leave_chat_room', jobCardId);
         socket.off('chat:new_message', handleNewMessage);
+        socket.off('chat:message_status_updated', handleMessageStatusUpdated);
       };
     }
   }, [isOpen, jobCardId]);
@@ -898,7 +916,53 @@ export default function CustomerWhatsAppChatModal({
                         {formatMessageTime(msg.time)}
                       </Typography>
                       {isAdvisor && (
-                        <CheckCheck size={14} color="#34b7f1" />
+                        (() => {
+                          const status = String(msg.status || '').toLowerCase();
+                          if (status === 'read') {
+                            return (
+                              <Tooltip title="Read" arrow placement="top">
+                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                  <CheckCheck size={14} color="#34b7f1" />
+                                </Box>
+                              </Tooltip>
+                            );
+                          }
+                          if (status === 'delivered') {
+                            return (
+                              <Tooltip title="Delivered" arrow placement="top">
+                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                  <CheckCheck size={14} color="#94a3b8" />
+                                </Box>
+                              </Tooltip>
+                            );
+                          }
+                          if (status === 'failed') {
+                            return (
+                              <Tooltip title="Delivery failed" arrow placement="top">
+                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                  <AlertCircle size={14} color="#ef4444" />
+                                </Box>
+                              </Tooltip>
+                            );
+                          }
+                          if (status === 'sent' || status === 'queued') {
+                            return (
+                              <Tooltip title="Sent" arrow placement="top">
+                                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                  <Check size={14} color="#94a3b8" />
+                                </Box>
+                              </Tooltip>
+                            );
+                          }
+                          // Fallback for legacy messages
+                          return (
+                            <Tooltip title="Read" arrow placement="top">
+                              <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <CheckCheck size={14} color="#34b7f1" />
+                              </Box>
+                            </Tooltip>
+                          );
+                        })()
                       )}
                     </Box>
                   </Box>
