@@ -675,27 +675,23 @@ export default function CustomerWhatsAppChatModal({
                 sx={{
                   display: 'flex',
                   justifyContent: 'center',
-                  my: 1.5,
-                  position: 'sticky',
-                  top: 4,
-                  zIndex: 3,
-                  pointerEvents: 'none'
+                  my: 2,
+                  pointerEvents: 'none',
+                  userSelect: 'none'
                 }}
               >
                 <Box
                   sx={{
-                    bgcolor: 'rgba(255, 255, 255, 0.94)',
-                    backdropFilter: 'blur(6px)',
+                    bgcolor: '#ffffff',
                     color: '#54656f',
-                    fontSize: '0.73rem',
+                    fontSize: '0.74rem',
                     fontWeight: 600,
-                    px: 1.5,
-                    py: 0.4,
+                    px: 1.6,
+                    py: 0.45,
                     borderRadius: '8px',
-                    boxShadow: '0 1px 2px rgba(11, 20, 26, 0.12)',
-                    border: '1px solid rgba(0, 0, 0, 0.06)',
-                    letterSpacing: '0.2px',
-                    userSelect: 'none'
+                    boxShadow: '0 1px 3px rgba(11, 20, 26, 0.12)',
+                    border: '1px solid rgba(0, 0, 0, 0.08)',
+                    letterSpacing: '0.2px'
                   }}
                 >
                   {dateHeader}
